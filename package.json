@@ -12,7 +12,8 @@
   "dependencies": {
     "bulma": "^0.9.4",
     "permawebjs": "^1.2.6",
-    "vue": "^3.2.47"
+    "vue": "^3.2.47",
+    "vue-router": "^4.1.6"
   },
   "devDependencies": {
     "@vitejs/plugin-vue": "^4.1.0",
