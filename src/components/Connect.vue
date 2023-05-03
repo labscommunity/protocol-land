@@ -14,22 +14,40 @@ export default defineComponent ({
   <div class="modal is-active">
     <div class="modal-background" @click="cancel"></div>
     <div class="modal-card">
-      <header class="modal-card-head">
-        <p class="modal-card-title">Modal title</p>
-        <button @click="cancel" class="delete" aria-label="close"></button>
-      </header>
       <section class="modal-card-body">
-        <!-- Content ... -->
-        <p>Hello world</p>
+        <div class="columns">
+          <div class="column is-half ">
+            <a href="" class="button is-fullwidth othent">
+              ⚡️ Sign in with Othent
+            </a>
+          </div>
+          <div class="column is-half">
+            <a href="" class="button is-fullwidth arconnect">
+              🦔 Connect with ArConnect
+            </a>
+          </div>
+        </div>
       </section>
-      <footer class="modal-card-foot">
-        <button class="button is-success">Save changes</button>
-        <button class="button">Cancel</button>
-      </footer>
     </div>
   </div>
 </template>
 
 <style scoped>
+
+.modal-card {
+  border-radius: 10px;
+}
+
+.button {
+  padding: 50px;
+}
+
+.othent {
+  background: rgb(211, 227, 252);
+}
+
+.arconnect {
+  background: rgba(171, 154, 255, 0.3);
+}
 
 </style>
