@@ -3,6 +3,7 @@ import Navbar from "../components/Navbar.vue";
 import Connect from "../components/Connect.vue";
 import CommitList from "../components/CommitList.vue";
 import Votes from "../components/Votes.vue";
+import PullRequestMetadata from "../components/PullRequestMetadata.vue";
 import { defineComponent } from "vue";
 
 export default defineComponent({
@@ -11,6 +12,7 @@ export default defineComponent({
     Connect,
     CommitList,
     Votes,
+    PullRequestMetadata
   },
   data() {
     return {
@@ -79,7 +81,7 @@ export default defineComponent({
   <div class="section">
     <div class="container">
       <div class="columns">
-        <div class="column is-7">
+        <div class="column is-8">
           <div class="tabs">
             <ul>
               <li :class="currentTab === 'commits' ? 'is-active' : ''">
@@ -103,29 +105,8 @@ export default defineComponent({
           />
           <Votes v-if="currentTab === 'votes'" />
         </div>
-        <div class="column is-5">
-          <nav class="panel">
-            <div class="panel-block">
-              <b>Proposer</b>: {{ prMetaData.author }}
-            </div>
-            <a class="panel-block"> <b>Transaction</b>: {{ shortenTx }} </a>
-            <a href="" class="panel-block">
-              <b>Submitted</b>: {{ prMetaData.time }}
-            </a>
-          </nav>
-          <div class="box">
-            <p class="title is-6">Contributors</p>
-            <div class="columns is-multiline">
-              <div class="column is-1">
-                <figure class="image is-32x32">
-                  <img
-                    class="is-rounded"
-                    src="https://bulma.io/images/placeholders/128x128.png"
-                  />
-                </figure>
-              </div>
-            </div>
-          </div>
+        <div class="column is-4">
+          <PullRequestMetadata :proposer="prMetaData.author" :date-proposed="prMetaData.time" :tx-id="prMetaData.transaction" />
         </div>
       </div>
     </div>
