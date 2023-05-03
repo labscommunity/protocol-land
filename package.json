@@ -12,6 +12,7 @@
   "dependencies": {
     "bulma": "^0.9.4",
     "permawebjs": "^1.2.6",
+    "v-code-diff": "^1.4.0",
     "vue": "^3.2.47",
     "vue-router": "^4.1.6"
   },

@@ -5,7 +5,7 @@ export default defineComponent({
   props: {
     proposer: String,
     dateProposed: String,
-    txId: String
+    txId: String,
   },
   computed: {
     shortenTx() {
@@ -16,7 +16,7 @@ export default defineComponent({
       const end = base.slice(base.length - 4, base.length);
       return `${beginning}...${end}`;
     },
-    grabContributors(): Array<{ icon: string, id: string }> {
+    grabContributors(): Array<{ icon: string; id: string }> {
       // Lookup contributors based on given txId
       return [
         {
@@ -35,25 +35,17 @@ export default defineComponent({
 
 <template>
   <div class="block">
-    <div class="card">
-      <header class="card-header">
-        <p class="card-header-title title is-5">Info</p>
-      </header>
-      <nav class="panel">
-        <div class="panel-block"><b>Proposer</b>: {{ proposer }}</div>
-        <a class="panel-block"> <b>Transaction</b>: {{ shortenTx }} </a>
-        <a href="" class="panel-block">
-          <b>Submitted</b>: {{ dateProposed }}
-        </a>
-      </nav>
-    </div>
+    <nav class="panel">
+      <p class="panel-heading">Info</p>
+      <div class="panel-block"><b>Proposer</b>: {{ proposer }}</div>
+      <a class="panel-block"> <b>Transaction</b>: {{ shortenTx }} </a>
+      <a href="" class="panel-block"> <b>Submitted</b>: {{ dateProposed }} </a>
+    </nav>
   </div>
   <div v-if="grabContributors !== undefined" class="block">
-    <div class="card">
-      <header class="card-header">
-        <p class="card-header-title title is-5">Contributors</p>
-      </header>
-      <div class="card-content">
+    <nav class="panel">
+      <p class="panel-heading">Contributors</p>
+      <div class="panel-block">
         <div class="columns is-multiline">
           <div v-for="contributor in grabContributors" class="column is-2">
             <figure class="image is-fullwidth">
@@ -64,7 +56,7 @@ export default defineComponent({
           </div>
         </div>
       </div>
-    </div>
+    </nav>
   </div>
 </template>
 

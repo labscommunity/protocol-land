@@ -3,7 +3,9 @@ import Navbar from "../components/Navbar.vue";
 import Connect from "../components/Connect.vue";
 import CommitList from "../components/CommitList.vue";
 import Votes from "../components/Votes.vue";
+import FileDiff from "../components/FileDiff.vue";
 import PullRequestMetadata from "../components/PullRequestMetadata.vue";
+import PullRequestFileTree from "../components/PullRequestFileTree.vue";
 import { defineComponent } from "vue";
 
 export default defineComponent({
@@ -12,7 +14,9 @@ export default defineComponent({
     Connect,
     CommitList,
     Votes,
-    PullRequestMetadata
+    FileDiff,
+    PullRequestMetadata,
+    PullRequestFileTree,
   },
   data() {
     return {
@@ -96,7 +100,9 @@ export default defineComponent({
                   ></a
                 >
               </li>
-              <li><a>Files Changed</a></li>
+              <li :class="currentTab === 'files' ? 'is-active' : ''">
+                <a @click="currentTab = 'files'">Files Changed</a>
+              </li>
             </ul>
           </div>
           <CommitList
@@ -104,9 +110,19 @@ export default defineComponent({
             v-if="currentTab === 'commits'"
           />
           <Votes v-if="currentTab === 'votes'" />
+          <FileDiff v-if="currentTab === 'files'" :to="prMetaData.to" :from="prMetaData.branch" :bread-crumb="[{ fileName: 'root', fileHash: 'abc' }, { fileName: 'src', fileHash: 'xyz' }, { fileName: 'index.html', fileHash: '123' }]" />
         </div>
         <div class="column is-4">
-          <PullRequestMetadata :proposer="prMetaData.author" :date-proposed="prMetaData.time" :tx-id="prMetaData.transaction" />
+          <div v-if="currentTab === 'files'">
+            <PullRequestFileTree branch-id="abc1234" />
+          </div>
+          <div v-else>
+            <PullRequestMetadata
+              :proposer="prMetaData.author"
+              :date-proposed="prMetaData.time"
+              :tx-id="prMetaData.transaction"
+            />
+          </div>
         </div>
       </div>
     </div>

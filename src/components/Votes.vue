@@ -19,20 +19,26 @@ export default defineComponent({
 </script>
 
 <template>
-  <div class="block">
-    <p>Time Left</p>
-    <progress class="progress is-info" value="15" max="100">15%</progress>
-  </div>
-  <div class="block">
-    <div class="columns">
-      <div class="column is-half">
-        <p class="has-text-centered"><b>For</b>: {{ yesVotes.length }}</p>
-      </div>
-      <div class="column is-half">
-        <p class="has-text-centered"><b>Against</b>: {{ noVotes.length }}</p>
+  <nav class="level is-mobile">
+    <div class="level-item has-text-centered">
+      <div>
+        <p class="heading">Progress</p>
+        <progress class="progress is-info" value="15" max="100">15%</progress>
       </div>
     </div>
-  </div>
+    <div class="level-item has-text-centered">
+      <div>
+        <p class="heading">For</p>
+        <p class="title">{{ yesVotes.length }}</p>
+      </div>
+    </div>
+    <div class="level-item has-text-centered">
+      <div>
+        <p class="heading">Against</p>
+        <p class="title">{{ noVotes.length }}</p>
+      </div>
+    </div>
+  </nav>
   <hr />
   <div class="block">
     <a class="button is-warning is-fullwidth"> Vote on AFTR.Market </a>
