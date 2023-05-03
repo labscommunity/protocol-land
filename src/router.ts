@@ -7,6 +7,6 @@ export default createRouter({
     {
       path: "/",
       component: Home,
-    }
+    },
   ],
 });
