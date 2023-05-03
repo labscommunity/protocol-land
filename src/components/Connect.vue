@@ -1,7 +1,7 @@
 <script lang="ts">
-import { defineComponent } from 'vue';
+import { defineComponent } from "vue";
 
-export default defineComponent ({
+export default defineComponent({
   methods: {
     cancel() {
       this.$emit("cancel-connect", "cancel");
@@ -16,7 +16,7 @@ export default defineComponent ({
     <div class="modal-card">
       <section class="modal-card-body">
         <div class="columns">
-          <div class="column is-half ">
+          <div class="column is-half">
             <a href="" class="button is-fullwidth othent">
               ⚡️ Sign in with Othent
             </a>
@@ -33,7 +33,6 @@ export default defineComponent ({
 </template>
 
 <style scoped>
-
 .modal-card {
   border-radius: 10px;
 }
@@ -49,5 +48,4 @@ export default defineComponent ({
 .arconnect {
   background: rgba(171, 154, 255, 0.3);
 }
-
 </style>

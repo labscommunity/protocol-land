@@ -7,21 +7,20 @@ import { defineComponent } from "vue";
 export default defineComponent({
   components: {
     Navbar,
-    Connect
+    Connect,
   },
   data() {
     return {
-      connectModalDisplay: false
-    }
+      connectModalDisplay: false,
+    };
   },
   methods: {
     attemptedConnect() {
       console.log("PARENT RECEIVED");
       this.connectModalDisplay = true;
-    }
-  }
+    },
+  },
 });
-
 </script>
 
 <template>
@@ -37,6 +36,7 @@ export default defineComponent({
           <div class="column is-4">
             <h1 class="title">Protocol Land</h1>
             <h2 class="subtitle">Where the protocols roam</h2>
+            <a href="/pr" class="button is-light">Contribute</a>
           </div>
           <div class="column is-8">
             <img src="../assets/land-1.png" class="hero-img" alt="" />
