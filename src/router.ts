@@ -1,6 +1,7 @@
 import { createRouter, createWebHistory } from "vue-router";
 import Home from "./views/Home.vue";
 import PullRequest from "./views/PullRequest.vue";
+import Repository from "./views/Repository.vue";
 
 export default createRouter({
   history: createWebHistory(),
@@ -12,6 +13,10 @@ export default createRouter({
     {
       path: "/pr",
       component: PullRequest,
+    },
+    {
+      path: "/repo",
+      component: Repository,
     },
   ],
 });

@@ -110,7 +110,16 @@ export default defineComponent({
             v-if="currentTab === 'commits'"
           />
           <Votes v-if="currentTab === 'votes'" />
-          <FileDiff v-if="currentTab === 'files'" :to="prMetaData.to" :from="prMetaData.branch" :bread-crumb="[{ fileName: 'root', fileHash: 'abc' }, { fileName: 'src', fileHash: 'xyz' }, { fileName: 'index.html', fileHash: '123' }]" />
+          <FileDiff
+            v-if="currentTab === 'files'"
+            :to="prMetaData.to"
+            :from="prMetaData.branch"
+            :bread-crumb="[
+              { fileName: 'root', fileHash: 'abc' },
+              { fileName: 'src', fileHash: 'xyz' },
+              { fileName: 'index.html', fileHash: '123' },
+            ]"
+          />
         </div>
         <div class="column is-4">
           <div v-if="currentTab === 'files'">
@@ -121,6 +130,7 @@ export default defineComponent({
               :proposer="prMetaData.author"
               :date-proposed="prMetaData.time"
               :tx-id="prMetaData.transaction"
+              :status="prMetaData.status"
             />
           </div>
         </div>

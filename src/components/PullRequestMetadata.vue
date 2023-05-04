@@ -6,6 +6,7 @@ export default defineComponent({
     proposer: String,
     dateProposed: String,
     txId: String,
+    status: String,
   },
   computed: {
     shortenTx() {
@@ -37,6 +38,13 @@ export default defineComponent({
   <div class="block">
     <nav class="panel">
       <p class="panel-heading">Info</p>
+      <div class="panel-block">
+        <b>Status</b>:&nbsp;&nbsp;<span
+          class="tag is-light"
+          :class="status === 'open' ? 'is-warning' : ''"
+          >{{ status }}</span
+        >
+      </div>
       <div class="panel-block"><b>Proposer</b>: {{ proposer }}</div>
       <a class="panel-block"> <b>Transaction</b>: {{ shortenTx }} </a>
       <a href="" class="panel-block"> <b>Submitted</b>: {{ dateProposed }} </a>
