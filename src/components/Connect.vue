@@ -1,6 +1,6 @@
 <script lang="ts">
 import { defineComponent } from "vue";
-import { ArConnect, Othent } from 'permawebjs/auth';
+import { ArConnect, Othent } from "permawebjs/auth";
 
 export default defineComponent({
   methods: {
@@ -10,9 +10,9 @@ export default defineComponent({
     async clickedArConnect() {
       try {
         await ArConnect.connect({
-          permissions: ["ACCESS_ADDRESS", "DISPATCH", "SIGN_TRANSACTION"]
+          permissions: ["ACCESS_ADDRESS", "DISPATCH", "SIGN_TRANSACTION"],
         });
-      } catch(err) {
+      } catch (err) {
         console.log(err);
       }
       this.setCurrentWallet(await ArConnect.getActiveAddress());
@@ -28,13 +28,13 @@ export default defineComponent({
         // @TODO: Report response.success proposed type doesn't exist to permawebjs team
         this.setCurrentWallet(response.contract_id);
       } else {
-        console.log("Something failed with the login...")
+        console.log("Something failed with the login...");
       }
     },
     setCurrentWallet(address: string) {
       localStorage.setItem("currentAddress", address);
       this.$emit("connected", "success");
-    }
+    },
   },
 });
 </script>
@@ -51,7 +51,10 @@ export default defineComponent({
             </button>
           </div>
           <div class="column is-half">
-            <button @click="clickedArConnect()" class="button is-fullwidth arconnect">
+            <button
+              @click="clickedArConnect()"
+              class="button is-fullwidth arconnect"
+            >
               🦔 Connect with ArConnect
             </button>
           </div>

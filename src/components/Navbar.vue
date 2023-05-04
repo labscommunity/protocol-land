@@ -1,6 +1,6 @@
 <script lang="ts">
 import { defineComponent } from "vue";
-import { identicon } from 'minidenticons';
+import { identicon } from "minidenticons";
 import Connect from "./Connect.vue";
 
 export default defineComponent({
@@ -10,7 +10,7 @@ export default defineComponent({
   data() {
     return {
       connectModalDisplay: false,
-      loggedIn: false
+      loggedIn: false,
     };
   },
   methods: {
@@ -22,13 +22,13 @@ export default defineComponent({
       return localStorage.getItem("currentAddress");
     },
     shortenTx(input: string | null) {
-      if (input===null) return;
+      if (input === null) return;
       const beginning = input.slice(0, 4);
       const end = input.slice(input.length - 4, input.length);
       return `${beginning}...${end}`;
     },
     getIcon(input: string | null) {
-      if (input===null) return;
+      if (input === null) return;
       const svg = identicon(input, 50, 50);
       return svg;
     },
@@ -36,7 +36,7 @@ export default defineComponent({
       localStorage.removeItem("currentAddress");
       this.loggedIn = false;
       this.connectModalDisplay = false;
-    }
+    },
   },
   computed: {
     // getCurrentAddress() {
@@ -49,7 +49,7 @@ export default defineComponent({
     } else {
       this.loggedIn = true;
     }
-  }
+  },
 });
 </script>
 
@@ -73,35 +73,39 @@ export default defineComponent({
               <a href="" class="button is-success">+</a>
               <a class="button is-light">
                 <p>{{ shortenTx(getCurrentAddress()) }}</p>
-            <figure class="image is-32x32" v-html="getIcon(getCurrentAddress())" id="userIcon">
-            </figure>
-          </a>
-          <a @click="logOut()" class="button is-light">-></a>
+                <figure
+                  class="image is-32x32"
+                  v-html="getIcon(getCurrentAddress())"
+                  id="userIcon"
+                ></figure>
+              </a>
+              <a @click="logOut()" class="button is-light">-></a>
             </div>
           </div>
         </div>
         <div v-else>
           <div class="navbar-item">
-          <div class="buttons">
-            <button class="button is-primary" @click="attemptConnect">
-              <strong>Get Started</strong>
-            </button>
+            <div class="buttons">
+              <button class="button is-primary" @click="attemptConnect">
+                <strong>Get Started</strong>
+              </button>
+            </div>
           </div>
-        </div>
         </div>
       </div>
     </div>
   </nav>
 
   <div v-if="connectModalDisplay && !loggedIn">
-    <Connect @connected="loggedIn = true" @cancel-connect="connectModalDisplay = false" />
+    <Connect
+      @connected="loggedIn = true"
+      @cancel-connect="connectModalDisplay = false"
+    />
   </div>
 </template>
 
 <style scoped>
-
 #userIcon {
   margin-left: 10px;
 }
-
 </style>

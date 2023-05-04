@@ -1,25 +1,12 @@
 <script lang="ts">
 // import HelloWorld from "./components/HelloWorld.vue";
 import Navbar from "../components/Navbar.vue";
-import Connect from "../components/Connect.vue";
 import { defineComponent } from "vue";
 
 export default defineComponent({
   components: {
-    Navbar,
-    Connect,
-  },
-  data() {
-    return {
-      connectModalDisplay: false,
-    };
-  },
-  methods: {
-    attemptedConnect() {
-      console.log("PARENT RECEIVED");
-      this.connectModalDisplay = true;
-    },
-  },
+    Navbar
+  }
 });
 </script>
 
@@ -27,7 +14,7 @@ export default defineComponent({
   <div class="hero is-medium">
     <div class="hero-head">
       <div class="container">
-        <Navbar @attempt-connect="attemptedConnect()" />
+        <Navbar />
       </div>
     </div>
     <div class="hero-body">
@@ -44,10 +31,6 @@ export default defineComponent({
         </div>
       </div>
     </div>
-  </div>
-
-  <div v-if="connectModalDisplay">
-    <Connect @cancel-connect="connectModalDisplay = false" />
   </div>
 </template>
 

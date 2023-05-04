@@ -1,6 +1,5 @@
 <script lang="ts">
 import Navbar from "../components/Navbar.vue";
-import Connect from "../components/Connect.vue";
 import CommitList from "../components/CommitList.vue";
 import Votes from "../components/Votes.vue";
 import FileDiff from "../components/FileDiff.vue";
@@ -11,7 +10,6 @@ import { defineComponent } from "vue";
 export default defineComponent({
   components: {
     Navbar,
-    Connect,
     CommitList,
     Votes,
     FileDiff,
@@ -20,7 +18,6 @@ export default defineComponent({
   },
   data() {
     return {
-      connectModalDisplay: false,
       currentTab: "commits",
       prMetaData: {
         title: "fix/yep",
@@ -34,12 +31,6 @@ export default defineComponent({
         commits: [],
       },
     };
-  },
-  methods: {
-    attemptedConnect() {
-      console.log("PARENT RECEIVED");
-      this.connectModalDisplay = true;
-    },
   },
   computed: {
     shortenTx() {
@@ -63,7 +54,7 @@ export default defineComponent({
   <div class="hero">
     <div class="hero-head">
       <div class="container">
-        <Navbar @attempt-connect="attemptedConnect()" />
+        <Navbar />
       </div>
     </div>
     <div class="hero-body">
@@ -136,10 +127,6 @@ export default defineComponent({
         </div>
       </div>
     </div>
-  </div>
-
-  <div v-if="connectModalDisplay">
-    <Connect @cancel-connect="connectModalDisplay = false" />
   </div>
 </template>
 
