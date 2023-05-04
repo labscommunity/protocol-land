@@ -1,11 +1,40 @@
 <script lang="ts">
 import { defineComponent } from "vue";
+import { ArConnect, Othent } from 'permawebjs/auth';
 
 export default defineComponent({
   methods: {
     cancel() {
       this.$emit("cancel-connect", "cancel");
     },
+    async clickedArConnect() {
+      try {
+        await ArConnect.connect({
+          permissions: ["ACCESS_ADDRESS", "DISPATCH", "SIGN_TRANSACTION"]
+        });
+      } catch(err) {
+        console.log(err);
+      }
+      this.setCurrentWallet(await ArConnect.getActiveAddress());
+    },
+    async clickedOthent() {
+      let response;
+      try {
+        response = await Othent.logIn();
+      } catch (err) {
+        console.log(err);
+      }
+      if (response) {
+        // @TODO: Report response.success proposed type doesn't exist to permawebjs team
+        this.setCurrentWallet(response.contract_id);
+      } else {
+        console.log("Something failed with the login...")
+      }
+    },
+    setCurrentWallet(address: string) {
+      localStorage.setItem("currentAddress", address);
+      this.$emit("connected", "success");
+    }
   },
 });
 </script>
@@ -17,14 +46,14 @@ export default defineComponent({
       <section class="modal-card-body">
         <div class="columns">
           <div class="column is-half">
-            <a href="" class="button is-fullwidth othent">
+            <button @click="clickedOthent()" class="button is-fullwidth othent">
               ⚡️ Sign in with Othent
-            </a>
+            </button>
           </div>
           <div class="column is-half">
-            <a href="" class="button is-fullwidth arconnect">
+            <button @click="clickedArConnect()" class="button is-fullwidth arconnect">
               🦔 Connect with ArConnect
-            </a>
+            </button>
           </div>
         </div>
       </section>
