@@ -1,10 +1,26 @@
 <script lang="ts">
 import { defineComponent } from "vue";
 import Navbar from "../components/Navbar.vue";
+import { Icon } from "@vicons/utils";
+import {
+  Add,
+  Copy,
+  GitBranch,
+  CodeSlash,
+  GitPullRequest,
+  Information,
+} from "@vicons/ionicons5";
 
 export default defineComponent({
   components: {
     Navbar,
+    Icon,
+    Add,
+    Copy,
+    GitBranch,
+    CodeSlash,
+    GitPullRequest,
+    Information,
   },
   data() {
     return {
@@ -29,13 +45,36 @@ export default defineComponent({
         </h1>
         <div class="tabs is-centered">
           <ul>
-            <li class="is-active"><a>Code</a></li>
-            <li><a>Pull Requests</a></li>
+            <li class="is-active">
+              <a
+                ><span class="icon">
+                  <Icon>
+                    <CodeSlash />
+                  </Icon>
+                </span>
+                <span> Code </span></a
+              >
+            </li>
             <li>
               <a
-                >Info&nbsp;&nbsp;<span class="tag is-small"
-                  >Coming soon!</span
-                ></a
+                ><span class="icon">
+                  <Icon>
+                    <GitPullRequest />
+                  </Icon>
+                </span>
+                <span>Pull Requests</span></a
+              >
+            </li>
+            <li>
+              <a>
+                <span class="icon">
+                  <Icon>
+                    <Information />
+                  </Icon>
+                </span>
+                <span>
+                  Info&nbsp;&nbsp;<span class="tag is-small">Coming soon!</span>
+                </span></a
               >
             </li>
           </ul>
@@ -45,16 +84,27 @@ export default defineComponent({
           <div class="level-left">
             <div class="level-item">
               <div class="field has-addons">
-                <div class="control">
+                <div class="control has-icons-left">
                   <div class="select">
                     <select>
                       <option>main</option>
                       <option>dev</option>
                     </select>
                   </div>
+                  <div class="icon is-small is-left">
+                    <Icon>
+                      <CodeSlash />
+                    </Icon>
+                  </div>
                 </div>
                 <p class="control">
-                  <button class="button">+</button>
+                  <button class="button">
+                    <span class="icon is-small">
+                      <Icon>
+                        <Add />
+                      </Icon>
+                    </span>
+                  </button>
                 </p>
               </div>
             </div>
@@ -63,7 +113,29 @@ export default defineComponent({
           <!-- Right side -->
           <div class="level-right">
             <p class="level-item"><a>107 Commits</a></p>
-            <p class="level-item"><a class="button is-success">Clone</a></p>
+            <div class="level-item">
+              <div class="field has-addons">
+                <p class="control">
+                  <a class="button is-success">
+                    <span class="icon is-small">
+                      <Icon>
+                        <Copy />
+                      </Icon>
+                    </span>
+                    <span>Clone</span>
+                  </a>
+                </p>
+                <p class="control">
+                  <button class="button is-light">
+                    <span class="icon is-small">
+                      <Icon>
+                        <GitBranch />
+                      </Icon>
+                    </span>
+                  </button>
+                </p>
+              </div>
+            </div>
           </div>
         </nav>
       </div>

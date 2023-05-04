@@ -5,8 +5,8 @@ import { defineComponent } from "vue";
 
 export default defineComponent({
   components: {
-    Navbar
-  }
+    Navbar,
+  },
 });
 </script>
 
