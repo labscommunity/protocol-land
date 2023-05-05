@@ -43,6 +43,7 @@ export default defineComponent({
     } else {
       this.loggedIn = true;
     }
+    console.log(this.loggedIn);
   },
 });
 </script>
@@ -80,7 +81,7 @@ export default defineComponent({
         <div v-else>
           <div class="navbar-item">
             <div class="buttons">
-              <button class="button is-primary" @click="attemptConnect">
+              <button class="button is-primary" @click="attemptConnect()">
                 <strong>Get Started</strong>
               </button>
             </div>

@@ -3,6 +3,7 @@ import { defineComponent } from "vue";
 import { Icon } from "@vicons/utils";
 import { Balloon, GitBranch, GitCommit } from "@vicons/ionicons5";
 import { dispatchTransaction } from "../utils/signAndPost";
+import ConfettiExplosion from "vue-confetti-explosion";
 
 export default defineComponent({
   components: {
@@ -10,6 +11,7 @@ export default defineComponent({
     Balloon,
     GitBranch,
     GitCommit,
+    ConfettiExplosion,
   },
   props: {
     repository: String,
@@ -21,6 +23,8 @@ export default defineComponent({
       fileText: "",
       commitMessage: "",
       commitId: "",
+      processingCommit: false,
+      committed: false,
     };
   },
   methods: {
@@ -30,6 +34,7 @@ export default defineComponent({
       this.currentFile = file;
     },
     async uploadToArweave() {
+      this.processingCommit = true;
       const tags = [
         {
           name: "App-Name",
@@ -60,6 +65,7 @@ export default defineComponent({
       if (result.success) {
         // @ts-expect-error
         this.commitId = result.id;
+        this.processingCommit = false;
       } else {
         console.log(result);
       }
@@ -117,7 +123,14 @@ export default defineComponent({
       />
     </div>
     <div class="control">
-      <button @click="uploadToArweave" class="button is-success is-light">
+      <button
+        @click="uploadToArweave"
+        :class="processingCommit ? 'is-loading' : ''"
+        class="button is-success is-light"
+      >
+        <span v-if="commitId !== ''">
+          <ConfettiExplosion :height="500" />
+        </span>
         <span class="icon">
           <Icon>
             <GitCommit />

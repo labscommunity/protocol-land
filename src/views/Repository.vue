@@ -32,8 +32,8 @@ export default defineComponent({
     return {
       owner: "martonlederer",
       repoName: "arconnect",
-      repoId: "",
-      currentBranch: "",
+      repoId: "TESTREPOIDHERE",
+      currentBranch: "TESTBRANCHIDHERE",
       currentTab: "code",
     };
   },

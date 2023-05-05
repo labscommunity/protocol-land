@@ -9,6 +9,7 @@ export function getCurrentAddress() {
 }
 
 export function getIcon(input: string | null) {
+  console.log("this gets called");
   if (input === null) return;
   const svg = identicon(input, 50, 50);
   return svg;
