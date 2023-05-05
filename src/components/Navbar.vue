@@ -1,7 +1,7 @@
 <script lang="ts">
 import { defineComponent } from "vue";
-import { identicon } from "minidenticons";
 import Connect from "./Connect.vue";
+import { getCurrentAddress, getIcon } from "../utils/auth";
 
 export default defineComponent({
   components: {
@@ -14,12 +14,11 @@ export default defineComponent({
     };
   },
   methods: {
+    getCurrentAddress,
+    getIcon,
     attemptConnect() {
       // this.$emit("attempt-connect", "invokeConnect");
       this.connectModalDisplay = true;
-    },
-    getCurrentAddress() {
-      return localStorage.getItem("currentAddress");
     },
     shortenTx(input: string | null) {
       if (input === null) return;
@@ -27,13 +26,9 @@ export default defineComponent({
       const end = input.slice(input.length - 4, input.length);
       return `${beginning}...${end}`;
     },
-    getIcon(input: string | null) {
-      if (input === null) return;
-      const svg = identicon(input, 50, 50);
-      return svg;
-    },
     logOut() {
       localStorage.removeItem("currentAddress");
+      localStorage.removeItem("authMethod");
       this.loggedIn = false;
       this.connectModalDisplay = false;
     },
@@ -43,7 +38,6 @@ export default defineComponent({
     // }
   },
   mounted() {
-    console.log(localStorage.getItem("currentAddress"));
     if (localStorage.getItem("currentAddress") === null) {
       this.loggedIn = false;
     } else {

@@ -149,8 +149,4 @@ export default defineComponent({
   </div>
 </template>
 
-<style>
-ul {
-  /* border-bottom: inherit !important; */
-}
-</style>
+<style></style>

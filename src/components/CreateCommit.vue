@@ -2,6 +2,7 @@
 import { defineComponent } from "vue";
 import { Icon } from "@vicons/utils";
 import { Balloon, GitBranch, GitCommit } from "@vicons/ionicons5";
+import { dispatchTransaction } from "../utils/signAndPost";
 
 export default defineComponent({
   components: {
@@ -13,6 +14,56 @@ export default defineComponent({
   props: {
     repository: String,
     branch: String,
+  },
+  data() {
+    return {
+      currentFile: Object,
+      fileText: "",
+      commitMessage: "",
+      commitId: "",
+    };
+  },
+  methods: {
+    async receiveFiles(event: any) {
+      const file = event.target.files[0];
+      this.fileText = file.name;
+      this.currentFile = file;
+    },
+    async uploadToArweave() {
+      const tags = [
+        {
+          name: "App-Name",
+          value: "SmartWeave",
+        },
+        {
+          name: "App-Version",
+          value: "0.3.0",
+        },
+        {
+          name: "Contract",
+          value: this.repository,
+        },
+        {
+          name: "Input",
+          value: JSON.stringify({
+            function: "commit",
+            input: { branch: this.branch },
+          }),
+        },
+        {
+          name: "Protocol",
+          value: "ProtocolLand",
+        },
+      ];
+
+      const result = await dispatchTransaction(this.currentFile, tags);
+      if (result.success) {
+        // @ts-expect-error
+        this.commitId = result.id;
+      } else {
+        console.log(result);
+      }
+    },
   },
 });
 </script>
@@ -35,42 +86,47 @@ export default defineComponent({
   </div>
   <div class="field">
     <div class="control">
-      <div class="file is-centered is-boxed has-name">
-    <label class="file-label">
-      <input class="file-input" type="file" name="resume" />
-      <span class="file-cta">
-        <span class="file-icon">
-          <Icon>
-            <Balloon />
-          </Icon>
-        </span>
-        <span class="file-label"> Upload Folder </span>
-      </span>
-      <span class="file-name"> Screen Shot 2017-07-29 at 15.54.25.png </span>
-    </label>
-  </div>
+      <div class="file is-centered is-info is-boxed has-name">
+        <label class="file-label">
+          <input
+            @change="receiveFiles"
+            class="file-input"
+            type="file"
+            name="repo zip"
+          />
+          <span class="file-cta">
+            <span class="file-icon">
+              <Icon>
+                <Balloon />
+              </Icon>
+            </span>
+            <span class="file-label">Upload Folder</span>
+          </span>
+          <span v-if="fileText !== ''" class="file-name">{{ fileText }}</span>
+        </label>
+      </div>
     </div>
   </div>
   <div class="field has-addons-centered has-addons">
     <div class="control">
-      <input class="input is-light" type="text" placeholder="Commit message">
+      <input
+        v-bind="commitMessage"
+        class="input is-light"
+        type="text"
+        placeholder="Commit message"
+      />
     </div>
     <div class="control">
-    <a class="button is-success is-light">
-      <span class="icon">
-        <Icon>
-          <GitCommit />
-        </Icon>
-      </span>
-      <span>
-        Commit
-      </span>
-    </a>
+      <button @click="uploadToArweave" class="button is-success is-light">
+        <span class="icon">
+          <Icon>
+            <GitCommit />
+          </Icon>
+        </span>
+        <span> Commit </span>
+      </button>
+    </div>
   </div>
-  </div>
-
-  <p>Repo: {{ repository }}</p>
-  <p>Branch: {{ branch }}</p>
 </template>
 
 <style scoped></style>

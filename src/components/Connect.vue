@@ -16,6 +16,7 @@ export default defineComponent({
         console.log(err);
       }
       this.setCurrentWallet(await ArConnect.getActiveAddress());
+      localStorage.setItem("authMethod", "arconnect");
     },
     async clickedOthent() {
       let response;
@@ -27,6 +28,7 @@ export default defineComponent({
       if (response) {
         // @TODO: Report response.success proposed type doesn't exist to permawebjs team
         this.setCurrentWallet(response.contract_id);
+        localStorage.setItem("authMethod", "othent");
       } else {
         console.log("Something failed with the login...");
       }
