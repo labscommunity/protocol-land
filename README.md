@@ -4,9 +4,9 @@ Where decentralized protocols roam
 
 ## Motivation
 
-## Structure
+## Protocol
 
--
+- Commit: Transaction
 
 ## Core Features
 
