@@ -1,0 +1,1 @@
+export const CONTRACT_SRC = "TEST_CONTRACT_SRC";

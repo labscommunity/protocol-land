@@ -65,7 +65,7 @@ export default defineComponent({
         <div v-if="loggedIn">
           <div class="navbar-item">
             <div class="buttons">
-              <a href="" class="button is-success">+</a>
+              <a href="/create" class="button is-success">+</a>
               <a class="button is-light">
                 <p>{{ shortenTx(getCurrentAddress()) }}</p>
                 <figure

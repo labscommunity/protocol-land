@@ -28,7 +28,7 @@ export async function dispatchTransaction(data: any, tags: any) {
     const transaction = await createTransaction({
       type: "data",
       data: data,
-      // TODO @t8 inform rohit that environment param is not marked as optional but is marked optional in docs
+      // TODO @t8 inform rohit that environment param is not considered optional but is marked optional in docs
       environment: "mainnet",
       options: {
         tags,
