@@ -2,6 +2,7 @@
 import { defineComponent } from "vue";
 import Navbar from "../components/Navbar.vue";
 import CreateCommit from "../components/CreateCommit.vue";
+import CodeExplorer from "../components/CodeExplorer.vue";
 import { Icon } from "@vicons/utils";
 import {
   Add,
@@ -18,6 +19,7 @@ export default defineComponent({
   components: {
     Navbar,
     CreateCommit,
+    CodeExplorer,
     Icon,
     Add,
     Copy,
@@ -32,7 +34,7 @@ export default defineComponent({
     return {
       owner: "martonlederer",
       repoName: "arconnect",
-      repoId: "TESTREPOIDHERE",
+      repoId: this.$route.params.id,
       currentBranch: "TESTBRANCHIDHERE",
       currentTab: "code",
     };
@@ -82,65 +84,7 @@ export default defineComponent({
         </ul>
       </div>
       <div v-if="currentTab === 'code'">
-        <nav class="level">
-          <!-- Left side -->
-          <div class="level-left">
-            <div class="level-item">
-              <div class="field has-addons">
-                <div class="control has-icons-left">
-                  <div class="select">
-                    <select>
-                      <option>main</option>
-                      <option>dev</option>
-                    </select>
-                  </div>
-                  <div class="icon is-small is-left">
-                    <Icon>
-                      <GitBranch />
-                    </Icon>
-                  </div>
-                </div>
-                <p class="control">
-                  <button class="button">
-                    <span class="icon is-small">
-                      <Icon>
-                        <Add />
-                      </Icon>
-                    </span>
-                  </button>
-                </p>
-              </div>
-            </div>
-          </div>
-
-          <!-- Right side -->
-          <div class="level-right">
-            <p class="level-item"><a>107 Commits</a></p>
-            <div class="level-item">
-              <div class="field has-addons">
-                <p class="control">
-                  <a class="button is-success">
-                    <span class="icon is-small">
-                      <Icon>
-                        <Copy />
-                      </Icon>
-                    </span>
-                    <span>Clone</span>
-                  </a>
-                </p>
-                <p class="control">
-                  <button class="button is-light">
-                    <span class="icon is-small">
-                      <Icon>
-                        <GitNetwork />
-                      </Icon>
-                    </span>
-                  </button>
-                </p>
-              </div>
-            </div>
-          </div>
-        </nav>
+        <CodeExplorer :id="repoId" />
       </div>
       <div v-else-if="currentTab === 'commit'">
         <CreateCommit :repository="repoId" :branch="currentBranch" />

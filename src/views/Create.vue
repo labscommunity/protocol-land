@@ -14,13 +14,13 @@ export default defineComponent({
       repoDesc: "",
       repoZip: "",
       fileText: "",
-      loading: false
+      loading: false,
     };
   },
   methods: {
     async receiveFiles(event: any) {
       const file = event.target.files[0];
-      if(file.type !== "application/zip") {
+      if (file.type !== "application/zip") {
         // Throw error here
         console.log("This a bad file");
       }
@@ -47,15 +47,15 @@ export default defineComponent({
         },
         {
           name: "Repository-Name",
-          value: this.repoName
+          value: this.repoName,
         },
         {
           name: "Repository-Desc",
-          value: this.repoDesc
+          value: this.repoDesc,
         },
         {
           name: "Content-Type",
-          value: "application/zip"
+          value: "application/zip",
         },
         {
           name: "Init-State",
@@ -71,8 +71,11 @@ export default defineComponent({
       ];
 
       const result = await dispatchTransaction(this.repoZip, tags);
-      // this.$router.push('repo');
-      console.log(result);
+      if (result.success) {
+        this.$router.push(`/r/${result.id}`);
+      } else {
+        // TODO: THROW ERROR HERE
+      }
     },
   },
 });
@@ -114,9 +117,17 @@ export default defineComponent({
             </div>
             <div class="field">
               <label class="label">Zipped project folder</label>
-              <div class="file is-fullwidth" :class="fileText !== '' ? 'has-name' : ''">
+              <div
+                class="file is-fullwidth"
+                :class="fileText !== '' ? 'has-name' : ''"
+              >
                 <label class="file-label">
-                  <input class="file-input" @change="receiveFiles" type="file" name="repo" />
+                  <input
+                    class="file-input"
+                    @change="receiveFiles"
+                    type="file"
+                    name="repo"
+                  />
                   <span class="file-cta">
                     <span class="file-icon">
                       <i class="fas fa-upload"></i>
@@ -131,7 +142,13 @@ export default defineComponent({
             </div>
             <div class="field">
               <div class="control">
-                <button @click="createNewRepo" class="button is-info" :class="loading ? 'is-loading' : ''">Publish</button>
+                <button
+                  @click="createNewRepo"
+                  class="button is-info"
+                  :class="loading ? 'is-loading' : ''"
+                >
+                  Publish
+                </button>
               </div>
             </div>
           </div>
