@@ -8,7 +8,11 @@ import {
   GitNetwork,
   Book,
   Folder,
+  ReturnUpBack
 } from "@vicons/ionicons5";
+// import { component as VueCodeHighlight } from 'vue-code-highlight';
+import { HighCode } from 'vue-highlight-code';
+import 'vue-highlight-code/dist/style.css';
 import JSZip from "jszip";
 
 export default defineComponent({
@@ -20,6 +24,8 @@ export default defineComponent({
     GitNetwork,
     Book,
     Folder,
+    ReturnUpBack,
+    HighCode
   },
   props: {
     id: String,
@@ -29,11 +35,12 @@ export default defineComponent({
     return {
       unzipped: null,
       currentlySelectedFile: "",
-      currentDirectory: null,
-      previousDirectory: null,
+      currentPath: "/",
+      previousPath: "",
       fileTree: [],
-      coolList: [],
       zip: new JSZip(),
+      oldZip: new JSZip(),
+      testFileTree: []
     };
   },
   methods: {
@@ -43,29 +50,48 @@ export default defineComponent({
       const blobZip = await zipFolder.blob();
 
       // @ts-expect-error
-      this.unzipped = await this.zip.loadAsync(blobZip);
+      this.unzipped = await this.zip.loadAsync(blobZip, {createFolders: true});
     },
-    async viewFile(path: string) {
-      // this.currentDirectory = path;
+    async navigateTo(target: any) {
+      console.log(`---\nNavigating to: ${target.path}\n---`)
+      this.previousPath = this.currentPath;
+      this.oldZip = this.zip;
+      this.currentPath = target.path;
 
-      if (this.currentDirectory)
-        // @ts-expect-error
-        this.currentlySelectedFile = await this.unzipped[path].async("string");
+      if (target.dir === false) {
+        // Is file
+        this.currentlySelectedFile = await this.zip.file(target.path).async("string");
+      } else {
+        // Is directory
+        this.zip = await this.zip.folder(target.path);
+        await this.generateFileTree(this.zip);
+      }
+
     },
-    generateFileTree() {
+    async navigateBack() {
+      console.log("NAVIGATING BACK...");
+      console.log(this.currentPath);
+
+      this.currentPath = this.previousPath;
+      this.zip = this.oldZip.folder(new RegExp(this.currentPath));
+      console.log(this.zip);
+      await this.generateFileTree(this.zip);
+    },
+    generateFileTree(zipInstance: any) {
       let result: any[] = [];
       let level = { result };
 
-      console.log(this.zip);
+      // console.log(this.zip);
       // @ts-expect-error
-      this.unzipped.forEach((path) => {
+      zipInstance.forEach((path) => {
+        console.log(`---\n${zipInstance.file(path)?.dir}\n\n${zipInstance.file(path)?.unsafeOriginalName}\n${zipInstance.file(path)?.name}\n---`);
         path.split("/").reduce((r: any, name: string) => {
           if (!r[name]) {
             r[name] = { result: [] };
             r.result.push({
               path,
               name,
-              dir: this.zip.file(path)?.dir,
+              dir: zipInstance.file(path)?.dir,
               children: r[name].result,
             });
           }
@@ -74,53 +100,29 @@ export default defineComponent({
         }, level);
       });
 
+      console.log("CURRENT FILE TREE");
       console.log(result);
-      this.fileTree = result[0];
-
-      // this.unzipped.forEach((path) => {
-      //   this.coolList.push(path);
-      // });
-
-      // const result = this.buildTree();
-      // // this.fileTree = result.children;
-      // console.log(JSON.stringify(result, undefined, 2));
+      const depthCount = (result[0].path.match(/\//g) || []).length;
+      if (depthCount > 1) {
+        this.fileTree = result;
+      } else {
+        this.previousPath = result[0].path;
+        this.fileTree = result[0];
+      }
     },
-    // getFilename(path: any) {
-    //   console.log(path);
-    //     return path.split("/").filter(function(value) {
-    //         return value && value.length;
-    //     }).reverse()[0];
-    // },
-    // findSubPaths(path: string) {
-    //   // slashes need to be escaped when part of a regexp
-    //   var rePath = path.replace("/", "\\/");
-    //   var re = new RegExp("^" + rePath + "[^\\/]*\\/?$");
-    //   return this.coolList.filter(function(i) {
-    //       return i !== path && re.test(i);
-    //   });
-    // },
-    // buildTree(path?: string) {
-    //   console.log("Called");
-    //   path = path || "";
-    //   let nodeList: any = [];
-    //   let nested = this;
-    //   this.findSubPaths(path).forEach(function(subPath: string) {
-    //       let nodeName = nested.getFilename(subPath);
-    //       if (/\/$/.test(subPath)) {
-    //           var node = {};
-    //           // @ts-expect-error
-    //           node[nodeName] = nested.buildTree(subPath);
-    //           nodeList.push(node);
-    //       } else {
-    //           nodeList.push(nodeName);
-    //       }
-    //   });
-    //   return nodeList;
-    // }
+    generateTestFileTree(zipInstance) {
+      console.log(zipInstance);
+      for (const file in zipInstance.files) {
+        if (zipInstance.hasOwnProperty(file)) {
+          console.log(`${file}`);
+        }
+      }
+    }
   },
   async mounted() {
     await this.unZip();
-    this.generateFileTree();
+    await this.generateFileTree(this.unzipped);
+    // await this.generateTestFileTree(this.unzipped);
   },
 });
 </script>
@@ -197,20 +199,45 @@ export default defineComponent({
         </Icon>
       </span>
       <span id="text">
-        {{ currentDirectory }}
+        {{ currentPath }}
       </span>
     </p>
-    <a v-for="file in fileTree.children" class="panel-block">
-      <span class="panel-icon">
-        <Icon>
-          <Folder />
-        </Icon>
-      </span>
-      {{ file.name }}
-    </a>
+    <span v-for="file in fileTree.children">
+      <a v-if="file.name !== ''" @click="navigateTo(file)" class="panel-block">
+        <span class="panel-icon">
+          <Icon>
+            <Folder />
+          </Icon>
+        </span>
+        {{ file.name }}
+      </a>
+      <a v-else @click="navigateBack" class="panel-block">
+        <span class="panel-icon">
+          <Icon>
+            <ReturnUpBack />
+          </Icon>
+        </span>
+      </a>
+    </span>
   </nav>
 
-  {{ currentlySelectedFile }}
+  <div v-if="currentPath.indexOf('.md') > -1">
+    // Is markdown
+
+  </div>
+  <div v-else>
+    <!-- <vue-code-highlight language="javascript">
+      <pre>
+    {{ currentlySelectedFile }}
+    </pre>
+</vue-code-highlight> -->
+
+<HighCode
+  class="code"
+  :codeValue="currentlySelectedFile"
+></HighCode>
+
+  </div>
 </template>
 
 <style scoped>
