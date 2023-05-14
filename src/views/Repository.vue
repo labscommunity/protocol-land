@@ -14,6 +14,8 @@ import {
   GitPullRequest,
   Information,
 } from "@vicons/ionicons5";
+import Arweave from "arweave";
+import { readContractState } from 'permawebjs/contract';
 
 export default defineComponent({
   components: {
@@ -33,12 +35,42 @@ export default defineComponent({
   data() {
     return {
       owner: "martonlederer",
-      repoName: "arconnect",
+      repoName: "Loading...",
       repoId: this.$route.params.id,
       currentBranch: "TESTBRANCHIDHERE",
       currentTab: "code",
+      currentState: [],
+      arweave: Arweave.init({
+        host: 'arweave.net',
+        port: 443,
+        protocol: 'https'
+      })
     };
   },
+  methods: {
+    async getRepoName() {
+      const res = await this.arweave.transactions.get(this.repoId);
+      res['tags'].forEach(tag => {
+        let key = tag.get('name', {decode: true, string: true});
+        let value = tag.get('value', {decode: true, string: true});
+        
+        if (key === "Repository-Name") {
+          this.repoName = value;
+        }
+      });
+    },
+    async getRepoState() {
+      const readResult = await readContractState({
+        environment: 'mainnet',
+        contractTxId: this.repoId,
+      });
+      console.log(readResult);
+    }
+  },
+  async mounted() {
+    this.getRepoName();
+    this.getRepoState();
+  }
 });
 </script>
 

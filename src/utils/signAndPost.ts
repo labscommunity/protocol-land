@@ -32,7 +32,7 @@ export async function dispatchTransaction(data: any, tags: any) {
       environment: "mainnet",
       options: {
         tags,
-        useBundlr: true,
+        useBundlr: false,
         signAndPost: true,
       },
     });

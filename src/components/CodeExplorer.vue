@@ -8,11 +8,8 @@ import {
   GitNetwork,
   Book,
   Folder,
-  ReturnUpBack
+  ReturnUpBack,
 } from "@vicons/ionicons5";
-// import { component as VueCodeHighlight } from 'vue-code-highlight';
-import { HighCode } from 'vue-highlight-code';
-import 'vue-highlight-code/dist/style.css';
 import JSZip from "jszip";
 
 export default defineComponent({
@@ -25,7 +22,6 @@ export default defineComponent({
     Book,
     Folder,
     ReturnUpBack,
-    HighCode
   },
   props: {
     id: String,
@@ -40,7 +36,10 @@ export default defineComponent({
       fileTree: [],
       zip: new JSZip(),
       oldZip: new JSZip(),
-      testFileTree: []
+      testFiles: [],
+      unzippedDirs: [],
+      currentDir: "/",
+      newDir: "",
     };
   },
   methods: {
@@ -50,23 +49,28 @@ export default defineComponent({
       const blobZip = await zipFolder.blob();
 
       // @ts-expect-error
-      this.unzipped = await this.zip.loadAsync(blobZip, {createFolders: true});
+      this.unzipped = await this.zip.loadAsync(blobZip, {
+        createFolders: true,
+      });
     },
     async navigateTo(target: any) {
-      console.log(`---\nNavigating to: ${target.path}\n---`)
+      console.log(`---\nNavigating to: ${target.path}\n---`);
       this.previousPath = this.currentPath;
       this.oldZip = this.zip;
       this.currentPath = target.path;
 
       if (target.dir === false) {
+        console.log("SEtting new file");
         // Is file
-        this.currentlySelectedFile = await this.zip.file(target.path).async("string");
+        this.currentlySelectedFile = await this.zip
+          .file(target.path)
+          .async("string");
+        console.log(this.currentlySelectedFile);
       } else {
         // Is directory
-        this.zip = await this.zip.folder(target.path);
+        this.zip = await this.zip.filter(target.path);
         await this.generateFileTree(this.zip);
       }
-
     },
     async navigateBack() {
       console.log("NAVIGATING BACK...");
@@ -84,7 +88,11 @@ export default defineComponent({
       // console.log(this.zip);
       // @ts-expect-error
       zipInstance.forEach((path) => {
-        console.log(`---\n${zipInstance.file(path)?.dir}\n\n${zipInstance.file(path)?.unsafeOriginalName}\n${zipInstance.file(path)?.name}\n---`);
+        console.log(
+          `---\n${zipInstance.file(path)?.dir}\n\n${
+            zipInstance.file(path)?.unsafeOriginalName
+          }\n${zipInstance.file(path)?.name}\n---`
+        );
         path.split("/").reduce((r: any, name: string) => {
           if (!r[name]) {
             r[name] = { result: [] };
@@ -110,18 +118,75 @@ export default defineComponent({
         this.fileTree = result[0];
       }
     },
-    generateTestFileTree(zipInstance) {
-      console.log(zipInstance);
-      for (const file in zipInstance.files) {
-        if (zipInstance.hasOwnProperty(file)) {
-          console.log(`${file}`);
-        }
+    generateTestFileTree() {
+      const zipFiles = this.unzipped.files;
+      const zipDirs = new Set();
+
+      // Loop through each file in the ZIP folder
+      Object.keys(zipFiles).forEach((file) => {
+        // Split the file path into an array of directories
+        const fileDirs = file.split("/");
+        // Remove the last item in the array, which is the file name
+        fileDirs.pop();
+        // Loop through each directory in the array and add it to the set of directories
+        fileDirs.forEach((dir) => {
+          zipDirs.add(dir);
+        });
+        // Add the file name to the list of files
+        this.testFiles.push(file);
+      });
+      // Convert the set of directories back to an array and add it to the component's data
+      this.unzippedDirs = Array.from(zipDirs);
+      this.currentDir = "";
+    },
+    changeDir(newDir) {
+      this.currentDir = newDir;
+    },
+    goBack() {
+      if (this.currentDir === "/") {
+        return;
       }
-    }
+      // Remove the last directory from the current directory path
+      const newDir = this.currentDir.split("/").slice(0, -1).join("/");
+      this.currentDir = newDir;
+    },
+    isDirAtCurrentLevel(path) {
+      const currentPath = this.currentDir === "/" ? "" : this.currentDir;
+      return (
+        path.startsWith(currentPath) &&
+        path.split("/").length === currentPath.split("/").length + 1
+      );
+    },
+    isDirSelected(path) {
+      const currentPath = this.currentDir === "/" ? "" : this.currentDir;
+      return path === currentPath;
+    },
+    getDirName(path) {
+      return path.split("/").pop();
+    },
+  },
+  computed: {
+    dirsAtCurrentLevel() {
+      const currentPath = this.currentDir === "/" ? "" : this.currentDir;
+      return this.unzippedDirs.filter(
+        (dir) =>
+          dir.startsWith(currentPath) &&
+          dir.split("/").length === currentPath.split("/").length + 1
+      );
+    },
+    filesAtCurrentLevel() {
+      const currentPath = this.currentDir === "/" ? "" : this.currentDir;
+      return this.testFiles.filter(
+        (file) =>
+          file.startsWith(currentPath) &&
+          file.split("/").length === currentPath.split("/").length + 1
+      );
+    },
   },
   async mounted() {
     await this.unZip();
-    await this.generateFileTree(this.unzipped);
+    await this.generateTestFileTree();
+    // await this.generateFileTree(this.unzipped);
     // await this.generateTestFileTree(this.unzipped);
   },
 });
@@ -199,10 +264,10 @@ export default defineComponent({
         </Icon>
       </span>
       <span id="text">
-        {{ currentPath }}
+        {{ currenrDir }}
       </span>
     </p>
-    <span v-for="file in fileTree.children">
+    <!-- <span v-for="file in fileTree.children">
       <a v-if="file.name !== ''" @click="navigateTo(file)" class="panel-block">
         <span class="panel-icon">
           <Icon>
@@ -218,25 +283,44 @@ export default defineComponent({
           </Icon>
         </span>
       </a>
+    </span> -->
+
+    <a v-if="currentDir" @click="goBack" class="panel-block">
+      <span class="panel-icon">
+        <Icon>
+          <ReturnUpBack />
+        </Icon>
+      </span>
+    </a>
+    <span v-for="(dir, index) in dirsAtCurrentLevel" :key="index">
+      <a
+        class="panel-block"
+        @click="changeDir(dir)"
+        v-if="dir.startsWith(currentDir)"
+      >
+        <span class="panel-icon">
+          <Icon>
+            <Folder />
+          </Icon>
+        </span>
+        {{ getDirName(dir) }}
+      </a>
+    </span>
+    <span v-for="(file, index) in filesAtCurrentLevel" :key="index">
+      <a class="panel-block" v-if="file.startsWith(currentDir)">
+        <span class="panel-icon">
+          <Icon>
+            <Book />
+          </Icon>
+        </span>
+        {{ file }}
+      </a>
     </span>
   </nav>
 
-  <div v-if="currentPath.indexOf('.md') > -1">
-    // Is markdown
-
-  </div>
+  <div v-if="currentPath.indexOf('.md') > -1">// Is markdown</div>
   <div v-else>
-    <!-- <vue-code-highlight language="javascript">
-      <pre>
-    {{ currentlySelectedFile }}
-    </pre>
-</vue-code-highlight> -->
-
-<HighCode
-  class="code"
-  :codeValue="currentlySelectedFile"
-></HighCode>
-
+    <pre><code>{{ currentlySelectedFile }}</code></pre>
   </div>
 </template>
 
