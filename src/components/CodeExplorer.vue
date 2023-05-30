@@ -29,15 +29,15 @@ export default defineComponent({
   },
   data() {
     return {
-      unzipped: null,
+      unzipped: new JSZip(),
       currentlySelectedFile: "",
       currentPath: "/",
       previousPath: "",
       fileTree: [],
       zip: new JSZip(),
       oldZip: new JSZip(),
-      testFiles: [],
-      unzippedDirs: [],
+      testFiles: [] as string[],
+      unzippedDirs: [] as string[],
       currentDir: "/",
       newDir: "",
     };
@@ -48,77 +48,11 @@ export default defineComponent({
       const zipFolder = await fetch(`https://arweave.net/${this.id}`);
       const blobZip = await zipFolder.blob();
 
-      // @ts-expect-error
       this.unzipped = await this.zip.loadAsync(blobZip, {
         createFolders: true,
       });
     },
-    async navigateTo(target: any) {
-      console.log(`---\nNavigating to: ${target.path}\n---`);
-      this.previousPath = this.currentPath;
-      this.oldZip = this.zip;
-      this.currentPath = target.path;
-
-      if (target.dir === false) {
-        console.log("SEtting new file");
-        // Is file
-        this.currentlySelectedFile = await this.zip
-          .file(target.path)
-          .async("string");
-        console.log(this.currentlySelectedFile);
-      } else {
-        // Is directory
-        this.zip = await this.zip.filter(target.path);
-        await this.generateFileTree(this.zip);
-      }
-    },
-    async navigateBack() {
-      console.log("NAVIGATING BACK...");
-      console.log(this.currentPath);
-
-      this.currentPath = this.previousPath;
-      this.zip = this.oldZip.folder(new RegExp(this.currentPath));
-      console.log(this.zip);
-      await this.generateFileTree(this.zip);
-    },
-    generateFileTree(zipInstance: any) {
-      let result: any[] = [];
-      let level = { result };
-
-      // console.log(this.zip);
-      // @ts-expect-error
-      zipInstance.forEach((path) => {
-        console.log(
-          `---\n${zipInstance.file(path)?.dir}\n\n${
-            zipInstance.file(path)?.unsafeOriginalName
-          }\n${zipInstance.file(path)?.name}\n---`
-        );
-        path.split("/").reduce((r: any, name: string) => {
-          if (!r[name]) {
-            r[name] = { result: [] };
-            r.result.push({
-              path,
-              name,
-              dir: zipInstance.file(path)?.dir,
-              children: r[name].result,
-            });
-          }
-
-          return r[name];
-        }, level);
-      });
-
-      console.log("CURRENT FILE TREE");
-      console.log(result);
-      const depthCount = (result[0].path.match(/\//g) || []).length;
-      if (depthCount > 1) {
-        this.fileTree = result;
-      } else {
-        this.previousPath = result[0].path;
-        this.fileTree = result[0];
-      }
-    },
-    generateTestFileTree() {
+    generateFileTree() {
       const zipFiles = this.unzipped.files;
 
       // Loop through each file in the ZIP folder
@@ -140,29 +74,18 @@ export default defineComponent({
       // Convert the set of directories back to an array and add it to the component's data
       this.currentDir = "";
     },
-    changeDir(newDir) {
-      this.currentDir = newDir;
-    },
-    goBack() {
-      if (this.currentDir === "/") {
-        return;
-      }
-      // Remove the last directory from the current directory path
-      const newDir = this.currentDir.split("/").slice(0, -1).join("/");
-      this.currentDir = newDir;
-    },
-    isDirAtCurrentLevel(path) {
+    isDirAtCurrentLevel(path: string) {
       const currentPath = this.currentDir === "/" ? "" : this.currentDir;
       return (
         path.startsWith(currentPath) &&
         path.split("/").length === currentPath.split("/").length + 1
       );
     },
-    isDirSelected(path) {
+    isDirSelected(path: string) {
       const currentPath = this.currentDir === "/" ? "" : this.currentDir;
       return path === currentPath;
     },
-    getDirName(path) {
+    getDirName(path: string) {
       return path.split("/").pop();
     },
     getFileName(file: string) {
@@ -200,9 +123,7 @@ export default defineComponent({
   },
   async mounted() {
     await this.unZip();
-    await this.generateTestFileTree();
-    // await this.generateFileTree(this.unzipped);
-    // await this.generateTestFileTree(this.unzipped);
+    await this.generateFileTree();
   },
 });
 </script>
@@ -282,25 +203,7 @@ export default defineComponent({
         {{ currentDir }}
       </span>
     </p>
-    <!-- <span v-for="file in fileTree.children">
-      <a v-if="file.name !== ''" @click="navigateTo(file)" class="panel-block">
-        <span class="panel-icon">
-          <Icon>
-            <Folder />
-          </Icon>
-        </span>
-        {{ file.name }}
-      </a>
-      <a v-else @click="navigateBack" class="panel-block">
-        <span class="panel-icon">
-          <Icon>
-            <ReturnUpBack />
-          </Icon>
-        </span>
-      </a>
-    </span> -->
-
-    <a v-if="currentDir" @click="goBack" class="panel-block">
+    <a v-if="currentDir" class="panel-block">
       <span class="panel-icon">
         <Icon>
           <ReturnUpBack />
@@ -310,7 +213,6 @@ export default defineComponent({
     <span v-for="(dir, index) in dirsAtCurrentLevel" :key="index">
       <a
         class="panel-block"
-        @click="changeDir(dir)"
         v-if="dir.startsWith(currentDir)"
       >
         <span class="panel-icon">
