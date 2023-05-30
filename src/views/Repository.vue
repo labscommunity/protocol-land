@@ -36,7 +36,6 @@ export default defineComponent({
     return {
       owner: "martonlederer",
       repoName: "Loading...",
-      repoId: this.$route.params.id,
       currentBranch: "TESTBRANCHIDHERE",
       currentTab: "code",
       currentState: [],
@@ -46,6 +45,14 @@ export default defineComponent({
         protocol: 'https'
       })
     };
+  },
+  computed: {
+    repoId() {
+      const loc = this.$route.params.id;
+
+      if (typeof loc === "string") return loc;
+      return loc[0];
+    }
   },
   methods: {
     async getRepoName() {

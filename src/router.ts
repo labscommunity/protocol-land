@@ -16,7 +16,7 @@ export default createRouter({
       component: PullRequest,
     },
     {
-      path: "/r/:id",
+      path: "/r/:id(.*)*",
       component: Repository,
     },
     {

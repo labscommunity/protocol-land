@@ -120,23 +120,24 @@ export default defineComponent({
     },
     generateTestFileTree() {
       const zipFiles = this.unzipped.files;
-      const zipDirs = new Set();
 
       // Loop through each file in the ZIP folder
-      Object.keys(zipFiles).forEach((file) => {
-        // Split the file path into an array of directories
-        const fileDirs = file.split("/");
-        // Remove the last item in the array, which is the file name
-        fileDirs.pop();
-        // Loop through each directory in the array and add it to the set of directories
-        fileDirs.forEach((dir) => {
-          zipDirs.add(dir);
-        });
+      Object.keys(zipFiles).forEach((file) => {  
+        const path = file.split("/");
+
+        if (path[1] === "") return;
+
         // Add the file name to the list of files
         this.testFiles.push(file);
+        
+        const dir = path.slice(0, path.length - 1).join("/");
+
+        if (!this.unzippedDirs.includes(dir)) {
+          this.unzippedDirs.push(dir);
+        }
       });
+
       // Convert the set of directories back to an array and add it to the component's data
-      this.unzippedDirs = Array.from(zipDirs);
       this.currentDir = "";
     },
     changeDir(newDir) {
@@ -164,10 +165,23 @@ export default defineComponent({
     getDirName(path) {
       return path.split("/").pop();
     },
+    getFileName(file: string) {
+      const pth = file.split("/");
+
+      return pth.slice(1, pth.length).join("/");
+    }
   },
   computed: {
+    path() {
+      const loc = this.$route.params.id;
+
+      if (typeof loc === "string") return "/";
+
+      return "/" + loc.slice(1, loc.length).join("/");
+    },
     dirsAtCurrentLevel() {
-      const currentPath = this.currentDir === "/" ? "" : this.currentDir;
+      const currentPath = this.path === "/" ? "" : this.path;
+
       return this.unzippedDirs.filter(
         (dir) =>
           dir.startsWith(currentPath) &&
@@ -175,12 +189,13 @@ export default defineComponent({
       );
     },
     filesAtCurrentLevel() {
-      const currentPath = this.currentDir === "/" ? "" : this.currentDir;
+      const currentPath = this.path === "/" ? "" : this.path;
+
       return this.testFiles.filter(
         (file) =>
           file.startsWith(currentPath) &&
           file.split("/").length === currentPath.split("/").length + 1
-      );
+      ).map((file) => file.replace(currentPath, ""));
     },
   },
   async mounted() {
@@ -264,7 +279,7 @@ export default defineComponent({
         </Icon>
       </span>
       <span id="text">
-        {{ currenrDir }}
+        {{ currentDir }}
       </span>
     </p>
     <!-- <span v-for="file in fileTree.children">
@@ -313,7 +328,7 @@ export default defineComponent({
             <Book />
           </Icon>
         </span>
-        {{ file }}
+        {{ getFileName(file) }}
       </a>
     </span>
   </nav>
