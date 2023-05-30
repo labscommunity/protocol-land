@@ -38,8 +38,6 @@ export default defineComponent({
       oldZip: new JSZip(),
       testFiles: [] as string[],
       unzippedDirs: [] as string[],
-      currentDir: "/",
-      newDir: "",
     };
   },
   methods: {
@@ -70,25 +68,22 @@ export default defineComponent({
           this.unzippedDirs.push(dir);
         }
       });
-
-      // Convert the set of directories back to an array and add it to the component's data
-      this.currentDir = "";
     },
     isDirAtCurrentLevel(path: string) {
-      const currentPath = this.currentDir === "/" ? "" : this.currentDir;
+      const currentPath = this.path === "/" ? "" : this.path;
       return (
         path.startsWith(currentPath) &&
         path.split("/").length === currentPath.split("/").length + 1
       );
     },
     isDirSelected(path: string) {
-      const currentPath = this.currentDir === "/" ? "" : this.currentDir;
+      const currentPath = this.path === "/" ? "" : this.path;
       return path === currentPath;
     },
-    getDirName(path: string) {
+    getLocalName(path: string) {
       return path.split("/").pop();
     },
-    getFileName(file: string) {
+    getGlobalName(file: string) {
       const pth = file.split("/");
 
       return pth.slice(1, pth.length).join("/");
@@ -120,6 +115,11 @@ export default defineComponent({
           file.split("/").length === currentPath.split("/").length + 1
       ).map((file) => file.replace(currentPath, ""));
     },
+    upOneLevel() {
+      const levels = this.path.split("/")
+
+      return levels.slice(0, levels.length - 1).join("/");
+    }
   },
   async mounted() {
     await this.unZip();
@@ -200,38 +200,41 @@ export default defineComponent({
         </Icon>
       </span>
       <span id="text">
-        {{ currentDir }}
+        {{ path }}
       </span>
     </p>
-    <a v-if="currentDir" class="panel-block">
+    <router-link v-if="path !== '/'" class="panel-block" :to="{ path: `/r/${id}${upOneLevel}` }">
       <span class="panel-icon">
         <Icon>
           <ReturnUpBack />
         </Icon>
       </span>
-    </a>
+    </router-link>
     <span v-for="(dir, index) in dirsAtCurrentLevel" :key="index">
-      <a
+      <router-link
+        :to="{ path: `/r/${id}/${getGlobalName(dir)}` }"
         class="panel-block"
-        v-if="dir.startsWith(currentDir)"
       >
         <span class="panel-icon">
           <Icon>
             <Folder />
           </Icon>
         </span>
-        {{ getDirName(dir) }}
-      </a>
+        {{ getLocalName(dir) }}
+      </router-link>
     </span>
     <span v-for="(file, index) in filesAtCurrentLevel" :key="index">
-      <a class="panel-block" v-if="file.startsWith(currentDir)">
+      <router-link
+        :to="{ path: `/r/${id}/${getGlobalName(file)}` }"
+        class="panel-block"
+      >
         <span class="panel-icon">
           <Icon>
             <Book />
           </Icon>
         </span>
-        {{ getFileName(file) }}
-      </a>
+        {{ getLocalName(file) }}
+      </router-link>
     </span>
   </nav>
 
