@@ -36,57 +36,36 @@ export default defineComponent({
       fileTree: [],
       zip: new JSZip(),
       oldZip: new JSZip(),
-      testFiles: [] as string[],
-      unzippedDirs: [] as string[],
+      files: [] as string[],
+      dirs: [] as string[],
     };
   },
   methods: {
     async unZip() {
       // Fetch repo zip
       const zipFolder = await fetch(`https://arweave.net/${this.id}`);
-      const blobZip = await zipFolder.blob();
+      const zip = await this.zip.loadAsync(
+        await zipFolder.blob(), {
+          createFolders: true,
+        }
+      );
+      const rootDir = Object.keys(zip.files)[0].split("/")[0];
 
-      this.unzipped = await this.zip.loadAsync(blobZip, {
-        createFolders: true,
-      });
+      // strip parent dir
+      this.unzipped = zip.folder(rootDir) as JSZip;
     },
     generateFileTree() {
-      const zipFiles = this.unzipped.files;
-
-      // Loop through each file in the ZIP folder
-      Object.keys(zipFiles).forEach((file) => {  
-        const path = file.split("/");
-
-        if (path[1] === "") return;
-
-        // Add the file name to the list of files
-        this.testFiles.push(file);
-        
-        const dir = path.slice(0, path.length - 1).join("/");
-
-        if (!this.unzippedDirs.includes(dir)) {
-          this.unzippedDirs.push(dir);
-        }
+      this.unzipped.forEach((path, file) => {
+        if (file.dir) this.dirs.push(path);
+        else this.files.push(path);
       });
     },
-    isDirAtCurrentLevel(path: string) {
-      const currentPath = this.path === "/" ? "" : this.path;
-      return (
-        path.startsWith(currentPath) &&
-        path.split("/").length === currentPath.split("/").length + 1
-      );
-    },
-    isDirSelected(path: string) {
-      const currentPath = this.path === "/" ? "" : this.path;
-      return path === currentPath;
-    },
     getLocalName(path: string) {
-      return path.split("/").pop();
-    },
-    getGlobalName(file: string) {
-      const pth = file.split("/");
+      if (path.endsWith("/")) {
+        path = path.replace(/\/$/, "");
+      }
 
-      return pth.slice(1, pth.length).join("/");
+      return path.split("/").pop();
     }
   },
   computed: {
@@ -95,35 +74,43 @@ export default defineComponent({
 
       if (typeof loc === "string") return "/";
 
-      return "/" + loc.slice(1, loc.length).join("/");
+      let fullPath = "/" + loc.slice(1, loc.length).join("/");
+
+      if (!fullPath.endsWith("/")) fullPath += "/";
+
+      return fullPath;
     },
     dirsAtCurrentLevel() {
-      const currentPath = this.path === "/" ? "" : this.path;
+      return this.dirs.filter(
+        (dir) => {
+          const dirPath = "/" + dir;
+          const stripPath = dirPath.replace(new RegExp(`^${this.path}`), "");
 
-      return this.unzippedDirs.filter(
-        (dir) =>
-          dir.startsWith(currentPath) &&
-          dir.split("/").length === currentPath.split("/").length + 1
+          // dir paths end with "/" in jszip
+          return stripPath.match(/\//g)?.length === 1;
+        }
       );
     },
     filesAtCurrentLevel() {
-      const currentPath = this.path === "/" ? "" : this.path;
+      return this.files.filter(
+        (file) => {
+          const filePath = "/" + file;
+          const stripPath = filePath.replace(new RegExp(`^${this.path}`), "");
 
-      return this.testFiles.filter(
-        (file) =>
-          file.startsWith(currentPath) &&
-          file.split("/").length === currentPath.split("/").length + 1
-      ).map((file) => file.replace(currentPath, ""));
+          // file paths don't end with "/"
+          return !stripPath.match(/\//g);
+        }
+      );
     },
     upOneLevel() {
-      const levels = this.path.split("/")
+      const levels = this.path.replace(/\/$/, "").split("/")
 
       return levels.slice(0, levels.length - 1).join("/");
     }
   },
   async mounted() {
     await this.unZip();
-    await this.generateFileTree();
+    this.generateFileTree();
   },
 });
 </script>
@@ -212,7 +199,7 @@ export default defineComponent({
     </router-link>
     <span v-for="(dir, index) in dirsAtCurrentLevel" :key="index">
       <router-link
-        :to="{ path: `/r/${id}/${getGlobalName(dir)}` }"
+        :to="{ path: `/r/${id}/${dir}` }"
         class="panel-block"
       >
         <span class="panel-icon">
@@ -225,7 +212,7 @@ export default defineComponent({
     </span>
     <span v-for="(file, index) in filesAtCurrentLevel" :key="index">
       <router-link
-        :to="{ path: `/r/${id}/${getGlobalName(file)}` }"
+        :to="{ path: `/r/${id}/${file}` }"
         class="panel-block"
       >
         <span class="panel-icon">
