@@ -1,10 +1,10 @@
 import { Dialog, Transition } from '@headlessui/react'
 import { Fragment } from 'react'
 import { AiFillCloseCircle } from 'react-icons/ai'
-import SVG from 'react-inlinesvg'
 
 import ArConnectLogo from '../../assets/arconnect-logo.svg'
 import OthentLogo from '../../assets/othent-logo.svg'
+import LoginButton from './LoginButton'
 
 type LoginModalProps = {
   setIsOpen: (val: boolean) => void
@@ -51,18 +51,8 @@ export default function LoginModal({ setIsOpen, isOpen }: LoginModalProps) {
                     <AiFillCloseCircle onClick={closeModal} className="h-6 w-6 text-white cursor-pointer" />
                   </div>
                   <div className="flex flex-col mt-10 gap-4">
-                    <div className="cursor-pointer w-full rounded-md bg-gradient-to-r from-pink-500 via-red-500 to-yellow-500 p-[2px]">
-                      <div className="p-3 flex gap-2 rounded-md h-full w-full items-center justify-center bg-[rgba(38,38,44,1)] back">
-                        <SVG src={ArConnectLogo} width={24} height={24} />
-                        <h1 className="text-xl text-[whitesmoke] font-medium">ArConnect</h1>
-                      </div>
-                    </div>
-                    <div className="cursor-pointer w-full rounded-md bg-gradient-to-r from-pink-500 via-red-500 to-yellow-500 p-[2px]">
-                      <div className="p-3 flex gap-2 rounded-md h-full w-full items-center justify-center bg-[rgba(38,38,44,1)] back">
-                        <SVG src={OthentLogo} width={24} height={24} />
-                        <h1 className="text-xl text-[whitesmoke] font-medium">Othent</h1>
-                      </div>
-                    </div>
+                    <LoginButton Icon={ArConnectLogo} text="ArConnect" />
+                    <LoginButton Icon={OthentLogo} text="Othent" />
                   </div>
                 </Dialog.Panel>
               </Transition.Child>
