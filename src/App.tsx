@@ -1,6 +1,6 @@
 import { HashRouter, Route, Routes } from 'react-router-dom'
 
-import AppLayout from './layout/AppLayout'
+import AppLayout from './layouts/AppLayout'
 import Home from './pages/home/Home'
 
 function App() {

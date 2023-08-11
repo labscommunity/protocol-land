@@ -7,7 +7,7 @@ import { FaUser } from 'react-icons/fa'
 import { FiChevronDown } from 'react-icons/fi'
 
 import { Button } from '@/components/common/buttons'
-import { useGlobalStore } from '@/store/globalStore'
+import { useGlobalStore } from '@/stores/globalStore'
 
 export default function UserProfileButton() {
   const [login, logout] = useGlobalStore((state) => [state.login, state.logout])
@@ -39,7 +39,12 @@ export default function UserProfileButton() {
     profileModal.setOpen(true)
   }
 
-  if (!connected) return <Button onClick={connect} text="Login" />
+  if (!connected)
+    return (
+      <Button className='rounded-[20px] font-medium' variant="gradient" onClick={connect}>
+        Login
+      </Button>
+    )
   return (
     <Menu as="div" className="relative inline-block text-left">
       {({ open }) => (
