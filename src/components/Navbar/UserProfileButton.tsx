@@ -6,8 +6,8 @@ import { BiLogOutCircle, BiSolidLogOutCircle } from 'react-icons/bi'
 import { FaUser } from 'react-icons/fa'
 import { FiChevronDown } from 'react-icons/fi'
 
-import { useGlobalStore } from '../../store/globalStore'
-import Button from '../Button'
+import { Button } from '@/components/common/buttons'
+import { useGlobalStore } from '@/store/globalStore'
 
 export default function UserProfileButton() {
   const [login, logout] = useGlobalStore((state) => [state.login, state.logout])

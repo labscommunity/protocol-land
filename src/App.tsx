@@ -1,9 +1,16 @@
+import { HashRouter, Route, Routes } from 'react-router-dom'
+
 import AppLayout from './layout/AppLayout'
+import Home from './pages/home/Home'
 
 function App() {
   return (
     <AppLayout>
-      <h1></h1>
+      <HashRouter>
+        <Routes>
+          <Route path="/" element={<Home />} />
+        </Routes>
+      </HashRouter>
     </AppLayout>
   )
 }

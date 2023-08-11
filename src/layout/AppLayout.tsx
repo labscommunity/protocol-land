@@ -1,6 +1,6 @@
 import React from 'react'
 
-import Navbar from '../../components/Navbar'
+import Navbar from '@/components/Navbar'
 
 export default function AppLayout({ children }: { children: React.JSX.Element }) {
   return (
