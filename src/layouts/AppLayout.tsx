@@ -10,7 +10,7 @@ const style = {
   '--bg-right-top-img-url': `url(${RightTopImg})`
 } as React.CSSProperties
 const afterClasses =
-  'after:content-[""] before:z-[-1] after:bg-[image:var(--bg-left-btm-img-url)] after:bg-no-repeat after:bg-left-top after:left-0 after:bottom-0 after:absolute after:w-[472px] after:h-[354px]'
+  'after:content-[""] after:z-[-1] after:bg-[image:var(--bg-left-btm-img-url)] after:bg-no-repeat after:bg-left-top after:left-0 after:bottom-0 after:absolute after:w-[472px] after:h-[354px]'
 const beforeClasses =
   'before:content-[""] before:z-[-1] before:bg-[image:var(--bg-right-top-img-url)] before:bg-no-repeat before:bg-left-top before:right-0 before:top-0 before:absolute before:w-[587px] before:h-[705px]'
 const layoutClasses =

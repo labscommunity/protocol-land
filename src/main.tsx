@@ -14,7 +14,7 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
         ensurePermissions: true
       }}
       theme={{
-        displayTheme: 'dark'
+        displayTheme: 'light'
       }}
     >
       <App />
