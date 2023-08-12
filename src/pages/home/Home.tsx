@@ -1,3 +1,12 @@
+import Sidebar from './components/Sidebar'
+
 export default function Home() {
-  return <h1></h1>
+  return (
+    <div className="h-full flex">
+      {/* sidebar */}
+      <Sidebar />
+      {/* maincontent */}
+      <div className="w-[80%] p-8"></div>
+    </div>
+  )
 }
