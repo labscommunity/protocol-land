@@ -1,4 +1,6 @@
+import LightningFS from '@isomorphic-git/lightning-fs'
 import { createAndPostTransactionWOthent } from 'arweavekit/transaction'
+import git from 'isomorphic-git'
 import { WarpFactory } from 'warp-contracts'
 import { DeployPlugin } from 'warp-contracts-plugin-deploy'
 
@@ -8,7 +10,7 @@ import { toArrayBuffer } from '@/helpers/toArrayBuffer'
 const warp = WarpFactory.forMainnet().use(new DeployPlugin())
 
 export async function postNewRepo({ title, description, file, owner }: any) {
-  const data = await toArrayBuffer(file) as any
+  const data = (await toArrayBuffer(file)) as any
 
   const inputTags = [
     // Content mime (media) type (For eg, "image/png")
@@ -51,4 +53,17 @@ export async function postNewRepo({ title, description, file, owner }: any) {
 
   // returns the success status and transaction id of the post
   return transaction
+}
+
+export async function createNewRepo(title: string) {
+  const fs = new LightningFS('fs')
+
+  const dir = title
+
+  try {
+    await git.init({ fs, dir })
+  } catch (error) {
+    //
+    console.error('failed to create repo')
+  }
 }

@@ -1,7 +1,10 @@
+import React from 'react'
+
 import BottomRightImg from '@/assets/images/bg/banner-bg.svg'
 import { Button } from '@/components/common/buttons'
 
 import MainContent from './components/MainContent'
+import NewRepoModal from './components/NewRepoModal'
 import Sidebar from './components/Sidebar'
 
 const style = {
@@ -11,6 +14,12 @@ const afterClasses =
   'after:content-[""] relative after:z-[-1] z-[1] after:bg-[image:var(--bg-right-btm-img-url)] after:bg-cover after:bg-no-repeat after:bg-left-top after:right-0 after:bottom-0 after:absolute after:w-[100%] after:h-[100%] after:opacity-30'
 
 export default function Home() {
+  const [isOpen, setIsOpen] = React.useState(false)
+
+  function handleNewRepoBtnClick() {
+    setIsOpen(true)
+  }
+
   return (
     <div className="h-full flex">
       <Sidebar />
@@ -37,7 +46,7 @@ export default function Home() {
                 <h1 className="text-xl font-medium tracking-wide">Create a new repository</h1>
                 <p>Start a new project from scratch, invite collaborators and get rolling within seconds.</p>
               </div>
-              <Button className="rounded-[20px]" variant="solid">
+              <Button onClick={handleNewRepoBtnClick} className="rounded-[20px]" variant="solid">
                 Create Repository
               </Button>
             </div>
@@ -55,6 +64,7 @@ export default function Home() {
           </div>
         </div>
       </MainContent>
+      <NewRepoModal isOpen={isOpen} setIsOpen={setIsOpen} />
     </div>
   )
 }
