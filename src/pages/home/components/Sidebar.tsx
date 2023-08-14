@@ -1,5 +1,3 @@
-import React from 'react'
-
 import { useGlobalStore } from '@/stores/globalStore'
 
 export default function Sidebar() {

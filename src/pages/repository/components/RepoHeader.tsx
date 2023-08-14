@@ -1,4 +1,3 @@
-import React from 'react'
 import { AiOutlineFork, AiOutlineStar } from 'react-icons/ai'
 import { FaClone } from 'react-icons/fa'
 import { FiGitBranch, FiGitCommit, FiHardDrive, FiTag } from 'react-icons/fi'

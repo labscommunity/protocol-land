@@ -1,4 +1,3 @@
-import React from 'react'
 import { AiFillFolder, AiOutlineFileText, AiOutlinePlus } from 'react-icons/ai'
 import { FiChevronDown, FiGitBranch } from 'react-icons/fi'
 
