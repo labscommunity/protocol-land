@@ -13,6 +13,7 @@
   "dependencies": {
     "@headlessui/react": "^1.7.16",
     "arweave-wallet-kit": "^1.0.1",
+    "arweavekit": "^1.4.8",
     "clsx": "^2.0.0",
     "framer-motion": "^10.15.0",
     "immer": "^10.0.2",
