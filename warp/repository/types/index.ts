@@ -3,6 +3,7 @@ export type RepositoryState = {
   description: string
   owner: string
   contributors: string[]
+  repoTxId: string
 }
 
 export type RepositoryAction = {

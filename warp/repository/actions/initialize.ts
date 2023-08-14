@@ -15,6 +15,7 @@ export async function initializeNewRepository(
   state.title = payload.title
   state.description = payload.description
   state.owner = caller
+  state.repoTxId = payload.repoTxId
 
   return { state }
 }
