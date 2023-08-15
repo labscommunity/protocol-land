@@ -1,23 +1,56 @@
 import { Dialog, Transition } from '@headlessui/react'
+import { yupResolver } from '@hookform/resolvers/yup'
+import clsx from 'clsx'
 import { Fragment } from 'react'
+import { useForm } from 'react-hook-form'
 import { AiFillCloseCircle } from 'react-icons/ai'
+import * as yup from 'yup'
 
 import { Button } from '@/components/common/buttons'
+import { useGlobalStore } from '@/stores/globalStore'
+
+import { createNewRepo, postNewRepo } from '../services/createRepo'
 
 type NewRepoModalProps = {
   setIsOpen: (val: boolean) => void
   isOpen: boolean
 }
 
+const schema = yup
+  .object({
+    title: yup
+      .string()
+      .matches(/^[a-z]+(-[a-z]+)*$/, 'Invalid title format')
+      .required('Title is required'),
+    description: yup.string().required('Description is required')
+  })
+  .required()
+
 export default function NewRepoModal({ setIsOpen, isOpen }: NewRepoModalProps) {
+  const [userAddress] = useGlobalStore((state) => [state.auth.address])
+  const {
+    register,
+    handleSubmit,
+    formState: { errors }
+  } = useForm({
+    resolver: yupResolver(schema)
+  })
+
   function closeModal() {
     setIsOpen(false)
   }
 
-  function handleCreateBtnClick() {
-    //
-  }
+  async function handleCreateBtnClick(data: yup.InferType<typeof schema>) {
+    const { title, description } = data
 
+    const repoBlob = await createNewRepo(title)
+
+    if (repoBlob) {
+      const result = await postNewRepo({ title, description, file: repoBlob, owner: userAddress })
+      console.log({ result })
+    }
+  }
+  console.log({ errors })
   return (
     <Transition appear show={isOpen} as={Fragment}>
       <Dialog as="div" className="relative z-10" onClose={closeModal}>
@@ -58,11 +91,14 @@ export default function NewRepoModal({ setIsOpen, isOpen }: NewRepoModalProps) {
                     </label>
                     <input
                       type="text"
-                      id="first_name"
-                      className="bg-gray-50 border border-gray-300 text-liberty-dark-100 text-md rounded-lg focus:ring-liberty-dark-50 focus:border-liberty-dark-50 block w-full p-2.5"
+                      {...register('title')}
+                      className={clsx(
+                        'bg-gray-50 border  text-liberty-dark-100 text-md rounded-lg focus:ring-liberty-dark-50 focus:border-liberty-dark-50 block w-full p-2.5',
+                        errors.title ? 'border-red-500' : 'border-gray-300'
+                      )}
                       placeholder="my-cool-repo"
-                      required
                     />
+                    {errors.title && <p className="text-red-500 text-sm italic mt-2">{errors.title?.message}</p>}
                   </div>
                   <div>
                     <label htmlFor="description" className="block mb-1 text-md font-medium text-liberty-dark-100">
@@ -70,16 +106,26 @@ export default function NewRepoModal({ setIsOpen, isOpen }: NewRepoModalProps) {
                     </label>
                     <input
                       type="text"
-                      id="first_name"
-                      className="bg-gray-50 border border-gray-300 text-liberty-dark-100 text-md rounded-lg focus:ring-liberty-dark-50 focus:border-liberty-dark-50 block w-full p-2.5"
+                      {...register('description')}
+                      className={clsx(
+                        'bg-gray-50 border text-liberty-dark-100 text-md rounded-lg focus:ring-liberty-dark-50 focus:border-liberty-dark-50 block w-full p-2.5',
+                        errors.description ? 'border-red-500' : 'border-gray-300'
+                      )}
                       placeholder="A really cool repo fully decentralized"
-                      required
                     />
+                    {errors.description && (
+                      <p className="text-red-500 text-sm italic mt-2">{errors.description?.message}</p>
+                    )}
                   </div>
                 </div>
 
                 <div className="mt-4">
-                  <Button className="rounded-md" onClick={handleCreateBtnClick} variant="solid">
+                  <Button
+                    disabled={Object.keys(errors).length > 0}
+                    className="rounded-md disabled:bg-opacity-[0.7]"
+                    onClick={handleSubmit(handleCreateBtnClick)}
+                    variant="solid"
+                  >
                     Create
                   </Button>
                 </div>

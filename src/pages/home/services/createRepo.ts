@@ -1,10 +1,12 @@
 import LightningFS from '@isomorphic-git/lightning-fs'
 import { createAndPostTransactionWOthent } from 'arweavekit/transaction'
+import Dexie from 'dexie'
+import { exportDB } from 'dexie-export-import'
 import git from 'isomorphic-git'
 import { WarpFactory } from 'warp-contracts'
 import { DeployPlugin } from 'warp-contracts-plugin-deploy'
 
-import { CONTRACT_SRC_TX_ID, OTHENT_API_KEY } from '@/helpers/constants'
+import { CONTRACT_SRC_TX_ID, VITE_OTHENT_API_KEY } from '@/helpers/constants'
 import { toArrayBuffer } from '@/helpers/toArrayBuffer'
 
 const warp = WarpFactory.forMainnet().use(new DeployPlugin())
@@ -37,9 +39,9 @@ export async function postNewRepo({ title, description, file, owner }: any) {
     { name: 'Description', value: description },
     { name: 'Type', value: 'repo' }
   ]
-
+  console.log({VITE_OTHENT_API_KEY})
   const transaction = await createAndPostTransactionWOthent({
-    apiId: OTHENT_API_KEY,
+    apiId: VITE_OTHENT_API_KEY,
     othentFunction: 'uploadData',
     data: data,
     tags: inputTags,
@@ -56,14 +58,20 @@ export async function postNewRepo({ title, description, file, owner }: any) {
 }
 
 export async function createNewRepo(title: string) {
-  const fs = new LightningFS('fs')
+  const fs = new LightningFS(title)
 
-  const dir = title
+  const dir = `/${title}`
 
   try {
     await git.init({ fs, dir })
+
+    const repoDB = await new Dexie(title).open();
+    const repoBlob = await exportDB(repoDB)
+
+    return repoBlob
   } catch (error) {
     //
+    console.log({ error })
     console.error('failed to create repo')
   }
 }
