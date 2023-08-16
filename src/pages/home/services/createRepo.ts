@@ -1,60 +1,63 @@
 import LightningFS from '@isomorphic-git/lightning-fs'
-import { createAndPostTransactionWOthent } from 'arweavekit/transaction'
+import Arweave from 'arweave'
 import Dexie from 'dexie'
 import { exportDB } from 'dexie-export-import'
 import git from 'isomorphic-git'
-import { WarpFactory } from 'warp-contracts'
-import { DeployPlugin } from 'warp-contracts-plugin-deploy'
+import uuid from 'react-uuid'
 
-import { CONTRACT_SRC_TX_ID, VITE_OTHENT_API_KEY } from '@/helpers/constants'
+import { CONTRACT_TX_ID } from '@/helpers/constants'
+import getWarpContract from '@/helpers/getWrapContract'
 import { toArrayBuffer } from '@/helpers/toArrayBuffer'
 
-const warp = WarpFactory.forMainnet().use(new DeployPlugin())
+const arweave = new Arweave({
+  host: 'ar-io.net',
+  port: 443,
+  protocol: 'https'
+})
 
 export async function postNewRepo({ title, description, file, owner }: any) {
   const data = (await toArrayBuffer(file)) as any
 
   const inputTags = [
     // Content mime (media) type (For eg, "image/png")
+    { name: 'App-Name', value: 'Protocol.Land' },
     { name: 'Content-Type', value: file.type },
-    // Help network identify post as SmartWeave Contract
-    { name: 'App-Name', value: 'SmartWeaveContract' },
-    { name: 'App-Version', value: '0.3.0' },
-    // Link post to contract source
-    { name: 'Contract-Src', value: CONTRACT_SRC_TX_ID },
-    // Initial state for our post (as a contract instance)
-    {
-      name: 'Init-State',
-      value: JSON.stringify({
-        title,
-        description,
-        owner: owner,
-        contributors: [],
-        repoTxId: 'CoHV9S5po6aQ1cx-MxW47qbmu63scIkVKdleqTyL4JQ'
-      })
-    },
-    // Standard tags following ANS-110 standard for discoverability of asset
     { name: 'Creator', value: owner },
     { name: 'Title', value: title },
     { name: 'Description', value: description },
     { name: 'Type', value: 'repo' }
   ]
-  console.log({VITE_OTHENT_API_KEY})
-  const transaction = await createAndPostTransactionWOthent({
-    apiId: VITE_OTHENT_API_KEY,
-    othentFunction: 'uploadData',
-    data: data,
-    tags: inputTags,
-    useBundlr: true
+
+  const transaction = await arweave.createTransaction({
+    data
   })
 
-  // registering transaction with warp
-  const { contractTxId } = await warp.register(transaction.transactionId, 'node1')
+  inputTags.forEach((tag) => transaction.addTag(tag.name, tag.value))
 
-  console.log('Othent Arweave Txn Res', contractTxId)
+  const dataTxResponse = await window.arweaveWallet.dispatch(transaction)
+  console.log({ dataTxResponse })
+  if (!dataTxResponse) {
+    throw new Error('Failed to post Git repository')
+  }
 
-  // returns the success status and transaction id of the post
-  return transaction
+  const contract = getWarpContract(CONTRACT_TX_ID, 'use_wallet')
+  
+  await contract.writeInteraction(
+    {
+      function: 'initialize',
+      payload: {
+        id: uuid(),
+        name: title,
+        description,
+        dataTxId: dataTxResponse.id
+      }
+    },
+    {
+      disableBundling: true
+    }
+  )
+
+  return dataTxResponse
 }
 
 export async function createNewRepo(title: string) {
@@ -65,7 +68,7 @@ export async function createNewRepo(title: string) {
   try {
     await git.init({ fs, dir })
 
-    const repoDB = await new Dexie(title).open();
+    const repoDB = await new Dexie(title).open()
     const repoBlob = await exportDB(repoDB)
 
     return repoBlob

@@ -3,7 +3,7 @@ import fs from 'fs'
 import replace from 'replace-in-file'
 
 const contracts = {
-  'repository-contract': './warp/repository/contract.ts'
+  'repository-contract': './warp/protocol-land/contract.ts'
 }
 
 fs.rmSync('./contracts-dist', { force: true, recursive: true })

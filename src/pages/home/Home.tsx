@@ -2,6 +2,8 @@ import React from 'react'
 
 import BottomRightImg from '@/assets/images/bg/banner-bg.svg'
 import { Button } from '@/components/common/buttons'
+import { CONTRACT_TX_ID } from '@/helpers/constants'
+import getWarpContract from '@/helpers/getWrapContract'
 
 import MainContent from './components/MainContent'
 import NewRepoModal from './components/NewRepoModal'
@@ -14,9 +16,13 @@ const afterClasses =
   'after:content-[""] relative after:z-[-1] z-[1] after:bg-[image:var(--bg-right-btm-img-url)] after:bg-cover after:bg-no-repeat after:bg-left-top after:right-0 after:bottom-0 after:absolute after:w-[100%] after:h-[100%] after:opacity-30'
 
 export default function Home() {
+  const contract = getWarpContract(CONTRACT_TX_ID, 'use_wallet')
+
   const [isOpen, setIsOpen] = React.useState(false)
 
-  function handleNewRepoBtnClick() {
+  async function handleNewRepoBtnClick() {
+    const { cachedValue } = await contract.readState()
+    console.log({ cachedValue })
     setIsOpen(true)
   }
 
