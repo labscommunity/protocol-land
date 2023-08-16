@@ -7,7 +7,7 @@ export async function initializeNewRepository(
   { caller, input: { payload } }: RepositoryAction
 ): Promise<ContractResult> {
   // validate payload
-  if (!payload.name || !payload.description || !payload.dataTxId || !payload.id) {
+  if (!payload.name || !payload.description || !payload.dataTxId) {
     throw new ContractError('Invalid inputs supplied.')
   }
 

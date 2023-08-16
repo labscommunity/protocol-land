@@ -3,7 +3,7 @@ import Arweave from 'arweave'
 import Dexie from 'dexie'
 import { exportDB } from 'dexie-export-import'
 import git from 'isomorphic-git'
-import uuid from 'react-uuid'
+import { InjectedArweaveSigner } from 'warp-contracts-plugin-signature'
 
 import { CONTRACT_TX_ID } from '@/helpers/constants'
 import getWarpContract from '@/helpers/getWrapContract'
@@ -16,6 +16,9 @@ const arweave = new Arweave({
 })
 
 export async function postNewRepo({ title, description, file, owner }: any) {
+  const userSigner = new InjectedArweaveSigner(window.arweaveWallet)
+  await userSigner.setPublicKey();
+  
   const data = (await toArrayBuffer(file)) as any
 
   const inputTags = [
@@ -40,22 +43,16 @@ export async function postNewRepo({ title, description, file, owner }: any) {
     throw new Error('Failed to post Git repository')
   }
 
-  const contract = getWarpContract(CONTRACT_TX_ID, 'use_wallet')
-  
-  await contract.writeInteraction(
-    {
-      function: 'initialize',
-      payload: {
-        id: uuid(),
-        name: title,
-        description,
-        dataTxId: dataTxResponse.id
-      }
-    },
-    {
-      disableBundling: true
+  const contract = getWarpContract(CONTRACT_TX_ID, userSigner)
+
+  await contract.writeInteraction({
+    function: 'initialize',
+    payload: {
+      name: title,
+      description,
+      dataTxId: dataTxResponse.id
     }
-  )
+  })
 
   return dataTxResponse
 }
