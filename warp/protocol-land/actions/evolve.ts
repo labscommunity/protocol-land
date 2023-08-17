@@ -5,7 +5,7 @@ declare const ContractError
 export async function evolveContract(
   state: ContractState,
   { caller, input: { value } }: EvolveAction
-): Promise<ContractResult> {
+): Promise<ContractResult<ContractState>> {
   // validate owner
   if (state.owner !== caller) {
     throw new ContractError('Only the owner can evolve a contract.')

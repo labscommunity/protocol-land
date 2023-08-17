@@ -9,3 +9,5 @@ declare module 'warp-contracts-plugin-signature' {
 declare module 'warp-contracts-plugin-deploy' {
   const DeployPlugin: any
 }
+
+type ApiStatus = 'IDLE' | 'PENDING' | 'SUCCESS' | 'ERROR'

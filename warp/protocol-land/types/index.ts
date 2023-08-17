@@ -1,6 +1,6 @@
 export type ContractState = {
   users: Record<Address, User>
-  repos: Record<Address, Repositories>
+  repos: Repositories
   canEvolve: boolean
   evolve: null | any
   owner: Address
@@ -22,6 +22,7 @@ export type Repo = {
   description: string
   stars: number
   dataTxId: string
+  owner: string
 }
 
 export type RepositoryAction = {
@@ -44,6 +45,6 @@ export type EvolveInput = {
   value: any
 }
 
-export type RepositoryFunction = 'initialize' | 'commit' // more types will be added later
+export type RepositoryFunction = 'initialize' | 'getRepository' | 'getRepositoriesByOwner' // more types will be added later
 
-export type ContractResult = { state: ContractState } | { result: number }
+export type ContractResult<T> = { state: T } | { result: T }
