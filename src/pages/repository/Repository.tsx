@@ -31,20 +31,20 @@ const tabData = [
 
 export default function Repository() {
   const { txid } = useParams()
-  const { fetchedRepo, repoFromStore, fetchRepoStatus, initFetchRepo } = useFetchRepository(txid!)
+  const { fetchedRepo, fetchRepoStatus, initFetchRepo } = useFetchRepository({
+    txId: txid!,
+    initialFetchStatus: 'PENDING'
+  })
 
-  React.useEffect(() => {
-    if (!repoFromStore) {
+  React.useLayoutEffect(() => {
+    if (!fetchedRepo) {
       initFetchRepo()
     }
   }, [])
-
+  console.log({ fetchedRepo })
   return (
     <div className="h-full flex flex-col max-w-[1280px] mx-auto w-full mt-6 gap-4">
-      <RepoHeader
-        isLoading={fetchRepoStatus === 'PENDING' || fetchRepoStatus === 'IDLE'}
-        repo={repoFromStore || fetchedRepo!}
-      />
+      <RepoHeader isLoading={fetchRepoStatus === 'PENDING' && !fetchedRepo} repo={fetchedRepo!} />
       <div>
         <Tab.Group>
           <Tab.List className="flex text-liberty-dark-100 text-lg gap-10 border-b-[1px] border-[#cbc9f6] px-4">

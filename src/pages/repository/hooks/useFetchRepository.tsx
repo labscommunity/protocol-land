@@ -6,11 +6,16 @@ import getWarpContract from '@/helpers/getWrapContract'
 import { withAsync } from '@/helpers/withAsync'
 import { useGlobalStore } from '@/stores/globalStore'
 
-export function useFetchRepository(txId: string) {
+type Props = {
+  txId: string
+  initialFetchStatus?: ApiStatus
+}
+
+export function useFetchRepository({ txId, initialFetchStatus = 'IDLE' }: Props) {
   const [repo] = useGlobalStore((state) => [state.getUserRepositoryByTxId(txId)])
   const [fetchedRepo, setFetchedRepo] = useState(repo)
 
-  const [fetchRepoStatus, setFetchRepoStatus] = useState<ApiStatus>('IDLE')
+  const [fetchRepoStatus, setFetchRepoStatus] = useState<ApiStatus>(() => (repo ? 'SUCCESS' : initialFetchStatus))
 
   const initFetchRepo = async () => {
     const userSigner = new InjectedArweaveSigner(window.arweaveWallet)
@@ -18,7 +23,7 @@ export function useFetchRepository(txId: string) {
 
     const contract = getWarpContract(CONTRACT_TX_ID, 'use_wallet')
 
-    setFetchRepoStatus('PENDING')
+    if (fetchRepoStatus !== 'PENDING') setFetchRepoStatus('PENDING')
     const { response, error } = await withAsync(() =>
       contract.viewState({
         function: 'getRepository',
@@ -37,7 +42,6 @@ export function useFetchRepository(txId: string) {
   }
 
   return {
-    repoFromStore: repo,
     fetchedRepo,
     fetchRepoStatus,
     initFetchRepo
