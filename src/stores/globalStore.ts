@@ -2,22 +2,9 @@ import { create, StateCreator } from 'zustand'
 import { devtools } from 'zustand/middleware'
 import { immer } from 'zustand/middleware/immer'
 
+import { Actions, AppState, AuthState } from './types'
+
 const withMiddlewares = <T>(f: StateCreator<T, [['zustand/immer', never]], []>) => devtools(immer<T>(f))
-
-type AuthState = {
-  isLoggedIn: boolean
-  address: string | null
-  method: string | null
-}
-
-type AppState = {
-  auth: AuthState
-}
-
-type Actions = {
-  login: (value: AuthState) => void
-  logout: () => void
-}
 
 const initialAuthState = {
   isLoggedIn: false,
@@ -25,9 +12,14 @@ const initialAuthState = {
   method: null
 }
 
+const initialUserState = {
+  repositories: []
+}
+
 export const useGlobalStore = create(
-  withMiddlewares<AppState & Actions>((set) => ({
+  withMiddlewares<AppState & Actions>((set, get) => ({
     auth: initialAuthState,
+    user: initialUserState,
     login: (value: AuthState) =>
       set((state) => {
         state.auth = value
@@ -35,6 +27,15 @@ export const useGlobalStore = create(
     logout: () =>
       set((state) => {
         state.auth = initialAuthState
-      })
+      }),
+    setUserRepositories: (repos) =>
+      set((state) => {
+        state.user.repositories = repos
+      }),
+    getUserRepositoryByTxId: (txId) => {
+      const repo = get().user.repositories.find((repo) => repo.dataTxId === txId)
+
+      return repo
+    }
   }))
 )

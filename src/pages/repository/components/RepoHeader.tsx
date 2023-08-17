@@ -3,8 +3,20 @@ import { FaClone } from 'react-icons/fa'
 import { FiGitBranch, FiGitCommit, FiHardDrive, FiTag } from 'react-icons/fi'
 
 import { Button } from '@/components/common/buttons'
+import { Repo } from '@/types/repository'
 
-export default function RepoHeader() {
+import RepoHeaderLoading from './RepoHeaderLoading'
+
+type Props = {
+  repo: Repo
+  isLoading: boolean
+}
+
+export default function RepoHeader({ repo, isLoading }: Props) {
+  if (isLoading) {
+    return <RepoHeaderLoading />
+  }
+
   return (
     <div className="flex flex-col gap-4">
       <div className="flex justify-between">
@@ -12,9 +24,9 @@ export default function RepoHeader() {
           <div className="bg-white rounded-full w-16 h-16 flex justify-center items-center">
             <h4 className="text-2xl font-bold tracking-wide text-liberty-dark-100">SK</h4>
           </div>
-          <div className="">
-            <h1 className="text-3xl font-medium text-liberty-dark-100">test-repo</h1>
-            <p className="text-liberty-dark-50">Transaction ID: 6b8LM0isavaM8whlvx2u5BwA-ZaK65ZJu2MuMT7DSI8</p>
+          <div>
+            <h1 className="text-3xl font-medium text-liberty-dark-100">{repo.name}</h1>
+            <p className="text-liberty-dark-50">Transaction ID: {repo.dataTxId}</p>
           </div>
         </div>
         <div className="flex items-center justify-start gap-4">
@@ -59,10 +71,7 @@ export default function RepoHeader() {
         </div>
       </div>
       <div>
-        <p className='text-liberty-dark-100'>
-          Lorem ipsum dolor sit amet consectetur adipisicing elit. Expedita eum quos sapiente ad autem, doloribus, iure
-          hic obcaecati veniam at non id corporis? At magni aut amet voluptate pariatur ducimus!
-        </p>
+        <p className="text-liberty-dark-100">{repo.description}</p>
       </div>
     </div>
   )

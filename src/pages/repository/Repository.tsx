@@ -1,11 +1,14 @@
 import { Tab } from '@headlessui/react'
+import React from 'react'
 import { BiCodeAlt } from 'react-icons/bi'
 import { FiGitCommit, FiGitPullRequest } from 'react-icons/fi'
+import { useParams } from 'react-router-dom'
 
 import RepoHeader from './components/RepoHeader'
 import CodeTab from './components/tabs/CodeTab'
 import CommitsTab from './components/tabs/CommitsTab'
 import PullRequestsTab from './components/tabs/PullRequestsTab'
+import { useFetchRepository } from './hooks/useFetchRepository'
 
 const activeClasses = 'border-b-[3px] border-[#8a6bec] text-[#8a6bec] font-medium'
 const tabData = [
@@ -27,9 +30,21 @@ const tabData = [
 ]
 
 export default function Repository() {
+  const { txid } = useParams()
+  const { fetchedRepo, repoFromStore, fetchRepoStatus, initFetchRepo } = useFetchRepository(txid!)
+
+  React.useEffect(() => {
+    if (!repoFromStore) {
+      initFetchRepo()
+    }
+  }, [])
+
   return (
     <div className="h-full flex flex-col max-w-[1280px] mx-auto w-full mt-6 gap-4">
-      <RepoHeader />
+      <RepoHeader
+        isLoading={fetchRepoStatus === 'PENDING' || fetchRepoStatus === 'IDLE'}
+        repo={repoFromStore || fetchedRepo!}
+      />
       <div>
         <Tab.Group>
           <Tab.List className="flex text-liberty-dark-100 text-lg gap-10 border-b-[1px] border-[#cbc9f6] px-4">

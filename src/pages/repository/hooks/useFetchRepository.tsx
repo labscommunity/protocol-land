@@ -6,41 +6,40 @@ import getWarpContract from '@/helpers/getWrapContract'
 import { withAsync } from '@/helpers/withAsync'
 import { useGlobalStore } from '@/stores/globalStore'
 
-export function useFetchUserRepos() {
-  const [address, userRepos, setUserRepos] = useGlobalStore((state) => [
-    state.auth.address,
-    state.user.repositories,
-    state.setUserRepositories
-  ])
-  const [fetchUserReposStatus, setFetchUserReposStatus] = useState<ApiStatus>('IDLE')
+export function useFetchRepository(txId: string) {
+  const [repo] = useGlobalStore((state) => [state.getUserRepositoryByTxId(txId)])
+  const [fetchedRepo, setFetchedRepo] = useState(repo)
 
-  const initFetchUserRepos = async () => {
+  const [fetchRepoStatus, setFetchRepoStatus] = useState<ApiStatus>('IDLE')
+
+  const initFetchRepo = async () => {
     const userSigner = new InjectedArweaveSigner(window.arweaveWallet)
     await userSigner.setPublicKey()
 
     const contract = getWarpContract(CONTRACT_TX_ID, 'use_wallet')
 
-    setFetchUserReposStatus('PENDING')
+    setFetchRepoStatus('PENDING')
     const { response, error } = await withAsync(() =>
       contract.viewState({
-        function: 'getRepositoriesByOwner',
+        function: 'getRepository',
         payload: {
-          owner: address
+          txId: txId
         }
       })
     )
 
     if (error) {
-      setFetchUserReposStatus('ERROR')
+      setFetchRepoStatus('ERROR')
     } else if (response) {
-      setUserRepos(response.result)
-      setFetchUserReposStatus('SUCCESS')
+      setFetchedRepo(response.result)
+      setFetchRepoStatus('SUCCESS')
     }
   }
 
   return {
-    userRepos,
-    fetchUserReposStatus,
-    initFetchUserRepos
+    repoFromStore: repo,
+    fetchedRepo,
+    fetchRepoStatus,
+    initFetchRepo
   }
 }
