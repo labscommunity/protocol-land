@@ -11,19 +11,21 @@ type Props = {
   initialFetchStatus?: ApiStatus
 }
 
-export function useFetchRepository({ txId, initialFetchStatus = 'IDLE' }: Props) {
-  const [repo] = useGlobalStore((state) => [state.getUserRepositoryByTxId(txId)])
-  const [fetchedRepo, setFetchedRepo] = useState(repo)
+export function useFetchRepositoryMeta({ txId, initialFetchStatus = 'IDLE' }: Props) {
+  const [repoMeta] = useGlobalStore((state) => [state.getUserRepositoryMetaByTxId(txId)])
+  const [fetchedRepoMeta, setFetchedRepoMeta] = useState(repoMeta)
 
-  const [fetchRepoStatus, setFetchRepoStatus] = useState<ApiStatus>(() => (repo ? 'SUCCESS' : initialFetchStatus))
+  const [fetchRepoMetaStatus, setFetchRepoMetaStatus] = useState<ApiStatus>(() =>
+    repoMeta ? 'SUCCESS' : initialFetchStatus
+  )
 
-  const initFetchRepo = async () => {
+  const initFetchRepoMeta = async () => {
     const userSigner = new InjectedArweaveSigner(window.arweaveWallet)
     await userSigner.setPublicKey()
 
     const contract = getWarpContract(CONTRACT_TX_ID, 'use_wallet')
 
-    if (fetchRepoStatus !== 'PENDING') setFetchRepoStatus('PENDING')
+    if (fetchRepoMetaStatus !== 'PENDING') setFetchRepoMetaStatus('PENDING')
     const { response, error } = await withAsync(() =>
       contract.viewState({
         function: 'getRepository',
@@ -34,16 +36,16 @@ export function useFetchRepository({ txId, initialFetchStatus = 'IDLE' }: Props)
     )
 
     if (error) {
-      setFetchRepoStatus('ERROR')
+      setFetchRepoMetaStatus('ERROR')
     } else if (response) {
-      setFetchedRepo(response.result)
-      setFetchRepoStatus('SUCCESS')
+      setFetchedRepoMeta(response.result)
+      setFetchRepoMetaStatus('SUCCESS')
     }
   }
 
   return {
-    fetchedRepo,
-    fetchRepoStatus,
-    initFetchRepo
+    fetchedRepoMeta,
+    fetchRepoMetaStatus,
+    initFetchRepoMeta
   }
 }

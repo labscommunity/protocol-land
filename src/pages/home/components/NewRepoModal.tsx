@@ -7,9 +7,8 @@ import { AiFillCloseCircle } from 'react-icons/ai'
 import * as yup from 'yup'
 
 import { Button } from '@/components/common/buttons'
+import { createNewRepo, postNewRepo } from '@/lib/git'
 import { useGlobalStore } from '@/stores/globalStore'
-
-import { createNewRepo, postNewRepo } from '../services/createRepo'
 
 type NewRepoModalProps = {
   setIsOpen: (val: boolean) => void
@@ -50,7 +49,7 @@ export default function NewRepoModal({ setIsOpen, isOpen }: NewRepoModalProps) {
       console.log({ result })
     }
   }
-  console.log({ errors })
+
   return (
     <Transition appear show={isOpen} as={Fragment}>
       <Dialog as="div" className="relative z-10" onClose={closeModal}>

@@ -5,10 +5,10 @@ import { FiGitCommit, FiGitPullRequest } from 'react-icons/fi'
 import { useParams } from 'react-router-dom'
 
 import RepoHeader from './components/RepoHeader'
-import CodeTab from './components/tabs/CodeTab'
+import CodeTab from './components/tabs/code-tab'
 import CommitsTab from './components/tabs/CommitsTab'
 import PullRequestsTab from './components/tabs/PullRequestsTab'
-import { useFetchRepository } from './hooks/useFetchRepository'
+import { useFetchRepositoryMeta } from './hooks/useFetchRepositoryMeta'
 
 const activeClasses = 'border-b-[3px] border-[#8a6bec] text-[#8a6bec] font-medium'
 const tabData = [
@@ -31,20 +31,21 @@ const tabData = [
 
 export default function Repository() {
   const { txid } = useParams()
-  const { fetchedRepo, fetchRepoStatus, initFetchRepo } = useFetchRepository({
+  const { fetchRepoMetaStatus, fetchedRepoMeta, initFetchRepoMeta } = useFetchRepositoryMeta({
     txId: txid!,
     initialFetchStatus: 'PENDING'
   })
 
   React.useLayoutEffect(() => {
-    if (!fetchedRepo) {
-      initFetchRepo()
+    if (!fetchedRepoMeta) {
+      initFetchRepoMeta()
     }
   }, [])
-  console.log({ fetchedRepo })
+
+  console.log({ fetchedRepoMeta })
   return (
     <div className="h-full flex flex-col max-w-[1280px] mx-auto w-full mt-6 gap-4">
-      <RepoHeader isLoading={fetchRepoStatus === 'PENDING' && !fetchedRepo} repo={fetchedRepo!} />
+      <RepoHeader isLoading={fetchRepoMetaStatus === 'PENDING' && !fetchedRepoMeta} repo={fetchedRepoMeta!} />
       <div>
         <Tab.Group>
           <Tab.List className="flex text-liberty-dark-100 text-lg gap-10 border-b-[1px] border-[#cbc9f6] px-4">
