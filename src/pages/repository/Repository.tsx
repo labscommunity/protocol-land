@@ -8,6 +8,7 @@ import RepoHeader from './components/RepoHeader'
 import CodeTab from './components/tabs/code-tab'
 import CommitsTab from './components/tabs/CommitsTab'
 import PullRequestsTab from './components/tabs/PullRequestsTab'
+import useFetchRepository from './hooks/useFetchRepository'
 import { useFetchRepositoryMeta } from './hooks/useFetchRepositoryMeta'
 
 const activeClasses = 'border-b-[3px] border-[#8a6bec] text-[#8a6bec] font-medium'
@@ -35,14 +36,29 @@ export default function Repository() {
     txId: txid!,
     initialFetchStatus: 'PENDING'
   })
+  const { unmountRepo, initFetchRepo, fetchRepoStatus } = useFetchRepository({ txId: txid! })
 
   React.useLayoutEffect(() => {
     if (!fetchedRepoMeta) {
       initFetchRepoMeta()
     }
+
+    return () => {
+      if (fetchedRepoMeta) {
+        unmountRepo(fetchedRepoMeta.name)
+      }
+    }
   }, [])
 
-  console.log({ fetchedRepoMeta })
+  React.useEffect(() => {
+    if (fetchRepoStatus === 'SUCCESS') return
+
+    if (fetchedRepoMeta) {
+      initFetchRepo()
+    }
+  }, [fetchedRepoMeta])
+
+  console.log({ fetchedRepoMeta, fetchRepoStatus })
   return (
     <div className="h-full flex flex-col max-w-[1280px] mx-auto w-full mt-6 gap-4">
       <RepoHeader isLoading={fetchRepoMetaStatus === 'PENDING' && !fetchedRepoMeta} repo={fetchedRepoMeta!} />
@@ -63,7 +79,10 @@ export default function Repository() {
           <Tab.Panels className={'mt-4 px-2'}>
             {tabData.map((TabItem) => (
               <Tab.Panel>
-                <TabItem.Component />
+                <TabItem.Component
+                  repoName={fetchedRepoMeta?.name ?? ''}
+                  isMetaLoading={fetchRepoMetaStatus === 'PENDING'}
+                />
               </Tab.Panel>
             ))}
           </Tab.Panels>

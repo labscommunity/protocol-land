@@ -1,4 +1,3 @@
-import React from 'react'
 import { AiFillFolder, AiOutlineFileText } from 'react-icons/ai'
 
 type Props = {
@@ -17,9 +16,9 @@ export default function Row({ isFolder, item, onClick }: Props) {
   return (
     <div
       onClick={handleRowClick}
-      className="flex cursor-pointer hover:bg-liberty-light-300 items-center gap-2 py-2 px-4 border-b-[1px] border-liberty-light-600"
+      className="flex cursor-pointer hover:bg-liberty-light-300 items-center gap-2 py-2 px-4 border-b-[1px] border-liberty-light-600 last:border-b-0"
     >
-      <Icon className="w-5 h-5" /> <span>{item.name}</span>
+      <Icon className="w-5 h-5" /> <span>{item.path}</span>
     </div>
   )
 }

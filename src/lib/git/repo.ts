@@ -1,13 +1,15 @@
-import LightningFS from '@isomorphic-git/lightning-fs'
 import Arweave from 'arweave'
 import Dexie from 'dexie'
-import { exportDB } from 'dexie-export-import'
+import { exportDB, importDB } from 'dexie-export-import'
 import git from 'isomorphic-git'
 import { InjectedArweaveSigner } from 'warp-contracts-plugin-signature'
 
 import { CONTRACT_TX_ID } from '@/helpers/constants'
 import getWarpContract from '@/helpers/getWrapContract'
 import { toArrayBuffer } from '@/helpers/toArrayBuffer'
+import { withAsync } from '@/helpers/withAsync'
+
+import { FSType } from './helpers/fsWithName'
 
 const arweave = new Arweave({
   host: 'ar-io.net',
@@ -57,9 +59,7 @@ export async function postNewRepo({ title, description, file, owner }: any) {
   return dataTxResponse
 }
 
-export async function createNewRepo(title: string) {
-  const fs = new LightningFS(title)
-
+export async function createNewRepo(title: string, fs: FSType) {
   const dir = `/${title}`
 
   try {
@@ -74,4 +74,23 @@ export async function createNewRepo(title: string) {
     console.log({ error })
     console.error('failed to create repo')
   }
+}
+
+export async function importRepoFromBlob(repoBlob: Blob) {
+  const { error } = await withAsync(() => importDB(repoBlob))
+
+  if (error) {
+    return false
+  }
+  return true
+}
+
+export async function unmountRepoFromBrowser(name: string) {
+  const { error } = await withAsync(() => new Dexie(name).delete())
+
+  if (error) {
+    return false
+  }
+
+  return true
 }

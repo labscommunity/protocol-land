@@ -6,14 +6,14 @@ import Repository from './pages/repository/Repository'
 
 function App() {
   return (
-    <AppLayout>
-      <HashRouter>
+    <HashRouter>
+      <AppLayout>
         <Routes>
           <Route index path="/" element={<Home />} />
           <Route path="/repository/:txid" element={<Repository />} />
         </Routes>
-      </HashRouter>
-    </AppLayout>
+      </AppLayout>
+    </HashRouter>
   )
 }
 

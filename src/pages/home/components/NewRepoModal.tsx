@@ -8,6 +8,7 @@ import * as yup from 'yup'
 
 import { Button } from '@/components/common/buttons'
 import { createNewRepo, postNewRepo } from '@/lib/git'
+import { fsWithName } from '@/lib/git/helpers/fsWithName'
 import { useGlobalStore } from '@/stores/globalStore'
 
 type NewRepoModalProps = {
@@ -42,7 +43,8 @@ export default function NewRepoModal({ setIsOpen, isOpen }: NewRepoModalProps) {
   async function handleCreateBtnClick(data: yup.InferType<typeof schema>) {
     const { title, description } = data
 
-    const repoBlob = await createNewRepo(title)
+    const fs = fsWithName(title)
+    const repoBlob = await createNewRepo(title, fs)
 
     if (repoBlob) {
       const result = await postNewRepo({ title, description, file: repoBlob, owner: userAddress })

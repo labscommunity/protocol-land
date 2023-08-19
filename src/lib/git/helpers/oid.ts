@@ -1,15 +1,9 @@
-import LightningFS from '@isomorphic-git/lightning-fs'
 import git from 'isomorphic-git'
 
-type ReadFilesFromOidOptions = {
-  dir: string
-  oid: string
-  prefix: string
-}
+import { FSType } from './fsWithName'
 
-export async function readFilesFromOid({ dir, oid, prefix }: ReadFilesFromOidOptions) {
+export async function readFilesFromOid({ fs, dir, oid, prefix }: ReadFilesFromOidOptions) {
   const objects = []
-  const fs = new LightningFS('fs')
 
   const { tree } = await git.readTree({ fs, dir, oid })
 
@@ -38,6 +32,10 @@ export async function readFilesFromOid({ dir, oid, prefix }: ReadFilesFromOidOpt
   }
 }
 
+export async function getOidFromRef({ ref, dir, fs }: GetOidFromRefOptions) {
+  return await git.resolveRef({ fs, dir, ref })
+}
+
 function join(...parts: string[]) {
   return normalizePath(parts.map(normalizePath).join('/'))
 }
@@ -52,4 +50,17 @@ function normalizePath(path: string) {
     .replace(/\/\.$/, '') // Remove trailing '/.'
     .replace(/(.+)\/$/, '$1') // Remove trailing '/'
     .replace(/^$/, '.') // if path === '' return '.'
+}
+
+type ReadFilesFromOidOptions = {
+  fs: FSType
+  dir: string
+  oid: string
+  prefix: string
+}
+
+type GetOidFromRefOptions = {
+  fs: FSType
+  dir: string
+  ref: string
 }
