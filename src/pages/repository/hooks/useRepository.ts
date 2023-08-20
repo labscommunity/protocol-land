@@ -13,15 +13,12 @@ export default function useRepository(name: string) {
   const parentsOidList = React.useRef<string[]>([])
 
   React.useEffect(() => {
-    if (!currentOid && name) {
-      readRef()
-    }
     if (currentOid) {
       fetchFilesFromOid(currentOid)
     }
   }, [currentOid])
 
-  async function readRef() {
+  async function initRepoLoading() {
     const fs = fsWithName(name)
     const dir = `/${name}`
 
@@ -39,10 +36,11 @@ export default function useRepository(name: string) {
 
   async function fetchFilesFromOid(oid: string) {
     const fs = fsWithName(name)
+    const dir = `/${name}`
 
     if (loadRepoStatus !== 'PENDING') setLoadRepoStatus('PENDING')
 
-    const { error, response } = await withAsync(() => readFilesFromOid({ dir: '/test-repo', oid, prefix: '', fs }))
+    const { error, response } = await withAsync(() => readFilesFromOid({ dir, oid, prefix: '', fs }))
 
     if (error) {
       setLoadRepoStatus('ERROR')
@@ -76,6 +74,7 @@ export default function useRepository(name: string) {
     loadRepoStatus,
     setCurrentOid,
     goBack,
-    pushParentOid
+    pushParentOid,
+    initRepoLoading
   }
 }

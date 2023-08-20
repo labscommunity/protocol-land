@@ -21,7 +21,7 @@ export async function postNewRepo({ title, description, file, owner }: any) {
   const userSigner = new InjectedArweaveSigner(window.arweaveWallet)
   await userSigner.setPublicKey()
 
-  const data = (await toArrayBuffer(file)) as any
+  const data = (await toArrayBuffer(file)) as ArrayBuffer
 
   const inputTags = [
     // Content mime (media) type (For eg, "image/png")
@@ -59,16 +59,33 @@ export async function postNewRepo({ title, description, file, owner }: any) {
   return dataTxResponse
 }
 
-export async function createNewRepo(title: string, fs: FSType) {
+export async function createNewRepo(title: string, fs: FSType, owner: string) {
   const dir = `/${title}`
+  const filePath = `${dir}/README.md`
 
   try {
     await git.init({ fs, dir })
 
-    const repoDB = await new Dexie(title).open()
+    await fs.promises.writeFile(filePath, `# ${title}`)
+
+    await git.add({ fs, dir, filepath: 'README.md' })
+
+    const sha = await git.commit({
+      fs,
+      dir,
+      author: {
+        name: owner,
+        email: owner
+      },
+      message: 'Add README.md'
+    })
+
+    const repoDB = new Dexie(title)
+    await repoDB.open()
+
     const repoBlob = await exportDB(repoDB)
 
-    return repoBlob
+    return { repoBlob, commit: sha }
   } catch (error) {
     //
     console.log({ error })

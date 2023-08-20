@@ -1,3 +1,4 @@
+import React from 'react'
 import { AiOutlinePlus } from 'react-icons/ai'
 import { FiChevronDown, FiCode, FiGitBranch } from 'react-icons/fi'
 
@@ -14,8 +15,14 @@ type Props = {
 }
 
 export default function CodeTab({ repoName = '', isMetaLoading }: Props) {
-  const { fileObjects, currentOid, rootOid, loadRepoStatus, pushParentOid, setCurrentOid, goBack } =
+  const { fileObjects, currentOid, rootOid, loadRepoStatus, pushParentOid, setCurrentOid, goBack, initRepoLoading } =
     useRepository(repoName)
+
+  React.useEffect(() => {
+    if (!isMetaLoading && repoName.length > 0) {
+      initRepoLoading()
+    }
+  }, [isMetaLoading, repoName])
 
   function handleFolderClick(fileObject: any) {
     if (fileObject.oid !== currentOid) {
@@ -25,12 +32,14 @@ export default function CodeTab({ repoName = '', isMetaLoading }: Props) {
     setCurrentOid(fileObject.oid)
   }
 
-  if (loadRepoStatus === 'ERROR') {
-    return <RepoError />
-  }
+  console.log({ loadRepoStatus, isMetaLoading })
 
   if (loadRepoStatus === 'PENDING' || isMetaLoading) {
     return <RepoLoading />
+  }
+
+  if (loadRepoStatus === 'ERROR') {
+    return <RepoError />
   }
 
   return (
