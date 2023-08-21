@@ -12,7 +12,7 @@ type Props = {
 }
 
 export function useFetchRepositoryMeta({ txId, initialFetchStatus = 'IDLE' }: Props) {
-  const [repoMeta] = useGlobalStore((state) => [state.getUserRepositoryMetaByTxId(txId)])
+  const [repoMeta, setRepoToGlobalStore] = useGlobalStore((state) => [state.getUserRepositoryMetaByTxId(txId), state.setUserRepositories])
   const [fetchedRepoMeta, setFetchedRepoMeta] = useState(repoMeta)
 
   const [fetchRepoMetaStatus, setFetchRepoMetaStatus] = useState<ApiStatus>(() =>
@@ -39,6 +39,7 @@ export function useFetchRepositoryMeta({ txId, initialFetchStatus = 'IDLE' }: Pr
       setFetchRepoMetaStatus('ERROR')
     } else if (response) {
       setFetchedRepoMeta(response.result)
+      setRepoToGlobalStore([response.result])
       setFetchRepoMetaStatus('SUCCESS')
     }
   }
