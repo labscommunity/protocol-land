@@ -1,5 +1,6 @@
 import React from 'react'
 
+import { waitFor } from '@/helpers/waitFor'
 import { withAsync } from '@/helpers/withAsync'
 import { importRepoFromBlob, unmountRepoFromBrowser } from '@/lib/git'
 
@@ -11,18 +12,21 @@ type Props = {
 export default function useFetchRepository({ txId, initialFetchStatus = 'IDLE' }: Props) {
   const [fetchRepoStatus, setFetchRepoStatus] = React.useState<ApiStatus>(initialFetchStatus)
 
-  const initFetchRepo = async () => {
+  const initFetchRepo = async (name: string) => {
     if (fetchRepoStatus !== 'PENDING') setFetchRepoStatus('PENDING')
 
-    const { response, error } = await withAsync(() =>
-      fetch(`https://arweave.net/${txId}`).then((res) => res.arrayBuffer())
-    )
+    await unmountRepo(name)
+
+    const { response, error } = await withAsync(() => fetch(`https://arweave.net/${txId}`))
 
     if (error) {
       setFetchRepoStatus('ERROR')
     } else if (response) {
-      const success = await importRepoFromBlob(new Blob([response]))
+      const repoArrayBuf = await response.arrayBuffer()
+      const success = await importRepoFromBlob(new Blob([repoArrayBuf]))
 
+      await waitFor(1000)
+      
       if (!success) {
         setFetchRepoStatus('ERROR')
       } else {

@@ -7,6 +7,7 @@ import { InjectedArweaveSigner } from 'warp-contracts-plugin-signature'
 import { CONTRACT_TX_ID } from '@/helpers/constants'
 import getWarpContract from '@/helpers/getWrapContract'
 import { toArrayBuffer } from '@/helpers/toArrayBuffer'
+import { waitFor } from '@/helpers/waitFor'
 import { withAsync } from '@/helpers/withAsync'
 
 import { FSType } from './helpers/fsWithName'
@@ -22,6 +23,14 @@ export async function postNewRepo({ title, description, file, owner }: any) {
   await userSigner.setPublicKey()
 
   const data = (await toArrayBuffer(file)) as ArrayBuffer
+
+  const validRepoData = verifyArrayBuffer(data)
+
+  if (!validRepoData) {
+    await unmountRepoFromBrowser(title)
+
+    throw new Error('Failed to post Git repository. Invalid data.')
+  }
 
   const inputTags = [
     // Content mime (media) type (For eg, "image/png")
@@ -80,6 +89,8 @@ export async function createNewRepo(title: string, fs: FSType, owner: string) {
       message: 'Add README.md'
     })
 
+    await waitFor(1000)
+
     const repoDB = new Dexie(title)
     await repoDB.open()
 
@@ -94,9 +105,9 @@ export async function createNewRepo(title: string, fs: FSType, owner: string) {
 }
 
 export async function importRepoFromBlob(repoBlob: Blob) {
-  const { error } = await withAsync(() => importDB(repoBlob))
+  const DB = await importDB(repoBlob)
 
-  if (error) {
+  if (!DB) {
     return false
   }
   return true
@@ -106,6 +117,17 @@ export async function unmountRepoFromBrowser(name: string) {
   const { error } = await withAsync(() => new Dexie(name).delete())
 
   if (error) {
+    return false
+  }
+
+  return true
+}
+
+function verifyArrayBuffer(repoArrayBuf: ArrayBuffer) {
+  const decoder = new TextDecoder('utf-8')
+  const decoded = JSON.parse(decoder.decode(repoArrayBuf))
+
+  if (decoded.data.data[0].rows.length !== 9) {
     return false
   }
 

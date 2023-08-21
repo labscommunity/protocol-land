@@ -10,19 +10,18 @@ import RepoLoading from './RepoLoading'
 import Row from './Row'
 
 type Props = {
-  isMetaLoading: boolean
   repoName: string
 }
 
-export default function CodeTab({ repoName = '', isMetaLoading }: Props) {
+export default function CodeTab({ repoName = '' }: Props) {
   const { fileObjects, currentOid, rootOid, loadRepoStatus, pushParentOid, setCurrentOid, goBack, initRepoLoading } =
     useRepository(repoName)
 
   React.useEffect(() => {
-    if (!isMetaLoading && repoName.length > 0) {
+    if (repoName.length > 0) {
       initRepoLoading()
     }
-  }, [isMetaLoading, repoName])
+  }, [repoName])
 
   function handleFolderClick(fileObject: any) {
     if (fileObject.oid !== currentOid) {
@@ -32,9 +31,7 @@ export default function CodeTab({ repoName = '', isMetaLoading }: Props) {
     setCurrentOid(fileObject.oid)
   }
 
-  console.log({ loadRepoStatus, isMetaLoading })
-
-  if (loadRepoStatus === 'PENDING' || isMetaLoading) {
+  if (loadRepoStatus === 'PENDING') {
     return <RepoLoading />
   }
 
