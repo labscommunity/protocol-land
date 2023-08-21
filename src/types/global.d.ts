@@ -10,4 +10,6 @@ declare module 'warp-contracts-plugin-deploy' {
   const DeployPlugin: any
 }
 
+declare module 'react-lottie'
+
 type ApiStatus = 'IDLE' | 'PENDING' | 'SUCCESS' | 'ERROR'
