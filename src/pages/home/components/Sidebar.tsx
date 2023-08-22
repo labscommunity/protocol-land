@@ -5,9 +5,9 @@ import { Button } from '@/components/common/buttons'
 import { useGlobalStore } from '@/stores/globalStore'
 import { Repo } from '@/types/repository'
 
-export default function Sidebar({ repos }: { repos: Repo[] }) {
+export default function Sidebar({ repos, isLoading }: { repos: Repo[]; isLoading: boolean }) {
   const [isLoggedIn] = useGlobalStore((state) => [state.auth.isLoggedIn])
-  const hasRepos = isLoggedIn === true && repos.length > 0
+  const hasRepos = repos.length > 0
 
   return (
     <div className="w-[20%] py-8 px-6 border-r-[1px] border-[#cbc9f6] flex flex-col gap-2">
@@ -18,12 +18,32 @@ export default function Sidebar({ repos }: { repos: Repo[] }) {
           <h3 className="text-liberty-dark-100">Login to view your repositories</h3>
         </div>
       )}
-      {!hasRepos && (
+      {isLoggedIn && !hasRepos && !isLoading && (
         <div className="w-full text-center py-4">
           <h3 className="text-liberty-dark-100">No repositories found</h3>
         </div>
       )}
-      {hasRepos && (
+      {isLoading && (
+        <div className="w-full text-left py-4 flex flex-col gap-4">
+          <div className="flex flex-col gap-1">
+            <div className="h-2 bg-gray-500 rounded-full w-[80%] animate-pulse"></div>
+            <div className="h-2 bg-gray-500 rounded-full w-[80%] animate-pulse"></div>
+          </div>
+          <div className="flex flex-col gap-1">
+            <div className="h-2 bg-gray-500 rounded-full w-[80%] animate-pulse"></div>
+            <div className="h-2 bg-gray-500 rounded-full w-[80%] animate-pulse"></div>
+          </div>
+          <div className="flex flex-col gap-1">
+            <div className="h-2 bg-gray-500 rounded-full w-[80%] animate-pulse"></div>
+            <div className="h-2 bg-gray-500 rounded-full w-[80%] animate-pulse"></div>
+          </div>
+          <div className="flex flex-col gap-1">
+            <div className="h-2 bg-gray-500 rounded-full w-[80%] animate-pulse"></div>
+            <div className="h-2 bg-gray-500 rounded-full w-[80%] animate-pulse"></div>
+          </div>
+        </div>
+      )}
+      {isLoggedIn && hasRepos && (
         <div className="w-full text-left py-4">
           {repos.map((repo) => (
             <Link to={`/repository/${repo.dataTxId}`}>

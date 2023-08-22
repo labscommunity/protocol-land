@@ -3,7 +3,7 @@ import { FiCode } from 'react-icons/fi'
 
 import useRepository from '@/pages/repository/hooks/useRepository'
 
-import Header from './Header'
+import Header from './header/Header'
 import RepoError from './RepoError'
 import RepoLoading from './RepoLoading'
 import Row from './Row'

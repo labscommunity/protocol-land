@@ -27,6 +27,7 @@ export const useGlobalStore = create(
     logout: () =>
       set((state) => {
         state.auth = initialAuthState
+        state.user = initialUserState
       }),
     setUserRepositories: (repos) =>
       set((state) => {
