@@ -9,7 +9,7 @@ export async function getAllBranches({ fs, dir }: CommonBranchOptions) {
 }
 
 export async function createNewBranch({ fs, dir, name }: CreateBranchOptions) {
-  const { error } = await withAsync(() => git.branch({ fs, dir, ref: name }))
+  const { error } = await withAsync(() => git.branch({ fs, dir, ref: name, checkout: true }))
 
   return {
     error,

@@ -7,14 +7,16 @@ import { LuGitBranchPlus } from 'react-icons/lu'
 import { Button } from '@/components/common/buttons'
 import useBranch from '@/pages/repository/hooks/useBranch'
 
-export default function BranchButton() {
-  const { branches, currentBranch } = useBranch()
+import NewBranchModal from './NewBranchModal'
 
-  const [selected, setSelected] = React.useState(currentBranch)
+export default function BranchButton() {
+  const { branches, currentBranch, addNewBranch } = useBranch()
+
+  const [isNewBranchModalOpen, setIsNewBranchModalOpen] = React.useState(false)
 
   return (
     <div className="flex items-center gap-4">
-      <Listbox value={selected} onChange={setSelected}>
+      <Listbox value={currentBranch} onChange={() => {}}>
         <div className="relative">
           <Listbox.Button className="relative w-full flex gap-16 justify-between items-center cursor-default rounded-lg text-[#4388f6] hover:bg-[#4388f6] hover:text-white border-[1.2px] border-[#4388f6] py-2 px-3 text-left shadow-md focus:outline-none focus-visible:border-indigo-500 focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-opacity-75 focus-visible:ring-offset-2 focus-visible:ring-offset-orange-300 text-md font-medium">
             <span className="block truncate">{currentBranch}</span>
@@ -58,9 +60,10 @@ export default function BranchButton() {
           </Transition>
         </div>
       </Listbox>
-      <Button variant="solid" className="rounded-md !px-4 py-[11px]">
+      <Button onClick={() => setIsNewBranchModalOpen(true)} variant="solid" className="rounded-md !px-4 py-[11px]">
         <LuGitBranchPlus className="w-5 h-5" />
       </Button>
+      <NewBranchModal isOpen={isNewBranchModalOpen} setIsOpen={setIsNewBranchModalOpen} addNewBranch={addNewBranch} />
     </div>
   )
 }
