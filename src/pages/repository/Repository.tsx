@@ -9,7 +9,7 @@ import repoLoadingAnimation from '@/assets/repo-loading.json'
 
 import RepoHeader from './components/RepoHeader'
 import CodeTab from './components/tabs/code-tab'
-import CommitsTab from './components/tabs/CommitsTab'
+import CommitsTab from './components/tabs/commits-tab'
 import PullRequestsTab from './components/tabs/PullRequestsTab'
 import useFetchRepository from './hooks/useFetchRepository'
 import { useFetchRepositoryMeta } from './hooks/useFetchRepositoryMeta'

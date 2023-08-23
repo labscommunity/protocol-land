@@ -61,6 +61,17 @@ export async function getCurrentBranch({ fs, dir }: CommonBranchOptions) {
   }
 }
 
+export async function checkoutBranch({ fs, dir, name }: CommonBranchOptions & { name: string }) {
+  return await withAsync(() =>
+    git.checkout({
+      fs,
+      dir,
+      ref: name,
+      track: false
+    })
+  )
+}
+
 type CreateBranchOptions = CommonBranchOptions & {
   name: string
   repoName: string

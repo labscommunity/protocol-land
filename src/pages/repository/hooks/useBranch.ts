@@ -1,7 +1,7 @@
 import React from 'react'
 import { useParams } from 'react-router'
 
-import { createNewBranch, getAllBranches, getCurrentBranch } from '@/lib/git/branch'
+import { checkoutBranch, createNewBranch, getAllBranches, getCurrentBranch } from '@/lib/git/branch'
 import { fsWithName } from '@/lib/git/helpers/fsWithName'
 import { useGlobalStore } from '@/stores/globalStore'
 
@@ -67,5 +67,19 @@ export default function useBranch() {
     }
   }
 
-  return { branches, currentBranch, addNewBranch }
+  async function switchBranch(branch: string) {
+    if (!userRepo) return
+
+    const { name } = userRepo
+    const fs = fsWithName(name)
+    const dir = `/${name}`
+
+    const { error } = await checkoutBranch({ fs, dir, name: branch })
+
+    if (!error) {
+      await fetchCurrentBranch()
+    }
+  }
+
+  return { branches, currentBranch, addNewBranch, switchBranch }
 }

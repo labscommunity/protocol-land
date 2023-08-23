@@ -10,13 +10,13 @@ import useBranch from '@/pages/repository/hooks/useBranch'
 import NewBranchModal from './NewBranchModal'
 
 export default function BranchButton() {
-  const { branches, currentBranch, addNewBranch } = useBranch()
+  const { branches, currentBranch, addNewBranch, switchBranch } = useBranch()
 
   const [isNewBranchModalOpen, setIsNewBranchModalOpen] = React.useState(false)
 
   return (
     <div className="flex items-center gap-4">
-      <Listbox value={currentBranch} onChange={() => {}}>
+      <Listbox value={currentBranch} onChange={switchBranch}>
         <div className="relative">
           <Listbox.Button className="relative w-full flex gap-16 justify-between items-center cursor-default rounded-lg text-[#4388f6] hover:bg-[#4388f6] hover:text-white border-[1.2px] border-[#4388f6] py-2 px-3 text-left shadow-md focus:outline-none focus-visible:border-indigo-500 focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-opacity-75 focus-visible:ring-offset-2 focus-visible:ring-offset-orange-300 text-md font-medium">
             <span className="block truncate">{currentBranch}</span>
