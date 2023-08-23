@@ -2,6 +2,7 @@ import Arweave from 'arweave'
 import Dexie from 'dexie'
 import { exportDB, importDB } from 'dexie-export-import'
 import git from 'isomorphic-git'
+import { v4 as uuidv4 } from 'uuid'
 import { InjectedArweaveSigner } from 'warp-contracts-plugin-signature'
 
 import { CONTRACT_TX_ID } from '@/helpers/constants'
@@ -33,13 +34,12 @@ export async function postNewRepo({ title, description, file, owner }: any) {
   }
 
   const inputTags = [
-    // Content mime (media) type (For eg, "image/png")
     { name: 'App-Name', value: 'Protocol.Land' },
     { name: 'Content-Type', value: file.type },
     { name: 'Creator', value: owner },
     { name: 'Title', value: title },
     { name: 'Description', value: description },
-    { name: 'Type', value: 'repo' }
+    { name: 'Type', value: 'repo-create' }
   ]
 
   const transaction = await arweave.createTransaction({
@@ -59,11 +59,45 @@ export async function postNewRepo({ title, description, file, owner }: any) {
   await contract.writeInteraction({
     function: 'initialize',
     payload: {
+      id: uuidv4(),
       name: title,
       description,
       dataTxId: dataTxResponse.id
     }
   })
+
+  return dataTxResponse
+}
+
+export async function postUpdatedRepo({ title, owner }: PostUpdatedRepoOptions) {
+  const repoDB = new Dexie(title)
+  await repoDB.open()
+
+  const repoBlob = await exportDB(repoDB)
+
+  const userSigner = new InjectedArweaveSigner(window.arweaveWallet)
+  await userSigner.setPublicKey()
+
+  const data = (await toArrayBuffer(repoBlob)) as ArrayBuffer
+
+  const inputTags = [
+    { name: 'App-Name', value: 'Protocol.Land' },
+    { name: 'Content-Type', value: repoBlob.type },
+    { name: 'Creator', value: owner },
+    { name: 'Type', value: 'repo-update' }
+  ]
+
+  const transaction = await arweave.createTransaction({
+    data
+  })
+
+  inputTags.forEach((tag) => transaction.addTag(tag.name, tag.value))
+
+  const dataTxResponse = await window.arweaveWallet.dispatch(transaction)
+
+  if (!dataTxResponse) {
+    throw new Error('Failed to post Git repository')
+  }
 
   return dataTxResponse
 }
@@ -132,4 +166,9 @@ function verifyArrayBuffer(repoArrayBuf: ArrayBuffer) {
   }
 
   return true
+}
+
+type PostUpdatedRepoOptions = {
+  title: string
+  owner: string
 }

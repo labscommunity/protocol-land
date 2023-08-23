@@ -34,12 +34,12 @@ const tabData = [
 ]
 
 export default function Repository() {
-  const { txid } = useParams()
+  const { id } = useParams()
   const { fetchRepoMetaStatus, fetchedRepoMeta, initFetchRepoMeta } = useFetchRepositoryMeta({
-    txId: txid!,
+    id: id!,
     initialFetchStatus: 'PENDING'
   })
-  const { initFetchRepo, fetchRepoStatus } = useFetchRepository({ txId: txid! })
+  const { initFetchRepo, fetchRepoStatus } = useFetchRepository()
 
   React.useLayoutEffect(() => {
     if (!fetchedRepoMeta) {
@@ -51,7 +51,7 @@ export default function Repository() {
     if (fetchRepoStatus === 'SUCCESS') return
 
     if (fetchedRepoMeta) {
-      initFetchRepo(fetchedRepoMeta.name)
+      initFetchRepo(fetchedRepoMeta.name, fetchedRepoMeta.dataTxId)
     }
   }, [fetchedRepoMeta])
 

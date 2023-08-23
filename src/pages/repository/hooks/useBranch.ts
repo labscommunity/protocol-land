@@ -6,8 +6,8 @@ import { fsWithName } from '@/lib/git/helpers/fsWithName'
 import { useGlobalStore } from '@/stores/globalStore'
 
 export default function useBranch() {
-  const { txid } = useParams()
-  const [userRepo] = useGlobalStore((state) => [state.getUserRepositoryMetaByTxId(txid!)])
+  const { id } = useParams()
+  const [userRepo, address] = useGlobalStore((state) => [state.getUserRepositoryMetaById(id!), state.auth.address])
   const [branches, setBranches] = React.useState<string[]>([])
   const [currentBranch, setCurrentBranch] = React.useState('master')
 
@@ -52,9 +52,16 @@ export default function useBranch() {
     const fs = fsWithName(name)
     const dir = `/${name}`
 
-    const { error } = await createNewBranch({ fs, dir, name: branchName })
+    const result = await createNewBranch({
+      fs,
+      dir,
+      name: branchName,
+      owner: address!,
+      repoName: name,
+      id: userRepo.id
+    })
 
-    if (!error) {
+    if (result) {
       await listBranches()
       await fetchCurrentBranch()
     }

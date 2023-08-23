@@ -7,19 +7,22 @@ export async function initializeNewRepository(
   { caller, input: { payload } }: RepositoryAction
 ): Promise<ContractResult<ContractState>> {
   // validate payload
-  if (!payload.name || !payload.description || !payload.dataTxId) {
+  if (!payload.name || !payload.description || !payload.dataTxId || !payload.id) {
     throw new ContractError('Invalid inputs supplied.')
   }
 
   const repo: Repo = {
+    id: payload.id,
     name: payload.name,
     description: payload.description,
     stars: 0,
+    branches: 1,
+    commits: 1,
     dataTxId: payload.dataTxId,
     owner: caller
   }
 
-  state.repos[repo.dataTxId] = repo
+  state.repos[repo.id] = repo
 
   return { state }
 }
@@ -29,11 +32,11 @@ export async function getRepository(
   { input: { payload } }: RepositoryAction
 ): Promise<ContractResult<Repo>> {
   // validate payload
-  if (!payload.txId) {
+  if (!payload.id) {
     throw new ContractError('Invalid inputs supplied.')
   }
 
-  const repo = state.repos[payload.txId]
+  const repo = state.repos[payload.id]
 
   if (!repo) {
     throw new ContractError('Repository not found.')

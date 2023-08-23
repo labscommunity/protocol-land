@@ -33,8 +33,8 @@ export const useGlobalStore = create(
       set((state) => {
         state.user.repositories = repos
       }),
-    getUserRepositoryMetaByTxId: (txId) => {
-      const repo = get().user.repositories.find((repo) => repo.dataTxId === txId)
+    getUserRepositoryMetaById: (id) => {
+      const repo = get().user.repositories.find((repo) => repo?.id === id)
 
       return repo
     }

@@ -7,12 +7,12 @@ import { withAsync } from '@/helpers/withAsync'
 import { useGlobalStore } from '@/stores/globalStore'
 
 type Props = {
-  txId: string
+  id: string
   initialFetchStatus?: ApiStatus
 }
 
-export function useFetchRepositoryMeta({ txId, initialFetchStatus = 'IDLE' }: Props) {
-  const [repoMeta, setRepoToGlobalStore] = useGlobalStore((state) => [state.getUserRepositoryMetaByTxId(txId), state.setUserRepositories])
+export function useFetchRepositoryMeta({ id, initialFetchStatus = 'IDLE' }: Props) {
+  const [repoMeta, setRepoToGlobalStore] = useGlobalStore((state) => [state.getUserRepositoryMetaById(id), state.setUserRepositories])
   const [fetchedRepoMeta, setFetchedRepoMeta] = useState(repoMeta)
 
   const [fetchRepoMetaStatus, setFetchRepoMetaStatus] = useState<ApiStatus>(() =>
@@ -30,7 +30,7 @@ export function useFetchRepositoryMeta({ txId, initialFetchStatus = 'IDLE' }: Pr
       contract.viewState({
         function: 'getRepository',
         payload: {
-          txId: txId
+          id
         }
       })
     )

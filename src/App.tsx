@@ -10,7 +10,7 @@ function App() {
       <AppLayout>
         <Routes>
           <Route index path="/" element={<Home />} />
-          <Route path="/repository/:txid" element={<Repository />} />
+          <Route path="/repository/:id" element={<Repository />} />
         </Routes>
       </AppLayout>
     </HashRouter>

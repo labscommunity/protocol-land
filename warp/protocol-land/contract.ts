@@ -1,3 +1,4 @@
+import { createNewBranch } from './actions/branch'
 import { evolveContract } from './actions/evolve'
 import { getAllRepositoriesByOwner, getRepository, initializeNewRepository } from './actions/repository'
 import { ContractState, EvolveAction, RepositoryAction } from './types'
@@ -14,6 +15,8 @@ export async function handle(state: ContractState, action: RepositoryAction | Ev
       return await getRepository(state, action as RepositoryAction)
     case 'getRepositoriesByOwner':
       return await getAllRepositoriesByOwner(state, action as RepositoryAction)
+    case 'createNewBranch':
+      return await createNewBranch(state, action as RepositoryAction)
     case 'evolve':
       return await evolveContract(state, action as EvolveAction)
     default:

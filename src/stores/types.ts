@@ -9,7 +9,7 @@ export type Actions = {
   login: (value: AuthState) => void
   logout: () => void
   setUserRepositories: (repos: Array<Repo>) => void
-  getUserRepositoryMetaByTxId: (txId: string) => Repo | undefined
+  getUserRepositoryMetaById: (id: string) => Repo | undefined
 }
 
 export type AuthState = {
