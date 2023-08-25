@@ -52,7 +52,6 @@ export default function NewRepoModal({ setIsOpen, isOpen }: NewRepoModalProps) {
     const fs = fsWithName(title)
     const createdRepo = await createNewRepo(title, fs, owner)
 
-    console.log({ createdRepo })
     if (createdRepo && createdRepo.commit && createdRepo.repoBlob) {
       const { repoBlob } = createdRepo
 

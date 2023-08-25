@@ -1,6 +1,6 @@
 import Arweave from 'arweave'
 import Dexie from 'dexie'
-import { exportDB, importDB } from 'dexie-export-import'
+import { exportDB } from 'dexie-export-import'
 import git from 'isomorphic-git'
 import { v4 as uuidv4 } from 'uuid'
 import { InjectedArweaveSigner } from 'warp-contracts-plugin-signature'
@@ -12,6 +12,7 @@ import { waitFor } from '@/helpers/waitFor'
 import { withAsync } from '@/helpers/withAsync'
 
 import { FSType } from './helpers/fsWithName'
+import { packGitRepo, unpackGitRepo } from './helpers/zipUtils'
 
 const arweave = new Arweave({
   host: 'ar-io.net',
@@ -25,13 +26,7 @@ export async function postNewRepo({ title, description, file, owner }: any) {
 
   const data = (await toArrayBuffer(file)) as ArrayBuffer
 
-  const validRepoData = verifyArrayBuffer(data)
-
-  if (!validRepoData) {
-    await unmountRepoFromBrowser(title)
-
-    throw new Error('Failed to post Git repository. Invalid data.')
-  }
+  await waitFor(500)
 
   const inputTags = [
     { name: 'App-Name', value: 'Protocol.Land' },
@@ -49,24 +44,25 @@ export async function postNewRepo({ title, description, file, owner }: any) {
   inputTags.forEach((tag) => transaction.addTag(tag.name, tag.value))
 
   const dataTxResponse = await window.arweaveWallet.dispatch(transaction)
-  console.log({ dataTxResponse })
+
   if (!dataTxResponse) {
     throw new Error('Failed to post Git repository')
   }
 
   const contract = getWarpContract(CONTRACT_TX_ID, userSigner)
 
+  const uuid = uuidv4()
   await contract.writeInteraction({
     function: 'initialize',
     payload: {
-      id: uuidv4(),
+      id: uuid,
       name: title,
       description,
       dataTxId: dataTxResponse.id
     }
   })
 
-  return dataTxResponse
+  return { txResponse: dataTxResponse, id: uuid }
 }
 
 export async function postUpdatedRepo({ title, owner }: PostUpdatedRepoOptions) {
@@ -125,10 +121,7 @@ export async function createNewRepo(title: string, fs: FSType, owner: string) {
 
     await waitFor(1000)
 
-    const repoDB = new Dexie(title)
-    await repoDB.open()
-
-    const repoBlob = await exportDB(repoDB)
+    const repoBlob = await packGitRepo({ fs, dir })
 
     return { repoBlob, commit: sha }
   } catch (error) {
@@ -138,12 +131,13 @@ export async function createNewRepo(title: string, fs: FSType, owner: string) {
   }
 }
 
-export async function importRepoFromBlob(repoBlob: Blob) {
-  const DB = await importDB(repoBlob)
+export async function importRepoFromBlob(fs: FSType, dir: string, repoBlob: Blob) {
+  const status = await unpackGitRepo({ fs, dir, blob: repoBlob })
 
-  if (!DB) {
+  if (!status) {
     return false
   }
+
   return true
 }
 
@@ -151,17 +145,6 @@ export async function unmountRepoFromBrowser(name: string) {
   const { error } = await withAsync(() => new Dexie(name).delete())
 
   if (error) {
-    return false
-  }
-
-  return true
-}
-
-function verifyArrayBuffer(repoArrayBuf: ArrayBuffer) {
-  const decoder = new TextDecoder('utf-8')
-  const decoded = JSON.parse(decoder.decode(repoArrayBuf))
-
-  if (decoded.data.data[0].rows.length !== 9) {
     return false
   }
 

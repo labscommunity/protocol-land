@@ -3,6 +3,7 @@ import React from 'react'
 import { waitFor } from '@/helpers/waitFor'
 import { withAsync } from '@/helpers/withAsync'
 import { importRepoFromBlob, unmountRepoFromBrowser } from '@/lib/git'
+import { fsWithName } from '@/lib/git/helpers/fsWithName'
 
 export default function useFetchRepository() {
   const [fetchRepoStatus, setFetchRepoStatus] = React.useState<ApiStatus>('IDLE')
@@ -17,8 +18,11 @@ export default function useFetchRepository() {
     if (error) {
       setFetchRepoStatus('ERROR')
     } else if (response) {
+      const fs = fsWithName(name)
+      const dir = `/${name}`
+
       const repoArrayBuf = await response.arrayBuffer()
-      const success = await importRepoFromBlob(new Blob([repoArrayBuf]))
+      const success = await importRepoFromBlob(fs, dir, new Blob([repoArrayBuf]))
 
       await waitFor(1000)
 
