@@ -1,10 +1,22 @@
+import React from 'react'
 import { FiGitCommit } from 'react-icons/fi'
+import { useParams } from 'react-router-dom'
 
 import { shortenAddress } from '@/helpers/shortenAddress'
 import useCommit from '@/pages/repository/hooks/useCommit'
+import { useGlobalStore } from '@/stores/globalStore'
 
 export default function CommitsTab() {
-  const { commitsList } = useCommit()
+  const { id } = useParams()
+  const [userRepo] = useGlobalStore((state) => [state.getUserRepositoryMetaById(id!), state.auth.address])
+
+  const { commitsList, fetchAllCommits } = useCommit()
+
+  React.useEffect(() => {
+    if (userRepo) {
+      fetchAllCommits(userRepo.name)
+    }
+  }, [userRepo])
 
   return (
     <div className="h-full w-full px-2 py-2 flex flex-col">
