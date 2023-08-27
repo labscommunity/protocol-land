@@ -1,12 +1,14 @@
 import React from 'react'
 import { FiCode } from 'react-icons/fi'
 
+import useCommit from '@/pages/repository/hooks/useCommit'
 import useRepository from '@/pages/repository/hooks/useRepository'
 
 import Header from './header/Header'
 import RepoError from './RepoError'
 import RepoLoading from './RepoLoading'
 import Row from './Row'
+import TableHead from './TableHead'
 
 type Props = {
   repoName: string
@@ -15,10 +17,12 @@ type Props = {
 export default function CodeTab({ repoName = '' }: Props) {
   const { fileObjects, currentOid, rootOid, loadRepoStatus, pushParentOid, setCurrentOid, goBack, initRepoLoading } =
     useRepository(repoName)
+  const { commitsList, fetchFirstCommit } = useCommit()
 
   React.useEffect(() => {
     if (repoName.length > 0) {
       initRepoLoading()
+      fetchFirstCommit(repoName)
     }
   }, [repoName])
 
@@ -43,14 +47,7 @@ export default function CodeTab({ repoName = '' }: Props) {
       <Header />
       <div className="flex w-full">
         <div className="border-liberty-light-200 border-[1.5px] w-full rounded-lg bg-[whitesmoke] text-liberty-dark-100 overflow-hidden">
-          <div className="flex justify-between bg-liberty-light-800 text-[whitesmoke] items-center gap-2 py-2 px-4 border-b-[1px] border-liberty-light-400">
-            <span>Sai Kranthi</span>
-            <div className="w-[40%] flex justify-between">
-              <span>initial commit</span>
-              <span>a2d0c3</span>
-              <span> 3 days ago</span>
-            </div>
-          </div>
+          <TableHead commit={commitsList[0]} />
           {!fileObjects.length && (
             <div className="py-6 flex gap-2 justify-center items-center">
               <FiCode className="w-8 h-8 text-liberty-dark-100" />

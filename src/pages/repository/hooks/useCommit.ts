@@ -3,7 +3,7 @@ import { FileWithPath } from 'react-dropzone'
 
 import { withAsync } from '@/helpers/withAsync'
 import { postUpdatedRepo } from '@/lib/git'
-import { addFilesForCommit, commitFiles, getAllCommits, stageFilesForCommit } from '@/lib/git/commit'
+import { addFilesForCommit, commitFiles, getAllCommits, getFirstCommit, stageFilesForCommit } from '@/lib/git/commit'
 import { fsWithName } from '@/lib/git/helpers/fsWithName'
 import { CommitResult } from '@/types/commit'
 
@@ -22,6 +22,16 @@ export default function useCommit() {
     const fs = fsWithName(name)
     const dir = `/${name}`
     const commits = await getAllCommits({ fs, dir })
+
+    if (commits && commits.length > 0) {
+      setCommitsList(commits)
+    }
+  }
+
+  async function fetchFirstCommit(name: string) {
+    const fs = fsWithName(name)
+    const dir = `/${name}`
+    const commits = await getFirstCommit({ fs, dir })
 
     if (commits && commits.length > 0) {
       setCommitsList(commits)
@@ -62,6 +72,7 @@ export default function useCommit() {
   return {
     commitsList,
     fetchAllCommits,
+    fetchFirstCommit,
     addFiles
   }
 }

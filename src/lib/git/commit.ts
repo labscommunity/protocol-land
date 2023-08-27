@@ -9,6 +9,10 @@ export async function getAllCommits({ fs, dir }: CommonCommitOptions) {
   return await git.log({ fs, dir })
 }
 
+export async function getFirstCommit({ fs, dir }: CommonCommitOptions) {
+  return await git.log({ fs, dir, depth: 1 })
+}
+
 export async function addFilesForCommit({ fs, dir, files }: AddFilesForCommitOptions) {
   for (const file of files) {
     const paths = file.path?.split('/') || []
