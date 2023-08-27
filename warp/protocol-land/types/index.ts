@@ -21,9 +21,6 @@ export type Repo = {
   id: string
   name: string
   description: string
-  stars: number
-  branches: number
-  commits: number
   dataTxId: string
   owner: string
 }
@@ -48,6 +45,6 @@ export type EvolveInput = {
   value: any
 }
 
-export type RepositoryFunction = 'initialize' | 'getRepository' | 'getRepositoriesByOwner' | 'createNewBranch' // more types will be added later
+export type RepositoryFunction = 'initialize' | 'getRepository' | 'getRepositoriesByOwner' | 'updateRepositoryTxId' // more types will be added later
 
 export type ContractResult<T> = { state: T } | { result: T }

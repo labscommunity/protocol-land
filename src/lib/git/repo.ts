@@ -1,6 +1,5 @@
 import Arweave from 'arweave'
 import Dexie from 'dexie'
-import { exportDB } from 'dexie-export-import'
 import git from 'isomorphic-git'
 import { v4 as uuidv4 } from 'uuid'
 import { InjectedArweaveSigner } from 'warp-contracts-plugin-signature'
@@ -65,16 +64,15 @@ export async function postNewRepo({ title, description, file, owner }: any) {
   return { txResponse: dataTxResponse, id: uuid }
 }
 
-export async function postUpdatedRepo({ title, owner }: PostUpdatedRepoOptions) {
-  const repoDB = new Dexie(title)
-  await repoDB.open()
-
-  const repoBlob = await exportDB(repoDB)
+export async function postUpdatedRepo({ fs, dir, owner, id }: PostUpdatedRepoOptions) {
+  const repoBlob = await packGitRepo({ fs, dir })
 
   const userSigner = new InjectedArweaveSigner(window.arweaveWallet)
   await userSigner.setPublicKey()
 
   const data = (await toArrayBuffer(repoBlob)) as ArrayBuffer
+
+  await waitFor(500)
 
   const inputTags = [
     { name: 'App-Name', value: 'Protocol.Land' },
@@ -94,6 +92,16 @@ export async function postUpdatedRepo({ title, owner }: PostUpdatedRepoOptions) 
   if (!dataTxResponse) {
     throw new Error('Failed to post Git repository')
   }
+
+  const contract = getWarpContract(CONTRACT_TX_ID, userSigner)
+
+  await contract.writeInteraction({
+    function: 'updateRepositoryTxId',
+    payload: {
+      id,
+      dataTxId: dataTxResponse.id
+    }
+  })
 
   return dataTxResponse
 }
@@ -152,6 +160,8 @@ export async function unmountRepoFromBrowser(name: string) {
 }
 
 type PostUpdatedRepoOptions = {
-  title: string
+  id: string
+  fs: FSType
+  dir: string
   owner: string
 }

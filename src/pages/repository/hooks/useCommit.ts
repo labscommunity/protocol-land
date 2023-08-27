@@ -2,9 +2,18 @@ import React from 'react'
 import { FileWithPath } from 'react-dropzone'
 
 import { withAsync } from '@/helpers/withAsync'
+import { postUpdatedRepo } from '@/lib/git'
 import { addFilesForCommit, commitFiles, getAllCommits, stageFilesForCommit } from '@/lib/git/commit'
 import { fsWithName } from '@/lib/git/helpers/fsWithName'
 import { CommitResult } from '@/types/commit'
+
+type AddFilesOptions = {
+  name: string
+  files: FileWithPath[]
+  message: string
+  owner: string
+  id: string
+}
 
 export default function useCommit() {
   const [commitsList, setCommitsList] = React.useState<CommitResult[]>([])
@@ -19,7 +28,7 @@ export default function useCommit() {
     }
   }
 
-  async function addFiles(name: string, files: FileWithPath[], message: string, owner: string) {
+  async function addFiles({ files, id, message, name, owner }: AddFilesOptions) {
     const fs = fsWithName(name)
     const dir = `/${name}`
 
@@ -39,9 +48,15 @@ export default function useCommit() {
 
     if (stagingError) throw new Error('Failed to stage files')
 
-    const result = await withAsync(() => commitFiles({ fs, dir, message, owner }))
+    const { error: commitError } = await withAsync(() => commitFiles({ fs, dir, message, owner }))
 
-    return result
+    if (commitError) throw new Error('Failed to commit files')
+
+    const { error, response } = await withAsync(() => postUpdatedRepo({ fs, dir, owner, id }))
+
+    if (error) throw new Error('Failed to update repository')
+
+    return response
   }
 
   return {

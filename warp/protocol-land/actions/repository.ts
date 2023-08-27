@@ -15,14 +15,31 @@ export async function initializeNewRepository(
     id: payload.id,
     name: payload.name,
     description: payload.description,
-    stars: 0,
-    branches: 1,
-    commits: 1,
     dataTxId: payload.dataTxId,
     owner: caller
   }
 
   state.repos[repo.id] = repo
+
+  return { state }
+}
+
+export async function updateRepositoryTxId(
+  state: ContractState,
+  { input: { payload } }: RepositoryAction
+): Promise<ContractResult<ContractState>> {
+  // validate payload
+  if (!payload.dataTxId || !payload.id) {
+    throw new ContractError('Invalid inputs supplied.')
+  }
+
+  const repo = state.repos[payload.id]
+
+  if (!repo) {
+    throw new ContractError('Repository not found.')
+  }
+
+  repo.dataTxId = payload.dataTxId
 
   return { state }
 }
