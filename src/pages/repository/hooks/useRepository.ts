@@ -24,7 +24,7 @@ export default function useRepository(name: string) {
 
     setLoadRepoStatus('PENDING')
 
-    const { error, response } = await withAsync(() => getOidFromRef({ ref: 'master', dir, fs }))
+    const { error, response } = await withAsync(() => getOidFromRef({ ref: 'HEAD', dir, fs }))
 
     if (error) {
       setLoadRepoStatus('ERROR')

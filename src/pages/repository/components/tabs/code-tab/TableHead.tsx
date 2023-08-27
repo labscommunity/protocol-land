@@ -9,7 +9,7 @@ export default function TableHead({ commit }: { commit: CommitResult }) {
       {commit && (
         <>
           <span>{shortenAddress(commit.commit.author.name)}</span>
-          <div className="w-[40%] flex justify-between">
+          <div className="gap-8 flex justify-between">
             <span>{commit.commit.message}</span>
             <span>{commit.oid.slice(0, 7)}</span>
             <span>{formatDistanceToNow(new Date(commit.commit.committer.timestamp * 1000), { addSuffix: true })}</span>

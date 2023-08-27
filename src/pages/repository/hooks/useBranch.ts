@@ -27,9 +27,10 @@ export default function useBranch() {
     const dir = `/${name}`
 
     const branchList = await getAllBranches({ fs, dir })
-
+    console.log({branchList})
     setBranches([...branchList])
   }
+
   async function fetchCurrentBranch() {
     if (!userRepo) return
 

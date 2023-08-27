@@ -10,6 +10,7 @@ import { toArrayBuffer } from '@/helpers/toArrayBuffer'
 import { waitFor } from '@/helpers/waitFor'
 import { withAsync } from '@/helpers/withAsync'
 
+import { checkoutBranch, getCurrentBranch } from './branch'
 import { FSType } from './helpers/fsWithName'
 import { packGitRepo, unpackGitRepo } from './helpers/zipUtils'
 
@@ -65,6 +66,14 @@ export async function postNewRepo({ title, description, file, owner }: any) {
 }
 
 export async function postUpdatedRepo({ fs, dir, owner, id }: PostUpdatedRepoOptions) {
+  const { error, result } = await getCurrentBranch({ fs, dir })
+
+  if (!error && result && result !== 'master') {
+    await checkoutBranch({ fs, dir, name: 'master' })
+  }
+
+  await waitFor(500)
+
   const repoBlob = await packGitRepo({ fs, dir })
 
   const userSigner = new InjectedArweaveSigner(window.arweaveWallet)

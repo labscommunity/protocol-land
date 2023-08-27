@@ -1,18 +1,15 @@
 import git from 'isomorphic-git'
 import { InjectedArweaveSigner } from 'warp-contracts-plugin-signature'
 
-import { CONTRACT_TX_ID } from '@/helpers/constants'
-import getWarpContract from '@/helpers/getWrapContract'
 import { withAsync } from '@/helpers/withAsync'
 
-import { postUpdatedRepo } from '.'
 import { FSType } from './helpers/fsWithName'
 
 export async function getAllBranches({ fs, dir }: CommonBranchOptions) {
   return await git.listBranches({ fs, dir })
 }
 
-export async function createNewBranch({ fs, dir, name, repoName, owner, id }: CreateBranchOptions) {
+export async function createNewBranch({ fs, dir, name }: CreateBranchOptions) {
   const userSigner = new InjectedArweaveSigner(window.arweaveWallet)
   await userSigner.setPublicKey()
 
@@ -20,29 +17,8 @@ export async function createNewBranch({ fs, dir, name, repoName, owner, id }: Cr
 
   if (gitBranchError) throw new Error('Failed to create new branch.')
 
-  const { error: postRepoError, response: dataTx } = await withAsync(() => postUpdatedRepo({ title: repoName, owner }))
-
-  const { error: listBranchError, response: branchList } = await withAsync(() => git.listBranches({ fs, dir }))
-
-  if (postRepoError || listBranchError) throw new Error('Failed to post updated repo to arweave.')
-
-  if (dataTx && branchList) {
-    const interactionData = {
-      function: 'createNewBranch',
-      payload: {
-        id: id,
-        newDataTxId: dataTx.id,
-        totalBranchCount: branchList.length
-      }
-    }
-
-    const contract = getWarpContract(CONTRACT_TX_ID, userSigner)
-
-    await contract.writeInteraction(interactionData)
-
-    return {
-      result: true
-    }
+  return {
+    result: true
   }
 }
 
