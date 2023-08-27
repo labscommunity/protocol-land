@@ -2,7 +2,7 @@ import React from 'react'
 
 import { withAsync } from '@/helpers/withAsync'
 import { fsWithName } from '@/lib/git/helpers/fsWithName'
-import { getOidFromRef, readFilesFromOid } from '@/lib/git/helpers/oid'
+import { getOidFromRef, readFileFromOid, readFilesFromOid } from '@/lib/git/helpers/oid'
 
 export default function useRepository(name: string) {
   const [currentOid, setCurrentOid] = React.useState('')
@@ -51,6 +51,23 @@ export default function useRepository(name: string) {
     }
   }
 
+  async function fetchFileContentFromOid(oid: string) {
+    const fs = fsWithName(name)
+    const dir = `/${name}`
+
+    if (loadRepoStatus !== 'PENDING') setLoadRepoStatus('PENDING')
+
+    const { error, response } = await withAsync(() => readFileFromOid({ dir, oid, fs }))
+
+    if (error) {
+      setLoadRepoStatus('ERROR')
+    } else if (response) {
+      setLoadRepoStatus('SUCCESS')
+
+      return response
+    }
+  }
+
   function pushParentOid(oid: string) {
     parentsOidList.current.push(oid)
   }
@@ -75,6 +92,7 @@ export default function useRepository(name: string) {
     setCurrentOid,
     goBack,
     pushParentOid,
-    initRepoLoading
+    initRepoLoading,
+    fetchFileContentFromOid
   }
 }

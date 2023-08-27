@@ -3,14 +3,16 @@ import { AiFillFolder, AiOutlineFileText } from 'react-icons/ai'
 type Props = {
   isFolder: boolean
   item: any
-  onClick: (items: any) => void
+  onFolderClick: (items: any) => void
+  onFileClick: (items: any) => void
 }
 
-export default function Row({ isFolder, item, onClick }: Props) {
+export default function Row({ isFolder, item, onFolderClick, onFileClick }: Props) {
   const Icon = isFolder ? AiFillFolder : AiOutlineFileText
 
   function handleRowClick() {
-    if (isFolder) onClick(item)
+    if (isFolder) onFolderClick(item)
+    if (!isFolder) onFileClick(item)
   }
 
   return (

@@ -32,6 +32,12 @@ export async function readFilesFromOid({ fs, dir, oid, prefix }: ReadFilesFromOi
   }
 }
 
+export async function readFileFromOid({ fs, dir, oid }: ReadFileFromOidOptions) {
+  const { blob } = await git.readBlob({ fs, dir, oid })
+
+  return blob
+}
+
 export async function getOidFromRef({ ref, dir, fs }: GetOidFromRefOptions) {
   return await git.resolveRef({ fs, dir, ref })
 }
@@ -57,6 +63,12 @@ type ReadFilesFromOidOptions = {
   dir: string
   oid: string
   prefix: string
+}
+
+type ReadFileFromOidOptions = {
+  fs: FSType
+  dir: string
+  oid: string
 }
 
 type GetOidFromRefOptions = {
