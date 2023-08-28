@@ -7,7 +7,10 @@ import { useGlobalStore } from '@/stores/globalStore'
 
 export default function useBranch() {
   const { id } = useParams()
-  const [userRepo, address] = useGlobalStore((state) => [state.getUserRepositoryMetaById(id!), state.auth.address])
+  const [userRepo, address] = useGlobalStore((state) => [
+    state.repositoryActions.getUserRepositoryMetaById(id!),
+    state.authState.address
+  ])
   const [branches, setBranches] = React.useState<string[]>([])
   const [currentBranch, setCurrentBranch] = React.useState('master')
 
@@ -27,7 +30,7 @@ export default function useBranch() {
     const dir = `/${name}`
 
     const branchList = await getAllBranches({ fs, dir })
-    console.log({branchList})
+    console.log({ branchList })
     setBranches([...branchList])
   }
 

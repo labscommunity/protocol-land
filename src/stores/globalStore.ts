@@ -2,41 +2,15 @@ import { create, StateCreator } from 'zustand'
 import { devtools } from 'zustand/middleware'
 import { immer } from 'zustand/middleware/immer'
 
-import { Actions, AppState, AuthState } from './types'
+import createAuthSlice from './auth'
+import createRepoSlice from './repository'
+import { CombinedSlices } from './types'
 
 const withMiddlewares = <T>(f: StateCreator<T, [['zustand/immer', never]], []>) => devtools(immer<T>(f))
 
-const initialAuthState = {
-  isLoggedIn: false,
-  address: null,
-  method: null
-}
-
-const initialUserState = {
-  repositories: []
-}
-
 export const useGlobalStore = create(
-  withMiddlewares<AppState & Actions>((set, get) => ({
-    auth: initialAuthState,
-    user: initialUserState,
-    login: (value: AuthState) =>
-      set((state) => {
-        state.auth = value
-      }),
-    logout: () =>
-      set((state) => {
-        state.auth = initialAuthState
-        state.user = initialUserState
-      }),
-    setUserRepositories: (repos) =>
-      set((state) => {
-        state.user.repositories = repos
-      }),
-    getUserRepositoryMetaById: (id) => {
-      const repo = get().user.repositories.find((repo) => repo?.id === id)
-
-      return repo
-    }
+  withMiddlewares<CombinedSlices>((...args) => ({
+    ...createAuthSlice(...args),
+    ...createRepoSlice(...args)
   }))
 )

@@ -10,7 +10,7 @@ import { Button } from '@/components/common/buttons'
 import { useGlobalStore } from '@/stores/globalStore'
 
 export default function UserProfileButton() {
-  const [login, logout] = useGlobalStore((state) => [state.login, state.logout])
+  const [login, logout] = useGlobalStore((state) => [state.authActions.login, state.authActions.logout])
   const { connected, connect, disconnect } = useConnection()
   const profileModal = useProfileModal()
   const address = useActiveAddress()

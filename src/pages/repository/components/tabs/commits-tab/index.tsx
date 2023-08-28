@@ -8,7 +8,10 @@ import { useGlobalStore } from '@/stores/globalStore'
 
 export default function CommitsTab() {
   const { id } = useParams()
-  const [userRepo] = useGlobalStore((state) => [state.getUserRepositoryMetaById(id!), state.auth.address])
+  const [userRepo] = useGlobalStore((state) => [
+    state.repositoryActions.getUserRepositoryMetaById(id!),
+    state.authState.address
+  ])
 
   const { commitsList, fetchAllCommits } = useCommit()
 

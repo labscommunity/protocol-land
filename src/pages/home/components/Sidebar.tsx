@@ -6,7 +6,7 @@ import { useGlobalStore } from '@/stores/globalStore'
 import { Repo } from '@/types/repository'
 
 export default function Sidebar({ repos, isLoading }: { repos: Repo[]; isLoading: boolean }) {
-  const [isLoggedIn] = useGlobalStore((state) => [state.auth.isLoggedIn])
+  const [isLoggedIn] = useGlobalStore((state) => [state.authState.isLoggedIn])
   const hasRepos = repos.length > 0
 
   return (

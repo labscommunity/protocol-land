@@ -16,7 +16,7 @@ const afterClasses =
   'after:content-[""] relative after:z-[-1] z-[1] after:bg-[image:var(--bg-right-btm-img-url)] after:bg-cover after:bg-no-repeat after:bg-left-top after:right-0 after:bottom-0 after:absolute after:w-[100%] after:h-[100%] after:opacity-30'
 
 export default function Home() {
-  const [isLoggedIn] = useGlobalStore((state) => [state.auth.isLoggedIn])
+  const [isLoggedIn] = useGlobalStore((state) => [state.authState.isLoggedIn])
   const { initFetchUserRepos, fetchUserReposStatus, userRepos } = useFetchUserRepos()
   const [isOpen, setIsOpen] = React.useState(false)
 

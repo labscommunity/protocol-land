@@ -30,7 +30,7 @@ const schema = yup
 export default function NewRepoModal({ setIsOpen, isOpen }: NewRepoModalProps) {
   const [isSubmitting, setIsSubmitting] = React.useState(false)
   const navigate = useNavigate()
-  const [userAddress] = useGlobalStore((state) => [state.auth.address])
+  const [userAddress] = useGlobalStore((state) => [state.authState.address])
   const {
     register,
     handleSubmit,

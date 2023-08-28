@@ -12,7 +12,10 @@ type Props = {
 }
 
 export function useFetchRepositoryMeta({ id, initialFetchStatus = 'IDLE' }: Props) {
-  const [repoMeta, setRepoToGlobalStore] = useGlobalStore((state) => [state.getUserRepositoryMetaById(id), state.setUserRepositories])
+  const [repoMeta, setRepoToGlobalStore] = useGlobalStore((state) => [
+    state.repositoryActions.getUserRepositoryMetaById(id),
+    state.repositoryActions.setUserRepositories
+  ])
   const [fetchedRepoMeta, setFetchedRepoMeta] = useState(repoMeta)
 
   const [fetchRepoMetaStatus, setFetchRepoMetaStatus] = useState<ApiStatus>(() =>

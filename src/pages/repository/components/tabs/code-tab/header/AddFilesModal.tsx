@@ -34,7 +34,10 @@ export default function AddFilesModal({ setIsOpen, isOpen }: NewBranchModal) {
 
   const { addFiles } = useCommit()
   const { id } = useParams()
-  const [userRepo, address] = useGlobalStore((state) => [state.getUserRepositoryMetaById(id!), state.auth.address])
+  const [userRepo, address] = useGlobalStore((state) => [
+    state.repositoryActions.getUserRepositoryMetaById(id!),
+    state.authState.address
+  ])
 
   const [files, setFiles] = React.useState<FileWithPath[]>([])
   const [isSubmitting, setIsSubmitting] = React.useState(false)
