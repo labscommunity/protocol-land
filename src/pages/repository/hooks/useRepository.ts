@@ -3,6 +3,7 @@ import React from 'react'
 import { withAsync } from '@/helpers/withAsync'
 import { fsWithName } from '@/lib/git/helpers/fsWithName'
 import { getOidFromRef, readFileFromOid, readFilesFromOid } from '@/lib/git/helpers/oid'
+import { packGitRepo } from '@/lib/git/helpers/zipUtils'
 
 export default function useRepository(name: string) {
   const [currentOid, setCurrentOid] = React.useState('')
@@ -84,6 +85,28 @@ export default function useRepository(name: string) {
     setCurrentOid(lastParentOid)
   }
 
+  async function downloadRepository() {
+    const fs = fsWithName(name)
+    const dir = `/${name}`
+
+    const blob = await packGitRepo({ fs, dir })
+
+    const downloadLink = document.createElement('a')
+    downloadLink.href = URL.createObjectURL(blob)
+    downloadLink.download = `${name}.zip` // Set the desired filename for the ZIP file
+    downloadLink.style.display = 'none'
+    document.body.appendChild(downloadLink)
+
+    // Simulate a click on the download link
+    downloadLink.click()
+
+    // Clean up the temporary URL object
+    URL.revokeObjectURL(downloadLink.href)
+
+    // Remove the download link from the DOM
+    document.body.removeChild(downloadLink)
+  }
+
   return {
     fileObjects,
     currentOid,
@@ -93,6 +116,7 @@ export default function useRepository(name: string) {
     goBack,
     pushParentOid,
     initRepoLoading,
-    fetchFileContentFromOid
+    fetchFileContentFromOid,
+    downloadRepository
   }
 }

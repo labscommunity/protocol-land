@@ -5,6 +5,7 @@ import { FiGitBranch, FiGitCommit, FiHardDrive, FiTag } from 'react-icons/fi'
 import { Button } from '@/components/common/buttons'
 import { Repo } from '@/types/repository'
 
+import useRepository from '../hooks/useRepository'
 import RepoHeaderLoading from './RepoHeaderLoading'
 
 type Props = {
@@ -13,6 +14,8 @@ type Props = {
 }
 
 export default function RepoHeader({ repo, isLoading }: Props) {
+  const { downloadRepository } = useRepository(repo?.name)
+
   if (isLoading) {
     return <RepoHeaderLoading />
   }
@@ -38,7 +41,7 @@ export default function RepoHeader({ repo, isLoading }: Props) {
             <AiOutlineFork className="h-6 w-6" />
             Fork
           </Button>
-          <Button className="rounded-[20px] flex gap-2 items-center" variant="solid">
+          <Button onClick={downloadRepository} className="rounded-[20px] flex gap-2 items-center" variant="solid">
             <FaClone className="h-5 w-5" />
             Clone
           </Button>
