@@ -1,7 +1,7 @@
 import { Tab } from '@headlessui/react'
 import React from 'react'
 import { BiCodeAlt } from 'react-icons/bi'
-import { FiGitCommit, FiGitPullRequest } from 'react-icons/fi'
+import { FiGitCommit, FiGitPullRequest, FiSettings } from 'react-icons/fi'
 import Lottie from 'react-lottie'
 import { useParams } from 'react-router-dom'
 
@@ -11,6 +11,7 @@ import RepoHeader from './components/RepoHeader'
 import CodeTab from './components/tabs/code-tab'
 import CommitsTab from './components/tabs/commits-tab'
 import PullRequestsTab from './components/tabs/PullRequestsTab'
+import SettingsTab from './components/tabs/settings-tab'
 import useFetchRepository from './hooks/useFetchRepository'
 import { useFetchRepositoryMeta } from './hooks/useFetchRepositoryMeta'
 
@@ -30,6 +31,11 @@ const tabData = [
     title: 'Pull Requests',
     Component: PullRequestsTab,
     Icon: FiGitPullRequest
+  },
+  {
+    title: 'Settings',
+    Component: SettingsTab,
+    Icon: FiSettings
   }
 ]
 
@@ -57,7 +63,7 @@ export default function Repository() {
 
   const isReady = fetchRepoMetaStatus === 'SUCCESS' && fetchRepoStatus === 'SUCCESS'
   return (
-    <div className="h-full flex flex-col max-w-[1280px] mx-auto w-full mt-6 gap-4">
+    <div className="h-full flex-1 flex flex-col max-w-[1280px] mx-auto w-full mt-6 gap-4">
       <RepoHeader isLoading={fetchRepoMetaStatus === 'PENDING' && !fetchedRepoMeta} repo={fetchedRepoMeta!} />
       {(fetchRepoMetaStatus === 'PENDING' || fetchRepoStatus === 'PENDING') && (
         <div className="flex h-[70%] items-center">
@@ -76,7 +82,7 @@ export default function Repository() {
         </div>
       )}
       {isReady && (
-        <div>
+        <div className="flex flex-col flex-1">
           <Tab.Group>
             <Tab.List className="flex text-liberty-dark-100 text-lg gap-10 border-b-[1px] border-[#cbc9f6] px-4">
               {tabData.map((tab) => (
@@ -92,9 +98,9 @@ export default function Repository() {
                 </Tab>
               ))}
             </Tab.List>
-            <Tab.Panels className={'mt-4 px-2'}>
+            <Tab.Panels className={'mt-4 px-2 flex flex-col flex-1'}>
               {tabData.map((TabItem) => (
-                <Tab.Panel>
+                <Tab.Panel className={'flex flex-col flex-1'}>
                   <TabItem.Component repoName={fetchedRepoMeta?.name ?? ''} />
                 </Tab.Panel>
               ))}

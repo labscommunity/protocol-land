@@ -31,7 +31,7 @@ export default function Home() {
   }
   console.log({ userRepos, fetchUserReposStatus })
   return (
-    <div className="h-full flex">
+    <div className="h-full flex flex-1">
       <Sidebar repos={userRepos} isLoading={fetchUserReposStatus === 'PENDING'} />
       <MainContent>
         <div className="w-[70%] py-8 flex flex-col gap-8">
