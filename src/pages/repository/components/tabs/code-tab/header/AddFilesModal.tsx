@@ -66,6 +66,7 @@ export default function AddFilesModal({ setIsOpen, isOpen }: NewBranchModal) {
       console.log({ result })
 
       setIsSubmitting(false)
+      closeModal()
     }
   }
 

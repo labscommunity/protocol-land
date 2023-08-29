@@ -1,3 +1,4 @@
+import { formatDistanceToNow } from 'date-fns'
 import React from 'react'
 import { FiGitCommit } from 'react-icons/fi'
 import { useParams } from 'react-router-dom'
@@ -36,7 +37,7 @@ export default function CommitsTab() {
             </div>
             <div className="flex gap-6">
               <span className="text-[whitesmoke]">{commit.oid.slice(0, 7)}</span>
-              <span className="text-[whitesmoke]">3 days ago</span>
+              <span className="text-[whitesmoke]">{formatDistanceToNow(new Date(commit.commit.committer.timestamp * 1000), { addSuffix: true })}</span>
             </div>
           </div>
         </div>
