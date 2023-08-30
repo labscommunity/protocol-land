@@ -21,9 +21,7 @@ export default function Repository() {
   const { initFetchRepo, fetchRepoStatus } = useFetchRepository()
 
   React.useEffect(() => {
-    if (!selectedRepo.repo) {
-      fetchRepoMetadata(id!)
-    }
+    fetchRepoMetadata(id!)
   }, [])
 
   React.useEffect(() => {
@@ -33,7 +31,7 @@ export default function Repository() {
       initFetchRepo(selectedRepo.repo.name, selectedRepo.repo.dataTxId)
     }
   }, [selectedRepo])
-console.log({fetchRepoStatus})
+
   const isReady = selectedRepo.status === 'SUCCESS' && fetchRepoStatus === 'SUCCESS'
 
   return (
