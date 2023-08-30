@@ -50,9 +50,6 @@ export async function checkoutBranch({ fs, dir, name }: CommonBranchOptions & { 
 
 type CreateBranchOptions = CommonBranchOptions & {
   name: string
-  repoName: string
-  owner: string
-  id: string
 }
 
 type CommonBranchOptions = {

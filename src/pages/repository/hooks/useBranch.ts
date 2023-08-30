@@ -7,7 +7,7 @@ import { useGlobalStore } from '@/stores/globalStore'
 
 export default function useBranch() {
   const { id } = useParams()
-  const [userRepo, address] = useGlobalStore((state) => [
+  const [userRepo] = useGlobalStore((state) => [
     state.userActions.getUserRepositoryMetaById(id!),
     state.authState.address
   ])
@@ -59,10 +59,7 @@ export default function useBranch() {
     const result = await createNewBranch({
       fs,
       dir,
-      name: branchName,
-      owner: address!,
-      repoName: name,
-      id: userRepo.id
+      name: branchName
     })
 
     if (result) {

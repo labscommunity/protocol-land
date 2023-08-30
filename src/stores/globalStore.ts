@@ -5,6 +5,7 @@ import { shallow } from 'zustand/shallow'
 import { createWithEqualityFn } from 'zustand/traditional'
 
 import createAuthSlice from './auth'
+import createBranchSlice from './branch'
 import createRepoCoreSlice from './repository-core'
 import { CombinedSlices } from './types'
 import createUserSlice from './user'
@@ -15,7 +16,8 @@ export const useGlobalStore = createWithEqualityFn(
   withMiddlewares<CombinedSlices>((...args) => ({
     ...createAuthSlice(...args),
     ...createUserSlice(...args),
-    ...createRepoCoreSlice(...args)
+    ...createRepoCoreSlice(...args),
+    ...createBranchSlice(...args)
   })),
   shallow
 )
