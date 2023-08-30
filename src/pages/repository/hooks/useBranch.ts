@@ -8,7 +8,7 @@ import { useGlobalStore } from '@/stores/globalStore'
 export default function useBranch() {
   const { id } = useParams()
   const [userRepo, address] = useGlobalStore((state) => [
-    state.repositoryActions.getUserRepositoryMetaById(id!),
+    state.userActions.getUserRepositoryMetaById(id!),
     state.authState.address
   ])
   const [branches, setBranches] = React.useState<string[]>([])

@@ -35,7 +35,7 @@ export default function AddFilesModal({ setIsOpen, isOpen }: NewBranchModal) {
   const { addFiles } = useCommit()
   const { id } = useParams()
   const [userRepo, address] = useGlobalStore((state) => [
-    state.repositoryActions.getUserRepositoryMetaById(id!),
+    state.userActions.getUserRepositoryMetaById(id!),
     state.authState.address
   ])
 
