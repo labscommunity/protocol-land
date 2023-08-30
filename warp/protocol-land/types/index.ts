@@ -23,7 +23,21 @@ export type Repo = {
   description: string
   dataTxId: string
   owner: string
+  pullRequests: PullRequest[]
 }
+
+export type PullRequest = {
+  id: number
+  repoId: string
+  title: string
+  description: string
+  baseBranch: string
+  compareBranch: string
+  author: string
+  status: PullRequestStatus
+}
+
+export type PullRequestStatus = 'OPEN' | 'CLOSED' | 'MERGED'
 
 export type RepositoryAction = {
   input: RepositoryInput
@@ -45,6 +59,14 @@ export type EvolveInput = {
   value: any
 }
 
-export type RepositoryFunction = 'initialize' | 'getRepository' | 'getRepositoriesByOwner' | 'updateRepositoryTxId' // more types will be added later
+const repoFnList = [
+  'initialize',
+  'getRepository',
+  'getRepositoriesByOwner',
+  'updateRepositoryTxId',
+  'createPullRequest'
+] as const
+
+export type RepositoryFunction = (typeof repoFnList)[number] // more types will be added later
 
 export type ContractResult<T> = { state: T } | { result: T }

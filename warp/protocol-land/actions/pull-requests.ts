@@ -1,4 +1,4 @@
-import { ContractResult, ContractState, Repo, RepositoryAction } from '../types'
+import { ContractResult, ContractState, PullRequest, RepositoryAction } from '../types'
 
 declare const ContractError
 
@@ -7,19 +7,34 @@ export async function createNewPullRequest(
   { caller, input: { payload } }: RepositoryAction
 ): Promise<ContractResult<ContractState>> {
   // validate payload
-  if (!payload.title || !payload.description || !payload.owner || !payload.baseBranch || !payload.targetBranch) {
+  if (!payload.repoId || !payload.title || !payload.description || !payload.baseBranch || !payload.compareBranch) {
     throw new ContractError('Invalid inputs supplied.')
   }
 
-  const repo: Repo = {
-    id: payload.id,
-    name: payload.name,
-    description: payload.description,
-    dataTxId: payload.dataTxId,
-    owner: caller
+  const repo = state.repos[payload.id]
+
+  if (!repo) {
+    throw new ContractError('Repository not found.')
   }
 
-  state.repos[repo.id] = repo
+  const pullRequest: PullRequest = {
+    id: 1,
+    repoId: payload.repoId,
+    title: payload.title,
+    description: payload.description,
+    baseBranch: payload.baseBranch,
+    compareBranch: payload.compareBranch,
+    author: caller,
+    status: 'OPEN'
+  }
+
+  const pullRequestsCount = repo.pullRequests.length
+
+  if (pullRequestsCount > 0) {
+    pullRequest.id = pullRequestsCount + 1
+  }
+
+  repo.pullRequests.push(pullRequest)
 
   return { state }
 }
