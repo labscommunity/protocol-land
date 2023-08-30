@@ -3,7 +3,7 @@ import { FiGitCommit, FiGitPullRequest, FiSettings } from 'react-icons/fi'
 
 import CodeTab from '../components/tabs/code-tab'
 import CommitsTab from '../components/tabs/commits-tab'
-import PullRequestsTab from '../components/tabs/PullRequestsTab'
+import PullRequestsTab from '../components/tabs/pull-requests-tab'
 import SettingsTab from '../components/tabs/settings-tab'
 
 export const rootTabConfig = [
