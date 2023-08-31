@@ -12,7 +12,7 @@ export default function useBranch() {
     state.authState.address
   ])
   const [branches, setBranches] = React.useState<string[]>([])
-  const [currentBranch, setCurrentBranch] = React.useState('master')
+  const [currentBranch, setCurrentBranch] = React.useState('main')
 
   React.useEffect(() => {
     if (userRepo) {

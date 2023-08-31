@@ -10,7 +10,7 @@ const initialBranchState: BranchState = {
   status: 'IDLE',
   error: null,
   branchList: [],
-  currentBranch: 'master'
+  currentBranch: 'main'
 }
 
 const createBranchSlice: StateCreator<CombinedSlices, [['zustand/immer', never], never], [], BranchSlice> = (

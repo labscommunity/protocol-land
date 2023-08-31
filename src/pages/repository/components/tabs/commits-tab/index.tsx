@@ -1,18 +1,13 @@
 import { formatDistanceToNow } from 'date-fns'
 import React from 'react'
 import { FiGitCommit } from 'react-icons/fi'
-import { useParams } from 'react-router-dom'
 
 import { shortenAddress } from '@/helpers/shortenAddress'
 import useCommit from '@/pages/repository/hooks/useCommit'
 import { useGlobalStore } from '@/stores/globalStore'
 
 export default function CommitsTab() {
-  const { id } = useParams()
-  const [userRepo] = useGlobalStore((state) => [
-    state.userActions.getUserRepositoryMetaById(id!),
-    state.authState.address
-  ])
+  const [userRepo] = useGlobalStore((state) => [state.repoCoreState.selectedRepo.repo])
 
   const { commitsList, fetchAllCommits } = useCommit()
 
@@ -37,7 +32,9 @@ export default function CommitsTab() {
             </div>
             <div className="flex gap-6">
               <span className="text-[whitesmoke]">{commit.oid.slice(0, 7)}</span>
-              <span className="text-[whitesmoke]">{formatDistanceToNow(new Date(commit.commit.committer.timestamp * 1000), { addSuffix: true })}</span>
+              <span className="text-[whitesmoke]">
+                {formatDistanceToNow(new Date(commit.commit.committer.timestamp * 1000), { addSuffix: true })}
+              </span>
             </div>
           </div>
         </div>
