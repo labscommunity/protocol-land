@@ -22,7 +22,7 @@ export type RepoCoreState = {
 }
 
 export type RepoCoreActions = {
-  fetchRepoMetadata: (id: string) => Promise<void>
+  fetchAndLoadRepository: (id: string) => Promise<void>
   loadFilesFromRepo: () => Promise<void>
   git: {
     readFilesFromOid: (oid: string) => Promise<void>

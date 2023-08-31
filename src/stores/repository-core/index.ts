@@ -8,6 +8,7 @@ import {
   getFilesFromOid,
   getOidOfHeadRef,
   getRepositoryMetaFromContract,
+  loadRepository,
   saveRepository
 } from './actions'
 import { RepoCoreSlice, RepoCoreState } from './types'
@@ -34,25 +35,38 @@ const createRepoCoreSlice: StateCreator<CombinedSlices, [['zustand/immer', never
 ) => ({
   repoCoreState: initialRepoCoreState,
   repoCoreActions: {
-    fetchRepoMetadata: async (id: string) => {
+    fetchAndLoadRepository: async (id: string) => {
       set((state) => {
         state.repoCoreState.selectedRepo.status = 'PENDING'
       })
 
-      const { error, response } = await getRepositoryMetaFromContract(id)
+      const { error: metaError, response: metaResponse } = await withAsync(() => getRepositoryMetaFromContract(id))
 
-      if (error) {
+      if (metaError) {
         set((state) => {
-          state.repoCoreState.selectedRepo.error = error
+          state.repoCoreState.selectedRepo.error = metaError
           state.repoCoreState.selectedRepo.status = 'ERROR'
         })
       }
 
-      if (response) {
-        set((state) => {
-          state.repoCoreState.selectedRepo.repo = response.result
-          state.repoCoreState.selectedRepo.status = 'SUCCESS'
-        })
+      if (metaResponse) {
+        const { error: repoFetchError, response: repoFetchResponse } = await withAsync(() =>
+          loadRepository(metaResponse.result.name, metaResponse.result.dataTxId)
+        )
+
+        if (repoFetchError) {
+          set((state) => {
+            state.repoCoreState.selectedRepo.error = repoFetchError
+            state.repoCoreState.selectedRepo.status = 'ERROR'
+          })
+        }
+
+        if (repoFetchResponse) {
+          set((state) => {
+            state.repoCoreState.selectedRepo.repo = metaResponse.result
+            state.repoCoreState.selectedRepo.status = 'SUCCESS'
+          })
+        }
       }
     },
     loadFilesFromRepo: async () => {

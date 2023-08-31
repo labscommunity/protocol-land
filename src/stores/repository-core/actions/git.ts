@@ -1,3 +1,5 @@
+import { waitFor } from '@/helpers/waitFor'
+import { importRepoFromBlob, unmountRepoFromBrowser } from '@/lib/git'
 import { fsWithName } from '@/lib/git/helpers/fsWithName'
 import { getOidFromRef, readFileFromOid, readFilesFromOid } from '@/lib/git/helpers/oid'
 import { packGitRepo } from '@/lib/git/helpers/zipUtils'
@@ -43,4 +45,24 @@ export async function saveRepository(name: string) {
 
   // Remove the download link from the DOM
   document.body.removeChild(downloadLink)
+}
+
+export async function loadRepository(name: string, dataTxId: string) {
+  await unmountRepository(name)
+
+  const response = await fetch(`https://arweave.net/${dataTxId}`)
+  const repoArrayBuf = await response.arrayBuffer()
+
+  const fs = fsWithName(name)
+  const dir = `/${name}`
+
+  const success = await importRepoFromBlob(fs, dir, new Blob([repoArrayBuf]))
+
+  await waitFor(1000)
+
+  return success
+}
+
+export async function unmountRepository(name: string) {
+  return unmountRepoFromBrowser(name)
 }

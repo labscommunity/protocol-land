@@ -8,31 +8,21 @@ import { useGlobalStore } from '@/stores/globalStore'
 
 import RepoHeader from './components/RepoHeader'
 import { rootTabConfig } from './config/rootTabConfig'
-import useFetchRepository from './hooks/useFetchRepository'
 
 const activeClasses = 'border-b-[3px] border-[#8a6bec] text-[#8a6bec] font-medium'
 
 export default function Repository() {
   const { id } = useParams()
-  const [selectedRepo, fetchRepoMetadata] = useGlobalStore((state) => [
+  const [selectedRepo, fetchAndLoadRepository] = useGlobalStore((state) => [
     state.repoCoreState.selectedRepo,
-    state.repoCoreActions.fetchRepoMetadata
+    state.repoCoreActions.fetchAndLoadRepository
   ])
-  const { initFetchRepo, fetchRepoStatus } = useFetchRepository()
 
   React.useEffect(() => {
-    fetchRepoMetadata(id!)
+    fetchAndLoadRepository(id!)
   }, [])
 
-  React.useEffect(() => {
-    if (fetchRepoStatus === 'SUCCESS') return
-
-    if (selectedRepo.repo) {
-      initFetchRepo(selectedRepo.repo.name, selectedRepo.repo.dataTxId)
-    }
-  }, [selectedRepo])
-
-  const isReady = selectedRepo.status === 'SUCCESS' && fetchRepoStatus === 'SUCCESS'
+  const isReady = selectedRepo.status === 'SUCCESS'
 
   return (
     <div className="h-full flex-1 flex flex-col max-w-[1280px] mx-auto w-full mt-6 gap-4">
