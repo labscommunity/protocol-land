@@ -5920,6 +5920,11 @@ hash.js@1.1.7, hash.js@^1.0.0, hash.js@^1.0.3:
     inherits "^2.0.3"
     minimalistic-assert "^1.0.1"
 
+headless-stepper@^1.9.1:
+  version "1.9.1"
+  resolved "https://registry.yarnpkg.com/headless-stepper/-/headless-stepper-1.9.1.tgz#7be82192247373a6f2486c25fe7e812dbe7c2d46"
+  integrity sha512-ns66zFZHyGaqrKL9Up+TvyUjn84rDV/0r0M/jXjdcEdJsaYpPglDfosIH0s+FwZlpEOpNqXHRq0CttUMY/EpbQ==
+
 hey-listen@^1.0.8:
   version "1.0.8"
   resolved "https://registry.yarnpkg.com/hey-listen/-/hey-listen-1.0.8.tgz#8e59561ff724908de1aa924ed6ecc84a56a9aa68"
