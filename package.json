@@ -26,6 +26,7 @@
     "dexie": "^3.2.4",
     "dexie-export-import": "^4.0.7",
     "framer-motion": "^10.15.0",
+    "headless-stepper": "^1.9.1",
     "immer": "^10.0.2",
     "isomorphic-git": "^1.24.5",
     "jszip": "^3.10.1",

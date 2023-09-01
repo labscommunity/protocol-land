@@ -7,12 +7,12 @@ import { useGlobalStore } from '@/stores/globalStore'
 
 export default function useBranch() {
   const { id } = useParams()
-  const [userRepo, address] = useGlobalStore((state) => [
-    state.repositoryActions.getUserRepositoryMetaById(id!),
+  const [userRepo] = useGlobalStore((state) => [
+    state.userActions.getUserRepositoryMetaById(id!),
     state.authState.address
   ])
   const [branches, setBranches] = React.useState<string[]>([])
-  const [currentBranch, setCurrentBranch] = React.useState('master')
+  const [currentBranch, setCurrentBranch] = React.useState('main')
 
   React.useEffect(() => {
     if (userRepo) {
@@ -59,10 +59,7 @@ export default function useBranch() {
     const result = await createNewBranch({
       fs,
       dir,
-      name: branchName,
-      owner: address!,
-      repoName: name,
-      id: userRepo.id
+      name: branchName
     })
 
     if (result) {

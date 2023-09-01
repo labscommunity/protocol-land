@@ -1,7 +1,7 @@
 import { StateCreator } from 'zustand'
 
-import { AuthState, CombinedSlices } from '../types'
-import { AuthSlice } from './types'
+import { CombinedSlices } from '../types'
+import { AuthSlice, AuthState } from './types'
 
 const initialAuthState = {
   isLoggedIn: false,

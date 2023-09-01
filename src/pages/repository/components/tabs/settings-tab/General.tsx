@@ -9,8 +9,8 @@ const titleSchema = yup
   .object({
     title: yup
       .string()
-      .matches(/^[a-z]+(-[a-z]+)*$/, 'Invalid title format')
       .required('Title is required')
+      .matches(/^[a-z]+(-[a-z]+)*$/, 'Invalid title format')
   })
   .required()
 

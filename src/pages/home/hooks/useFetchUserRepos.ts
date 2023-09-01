@@ -9,8 +9,8 @@ import { useGlobalStore } from '@/stores/globalStore'
 export function useFetchUserRepos() {
   const [address, userRepos, setUserRepos] = useGlobalStore((state) => [
     state.authState.address,
-    state.repositoryState.userRepos,
-    state.repositoryActions.setUserRepositories
+    state.userState.userRepos,
+    state.userActions.setUserRepositories
   ])
   const [fetchUserReposStatus, setFetchUserReposStatus] = useState<ApiStatus>('IDLE')
 

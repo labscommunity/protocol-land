@@ -9,7 +9,7 @@ import useRepository from '../hooks/useRepository'
 import RepoHeaderLoading from './RepoHeaderLoading'
 
 type Props = {
-  repo: Repo
+  repo: Repo | Record<PropertyKey, never>
   isLoading: boolean
 }
 

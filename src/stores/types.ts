@@ -1,27 +1,12 @@
 import { Repo } from '@/types/repository'
 
 import { AuthSlice } from './auth/types'
-import { RepositorySlice } from './repository/types'
+import { BranchSlice } from './branch/types'
+import { PullRequestSlice } from './pull-request/types'
+import { RepoCoreSlice } from './repository-core/types'
+import { UserSlice } from './user/types'
 
-export type CombinedSlices = AuthSlice & RepositorySlice
-
-export type AppState = {
-  auth: AuthState
-  user: UserState
-}
-
-export type Actions = {
-  login: (value: AuthState) => void
-  logout: () => void
-  setUserRepositories: (repos: Array<Repo>) => void
-  getUserRepositoryMetaById: (id: string) => Repo | undefined
-}
-
-export type AuthState = {
-  isLoggedIn: boolean
-  address: string | null
-  method: string | null
-}
+export type CombinedSlices = AuthSlice & UserSlice & RepoCoreSlice & BranchSlice & PullRequestSlice
 
 export type UserState = {
   repositories: Array<Repo>
