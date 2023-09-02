@@ -1,3 +1,4 @@
+import { formatDistanceToNow } from 'date-fns'
 import { FiGitMerge, FiGitPullRequest } from 'react-icons/fi'
 import { RiGitClosePullRequestLine } from 'react-icons/ri'
 
@@ -8,6 +9,7 @@ type Props = {
   title: string
   id: number
   author: string
+  timestamp: number
 }
 
 const STATUS_TO_ICON_MAP = {
@@ -16,7 +18,7 @@ const STATUS_TO_ICON_MAP = {
   MERGED: () => <FiGitMerge className="w-5 h-5 text-purple-700" />
 }
 
-export default function PullRequestRow({ status, author, id, title }: Props) {
+export default function PullRequestRow({ status, author, id, title, timestamp }: Props) {
   const Icon = STATUS_TO_ICON_MAP[status]
 
   return (
@@ -28,7 +30,7 @@ export default function PullRequestRow({ status, author, id, title }: Props) {
       <div className="flex gap-3 text-liberty-dark-100">
         <span className="font-semibold">#{id}</span>
         <span>opened by {shortenAddress(author)}</span>
-        <span> 1 week ago</span>
+        {timestamp && <span> {formatDistanceToNow(new Date(timestamp), { addSuffix: true })}</span>}
       </div>
     </div>
   )

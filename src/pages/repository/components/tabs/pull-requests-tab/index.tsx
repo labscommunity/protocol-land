@@ -23,7 +23,7 @@ export default function PullRequestsTab() {
           )}
           {repo &&
             repo.pullRequests.map((pr) => (
-              <PullRequestRow id={pr.id} author={pr.author} title={pr.title} status={pr.status} />
+              <PullRequestRow id={pr.id} author={pr.author} title={pr.title} status={pr.status} timestamp={pr.timestamp} />
             ))}
           {/* <PullRequestRow status="OPEN" />
           <PullRequestRow status="CLOSED" />
