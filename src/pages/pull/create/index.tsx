@@ -1,13 +1,14 @@
 import { useEffect } from 'react'
 import { BiGitCompare } from 'react-icons/bi'
-import { PiSmileySad } from 'react-icons/pi'
 import { useParams } from 'react-router-dom'
 
 import { useGlobalStore } from '@/stores/globalStore'
 
 import BranchDropdown from './components/BranchDropdown'
 import BranchLoading from './components/BranchLoading'
+import CommitsDiff from './components/CommitsDiff'
 import CommitsDiffLoading from './components/CommitsDiffLoading'
+import NewPRForm from './components/NewPRForm'
 
 export default function CreatePullRequest() {
   const { id } = useParams()
@@ -17,20 +18,24 @@ export default function CreatePullRequest() {
     status,
     baseBranch,
     compareBranch,
+    commits,
     fetchAndLoadRepository,
     setDefaultBranches,
     setBaseBranch,
-    setCompareBranch
+    setCompareBranch,
+    compareBranches
   ] = useGlobalStore((state) => [
     state.repoCoreState.selectedRepo,
     state.branchState.branchList,
     state.pullRequestState.status,
     state.pullRequestState.baseBranch,
     state.pullRequestState.compareBranch,
+    state.pullRequestState.commits,
     state.repoCoreActions.fetchAndLoadRepository,
     state.pullRequestActions.setDefaultBranches,
     state.pullRequestActions.setBaseBranch,
-    state.pullRequestActions.setCompareBranch
+    state.pullRequestActions.setCompareBranch,
+    state.pullRequestActions.compareBranches
   ])
 
   useEffect(() => {
@@ -44,6 +49,12 @@ export default function CreatePullRequest() {
       setDefaultBranches()
     }
   }, [selectedRepo])
+
+  useEffect(() => {
+    if (baseBranch && compareBranch) {
+      compareBranches(baseBranch, compareBranch)
+    }
+  }, [baseBranch, compareBranch])
 
   const isDiffReady = status === 'SUCCESS' && selectedRepo.status === 'SUCCESS'
   const isBranchReady = baseBranch && compareBranch
@@ -72,13 +83,8 @@ export default function CreatePullRequest() {
         )}
       </div>
       {!isDiffReady && <CommitsDiffLoading />}
-      {isDiffReady && (
-        <div className="w-full flex flex-col items-center gap-2 text-liberty-dark-100 py-4">
-          <PiSmileySad className="h-10 w-10" />
-          <h1 className="text-2xl">Nothing to compare here</h1>
-          <p className="text-lg">Please select different branch to generate valid comparision</p>
-        </div>
-      )}
+      {isDiffReady && commits.length > 0 && <NewPRForm baseBranch={baseBranch} compareBranch={compareBranch} />}
+      {isDiffReady && <CommitsDiff commits={commits} />}
     </div>
   )
 }

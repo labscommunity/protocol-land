@@ -1,29 +1,63 @@
 import git from 'isomorphic-git'
+import { InjectedArweaveSigner } from 'warp-contracts-plugin-signature'
 
-import { CommitResult } from '@/types/commit'
+import { CONTRACT_TX_ID } from '@/helpers/constants'
+import getWarpContract from '@/helpers/getWrapContract'
 
 import { FSType } from './helpers/fsWithName'
 
 export async function compareBranches({ fs, dir, base, compare }: CompareBranchesOptions) {
-  const commits: CommitResult[] = []
+  const baseCommits = await git.log({ fs, dir, ref: base })
+  const compareCommits = await git.log({ fs, dir, ref: compare })
 
-  const [firstBaseBranchCommit] = await git.log({ fs, dir, depth: 1, ref: base })
-  const [firstCompareBranchCommit] = await git.log({ fs, dir, depth: 1, ref: compare })
+  const filteredCommits = compareCommits.filter((compareCommit) => {
+    return !baseCommits.some((baseCommit) => baseCommit.oid === compareCommit.oid)
+  })
 
-  if (!firstBaseBranchCommit || !firstCompareBranchCommit) return commits
+  return filteredCommits
+}
 
-  if (firstBaseBranchCommit.oid === firstCompareBranchCommit.oid) return commits
+export async function postNewPullRequest({ title, description, baseBranch, compareBranch, repoId }: PostNewPROptions) {
+  const userSigner = new InjectedArweaveSigner(window.arweaveWallet)
+  await userSigner.setPublicKey()
 
-  let currentCommitOid = firstCompareBranchCommit.oid
+  const contract = getWarpContract(CONTRACT_TX_ID, userSigner)
 
-  while (currentCommitOid !== firstBaseBranchCommit.oid && currentCommitOid !== undefined) {
-    const commit = await git.readCommit({ fs, dir, oid: currentCommitOid })
-    currentCommitOid = commit.commit.parent[0]
+  await contract.writeInteraction({
+    function: 'createPullRequest',
+    payload: {
+      title,
+      description,
+      repoId,
+      baseBranch,
+      compareBranch
+    }
+  })
 
-    commits.push(commit)
-  }
+  const {
+    cachedValue: {
+      state: { repos }
+    }
+  } = await contract.readState()
 
-  return commits
+  const repo = repos[repoId]
+
+  if (!repo) return
+
+  const PRs = repo.pullRequests
+  const PR = PRs[PRs.length - 1]
+
+  if (!PR) return
+
+  return PR
+}
+
+type PostNewPROptions = {
+  title: string
+  description: string
+  baseBranch: string
+  compareBranch: string
+  repoId: string
 }
 
 type CompareBranchesOptions = {

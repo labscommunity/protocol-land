@@ -11,7 +11,7 @@ export async function createNewPullRequest(
     throw new ContractError('Invalid inputs supplied.')
   }
 
-  const repo = state.repos[payload.id]
+  const repo = state.repos[payload.repoId]
 
   if (!repo) {
     throw new ContractError('Repository not found.')
@@ -25,7 +25,9 @@ export async function createNewPullRequest(
     baseBranch: payload.baseBranch,
     compareBranch: payload.compareBranch,
     author: caller,
-    status: 'OPEN'
+    status: 'OPEN',
+    reviewers: [],
+    timestamp: Date.now()
   }
 
   const pullRequestsCount = repo.pullRequests.length
@@ -37,4 +39,42 @@ export async function createNewPullRequest(
   repo.pullRequests.push(pullRequest)
 
   return { state }
+}
+
+export async function getAllPullRequestsByRepoId(
+  state: ContractState,
+  { input: { payload } }: RepositoryAction
+): Promise<ContractResult<PullRequest[]>> {
+  // validate payload
+  if (!payload.repoId) {
+    throw new ContractError('Invalid inputs supplied.')
+  }
+
+  const repo = state.repos[payload.repoId]
+
+  if (!repo) {
+    throw new ContractError('Repository not found.')
+  }
+
+  return { result: repo.pullRequests }
+}
+
+export async function getPullRequestById(
+  state: ContractState,
+  { input: { payload } }: RepositoryAction
+): Promise<ContractResult<PullRequest[]>> {
+  // validate payload
+  if (!payload.repoId || payload.prId) {
+    throw new ContractError('Invalid inputs supplied.')
+  }
+
+  const repo = state.repos[payload.repoId]
+
+  if (!repo) {
+    throw new ContractError('Repository not found.')
+  }
+
+  const PR = repo.pullRequests.filter((pr) => pr.id === payload.prId)
+
+  return { result: PR }
 }

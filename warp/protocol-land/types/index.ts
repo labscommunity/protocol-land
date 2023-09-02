@@ -35,6 +35,13 @@ export type PullRequest = {
   compareBranch: string
   author: string
   status: PullRequestStatus
+  reviewers: Reviewer[]
+  timestamp: number
+}
+
+export type Reviewer = {
+  address: string
+  approved: boolean
 }
 
 export type PullRequestStatus = 'OPEN' | 'CLOSED' | 'MERGED'

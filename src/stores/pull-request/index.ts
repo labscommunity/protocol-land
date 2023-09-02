@@ -1,8 +1,9 @@
 import { StateCreator } from 'zustand'
 
-import { waitFor } from '@/helpers/waitFor'
+import { withAsync } from '@/helpers/withAsync'
 
 import { CombinedSlices } from '../types'
+import { compareTwoBranches } from './actions'
 import { PullRequestSlice, PullRequestState } from './types'
 
 const initialPullRequestState: PullRequestState = {
@@ -49,17 +50,42 @@ const createPullRequestSlice: StateCreator<CombinedSlices, [['zustand/immer', ne
         set((state) => {
           state.pullRequestState.baseBranch = currentBranch
           state.pullRequestState.compareBranch = currentBranch
+          state.pullRequestState.status = 'SUCCESS'
+        })
+      }
+    },
+    compareBranches: async (branchA, branchB) => {
+      const status = get().pullRequestState.status
+
+      if (status !== 'PENDING') {
+        set((state) => {
+          state.pullRequestState.status = 'PENDING'
         })
       }
 
-      await waitFor(10000)
+      const repo = get().repoCoreState.selectedRepo.repo
 
-      set((state) => {
-        state.pullRequestState.status = 'SUCCESS'
-      })
-    },
-    compareBranches: async (branchA, branchB) => {
-      console.log(branchA, branchB)
+      if (!repo) {
+        set((state) => (state.pullRequestState.status = 'ERROR'))
+
+        return
+      }
+
+      const { error, response } = await withAsync(() => compareTwoBranches(repo.name, branchA, branchB))
+
+      if (error) {
+        set((state) => {
+          state.pullRequestState.error = error
+          state.pullRequestState.status = 'ERROR'
+        })
+      }
+
+      if (response) {
+        set((state) => {
+          state.pullRequestState.commits = response
+          state.pullRequestState.status = 'SUCCESS'
+        })
+      }
     },
     setBaseBranch: (branch) => {
       set((state) => {
