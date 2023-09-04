@@ -1,7 +1,9 @@
 import { yupResolver } from '@hookform/resolvers/yup'
 import clsx from 'clsx'
+import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { useParams } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import * as yup from 'yup'
 
 import { Button } from '@/components/common/buttons'
@@ -20,6 +22,9 @@ type Props = {
 }
 
 export default function NewPRForm({ baseBranch, compareBranch }: Props) {
+  const [isSubmitting, setIsSubmitting] = useState(false)
+
+  const navigate = useNavigate()
   const { id } = useParams()
   const {
     register: register,
@@ -32,6 +37,8 @@ export default function NewPRForm({ baseBranch, compareBranch }: Props) {
   async function handleCreateButtonClick(data: yup.InferType<typeof prSchema>) {
     const { title, description } = data
 
+    setIsSubmitting(true)
+
     const PR = await postNewPullRequest({
       title,
       description: description || '',
@@ -41,7 +48,7 @@ export default function NewPRForm({ baseBranch, compareBranch }: Props) {
     })
 
     if (PR) {
-      console.log({ PR })
+      navigate(`/repository/${id}/pull/${PR.id}`)
     }
   }
 
@@ -89,7 +96,7 @@ export default function NewPRForm({ baseBranch, compareBranch }: Props) {
             variant="solid"
             className="rounded-full font-medium"
           >
-            Create Pull request
+            {isSubmitting ? 'Processing...' : 'Create Pull request'}
           </Button>
         </div>
       </div>

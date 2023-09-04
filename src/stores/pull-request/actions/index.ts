@@ -32,3 +32,4 @@ export async function mergePR(
 
   return mergePullRequest({ fs, dir, base: branchA, compare: branchB, author, prId, repoId })
 }
+

@@ -29,6 +29,8 @@ export default function ReadPullRequest() {
     if (selectedRepo.repo) {
       const PR = selectedRepo.repo.pullRequests[+pullId! - 1]
 
+      if (!PR) return
+
       pullRequestActions.compareBranches(PR.baseBranch, PR.compareBranch)
       pullRequestActions.getFileStatuses(PR.baseBranch, PR.compareBranch)
 
@@ -37,9 +39,9 @@ export default function ReadPullRequest() {
     }
   }, [selectedRepo.repo])
 
-  const isReady = selectedRepo.status === 'SUCCESS'
+  const isLoading = selectedRepo.status === 'IDLE' || selectedRepo.status === 'PENDING'
 
-  if (!isReady) {
+  if (isLoading) {
     return (
       <div className="h-full flex-1 flex flex-col max-w-[1280px] mx-auto w-full mt-6 gap-8 justify-center items-center">
         <Lottie
@@ -63,7 +65,7 @@ export default function ReadPullRequest() {
   return (
     <div className="h-full flex-1 flex flex-col max-w-[1280px] mx-auto w-full mt-6 gap-8">
       {/* PR Meta Details open */}
-      <PullRequestHeader PR={PR} />
+      {PR && <PullRequestHeader PR={PR} />}
       {/* PR Meta Details close */}
       <div className="flex flex-col flex-1">
         <Tab.Group>

@@ -142,6 +142,22 @@ export async function mergePullRequest({
   }
 }
 
+export async function closePullRequest({ repoId, prId }: { repoId: string; prId: number }) {
+  const userSigner = new InjectedArweaveSigner(window.arweaveWallet)
+  await userSigner.setPublicKey()
+
+  const contract = getWarpContract(CONTRACT_TX_ID, userSigner)
+
+  await contract.writeInteraction({
+    function: 'updatePullRequestStatus',
+    payload: {
+      repoId,
+      prId,
+      status: 'CLOSED'
+    }
+  })
+}
+
 type PostNewPROptions = {
   title: string
   description: string

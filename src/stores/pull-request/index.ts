@@ -1,6 +1,7 @@
 import { StateCreator } from 'zustand'
 
 import { withAsync } from '@/helpers/withAsync'
+import { closePullRequest } from '@/lib/git/pull-request'
 
 import { CombinedSlices } from '../types'
 import { compareTwoBranches, getChangedFiles, mergePR } from './actions'
@@ -153,6 +154,23 @@ const createPullRequestSlice: StateCreator<CombinedSlices, [['zustand/immer', ne
       if (!error) {
         set((state) => {
           state.repoCoreState.selectedRepo.repo!.pullRequests[id - 1].status = 'MERGED'
+        })
+      }
+    },
+    closePullRequest: async (id) => {
+      const repo = get().repoCoreState.selectedRepo.repo
+
+      if (!repo) {
+        set((state) => (state.pullRequestState.status = 'ERROR'))
+
+        return
+      }
+
+      const { error } = await withAsync(() => closePullRequest({ repoId: repo.id, prId: id }))
+
+      if (!error) {
+        set((state) => {
+          state.repoCoreState.selectedRepo.repo!.pullRequests[id - 1].status = 'CLOSED'
         })
       }
     }
