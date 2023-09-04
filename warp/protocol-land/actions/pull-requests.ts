@@ -1,4 +1,4 @@
-import { ContractResult, ContractState, PullRequest, RepositoryAction } from '../types'
+import { ContractResult, ContractState, PullRequest, RepositoryAction, Reviewer } from '../types'
 
 declare const ContractError
 
@@ -7,7 +7,14 @@ export async function createNewPullRequest(
   { caller, input: { payload } }: RepositoryAction
 ): Promise<ContractResult<ContractState>> {
   // validate payload
-  if (!payload.repoId || !payload.title || !payload.description || !payload.baseBranch || !payload.compareBranch) {
+  if (
+    !payload.repoId ||
+    !payload.title ||
+    !payload.description ||
+    !payload.baseBranch ||
+    !payload.compareBranch ||
+    !payload.baseBranchOid
+  ) {
     throw new ContractError('Invalid inputs supplied.')
   }
 
@@ -24,6 +31,7 @@ export async function createNewPullRequest(
     description: payload.description,
     baseBranch: payload.baseBranch,
     compareBranch: payload.compareBranch,
+    baseBranchOid: payload.baseBranchOid,
     author: caller,
     status: 'OPEN',
     reviewers: [],
@@ -100,6 +108,42 @@ export async function updatePullRequestStatus(
   }
 
   PR.status = payload.status
+
+  return { state }
+}
+
+export async function addReviewerToPR(
+  state: ContractState,
+  { input: { payload } }: RepositoryAction
+): Promise<ContractResult<ContractState>> {
+  if (!payload.repoId || !payload.prId || !payload.reviewer) {
+    throw new ContractError('Invalid inputs supplied.')
+  }
+
+  const repo = state.repos[payload.repoId]
+
+  if (!repo) {
+    throw new ContractError('Repository not found.')
+  }
+
+  const PR = repo.pullRequests[+payload.prId - 1]
+
+  if (!PR) {
+    throw new ContractError('Pull Request not found.')
+  }
+
+  const isValidReviewer = repo.contributors.find(payload.reviewer)
+
+  if (!isValidReviewer) {
+    throw new ContractError('Reviewer must be a contributor.')
+  }
+
+  const reviewer: Reviewer = {
+    address: payload.reviewer,
+    approved: false
+  }
+
+  PR.reviewers.push(reviewer)
 
   return { state }
 }

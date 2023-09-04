@@ -19,9 +19,10 @@ const prSchema = yup
 type Props = {
   baseBranch: string
   compareBranch: string
+  repoName: string
 }
 
-export default function NewPRForm({ baseBranch, compareBranch }: Props) {
+export default function NewPRForm({ baseBranch, compareBranch, repoName }: Props) {
   const [isSubmitting, setIsSubmitting] = useState(false)
 
   const navigate = useNavigate()
@@ -40,6 +41,7 @@ export default function NewPRForm({ baseBranch, compareBranch }: Props) {
     setIsSubmitting(true)
 
     const PR = await postNewPullRequest({
+      repoName,
       title,
       description: description || '',
       baseBranch,

@@ -1,9 +1,11 @@
 import { yupResolver } from '@hookform/resolvers/yup'
 import clsx from 'clsx'
 import { useForm } from 'react-hook-form'
+import toast from 'react-hot-toast'
 import * as yup from 'yup'
 
 import { Button } from '@/components/common/buttons'
+import { useGlobalStore } from '@/stores/globalStore'
 
 const titleSchema = yup
   .object({
@@ -21,6 +23,11 @@ const descriptionSchema = yup
   .required()
 
 export default function General() {
+  const [selectedRepo, updateDescription, updateName] = useGlobalStore((state) => [
+    state.repoCoreState.selectedRepo.repo,
+    state.repoCoreActions.updateRepoDescription,
+    state.repoCoreActions.updateRepoName
+  ])
   const {
     register: registerTitle,
     handleSubmit: handleTitleSubmit,
@@ -37,11 +44,17 @@ export default function General() {
   })
 
   async function handleUpdateButtonClick(data: yup.InferType<typeof descriptionSchema>) {
-    console.log({ data })
+    if (selectedRepo) {
+      await updateDescription(data.description)
+      toast.success('Successfully updated repository description')
+    }
   }
 
   async function handleRenameButtonClick(data: yup.InferType<typeof titleSchema>) {
-    console.log({ data })
+    if (selectedRepo) {
+      await updateName(data.title)
+      toast.success('Successfully updated repository name')
+    }
   }
 
   return (
@@ -63,9 +76,16 @@ export default function General() {
                   'bg-gray-50 border  text-liberty-dark-100 text-md rounded-lg focus:ring-liberty-dark-50 focus:border-liberty-dark-50 block w-full p-2.5',
                   titleErrors.title ? 'border-red-500' : 'border-gray-300'
                 )}
+                defaultValue={selectedRepo?.name}
                 placeholder="my-cool-repo"
+                disabled
               />
-              <Button onClick={handleTitleSubmit(handleRenameButtonClick)} className="rounded-full" variant="solid">
+              <Button
+                disabled
+                onClick={handleTitleSubmit(handleRenameButtonClick)}
+                className="rounded-full cursor-not-allowed"
+                variant="solid"
+              >
                 Rename
               </Button>
             </div>
@@ -81,6 +101,7 @@ export default function General() {
               <textarea
                 rows={4}
                 {...registerDescription('description')}
+                defaultValue={selectedRepo?.description}
                 className={clsx(
                   'bg-gray-50 border  text-liberty-dark-100 text-md rounded-lg focus:ring-liberty-dark-50 focus:border-liberty-dark-50 block w-full p-2.5',
                   descriptionErrors.description ? 'border-red-500' : 'border-gray-300'

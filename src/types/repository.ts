@@ -5,6 +5,7 @@ export type Repo = {
   dataTxId: string
   owner: string
   pullRequests: PullRequest[]
+  contributors: string[]
 }
 
 export type PullRequest = {

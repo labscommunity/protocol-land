@@ -168,6 +168,53 @@ export async function unmountRepoFromBrowser(name: string) {
   return true
 }
 
+export async function updateRepoName(oldName: string, newName: string, repoId: string) {
+  await unmountRepoFromBrowser(oldName)
+
+  const userSigner = new InjectedArweaveSigner(window.arweaveWallet)
+  await userSigner.setPublicKey()
+
+  const contract = getWarpContract(CONTRACT_TX_ID, userSigner)
+
+  await contract.writeInteraction({
+    function: 'updateRepositoryDetails',
+    payload: {
+      id: repoId,
+      name: newName
+    }
+  })
+}
+
+export async function updateRepoDescription(description: string, repoId: string) {
+  const userSigner = new InjectedArweaveSigner(window.arweaveWallet)
+  await userSigner.setPublicKey()
+
+  const contract = getWarpContract(CONTRACT_TX_ID, userSigner)
+
+  await contract.writeInteraction({
+    function: 'updateRepositoryDetails',
+    payload: {
+      id: repoId,
+      description
+    }
+  })
+}
+
+export async function addContributor(address: string, repoId: string) {
+  const userSigner = new InjectedArweaveSigner(window.arweaveWallet)
+  await userSigner.setPublicKey()
+
+  const contract = getWarpContract(CONTRACT_TX_ID, userSigner)
+
+  await contract.writeInteraction({
+    function: 'addContributor',
+    payload: {
+      id: repoId,
+      contributor: address
+    }
+  })
+}
+
 type PostUpdatedRepoOptions = {
   id: string
   fs: FSType

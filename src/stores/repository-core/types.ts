@@ -22,6 +22,8 @@ export type RepoCoreState = {
 }
 
 export type RepoCoreActions = {
+  updateRepoName: (name: string) => Promise<void>
+  updateRepoDescription: (description: string) => Promise<void>
   fetchAndLoadRepository: (id: string) => Promise<void>
   loadFilesFromRepo: () => Promise<void>
   git: {

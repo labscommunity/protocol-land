@@ -1,3 +1,4 @@
+import { Toaster } from 'react-hot-toast'
 import { HashRouter, Route, Routes } from 'react-router-dom'
 
 import AppLayout from './layouts/AppLayout'
@@ -16,6 +17,7 @@ function App() {
           <Route path="/repository/:id/pull/:pullId" element={<ReadPullRequest />} />
         </Routes>
       </AppLayout>
+      <Toaster position="bottom-center" />
     </HashRouter>
   )
 }

@@ -8,7 +8,7 @@ import { withAsync } from '@/helpers/withAsync'
 
 import { postUpdatedRepo } from '.'
 import { checkoutBranch } from './branch'
-import { FSType } from './helpers/fsWithName'
+import { FSType, fsWithName } from './helpers/fsWithName'
 
 export async function compareBranches({ fs, dir, base, compare }: CompareBranchesOptions) {
   const baseCommits = await git.log({ fs, dir, ref: base })
@@ -21,7 +21,19 @@ export async function compareBranches({ fs, dir, base, compare }: CompareBranche
   return filteredCommits
 }
 
-export async function postNewPullRequest({ title, description, baseBranch, compareBranch, repoId }: PostNewPROptions) {
+export async function postNewPullRequest({
+  repoName,
+  title,
+  description,
+  baseBranch,
+  compareBranch,
+  repoId
+}: PostNewPROptions) {
+  const fs = fsWithName(repoName)
+  const dir = `/${repoName}`
+
+  const oid = await git.resolveRef({ fs, dir, ref: baseBranch })
+
   const userSigner = new InjectedArweaveSigner(window.arweaveWallet)
   await userSigner.setPublicKey()
 
@@ -34,7 +46,8 @@ export async function postNewPullRequest({ title, description, baseBranch, compa
       description,
       repoId,
       baseBranch,
-      compareBranch
+      compareBranch,
+      baseBranchOid: oid
     }
   })
 
@@ -159,6 +172,7 @@ export async function closePullRequest({ repoId, prId }: { repoId: string; prId:
 }
 
 type PostNewPROptions = {
+  repoName: string
   title: string
   description: string
   baseBranch: string

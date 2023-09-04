@@ -24,6 +24,7 @@ export type Repo = {
   dataTxId: string
   owner: string
   pullRequests: PullRequest[]
+  contributors: string[]
 }
 
 export type PullRequest = {
@@ -31,6 +32,7 @@ export type PullRequest = {
   repoId: string
   title: string
   description: string
+  baseBranchOid: string
   baseBranch: string
   compareBranch: string
   author: string
@@ -72,7 +74,10 @@ const repoFnList = [
   'getRepositoriesByOwner',
   'updateRepositoryTxId',
   'createPullRequest',
-  'updatePullRequestStatus'
+  'updatePullRequestStatus',
+  'updateRepositoryDetails',
+  'addContributor',
+  'addReviewerToPR'
 ] as const
 
 export type RepositoryFunction = (typeof repoFnList)[number] // more types will be added later

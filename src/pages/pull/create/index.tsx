@@ -83,7 +83,9 @@ export default function CreatePullRequest() {
         )}
       </div>
       {!isDiffReady && <CommitsDiffLoading />}
-      {isDiffReady && commits.length > 0 && <NewPRForm baseBranch={baseBranch} compareBranch={compareBranch} />}
+      {isDiffReady && commits.length > 0 && (
+        <NewPRForm repoName={selectedRepo.repo?.name || ''} baseBranch={baseBranch} compareBranch={compareBranch} />
+      )}
       {isDiffReady && <CommitsDiff commits={commits} />}
     </div>
   )

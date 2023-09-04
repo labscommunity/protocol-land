@@ -17,6 +17,7 @@ export async function initializeNewRepository(
     description: payload.description,
     dataTxId: payload.dataTxId,
     owner: caller,
+    contributors: [],
     pullRequests: []
   }
 
@@ -76,4 +77,56 @@ export async function getAllRepositoriesByOwner(
   const ownerRepos = repos.filter((repo) => repo.owner === payload.owner)
 
   return { result: ownerRepos }
+}
+
+export async function updateRepositoryDetails(
+  state: ContractState,
+  { input: { payload } }: RepositoryAction
+): Promise<ContractResult<ContractState>> {
+  // validate payload
+  if (!payload.id) {
+    throw new ContractError('Invalid inputs supplied.')
+  }
+
+  const repo = state.repos[payload.id]
+
+  if (!repo) {
+    throw new ContractError('Repository not found.')
+  }
+
+  if (payload.name) {
+    repo.name = payload.name
+  }
+
+  if (payload.description) {
+    repo.description = payload.description
+  }
+
+  return { state }
+}
+
+export async function addContributor(
+  state: ContractState,
+  { input: { payload } }: RepositoryAction
+): Promise<ContractResult<ContractState>> {
+  // validate payload
+  if (!payload.id || !payload.contributor) {
+    throw new ContractError('Invalid inputs supplied.')
+  }
+
+  const repo = state.repos[payload.id]
+
+  if (!repo) {
+    throw new ContractError('Repository not found.')
+  }
+
+  const contributorExists = repo.contributors.find((address) => address === payload.contributor)
+
+  if (contributorExists) {
+    throw new ContractError('Contributor already exists.')
+  }
+
+  repo.contributors.push(payload.contributor)
+
+  return { state }
 }

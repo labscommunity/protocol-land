@@ -1,6 +1,7 @@
 import { StateCreator } from 'zustand'
 
 import { withAsync } from '@/helpers/withAsync'
+import { updateRepoDescription, updateRepoName } from '@/lib/git'
 
 import { CombinedSlices } from '../types'
 import {
@@ -35,6 +36,40 @@ const createRepoCoreSlice: StateCreator<CombinedSlices, [['zustand/immer', never
 ) => ({
   repoCoreState: initialRepoCoreState,
   repoCoreActions: {
+    updateRepoName: async (name: string) => {
+      const repo = get().repoCoreState.selectedRepo.repo
+
+      if (!repo) {
+        set((state) => (state.repoCoreState.git.status = 'ERROR'))
+
+        return
+      }
+
+      const { error } = await withAsync(() => updateRepoName(repo.name, name, repo.id))
+
+      if (!error) {
+        set((state) => {
+          state.repoCoreState.selectedRepo.repo!.name = name
+        })
+      }
+    },
+    updateRepoDescription: async (description: string) => {
+      const repo = get().repoCoreState.selectedRepo.repo
+
+      if (!repo) {
+        set((state) => (state.repoCoreState.git.status = 'ERROR'))
+
+        return
+      }
+
+      const { error } = await withAsync(() => updateRepoDescription(description, repo.id))
+
+      if (!error) {
+        set((state) => {
+          state.repoCoreState.selectedRepo.repo!.description = description
+        })
+      }
+    },
     fetchAndLoadRepository: async (id: string) => {
       set((state) => {
         state.repoCoreState.selectedRepo.status = 'PENDING'
