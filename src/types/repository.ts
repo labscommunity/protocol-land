@@ -15,6 +15,7 @@ export type PullRequest = {
   description: string
   baseBranch: string
   compareBranch: string
+  baseBranchOid: string
   author: string
   status: PullRequestStatus
   reviewers: Reviewer[]

@@ -77,7 +77,7 @@ const repoFnList = [
   'updatePullRequestStatus',
   'updateRepositoryDetails',
   'addContributor',
-  'addReviewerToPR'
+  'addReviewersToPR'
 ] as const
 
 export type RepositoryFunction = (typeof repoFnList)[number] // more types will be added later

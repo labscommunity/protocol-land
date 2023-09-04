@@ -34,9 +34,10 @@ export default function AddFilesModal({ setIsOpen, isOpen }: NewBranchModal) {
 
   const { addFiles } = useCommit()
   const { id } = useParams()
-  const [userRepo, address] = useGlobalStore((state) => [
+  const [userRepo, address, loadFilesFromRepo] = useGlobalStore((state) => [
     state.repoCoreState.selectedRepo.repo,
-    state.authState.address
+    state.authState.address,
+    state.repoCoreActions.loadFilesFromRepo
   ])
 
   const [files, setFiles] = React.useState<FileWithPath[]>([])
@@ -64,6 +65,8 @@ export default function AddFilesModal({ setIsOpen, isOpen }: NewBranchModal) {
         owner: address!
       })
       console.log({ result })
+
+      await loadFilesFromRepo()
 
       setIsSubmitting(false)
       closeModal()

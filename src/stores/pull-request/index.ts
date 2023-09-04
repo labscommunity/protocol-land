@@ -1,7 +1,7 @@
 import { StateCreator } from 'zustand'
 
 import { withAsync } from '@/helpers/withAsync'
-import { closePullRequest } from '@/lib/git/pull-request'
+import { addReviewersToPR, closePullRequest } from '@/lib/git/pull-request'
 
 import { CombinedSlices } from '../types'
 import { compareTwoBranches, getChangedFiles, mergePR } from './actions'
@@ -171,6 +171,25 @@ const createPullRequestSlice: StateCreator<CombinedSlices, [['zustand/immer', ne
       if (!error) {
         set((state) => {
           state.repoCoreState.selectedRepo.repo!.pullRequests[id - 1].status = 'CLOSED'
+        })
+      }
+    },
+    addReviewers: async (id, reviewers) => {
+      const repo = get().repoCoreState.selectedRepo.repo
+
+      if (!repo) {
+        set((state) => (state.pullRequestState.status = 'ERROR'))
+
+        return
+      }
+
+      const { error } = await withAsync(() => addReviewersToPR({ repoId: repo.id, prId: id, reviewers }))
+
+      if (!error) {
+        set((state) => {
+          const reviewersMap = reviewers.map((address) => ({ address, approved: false }))
+
+          state.repoCoreState.selectedRepo.repo!.pullRequests[id - 1].reviewers.push(...reviewersMap)
         })
       }
     }

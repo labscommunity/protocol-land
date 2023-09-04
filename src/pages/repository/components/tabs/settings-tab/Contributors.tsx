@@ -5,7 +5,6 @@ import toast from 'react-hot-toast'
 import * as yup from 'yup'
 
 import { Button } from '@/components/common/buttons'
-import { addContributor } from '@/lib/git'
 import { useGlobalStore } from '@/stores/globalStore'
 
 const addressSchema = yup
@@ -18,7 +17,10 @@ const addressSchema = yup
   .required()
 
 export default function Contributors() {
-  const [repo] = useGlobalStore((state) => [state.repoCoreState.selectedRepo.repo])
+  const [repo, addContributor] = useGlobalStore((state) => [
+    state.repoCoreState.selectedRepo.repo,
+    state.repoCoreActions.addContributor
+  ])
   const {
     register,
     handleSubmit,
@@ -35,7 +37,7 @@ export default function Contributors() {
       if (isContributor || isOwner) {
         toast.error('You already have permissions to this repo')
       } else {
-        await addContributor(data.address, repo.id)
+        await addContributor(data.address)
         toast.success('Successfully added a contributor')
       }
     }

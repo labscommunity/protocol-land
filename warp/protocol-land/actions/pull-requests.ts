@@ -112,11 +112,11 @@ export async function updatePullRequestStatus(
   return { state }
 }
 
-export async function addReviewerToPR(
+export async function addReviewersToPR(
   state: ContractState,
   { input: { payload } }: RepositoryAction
 ): Promise<ContractResult<ContractState>> {
-  if (!payload.repoId || !payload.prId || !payload.reviewer) {
+  if (!payload.repoId || !payload.prId || !payload.reviewers) {
     throw new ContractError('Invalid inputs supplied.')
   }
 
@@ -132,18 +132,12 @@ export async function addReviewerToPR(
     throw new ContractError('Pull Request not found.')
   }
 
-  const isValidReviewer = repo.contributors.find(payload.reviewer)
-
-  if (!isValidReviewer) {
-    throw new ContractError('Reviewer must be a contributor.')
-  }
-
-  const reviewer: Reviewer = {
-    address: payload.reviewer,
+  const reviewers: Reviewer[] = payload.reviewers.map((reviewer: string) => ({
+    address: reviewer,
     approved: false
-  }
+  }))
 
-  PR.reviewers.push(reviewer)
+  PR.reviewers.push(...reviewers)
 
   return { state }
 }

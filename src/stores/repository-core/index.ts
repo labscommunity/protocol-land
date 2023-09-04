@@ -1,7 +1,7 @@
 import { StateCreator } from 'zustand'
 
 import { withAsync } from '@/helpers/withAsync'
-import { updateRepoDescription, updateRepoName } from '@/lib/git'
+import { addContributor, updateRepoDescription, updateRepoName } from '@/lib/git'
 
 import { CombinedSlices } from '../types'
 import {
@@ -67,6 +67,23 @@ const createRepoCoreSlice: StateCreator<CombinedSlices, [['zustand/immer', never
       if (!error) {
         set((state) => {
           state.repoCoreState.selectedRepo.repo!.description = description
+        })
+      }
+    },
+    addContributor: async (address: string) => {
+      const repo = get().repoCoreState.selectedRepo.repo
+
+      if (!repo) {
+        set((state) => (state.repoCoreState.git.status = 'ERROR'))
+
+        return
+      }
+
+      const { error } = await withAsync(() => addContributor(address, repo.id))
+
+      if (!error) {
+        set((state) => {
+          state.repoCoreState.selectedRepo.repo!.contributors.push(address)
         })
       }
     },

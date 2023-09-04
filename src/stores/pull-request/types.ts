@@ -1,4 +1,5 @@
 import { CommitResult } from '@/types/commit'
+import { Reviewer } from '@/types/repository'
 
 export interface PullRequestSlice {
   pullRequestState: PullRequestState
@@ -12,7 +13,7 @@ export type PullRequestState = {
   compareBranch: string
   commits: CommitResult[]
   fileStatuses: FileStatus[]
-  reviewers: []
+  reviewers: Reviewer[]
 }
 
 export type FileStatus = [string, number, number, number]
@@ -26,4 +27,5 @@ export type PullRequestActions = {
   setDefaultBranches: () => Promise<void>
   mergePullRequest: (id: number) => Promise<void>
   closePullRequest: (id: number) => Promise<void>
+  addReviewers: (id: number, reviewers: string[]) => Promise<void>
 }
