@@ -78,3 +78,28 @@ export async function getPullRequestById(
 
   return { result: PR }
 }
+
+export async function updatePullRequestStatus(
+  state: ContractState,
+  { input: { payload } }: RepositoryAction
+): Promise<ContractResult<ContractState>> {
+  if (!payload.status || !payload.repoId || !payload.prId) {
+    throw new ContractError('Invalid inputs supplied.')
+  }
+
+  const repo = state.repos[payload.repoId]
+
+  if (!repo) {
+    throw new ContractError('Repository not found.')
+  }
+
+  const PR = repo.pullRequests[+payload.prId - 1]
+
+  if (!PR) {
+    throw new ContractError('Pull Request not found.')
+  }
+
+  PR.status = payload.status
+
+  return { state }
+}

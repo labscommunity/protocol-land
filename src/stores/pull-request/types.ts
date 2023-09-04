@@ -24,4 +24,5 @@ export type PullRequestActions = {
   getFileStatuses: (branchA: string, branchB: string) => Promise<void>
   compareBranches: (branchA: string, branchB: string) => Promise<void>
   setDefaultBranches: () => Promise<void>
+  mergePullRequest: (id: number) => Promise<void>
 }

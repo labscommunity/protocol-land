@@ -71,7 +71,8 @@ const repoFnList = [
   'getRepository',
   'getRepositoriesByOwner',
   'updateRepositoryTxId',
-  'createPullRequest'
+  'createPullRequest',
+  'updatePullRequestStatus'
 ] as const
 
 export type RepositoryFunction = (typeof repoFnList)[number] // more types will be added later

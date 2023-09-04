@@ -3,7 +3,7 @@ import { StateCreator } from 'zustand'
 import { withAsync } from '@/helpers/withAsync'
 
 import { CombinedSlices } from '../types'
-import { compareTwoBranches, getChangedFiles } from './actions'
+import { compareTwoBranches, getChangedFiles, mergePR } from './actions'
 import { PullRequestSlice, PullRequestState } from './types'
 
 const initialPullRequestState: PullRequestState = {
@@ -135,6 +135,26 @@ const createPullRequestSlice: StateCreator<CombinedSlices, [['zustand/immer', ne
       set((state) => {
         state.pullRequestState.commits = commits
       })
+    },
+    mergePullRequest: async (id) => {
+      const repo = get().repoCoreState.selectedRepo.repo
+      const baseBranch = get().pullRequestState.baseBranch
+      const compareBranch = get().pullRequestState.compareBranch
+      const author = get().authState.address
+
+      if (!repo) {
+        set((state) => (state.pullRequestState.status = 'ERROR'))
+
+        return
+      }
+
+      const { error } = await withAsync(() => mergePR(repo.id, id, repo.name, baseBranch, compareBranch, author!))
+
+      if (!error) {
+        set((state) => {
+          state.repoCoreState.selectedRepo.repo!.pullRequests[id - 1].status = 'MERGED'
+        })
+      }
     }
   }
 })

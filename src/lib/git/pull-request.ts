@@ -3,7 +3,10 @@ import { InjectedArweaveSigner } from 'warp-contracts-plugin-signature'
 
 import { CONTRACT_TX_ID } from '@/helpers/constants'
 import getWarpContract from '@/helpers/getWrapContract'
+import { waitFor } from '@/helpers/waitFor'
+import { withAsync } from '@/helpers/withAsync'
 
+import { postUpdatedRepo } from '.'
 import { checkoutBranch } from './branch'
 import { FSType } from './helpers/fsWithName'
 
@@ -90,6 +93,55 @@ export async function readFileFromRef({ ref, fs, dir, filePath }: ReadFileFromRe
   return Buffer.from(blob).toString('utf8')
 }
 
+export async function mergePullRequest({
+  fs,
+  dir,
+  base,
+  compare,
+  author,
+  dryRun,
+  repoId,
+  prId
+}: MergePullRequestOptions) {
+  const { error } = await withAsync(() =>
+    git.merge({
+      fs,
+      dir,
+      ours: base,
+      theirs: compare,
+      abortOnConflict: true,
+      fastForward: false,
+      dryRun,
+      author: {
+        email: author,
+        name: author
+      }
+    })
+  )
+
+  await waitFor(500)
+
+  if (!error) {
+    await postUpdatedRepo({ fs, dir, owner: author, id: repoId })
+
+    await waitFor(1000)
+
+    const userSigner = new InjectedArweaveSigner(window.arweaveWallet)
+    await userSigner.setPublicKey()
+
+    const contract = getWarpContract(CONTRACT_TX_ID, userSigner)
+
+    await contract.writeInteraction({
+      function: 'updatePullRequestStatus',
+      payload: {
+        repoId,
+        prId,
+        status: 'MERGED'
+      }
+    })
+  }
+}
+
 type PostNewPROptions = {
   title: string
   description: string
@@ -110,4 +162,15 @@ type ReadFileFromRefOptions = {
   dir: string
   ref: string
   filePath: string
+}
+
+type MergePullRequestOptions = {
+  fs: FSType
+  dir: string
+  base: string
+  compare: string
+  author: string
+  dryRun?: boolean
+  repoId: string
+  prId: number
 }

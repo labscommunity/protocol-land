@@ -1,5 +1,5 @@
 import { evolveContract } from './actions/evolve'
-import { createNewPullRequest } from './actions/pull-requests'
+import { createNewPullRequest, updatePullRequestStatus } from './actions/pull-requests'
 import {
   getAllRepositoriesByOwner,
   getRepository,
@@ -24,6 +24,8 @@ export async function handle(state: ContractState, action: RepositoryAction | Ev
       return await updateRepositoryTxId(state, action as RepositoryAction)
     case 'createPullRequest':
       return await createNewPullRequest(state, action as RepositoryAction)
+    case 'updatePullRequestStatus':
+      return await updatePullRequestStatus(state, action as RepositoryAction)
     case 'evolve':
       return await evolveContract(state, action as EvolveAction)
     default:
