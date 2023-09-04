@@ -30,6 +30,7 @@ export default function ReadPullRequest() {
       const PR = selectedRepo.repo.pullRequests[+pullId! - 1]
 
       pullRequestActions.compareBranches(PR.baseBranch, PR.compareBranch)
+      pullRequestActions.getFileStatuses(PR.baseBranch, PR.compareBranch)
 
       pullRequestActions.setBaseBranch(PR.baseBranch)
       pullRequestActions.setCompareBranch(PR.compareBranch)

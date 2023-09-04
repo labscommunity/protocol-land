@@ -3,7 +3,7 @@ import { StateCreator } from 'zustand'
 import { withAsync } from '@/helpers/withAsync'
 
 import { CombinedSlices } from '../types'
-import { compareTwoBranches } from './actions'
+import { compareTwoBranches, getChangedFiles } from './actions'
 import { PullRequestSlice, PullRequestState } from './types'
 
 const initialPullRequestState: PullRequestState = {
@@ -12,6 +12,7 @@ const initialPullRequestState: PullRequestState = {
   baseBranch: '',
   compareBranch: '',
   commits: [],
+  fileStatuses: [],
   reviewers: []
 }
 
@@ -83,6 +84,39 @@ const createPullRequestSlice: StateCreator<CombinedSlices, [['zustand/immer', ne
       if (response) {
         set((state) => {
           state.pullRequestState.commits = response
+          state.pullRequestState.status = 'SUCCESS'
+        })
+      }
+    },
+    getFileStatuses: async (branchA, branchB) => {
+      const status = get().pullRequestState.status
+
+      if (status !== 'PENDING') {
+        set((state) => {
+          state.pullRequestState.status = 'PENDING'
+        })
+      }
+
+      const repo = get().repoCoreState.selectedRepo.repo
+
+      if (!repo) {
+        set((state) => (state.pullRequestState.status = 'ERROR'))
+
+        return
+      }
+
+      const { error, response } = await withAsync(() => getChangedFiles(repo.name, branchA, branchB))
+
+      if (error) {
+        set((state) => {
+          state.pullRequestState.error = error
+          state.pullRequestState.status = 'ERROR'
+        })
+      }
+
+      if (response) {
+        set((state) => {
+          state.pullRequestState.fileStatuses = response
           state.pullRequestState.status = 'SUCCESS'
         })
       }

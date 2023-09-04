@@ -11,13 +11,17 @@ export type PullRequestState = {
   baseBranch: string
   compareBranch: string
   commits: CommitResult[]
+  fileStatuses: FileStatus[]
   reviewers: []
 }
+
+export type FileStatus = [string, number, number, number]
 
 export type PullRequestActions = {
   setBaseBranch: (branch: string) => void
   setCompareBranch: (branch: string) => void
   setCommits: (commits: CommitResult[]) => void
+  getFileStatuses: (branchA: string, branchB: string) => Promise<void>
   compareBranches: (branchA: string, branchB: string) => Promise<void>
   setDefaultBranches: () => Promise<void>
 }

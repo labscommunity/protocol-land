@@ -31,6 +31,7 @@
     "isomorphic-git": "^1.24.5",
     "jszip": "^3.10.1",
     "react": "^18.2.0",
+    "react-codemirror-merge": "^4.21.13",
     "react-dom": "^18.2.0",
     "react-dropzone": "^14.2.3",
     "react-hook-form": "^7.45.4",
