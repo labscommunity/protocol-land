@@ -15,7 +15,7 @@ export default function ReviewerAdd() {
   ])
 
   const normalizedPrReviewers =
-    (repo && repo.pullRequests[+pullId! - 1].reviewers.map((reviewer) => reviewer.address)) ?? []
+    (repo && repo.pullRequests[+pullId! - 1]?.reviewers.map((reviewer) => reviewer.address)) ?? []
   const contributors = repo && repo.contributors.filter((address) => normalizedPrReviewers.indexOf(address) < 0)
 
   async function handleReviwersSubmit() {

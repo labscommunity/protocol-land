@@ -11,6 +11,7 @@ const initialPullRequestState: PullRequestState = {
   status: 'IDLE',
   error: null,
   baseBranch: '',
+  baseBranchOid: '',
   compareBranch: '',
   commits: [],
   fileStatuses: [],
@@ -125,6 +126,11 @@ const createPullRequestSlice: StateCreator<CombinedSlices, [['zustand/immer', ne
     setBaseBranch: (branch) => {
       set((state) => {
         state.pullRequestState.baseBranch = branch
+      })
+    },
+    setBaseBranchOid: (oid) => {
+      set((state) => {
+        state.pullRequestState.baseBranchOid = oid
       })
     },
     setCompareBranch: (branch) => {

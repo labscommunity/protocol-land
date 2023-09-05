@@ -10,6 +10,7 @@ export type PullRequestState = {
   status: ApiStatus
   error: unknown | null
   baseBranch: string
+  baseBranchOid: string
   compareBranch: string
   commits: CommitResult[]
   fileStatuses: FileStatus[]
@@ -20,6 +21,7 @@ export type FileStatus = [string, number, number, number]
 
 export type PullRequestActions = {
   setBaseBranch: (branch: string) => void
+  setBaseBranchOid: (oid: string) => void
   setCompareBranch: (branch: string) => void
   setCommits: (commits: CommitResult[]) => void
   getFileStatuses: (branchA: string, branchB: string) => Promise<void>

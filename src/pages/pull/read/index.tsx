@@ -31,11 +31,12 @@ export default function ReadPullRequest() {
 
       if (!PR) return
 
-      pullRequestActions.compareBranches(PR.baseBranch, PR.compareBranch)
-      pullRequestActions.getFileStatuses(PR.baseBranch, PR.compareBranch)
+      pullRequestActions.compareBranches(PR.baseBranchOid, PR.compareBranch)
+      pullRequestActions.getFileStatuses(PR.baseBranchOid, PR.compareBranch)
 
       pullRequestActions.setBaseBranch(PR.baseBranch)
       pullRequestActions.setCompareBranch(PR.compareBranch)
+      pullRequestActions.setBaseBranchOid(PR.baseBranchOid)
     }
   }, [selectedRepo.repo])
 

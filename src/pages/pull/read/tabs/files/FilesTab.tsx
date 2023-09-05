@@ -3,9 +3,9 @@ import { useGlobalStore } from '@/stores/globalStore'
 import FileCompareComponent from './FileCompareComponent'
 
 export default function FilesTab() {
-  const [fileStatuses, baseBranch, compareBranch, repo] = useGlobalStore((state) => [
+  const [fileStatuses, baseBranchOid, compareBranch, repo] = useGlobalStore((state) => [
     state.pullRequestState.fileStatuses,
-    state.pullRequestState.baseBranch,
+    state.pullRequestState.baseBranchOid,
     state.pullRequestState.compareBranch,
     state.repoCoreState.selectedRepo.repo
   ])
@@ -16,7 +16,7 @@ export default function FilesTab() {
         <FileCompareComponent
           repoName={repo!.name || ''}
           fileStatus={fileStatus}
-          base={baseBranch}
+          base={baseBranchOid}
           compare={compareBranch}
         />
       ))}
