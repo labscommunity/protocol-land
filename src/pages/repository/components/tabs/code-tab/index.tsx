@@ -5,6 +5,7 @@ import React from 'react'
 import { FiArrowLeft, FiCode, FiEdit3 } from 'react-icons/fi'
 
 import { Button } from '@/components/common/buttons'
+import { getFileExtension, isImage } from '@/pages/repository/helpers/filenameHelper'
 import useCommit from '@/pages/repository/hooks/useCommit'
 import { useGlobalStore } from '@/stores/globalStore'
 
@@ -25,6 +26,7 @@ export default function CodeTab({ repoName = '' }: Props) {
     state.repoCoreActions.git
   ])
   const [fileContent, setFileContent] = React.useState('')
+  const [fileIsImage, setFileIsImage] = React.useState(false)
 
   const { commitsList, fetchFirstCommit } = useCommit()
 
@@ -47,16 +49,37 @@ export default function CodeTab({ repoName = '' }: Props) {
     gitActions.setCurrentOid(fileObject.oid)
   }
 
-  async function handleFileClick(fileObject: any) {
-    if (fileObject.oid) {
-      const blob = await gitActions.readFileContentFromOid(fileObject.oid)
+  async function getFileContent(fileObject: any) {
+    if (!fileObject || !fileObject.oid) return ''
 
-      if (blob) setFileContent(Buffer.from(blob).toString('utf8'))
+    const uint8ArrayData = await gitActions.readFileContentFromOid(fileObject.oid)
+
+    if (!uint8ArrayData) return ''
+
+    if (!isImage(fileObject.path)) return Buffer.from(uint8ArrayData).toString('utf8')
+
+    if (getFileExtension(fileObject.path) === 'svg')
+      return `data:image/svg+xml;base64,${Buffer.from(uint8ArrayData).toString('base64')}`
+    else {
+      const dataUrl = await new Promise((res: (value: string) => void) => {
+        const reader = new FileReader()
+        reader.onload = () => res(reader.result as string)
+        reader.readAsDataURL(new Blob([uint8ArrayData]))
+      })
+      return dataUrl ? dataUrl : ''
     }
+  }
+
+  async function handleFileClick(fileObject: any) {
+    const fileContent = await getFileContent(fileObject)
+    if (!fileContent) return
+    setFileContent(fileContent)
+    setFileIsImage(isImage(fileObject.path))
   }
 
   function onGoBackClick() {
     setFileContent('')
+    setFileIsImage(false)
   }
 
   if (git.status === 'PENDING') {
@@ -86,16 +109,22 @@ export default function CodeTab({ repoName = '' }: Props) {
           </div>
         </div>
         <div className="flex w-full h-full mb-4">
-          <CodeMirror
-            className="min-h-[100%] w-full border-[1.2px] rounded-md overflow-hidden border-liberty-light-400"
-            value={fileContent}
-            minHeight="200px"
-            height="100%"
-            theme={githubLight}
-            extensions={[langs.javascript({ jsx: true })]}
-            onChange={() => {}}
-            editable={false}
-          />
+          {fileIsImage ? (
+            <div className="min-h-[100%] w-full border-[1.2px] rounded-md overflow-hidden bg-white border-liberty-light-400 flex items-center justify-center">
+              <img src={fileContent} alt="Image" />
+            </div>
+          ) : (
+            <CodeMirror
+              className="min-h-[100%] w-full border-[1.2px] rounded-md overflow-hidden border-liberty-light-400"
+              value={fileContent}
+              minHeight="200px"
+              height="100%"
+              theme={githubLight}
+              extensions={[langs.javascript({ jsx: true })]}
+              onChange={() => {}}
+              editable={false}
+            />
+          )}
         </div>
       </div>
     )
