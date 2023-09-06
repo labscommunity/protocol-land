@@ -5,7 +5,7 @@ import React from 'react'
 import { FiArrowLeft, FiCode, FiEdit3 } from 'react-icons/fi'
 
 import { Button } from '@/components/common/buttons'
-import { getFileExtension, isImage } from '@/pages/repository/helpers/filenameHelper'
+import { getFileContent, isImage } from '@/pages/repository/helpers/filenameHelper'
 import useCommit from '@/pages/repository/hooks/useCommit'
 import { useGlobalStore } from '@/stores/globalStore'
 
@@ -49,30 +49,17 @@ export default function CodeTab({ repoName = '' }: Props) {
     gitActions.setCurrentOid(fileObject.oid)
   }
 
-  async function getFileContent(fileObject: any) {
-    if (!fileObject || !fileObject.oid) return ''
-
-    const uint8ArrayData = await gitActions.readFileContentFromOid(fileObject.oid)
-
-    if (!uint8ArrayData) return ''
-
-    if (!isImage(fileObject.path)) return Buffer.from(uint8ArrayData).toString('utf8')
-
-    if (getFileExtension(fileObject.path) === 'svg')
-      return `data:image/svg+xml;base64,${Buffer.from(uint8ArrayData).toString('base64')}`
-    else {
-      const dataUrl = await new Promise((res: (value: string) => void) => {
-        const reader = new FileReader()
-        reader.onload = () => res(reader.result as string)
-        reader.readAsDataURL(new Blob([uint8ArrayData]))
-      })
-      return dataUrl ? dataUrl : ''
-    }
-  }
-
   async function handleFileClick(fileObject: any) {
-    const fileContent = await getFileContent(fileObject)
+    if (!fileObject || !fileObject.oid) return
+
+    const blob = await gitActions.readFileContentFromOid(fileObject.oid)
+
+    if (!blob) return
+
+    const fileContent = await getFileContent(blob, fileObject.path)
+
     if (!fileContent) return
+
     setFileContent(fileContent)
     setFileIsImage(isImage(fileObject.path))
   }
