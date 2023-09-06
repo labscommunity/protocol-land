@@ -8,7 +8,7 @@ export default function TableHead({ commit }: { commit: CommitResult }) {
     <div className="flex justify-between bg-liberty-light-800 text-[whitesmoke] items-center gap-2 py-2 px-4 border-b-[1px] border-liberty-light-400">
       {commit && (
         <>
-          <span>{shortenAddress(commit.commit.author.name)}</span>
+          <span title={commit.commit.author.name}>{shortenAddress(commit.commit.author.name)}</span>
           <div className="gap-8 flex justify-between">
             <span>{commit.commit.message}</span>
             <span>{commit.oid.slice(0, 7)}</span>
