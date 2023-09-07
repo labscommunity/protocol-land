@@ -9,7 +9,7 @@ export const getRepositoryMetaFromContract = async (id: string): Promise<{ resul
   const userSigner = new InjectedArweaveSigner(window.arweaveWallet)
   await userSigner.setPublicKey()
 
-  const contract = getWarpContract(CONTRACT_TX_ID, 'use_wallet')
+  const contract = getWarpContract(CONTRACT_TX_ID)
 
   return contract.viewState({
     function: 'getRepository',
