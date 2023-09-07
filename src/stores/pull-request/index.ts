@@ -24,6 +24,11 @@ const createPullRequestSlice: StateCreator<CombinedSlices, [['zustand/immer', ne
 ) => ({
   pullRequestState: initialPullRequestState,
   pullRequestActions: {
+    reset: () => {
+      set((state) => {
+        state.pullRequestState = initialPullRequestState
+      })
+    },
     setDefaultBranches: async () => {
       set((state) => {
         state.pullRequestState.status = 'PENDING'
@@ -191,7 +196,7 @@ const createPullRequestSlice: StateCreator<CombinedSlices, [['zustand/immer', ne
 
       const PR = repo.pullRequests[prId - 1]
 
-      if(!PR || !PR?.reviewers) return []
+      if (!PR || !PR?.reviewers) return []
 
       const currentReviewersAddresses = PR?.reviewers?.map((reviewer) => reviewer.address)
       const reviewers = [...repo.contributors, repo.owner]

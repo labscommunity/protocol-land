@@ -13,13 +13,16 @@ const activeClasses = 'border-b-[3px] border-[#8a6bec] text-[#8a6bec] font-mediu
 
 export default function Repository() {
   const { id } = useParams()
-  const [selectedRepo, fetchAndLoadRepository] = useGlobalStore((state) => [
+  const [selectedRepo, fetchAndLoadRepository, reset] = useGlobalStore((state) => [
     state.repoCoreState.selectedRepo,
-    state.repoCoreActions.fetchAndLoadRepository
+    state.repoCoreActions.fetchAndLoadRepository,
+    state.repoCoreActions.reset
   ])
 
   React.useEffect(() => {
     fetchAndLoadRepository(id!)
+
+    return () => reset()
   }, [])
 
   const isReady = selectedRepo.status === 'SUCCESS'

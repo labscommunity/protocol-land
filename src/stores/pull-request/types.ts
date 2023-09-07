@@ -20,6 +20,7 @@ export type PullRequestState = {
 export type FileStatus = [string, number, number, number]
 
 export type PullRequestActions = {
+  reset: () => void
   setBaseBranch: (branch: string) => void
   setBaseBranchOid: (oid: string) => void
   setCompareBranch: (branch: string) => void

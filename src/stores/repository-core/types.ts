@@ -27,6 +27,7 @@ export type RepoCoreActions = {
   addContributor: (address: string) => Promise<void>
   fetchAndLoadRepository: (id: string) => Promise<void>
   loadFilesFromRepo: () => Promise<void>
+  reset: () => void
   git: {
     readFilesFromOid: (oid: string) => Promise<void>
     readFileContentFromOid: (oid: string) => Promise<Uint8Array | null>

@@ -36,6 +36,11 @@ const createRepoCoreSlice: StateCreator<CombinedSlices, [['zustand/immer', never
 ) => ({
   repoCoreState: initialRepoCoreState,
   repoCoreActions: {
+    reset: () => {
+      set((state) => {
+        state.repoCoreState = initialRepoCoreState
+      })
+    },
     updateRepoName: async (name: string) => {
       const repo = get().repoCoreState.selectedRepo.repo
 
