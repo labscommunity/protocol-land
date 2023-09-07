@@ -191,7 +191,9 @@ const createPullRequestSlice: StateCreator<CombinedSlices, [['zustand/immer', ne
 
       const PR = repo.pullRequests[prId - 1]
 
-      const currentReviewersAddresses = PR.reviewers.map((reviewer) => reviewer.address)
+      if(!PR || !PR?.reviewers) return []
+
+      const currentReviewersAddresses = PR?.reviewers?.map((reviewer) => reviewer.address)
       const reviewers = [...repo.contributors, repo.owner]
 
       const filteredReviewers = reviewers.filter(
