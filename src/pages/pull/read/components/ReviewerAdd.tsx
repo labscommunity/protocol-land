@@ -9,14 +9,12 @@ import { useGlobalStore } from '@/stores/globalStore'
 export default function ReviewerAdd() {
   const { pullId } = useParams()
   const [reviewers, setReviewers] = React.useState<string[]>([])
-  const [repo, addReviewers] = useGlobalStore((state) => [
-    state.repoCoreState.selectedRepo.repo,
-    state.pullRequestActions.addReviewers
+  const [addReviewers, getReviewersList] = useGlobalStore((state) => [
+    state.pullRequestActions.addReviewers,
+    state.pullRequestActions.getReviewersList
   ])
 
-  const normalizedPrReviewers =
-    (repo && repo.pullRequests[+pullId! - 1]?.reviewers.map((reviewer) => reviewer.address)) ?? []
-  const contributors = repo && repo.contributors.filter((address) => normalizedPrReviewers.indexOf(address) < 0)
+  const contributors = getReviewersList(+pullId!)
 
   async function handleReviwersSubmit() {
     //

@@ -141,3 +141,34 @@ export async function addReviewersToPR(
 
   return { state }
 }
+
+export async function approvePR(
+  state: ContractState,
+  { caller, input: { payload } }: RepositoryAction
+): Promise<ContractResult<ContractState>> {
+  if (!payload.repoId || !payload.prId) {
+    throw new ContractError('Invalid inputs supplied.')
+  }
+
+  const repo = state.repos[payload.repoId]
+
+  if (!repo) {
+    throw new ContractError('Repository not found.')
+  }
+
+  const PR = repo.pullRequests[+payload.prId - 1]
+
+  if (!PR) {
+    throw new ContractError('Pull Request not found.')
+  }
+
+  const reviewerIdx = PR.reviewers.findIndex((reviewer) => reviewer.address === caller)
+
+  if (reviewerIdx < 0) {
+    throw new ContractError('Reviewer not found.')
+  }
+
+  PR.reviewers[reviewerIdx].approved = true
+
+  return { state }
+}

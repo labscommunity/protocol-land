@@ -1,7 +1,7 @@
 import { StateCreator } from 'zustand'
 
 import { withAsync } from '@/helpers/withAsync'
-import { addReviewersToPR, closePullRequest } from '@/lib/git/pull-request'
+import { addReviewersToPR, approvePR, closePullRequest } from '@/lib/git/pull-request'
 
 import { CombinedSlices } from '../types'
 import { compareTwoBranches, getChangedFiles, mergePR } from './actions'
@@ -180,6 +180,26 @@ const createPullRequestSlice: StateCreator<CombinedSlices, [['zustand/immer', ne
         })
       }
     },
+    getReviewersList: (prId: number) => {
+      const repo = get().repoCoreState.selectedRepo.repo
+
+      if (!repo) {
+        set((state) => (state.pullRequestState.status = 'ERROR'))
+
+        return []
+      }
+
+      const PR = repo.pullRequests[prId - 1]
+
+      const currentReviewersAddresses = PR.reviewers.map((reviewer) => reviewer.address)
+      const reviewers = [...repo.contributors, repo.owner]
+
+      const filteredReviewers = reviewers.filter(
+        (address) => currentReviewersAddresses.indexOf(address) < 0 && address !== PR.author
+      )
+
+      return filteredReviewers
+    },
     addReviewers: async (id, reviewers) => {
       const repo = get().repoCoreState.selectedRepo.repo
 
@@ -196,6 +216,28 @@ const createPullRequestSlice: StateCreator<CombinedSlices, [['zustand/immer', ne
           const reviewersMap = reviewers.map((address) => ({ address, approved: false }))
 
           state.repoCoreState.selectedRepo.repo!.pullRequests[id - 1].reviewers.push(...reviewersMap)
+        })
+      }
+    },
+    approvePR: async (id) => {
+      const repo = get().repoCoreState.selectedRepo.repo
+      const address = get().authState.address
+
+      if (!repo || !address) {
+        set((state) => (state.pullRequestState.status = 'ERROR'))
+
+        return
+      }
+
+      const PR = repo.pullRequests[id - 1]
+
+      const { error } = await withAsync(() => approvePR({ repoId: repo.id, prId: PR.id }))
+
+      if (!error) {
+        const reviewerIdx = PR.reviewers.findIndex((reviewer) => reviewer.address === address)
+
+        set((state) => {
+          state.repoCoreState.selectedRepo.repo!.pullRequests[id - 1].reviewers[reviewerIdx].approved = true
         })
       }
     }

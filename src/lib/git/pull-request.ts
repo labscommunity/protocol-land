@@ -187,6 +187,26 @@ export async function addReviewersToPR({ reviewers, repoId, prId }: AddReviewers
   })
 }
 
+export async function approvePR({ repoId, prId }: ApprovePROptions) {
+  const userSigner = new InjectedArweaveSigner(window.arweaveWallet)
+  await userSigner.setPublicKey()
+
+  const contract = getWarpContract(CONTRACT_TX_ID, userSigner)
+
+  await contract.writeInteraction({
+    function: 'approvePR',
+    payload: {
+      repoId,
+      prId
+    }
+  })
+}
+
+type ApprovePROptions = {
+  repoId: string
+  prId: number
+}
+
 type AddReviewersToPROptions = {
   reviewers: string[]
   repoId: string
