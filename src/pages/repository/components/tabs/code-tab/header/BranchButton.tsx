@@ -10,7 +10,11 @@ import { useGlobalStore } from '@/stores/globalStore'
 import NewBranchModal from './NewBranchModal'
 
 export default function BranchButton() {
-  const [branchState, branchActions] = useGlobalStore((state) => [state.branchState, state.branchActions])
+  const [branchState, branchActions, isContributor] = useGlobalStore((state) => [
+    state.branchState,
+    state.branchActions,
+    state.repoCoreActions.isContributor
+  ])
 
   React.useEffect(() => {
     branchActions.listBranches()
@@ -18,6 +22,8 @@ export default function BranchButton() {
   }, [])
 
   const [isNewBranchModalOpen, setIsNewBranchModalOpen] = React.useState(false)
+
+  const contributor = isContributor()
 
   return (
     <div className="flex items-center gap-4">
@@ -62,9 +68,11 @@ export default function BranchButton() {
           </Transition>
         </div>
       </Listbox>
-      <Button onClick={() => setIsNewBranchModalOpen(true)} variant="solid" className="rounded-md !px-4 py-[11px]">
-        <LuGitBranchPlus className="w-5 h-5" />
-      </Button>
+      {contributor && (
+        <Button onClick={() => setIsNewBranchModalOpen(true)} variant="solid" className="rounded-md !px-4 py-[11px]">
+          <LuGitBranchPlus className="w-5 h-5" />
+        </Button>
+      )}
       <NewBranchModal
         isOpen={isNewBranchModalOpen}
         setIsOpen={setIsNewBranchModalOpen}

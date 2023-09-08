@@ -41,6 +41,32 @@ const createRepoCoreSlice: StateCreator<CombinedSlices, [['zustand/immer', never
         state.repoCoreState = initialRepoCoreState
       })
     },
+    isRepoOwner: () => {
+      const repo = get().repoCoreState.selectedRepo.repo
+      const userAddress = get().authState.address
+
+      if (!repo || !userAddress) {
+        return false
+      }
+
+      return repo.owner === userAddress
+    },
+    isContributor: () => {
+      const repo = get().repoCoreState.selectedRepo.repo
+      const userAddress = get().authState.address
+
+      if (!repo || !userAddress) {
+        return false
+      }
+
+      const isRepoOwner = repo.owner === userAddress
+
+      if (isRepoOwner) return true
+
+      const isContributor = repo?.contributors?.indexOf(userAddress) > -1
+
+      return isContributor
+    },
     updateRepoName: async (name: string) => {
       const repo = get().repoCoreState.selectedRepo.repo
 

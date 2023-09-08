@@ -23,10 +23,11 @@ const descriptionSchema = yup
   .required()
 
 export default function General() {
-  const [selectedRepo, updateDescription, updateName] = useGlobalStore((state) => [
+  const [selectedRepo, updateDescription, updateName, isRepoOwner] = useGlobalStore((state) => [
     state.repoCoreState.selectedRepo.repo,
     state.repoCoreActions.updateRepoDescription,
-    state.repoCoreActions.updateRepoName
+    state.repoCoreActions.updateRepoName,
+    state.repoCoreActions.isRepoOwner
   ])
   const {
     register: registerTitle,
@@ -57,6 +58,8 @@ export default function General() {
     }
   }
 
+  const repoOwner = isRepoOwner()
+
   return (
     <div className="flex flex-col gap-4">
       <div className="w-full border-b-[1px] border-[#cbc9f6] py-1">
@@ -83,7 +86,7 @@ export default function General() {
               <Button
                 disabled
                 onClick={handleTitleSubmit(handleRenameButtonClick)}
-                className="rounded-full cursor-not-allowed"
+                className="rounded-full cursor-not-allowed disabled:bg-gray-400"
                 variant="solid"
               >
                 Rename
@@ -107,10 +110,12 @@ export default function General() {
                   descriptionErrors.description ? 'border-red-500' : 'border-gray-300'
                 )}
                 placeholder="my-cool-repo"
+                disabled={!repoOwner}
               />
               <Button
+                disabled={!repoOwner}
                 onClick={handleDescriptionSubmit(handleUpdateButtonClick)}
-                className="rounded-full"
+                className="rounded-full disabled:bg-gray-400"
                 variant="solid"
               >
                 Update

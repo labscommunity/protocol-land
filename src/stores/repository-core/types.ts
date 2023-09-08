@@ -27,6 +27,8 @@ export type RepoCoreActions = {
   addContributor: (address: string) => Promise<void>
   fetchAndLoadRepository: (id: string) => Promise<void>
   loadFilesFromRepo: () => Promise<void>
+  isRepoOwner: () => boolean
+  isContributor: () => boolean
   reset: () => void
   git: {
     readFilesFromOid: (oid: string) => Promise<void>

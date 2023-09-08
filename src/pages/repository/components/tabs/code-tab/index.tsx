@@ -20,10 +20,11 @@ type Props = {
 }
 
 export default function CodeTab({ repoName = '' }: Props) {
-  const [git, loadFilesFromRepo, gitActions] = useGlobalStore((state) => [
+  const [git, loadFilesFromRepo, gitActions, isContributor] = useGlobalStore((state) => [
     state.repoCoreState.git,
     state.repoCoreActions.loadFilesFromRepo,
-    state.repoCoreActions.git
+    state.repoCoreActions.git,
+    state.repoCoreActions.isContributor
   ])
   const [fileContent, setFileContent] = React.useState('')
   const [fileIsImage, setFileIsImage] = React.useState(false)
@@ -78,6 +79,8 @@ export default function CodeTab({ repoName = '' }: Props) {
   }
 
   if (git.status === 'SUCCESS' && fileContent.length > 0) {
+    const contributor = isContributor()
+
     return (
       <div className="flex flex-col gap-2 w-full h-full">
         <div className="flex w-full justify-between">
@@ -88,12 +91,14 @@ export default function CodeTab({ repoName = '' }: Props) {
           >
             <FiArrowLeft className="w-5 h-5 text-[inherit]" /> Go back
           </Button>
-          <div>
-            <Button className="flex gap-2 items-center rounded-full font-medium" variant="solid">
-              <FiEdit3 className="w-5 h-5 text-[inherit]" />
-              Edit
-            </Button>
-          </div>
+          {contributor && (
+            <div>
+              <Button className="flex gap-2 items-center rounded-full font-medium" variant="solid">
+                <FiEdit3 className="w-5 h-5 text-[inherit]" />
+                Edit
+              </Button>
+            </div>
+          )}
         </div>
         <div className="flex w-full h-full mb-4">
           {fileIsImage ? (

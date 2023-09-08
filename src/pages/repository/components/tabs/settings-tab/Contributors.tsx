@@ -17,9 +17,10 @@ const addressSchema = yup
   .required()
 
 export default function Contributors() {
-  const [repo, addContributor] = useGlobalStore((state) => [
+  const [repo, addContributor, isRepoOwner] = useGlobalStore((state) => [
     state.repoCoreState.selectedRepo.repo,
-    state.repoCoreActions.addContributor
+    state.repoCoreActions.addContributor,
+    state.repoCoreActions.isRepoOwner
   ])
   const {
     register,
@@ -43,6 +44,8 @@ export default function Contributors() {
     }
   }
 
+  const repoOwner = isRepoOwner()
+
   return (
     <div className="flex flex-col gap-4">
       <div className="w-full border-b-[1px] border-[#cbc9f6] py-1">
@@ -63,8 +66,9 @@ export default function Contributors() {
                   errors.address ? 'border-red-500' : 'border-gray-300'
                 )}
                 placeholder="Arweave address"
+                disabled={!repoOwner}
               />
-              <Button onClick={handleSubmit(handleAddButtonClick)} className="rounded-full " variant="solid">
+              <Button disabled={!repoOwner} onClick={handleSubmit(handleAddButtonClick)} className="rounded-full disabled:bg-gray-400" variant="solid">
                 Add
               </Button>
             </div>
