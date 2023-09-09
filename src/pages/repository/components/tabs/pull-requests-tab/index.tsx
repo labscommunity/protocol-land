@@ -1,19 +1,39 @@
+import { useEffect, useState } from 'react'
 import { FiGitPullRequest } from 'react-icons/fi'
 
 import { useGlobalStore } from '@/stores/globalStore'
+import { PullRequest } from '@/types/repository'
 
 import PullRequestRow from './PullRequestRow'
 import TableHeader from './TableHeader'
 
 export default function PullRequestsTab() {
+  const [view, setView] = useState<'OPEN' | 'CLOSED'>('OPEN')
+  const [PRList, setPRList] = useState<PullRequest[]>([])
   const [repo] = useGlobalStore((state) => [state.repoCoreState.selectedRepo.repo])
 
-  const hasPRs = repo ? repo.pullRequests.length > 0 : false
+  useEffect(() => {
+    if (repo) {
+      if (view === 'OPEN') {
+        const filteredPRs = repo.pullRequests.filter((pr) => pr.status === 'OPEN')
+
+        if (filteredPRs.length > 0) setPRList(filteredPRs)
+      }
+
+      if (view === 'CLOSED') {
+        const filteredPRs = repo.pullRequests.filter((pr) => pr.status === 'CLOSED' || pr.status === 'MERGED')
+
+        if (filteredPRs.length > 0) setPRList(filteredPRs)
+      }
+    }
+  }, [repo, view])
+
+  const hasPRs = PRList.length > 0
 
   return (
     <div className="w-full pb-6 flex gap-8">
       <div className="flex flex-col w-full">
-        <TableHeader />
+        <TableHeader view={view} setView={setView} />
         <div className="rounded-b-lg w-full bg-[whitesmoke] text-liberty-dark-100 overflow-hidden">
           {!hasPRs && (
             <div className="flex flex-col gap-2 h-32 w-full items-center justify-center">
@@ -21,10 +41,15 @@ export default function PullRequestsTab() {
               <h1 className="text-lg font-medium">Get started by creating a new pull request</h1>
             </div>
           )}
-          {repo &&
-            repo.pullRequests.map((pr) => (
-              <PullRequestRow id={pr.id} author={pr.author} title={pr.title} status={pr.status} timestamp={pr.timestamp} />
-            ))}
+          {PRList.map((pr) => (
+            <PullRequestRow
+              id={pr.id}
+              author={pr.author}
+              title={pr.title}
+              status={pr.status}
+              timestamp={pr.timestamp}
+            />
+          ))}
           {/* <PullRequestRow status="OPEN" />
           <PullRequestRow status="CLOSED" />
           <PullRequestRow status="MERGED" /> */}
