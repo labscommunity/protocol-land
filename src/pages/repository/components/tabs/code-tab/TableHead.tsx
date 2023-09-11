@@ -16,6 +16,16 @@ export default function TableHead({ commit }: { commit: CommitResult }) {
           </div>
         </>
       )}
+      {!commit && (
+        <div className="w-full py-[8px] flex justify-between">
+          <div className="h-2 bg-gray-200 rounded-full w-[20%] animate-pulse"></div>
+          <div className="w-1/2 flex justify-between">
+            <div className="h-2 bg-gray-200 rounded-full w-[20%] animate-pulse"></div>
+            <div className="h-2 bg-gray-200 rounded-full w-[20%] animate-pulse"></div>
+            <div className="h-2 bg-gray-200 rounded-full w-[20%] animate-pulse"></div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
