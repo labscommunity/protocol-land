@@ -21,7 +21,7 @@ export function useFetchUserRepos() {
     const contract = getWarpContract(CONTRACT_TX_ID)
 
     setFetchUserReposStatus('PENDING')
-    const { response, error } = await withAsync(() =>
+    const { response: ownerReposResponse, error: ownerReposError } = await withAsync(() =>
       contract.viewState({
         function: 'getRepositoriesByOwner',
         payload: {
@@ -30,10 +30,19 @@ export function useFetchUserRepos() {
       })
     )
 
-    if (error) {
+    const { response: collabResponse, error: collabError } = await withAsync(() =>
+      contract.viewState({
+        function: 'getRepositoriesByContributor',
+        payload: {
+          contributor: address
+        }
+      })
+    )
+
+    if (ownerReposError || collabError) {
       setFetchUserReposStatus('ERROR')
-    } else if (response) {
-      setUserRepos(response.result)
+    } else if (ownerReposResponse && collabResponse) {
+      setUserRepos([...ownerReposResponse.result, ...collabResponse.result])
       setFetchUserReposStatus('SUCCESS')
     }
   }

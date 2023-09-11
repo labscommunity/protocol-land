@@ -79,6 +79,23 @@ export async function getAllRepositoriesByOwner(
   return { result: ownerRepos }
 }
 
+export async function getAllRepositoriesByContributor(
+  state: ContractState,
+  { input: { payload } }: RepositoryAction
+): Promise<ContractResult<Repo[]>> {
+  // validate payload
+  if (!payload.contributor) {
+    throw new ContractError('Invalid inputs supplied.')
+  }
+
+  const repos = Object.values(state.repos)
+  const contributorRepos = repos.filter((repo) =>
+    repo?.contributors ? repo.contributors.indexOf(payload.contributor) > -1 : false
+  )
+
+  return { result: contributorRepos }
+}
+
 export async function updateRepositoryDetails(
   state: ContractState,
   { input: { payload } }: RepositoryAction

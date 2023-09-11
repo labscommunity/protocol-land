@@ -2,6 +2,7 @@ import { evolveContract } from './actions/evolve'
 import { addReviewersToPR, approvePR, createNewPullRequest, updatePullRequestStatus } from './actions/pull-requests'
 import {
   addContributor,
+  getAllRepositoriesByContributor,
   getAllRepositoriesByOwner,
   getRepository,
   initializeNewRepository,
@@ -22,6 +23,8 @@ export async function handle(state: ContractState, action: RepositoryAction | Ev
       return await getRepository(state, action as RepositoryAction)
     case 'getRepositoriesByOwner':
       return await getAllRepositoriesByOwner(state, action as RepositoryAction)
+    case 'getRepositoriesByContributor':
+      return await getAllRepositoriesByContributor(state, action as RepositoryAction)
     case 'updateRepositoryTxId':
       return await updateRepositoryTxId(state, action as RepositoryAction)
     case 'updateRepositoryDetails':

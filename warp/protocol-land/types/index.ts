@@ -72,6 +72,7 @@ const repoFnList = [
   'initialize',
   'getRepository',
   'getRepositoriesByOwner',
+  'getRepositoriesByContributor',
   'updateRepositoryTxId',
   'createPullRequest',
   'updatePullRequestStatus',
