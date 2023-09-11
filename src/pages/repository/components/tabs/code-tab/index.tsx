@@ -27,7 +27,7 @@ export default function CodeTab({ repoName = '' }: Props) {
     state.repoCoreActions.isContributor
   ])
   const [fileContent, setFileContent] = React.useState('')
-  const [fileIsImage, setFileIsImage] = React.useState(false)
+  const [filename, setFilename] = React.useState('')
 
   const { commitsList, fetchFirstCommit } = useCommit()
 
@@ -62,12 +62,12 @@ export default function CodeTab({ repoName = '' }: Props) {
     if (!fileContent) return
 
     setFileContent(fileContent)
-    setFileIsImage(isImage(fileObject.path))
+    setFilename(fileObject.path)
   }
 
   function onGoBackClick() {
     setFileContent('')
-    setFileIsImage(false)
+    setFilename('')
   }
 
   if (git.status === 'PENDING') {
@@ -101,22 +101,27 @@ export default function CodeTab({ repoName = '' }: Props) {
           )}
         </div>
         <div className="flex w-full h-full mb-4">
-          {fileIsImage ? (
-            <div className="min-h-[100%] w-full border-[1.2px] rounded-md overflow-hidden bg-white border-liberty-light-400 flex items-center justify-center">
-              <img src={fileContent} alt="Image" />
+          <div className="w-full flex flex-col pt-[3px]">
+            <div className="flex font-medium border-[1.2px] border-b-0 bg-[#5E70AB] px-4 py-2 text-[whitesmoke] rounded-t-lg border-liberty-light-400">
+              {filename}
             </div>
-          ) : (
-            <CodeMirror
-              className="min-h-[100%] w-full border-[1.2px] rounded-md overflow-hidden border-liberty-light-400"
-              value={fileContent}
-              minHeight="200px"
-              height="100%"
-              theme={githubLight}
-              extensions={[langs.javascript({ jsx: true })]}
-              onChange={() => {}}
-              editable={false}
-            />
-          )}
+            {isImage(filename) ? (
+              <div className="min-h-[100%] w-full border-[1.2px] rounded-b-lg overflow-hidden bg-white border-liberty-light-400 flex items-center justify-center">
+                <img src={fileContent} alt="Image" />
+              </div>
+            ) : (
+              <CodeMirror
+                className="min-h-[100%] w-full border-[1.2px] rounded-b-lg overflow-hidden border-liberty-light-400"
+                value={fileContent}
+                minHeight="200px"
+                height="100%"
+                theme={githubLight}
+                extensions={[langs.javascript({ jsx: true })]}
+                onChange={() => {}}
+                editable={false}
+              />
+            )}
+          </div>
         </div>
       </div>
     )
