@@ -14,17 +14,17 @@ export default function PullRequestsTab() {
 
   useEffect(() => {
     if (repo) {
-      if (view === 'OPEN') {
-        const filteredPRs = repo.pullRequests.filter((pr) => pr.status === 'OPEN')
+      let filteredPRs: PullRequest[] = []
 
-        if (filteredPRs.length > 0) setPRList(filteredPRs)
+      if (view === 'OPEN') {
+        filteredPRs = repo.pullRequests.filter((pr) => pr.status === 'OPEN')
       }
 
       if (view === 'CLOSED') {
-        const filteredPRs = repo.pullRequests.filter((pr) => pr.status === 'CLOSED' || pr.status === 'MERGED')
-
-        if (filteredPRs.length > 0) setPRList(filteredPRs)
+        filteredPRs = repo.pullRequests.filter((pr) => pr.status === 'CLOSED' || pr.status === 'MERGED')
       }
+
+      setPRList(filteredPRs)
     }
   }, [repo, view])
 
