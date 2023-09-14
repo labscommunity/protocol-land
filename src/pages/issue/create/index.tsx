@@ -17,6 +17,7 @@ const issuesSchema = yup
   .required()
 
 export default function CreateIssuePage() {
+  const [isSubmitting, setIsSubmitting] = React.useState(false)
   const [createIssue, fetchAndLoadRepository] = useGlobalStore((state) => [
     state.issuesActions.createIssue,
     state.repoCoreActions.fetchAndLoadRepository
@@ -49,6 +50,8 @@ export default function CreateIssuePage() {
   }
 
   async function createNewIssue(data: yup.InferType<typeof issuesSchema>) {
+    setIsSubmitting(true)
+
     const issue = await createIssue(data.title, value)
 
     if (issue) {
@@ -99,7 +102,13 @@ export default function CreateIssuePage() {
           )}
         </div>
         <div className="flex justify-center py-4">
-          <Button onClick={handleSubmit(createNewIssue)} variant="solid" className="rounded-full">
+          <Button
+            isLoading={isSubmitting}
+            disabled={isSubmitting || value.length === 0}
+            onClick={handleSubmit(createNewIssue)}
+            variant="solid"
+            className="rounded-full flex items-center disabled:cursor-not-allowed"
+          >
             Create issue
           </Button>
         </div>

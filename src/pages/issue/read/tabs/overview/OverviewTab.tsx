@@ -65,7 +65,7 @@ export default function OverviewTab() {
               <span>{shortenAddress(selectedIssue.author)}</span>
               <span> {formatDistanceToNow(new Date(selectedIssue.timestamp), { addSuffix: true })}</span>
             </div>
-            <div className="text-liberty-dark-100 p-2 h-32 bg-white">
+            <div className="text-liberty-dark-100 p-2 bg-white overflow-auto max-h-[50vh] h-full">
               <MDEditor.Markdown source={selectedIssue.description} />
             </div>
           </div>
