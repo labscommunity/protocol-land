@@ -19,6 +19,7 @@
     "@uiw/codemirror-extensions-langs": "^4.21.11",
     "@uiw/codemirror-theme-github": "^4.21.11",
     "@uiw/react-codemirror": "^4.21.11",
+    "@uiw/react-md-editor": "^3.23.5",
     "arweave": "^1.14.4",
     "arweave-wallet-kit": "^1.0.1",
     "clsx": "^2.0.0",

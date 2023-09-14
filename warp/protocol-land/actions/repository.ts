@@ -18,7 +18,8 @@ export async function initializeNewRepository(
     dataTxId: payload.dataTxId,
     owner: caller,
     contributors: [],
-    pullRequests: []
+    pullRequests: [],
+    issues: []
   }
 
   state.repos[repo.id] = repo

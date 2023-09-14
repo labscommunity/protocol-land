@@ -24,6 +24,7 @@ export type Repo = {
   dataTxId: string
   owner: string
   pullRequests: PullRequest[]
+  issues: Issue[]
   contributors: string[]
 }
 
@@ -41,12 +42,25 @@ export type PullRequest = {
   timestamp: number
 }
 
+export type Issue = {
+  id: number
+  repoId: string
+  title: string
+  description: string
+  author: string
+  status: IssueStatus
+  timestamp: number
+  assignees: string[]
+}
+
 export type Reviewer = {
   address: string
   approved: boolean
 }
 
 export type PullRequestStatus = 'OPEN' | 'CLOSED' | 'MERGED'
+
+export type IssueStatus = 'OPEN' | 'CLOSED' | 'COMPLETED'
 
 export type RepositoryAction = {
   input: RepositoryInput
@@ -79,7 +93,10 @@ const repoFnList = [
   'updateRepositoryDetails',
   'addContributor',
   'addReviewersToPR',
-  'approvePR'
+  'approvePR',
+  'createIssue',
+  'updateIssueStatus',
+  'addAssigneeToIssue'
 ] as const
 
 export type RepositoryFunction = (typeof repoFnList)[number] // more types will be added later
