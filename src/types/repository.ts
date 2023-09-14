@@ -32,6 +32,13 @@ export type Issue = {
   status: IssueStatus
   timestamp: number
   assignees: string[]
+  comments: Comment[]
+}
+
+export type Comment = {
+  author: string
+  timestamp: number
+  description: string
 }
 
 export type MergeResult = {

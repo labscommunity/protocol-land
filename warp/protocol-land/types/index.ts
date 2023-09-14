@@ -51,6 +51,13 @@ export type Issue = {
   status: IssueStatus
   timestamp: number
   assignees: string[]
+  comments: Comment[]
+}
+
+export type Comment = {
+  author: string
+  timestamp: number
+  description: string
 }
 
 export type Reviewer = {
@@ -96,7 +103,8 @@ const repoFnList = [
   'approvePR',
   'createIssue',
   'updateIssueStatus',
-  'addAssigneeToIssue'
+  'addAssigneeToIssue',
+  'addCommentToIssue'
 ] as const
 
 export type RepositoryFunction = (typeof repoFnList)[number] // more types will be added later

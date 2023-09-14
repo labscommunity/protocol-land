@@ -10,11 +10,13 @@ import Sidebar from '../../components/Sidebar'
 
 export default function OverviewTab() {
   const [isSubmittingClose, setIsSubmittingClose] = React.useState(false)
+  const [isSubmittingComment, setIsSubmittingComment] = React.useState(false)
   const [commentVal, setCommentVal] = React.useState('')
-  const [selectedIssue, closeIssue, reopenIssue] = useGlobalStore((state) => [
+  const [selectedIssue, closeIssue, reopenIssue, addComment] = useGlobalStore((state) => [
     state.issuesState.selectedIssue,
     state.issuesActions.closeIssue,
-    state.issuesActions.reopenIssue
+    state.issuesActions.reopenIssue,
+    state.issuesActions.addComment
   ])
 
   async function handleCloseButtonClick() {
@@ -37,9 +39,22 @@ export default function OverviewTab() {
     }
   }
 
+  async function handleAddComment() {
+    if (selectedIssue) {
+      setIsSubmittingComment(true)
+
+      await addComment(selectedIssue.id, commentVal)
+
+      setIsSubmittingComment(false)
+      setCommentVal('')
+    }
+  }
+
   if (!selectedIssue) return null
 
   const isOpen = selectedIssue.status === 'OPEN'
+
+  console.log({ selectedIssue })
 
   return (
     <div className="flex gap-6">
@@ -52,9 +67,20 @@ export default function OverviewTab() {
             </div>
             <div className="text-liberty-dark-100 p-2 h-32 bg-white">
               <MDEditor.Markdown source={selectedIssue.description} />
-              {/* {selectedIssue.description} */}
             </div>
           </div>
+          {selectedIssue.comments &&
+            selectedIssue.comments.map((comment) => (
+              <div className="flex flex-col border-[1px] border-[#cbc9f6] rounded-lg overflow-hidden">
+                <div className="flex justify-between bg-[#5E70AB] px-4 py-2 text-white">
+                  <span>{shortenAddress(comment.author)}</span>
+                  <span> {formatDistanceToNow(new Date(comment.timestamp), { addSuffix: true })}</span>
+                </div>
+                <div className="text-liberty-dark-100 p-2 h-32 bg-white">
+                  <MDEditor.Markdown source={comment.description} />
+                </div>
+              </div>
+            ))}
         </div>
 
         <div className="flex flex-col border-t-[1px] border-[#cbc9f6] pt-4">
@@ -72,7 +98,9 @@ export default function OverviewTab() {
                 Close
               </Button>
               <Button
-                disabled={commentVal.length === 0}
+                onClick={handleAddComment}
+                isLoading={isSubmittingComment}
+                disabled={commentVal.length === 0 || isSubmittingComment}
                 className="rounded-full !bg-[#38a457] disabled:cursor-not-allowed disabled:!bg-[#9dd5ad] flex items-center"
                 variant="solid"
               >

@@ -4,7 +4,7 @@ import { withAsync } from '@/helpers/withAsync'
 import { Issue } from '@/types/repository'
 
 import { CombinedSlices } from '../types'
-import { addAssigneeToIssue, closeIssue, createNewIssue, reopenIssue } from './actions'
+import { addAssigneeToIssue, addCommentToIssue, closeIssue, createNewIssue, reopenIssue } from './actions'
 import { IssuesSlice, IssuesState } from './types'
 
 const initialIssuesState: IssuesState = {
@@ -113,6 +113,27 @@ const createPullRequestSlice: StateCreator<CombinedSlices, [['zustand/immer', ne
       if (!error) {
         set((state) => {
           state.repoCoreState.selectedRepo.repo!.issues[id - 1].assignees.push(...assignees)
+        })
+      }
+    },
+    addComment: async (id, comment) => {
+      const repo = get().repoCoreState.selectedRepo.repo
+
+      if (!repo) {
+        set((state) => (state.issuesState.status = 'ERROR'))
+
+        return
+      }
+
+      const { error, response } = await withAsync(() => addCommentToIssue(repo.id, id, comment))
+
+      if (!error && response) {
+        const comments = response?.comments
+
+        if (!comments || !Array.isArray(comments)) return
+
+        set((state) => {
+          state.repoCoreState.selectedRepo.repo!.issues[id - 1].comments = comments
         })
       }
     }

@@ -1,4 +1,4 @@
-import { ContractResult, ContractState, Issue, RepositoryAction } from '../types'
+import { Comment, ContractResult, ContractState, Issue, RepositoryAction } from '../types'
 
 declare const ContractError
 
@@ -24,6 +24,7 @@ export async function createNewIssue(
     author: caller,
     status: 'OPEN',
     assignees: [],
+    comments: [],
     timestamp: Date.now()
   }
 
@@ -122,6 +123,41 @@ export async function addAssigneeToIssue(
   }
 
   issue.assignees.push(...payload.assignees)
+
+  return { state }
+}
+
+export async function addCommentToIssue(
+  state: ContractState,
+  { caller, input: { payload } }: RepositoryAction
+): Promise<ContractResult<ContractState>> {
+  if (!payload.repoId || !payload.issueId || !payload.comment) {
+    throw new ContractError('Invalid inputs supplied.')
+  }
+
+  const repo = state.repos[payload.repoId]
+
+  if (!repo) {
+    throw new ContractError('Repo not found.')
+  }
+
+  const issue = repo.issues[+payload.issueId - 1]
+
+  if (!issue) {
+    throw new ContractError('Issue not found.')
+  }
+
+  const comment: Comment = {
+    author: caller,
+    description: payload.comment,
+    timestamp: Date.now()
+  }
+
+  if (!issue?.comments) {
+    issue.comments = []
+  }
+
+  issue.comments.push(comment)
 
   return { state }
 }

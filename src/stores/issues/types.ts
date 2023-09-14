@@ -20,4 +20,5 @@ export type IssuesActions = {
   closeIssue: (id: number) => Promise<void>
   getAssigneesList: (id: number) => string[]
   addAssignee: (id: number, assignees: string[]) => Promise<void>
+  addComment: (id: number, comment: string) => Promise<void>
 }
