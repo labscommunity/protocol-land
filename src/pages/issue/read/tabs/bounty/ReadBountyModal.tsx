@@ -124,7 +124,7 @@ export default function ReadBountyModal({ isOpen, setIsOpen, bounty, author }: N
                   )}
                 </div>
 
-                {author === address && (
+                {author === address && bounty.status === 'ACTIVE' && (
                   <div className="mt-4 flex flex-col gap-4">
                     <div className="text-liberty-dark-100 flex items-center gap-2">
                       <input
