@@ -4,7 +4,15 @@ import { withAsync } from '@/helpers/withAsync'
 import { Issue } from '@/types/repository'
 
 import { CombinedSlices } from '../types'
-import { addAssigneeToIssue, addCommentToIssue, closeIssue, createNewIssue, reopenIssue } from './actions'
+import {
+  addAssigneeToIssue,
+  addBounty,
+  addCommentToIssue,
+  closeBounty,
+  closeIssue,
+  createNewIssue,
+  reopenIssue
+} from './actions'
 import { IssuesSlice, IssuesState } from './types'
 
 const initialIssuesState: IssuesState = {
@@ -134,6 +142,69 @@ const createPullRequestSlice: StateCreator<CombinedSlices, [['zustand/immer', ne
 
         set((state) => {
           state.repoCoreState.selectedRepo.repo!.issues[id - 1].comments = comments
+        })
+      }
+    },
+    addBounty: async (id, amount, expiry) => {
+      const repo = get().repoCoreState.selectedRepo.repo
+
+      if (!repo) {
+        set((state) => (state.issuesState.status = 'ERROR'))
+
+        return
+      }
+
+      const { error, response } = await withAsync(() => addBounty(repo.id, id, amount, expiry))
+
+      if (!error && response) {
+        const bounties = response?.bounties
+
+        if (!bounties || !Array.isArray(bounties)) return
+
+        set((state) => {
+          state.repoCoreState.selectedRepo.repo!.issues[id - 1].bounties = bounties
+        })
+      }
+    },
+    closeBounty: async (issueId, bountyId) => {
+      const repo = get().repoCoreState.selectedRepo.repo
+
+      if (!repo) {
+        set((state) => (state.issuesState.status = 'ERROR'))
+
+        return
+      }
+
+      const { error, response } = await withAsync(() => closeBounty(repo.id, issueId, bountyId, 'CLOSED'))
+
+      if (!error && response) {
+        const bounties = response?.bounties
+
+        if (!bounties || !Array.isArray(bounties)) return
+
+        set((state) => {
+          state.repoCoreState.selectedRepo.repo!.issues[issueId - 1].bounties = bounties
+        })
+      }
+    },
+    completeBounty: async (issueId, bountyId, paymentTxId) => {
+      const repo = get().repoCoreState.selectedRepo.repo
+
+      if (!repo) {
+        set((state) => (state.issuesState.status = 'ERROR'))
+
+        return
+      }
+
+      const { error, response } = await withAsync(() => closeBounty(repo.id, issueId, bountyId, 'CLAIMED', paymentTxId))
+
+      if (!error && response) {
+        const bounties = response?.bounties
+
+        if (!bounties || !Array.isArray(bounties)) return
+
+        set((state) => {
+          state.repoCoreState.selectedRepo.repo!.issues[issueId - 1].bounties = bounties
         })
       }
     }

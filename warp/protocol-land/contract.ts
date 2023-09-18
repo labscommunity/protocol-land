@@ -1,5 +1,12 @@
 import { evolveContract } from './actions/evolve'
-import { addAssigneeToIssue, addCommentToIssue, createNewIssue, updateIssueStatus } from './actions/issues'
+import {
+  addAssigneeToIssue,
+  addCommentToIssue,
+  createNewBounty,
+  createNewIssue,
+  updateBounty,
+  updateIssueStatus
+} from './actions/issues'
 import { addReviewersToPR, approvePR, createNewPullRequest, updatePullRequestStatus } from './actions/pull-requests'
 import {
   addContributor,
@@ -48,6 +55,10 @@ export async function handle(state: ContractState, action: RepositoryAction | Ev
       return await addAssigneeToIssue(state, action as RepositoryAction)
     case 'addCommentToIssue':
       return await addCommentToIssue(state, action as RepositoryAction)
+    case 'createNewBounty':
+      return await createNewBounty(state, action as RepositoryAction)
+    case 'updateBounty':
+      return await updateBounty(state, action as RepositoryAction)
     case 'evolve':
       return await evolveContract(state, action as EvolveAction)
     default:

@@ -33,6 +33,16 @@ export type Issue = {
   timestamp: number
   assignees: string[]
   comments: Comment[]
+  bounties: Bounty[]
+}
+
+export type Bounty = {
+  id: number
+  amount: number
+  expiry: number
+  status: BountyStatus
+  paymentTxId: string | null
+  timestamp: number
 }
 
 export type Comment = {
@@ -57,3 +67,5 @@ export type Reviewer = {
 export type PullRequestStatus = 'OPEN' | 'CLOSED' | 'MERGED'
 
 export type IssueStatus = 'OPEN' | 'CLOSED' | 'COMPLETED'
+
+export type BountyStatus = 'ACTIVE' | 'CLAIMED' | 'EXPIRED' | 'CLOSED'

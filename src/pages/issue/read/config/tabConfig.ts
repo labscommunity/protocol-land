@@ -1,7 +1,7 @@
 import { TbMoneybag } from 'react-icons/tb'
 import { VscCommentDiscussion } from 'react-icons/vsc'
 
-import BountyTab from '../tabs/bounty/BountyTab'
+import BountyTab from '../tabs/bounty'
 import OverviewTab from '../tabs/overview/OverviewTab'
 
 export const rootTabConfig = [
@@ -11,7 +11,7 @@ export const rootTabConfig = [
     Icon: VscCommentDiscussion
   },
   {
-    title: 'Bounty',
+    title: 'Bounties',
     Component: BountyTab,
     Icon: TbMoneybag
   }

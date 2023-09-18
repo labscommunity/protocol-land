@@ -115,3 +115,76 @@ export async function reopenIssue(repoId: string, issueId: number) {
     }
   })
 }
+
+export async function addBounty(repoId: string, issueId: number, amount: number, expiry: number) {
+  const userSigner = new InjectedArweaveSigner(window.arweaveWallet)
+  await userSigner.setPublicKey()
+
+  const contract = getWarpContract(CONTRACT_TX_ID, userSigner)
+
+  await contract.writeInteraction({
+    function: 'createNewBounty',
+    payload: {
+      repoId,
+      issueId,
+      amount,
+      expiry
+    }
+  })
+
+  const {
+    cachedValue: {
+      state: { repos }
+    }
+  } = await contract.readState()
+
+  const issues = repos[repoId]?.issues
+
+  if (!issues) return
+
+  const issue = issues[issueId - 1]
+
+  if (!issue) return
+
+  return issue
+}
+
+export async function closeBounty(
+  repoId: string,
+  issueId: number,
+  bountyId: number,
+  status: string,
+  paymentTxId?: string
+) {
+  const userSigner = new InjectedArweaveSigner(window.arweaveWallet)
+  await userSigner.setPublicKey()
+
+  const contract = getWarpContract(CONTRACT_TX_ID, userSigner)
+
+  await contract.writeInteraction({
+    function: 'updateBounty',
+    payload: {
+      repoId,
+      issueId,
+      bountyId,
+      status,
+      paymentTxId
+    }
+  })
+
+  const {
+    cachedValue: {
+      state: { repos }
+    }
+  } = await contract.readState()
+
+  const issues = repos[repoId]?.issues
+
+  if (!issues) return
+
+  const issue = issues[issueId - 1]
+
+  if (!issue) return
+
+  return issue
+}
