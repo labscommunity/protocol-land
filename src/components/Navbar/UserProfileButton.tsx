@@ -1,18 +1,19 @@
 import { Menu, Transition } from '@headlessui/react'
-import { useActiveAddress, useConnection, useProfileModal, useStrategy } from 'arweave-wallet-kit'
+import { useActiveAddress, useConnection, useStrategy } from 'arweave-wallet-kit'
 import { Fragment, useEffect, useRef } from 'react'
 import { AiFillProfile, AiOutlineProfile } from 'react-icons/ai'
 import { BiLogOutCircle, BiSolidLogOutCircle } from 'react-icons/bi'
 import { FaUser } from 'react-icons/fa'
 import { FiChevronDown } from 'react-icons/fi'
+import { useNavigate } from 'react-router-dom'
 
 import { Button } from '@/components/common/buttons'
 import { useGlobalStore } from '@/stores/globalStore'
 
 export default function UserProfileButton() {
+  const navigate = useNavigate()
   const [login, logout] = useGlobalStore((state) => [state.authActions.login, state.authActions.logout])
   const { connected, connect, disconnect } = useConnection()
-  const profileModal = useProfileModal()
   const address = useActiveAddress()
   const strategy = useStrategy()
 
@@ -36,7 +37,7 @@ export default function UserProfileButton() {
   }, [connected, address, strategy])
 
   function openProfileModal() {
-    profileModal.setOpen(true)
+    navigate('/profile')
   }
 
   if (!connected)

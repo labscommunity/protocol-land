@@ -2,6 +2,7 @@ import React from 'react'
 
 import BottomRightImg from '@/assets/images/bg/banner-bg.svg'
 import { Button } from '@/components/common/buttons'
+import CreateProfileModal from '@/components/CreateProfileModal/CreateProfileModal'
 import { useGlobalStore } from '@/stores/globalStore'
 
 import MainContent from './components/MainContent'
@@ -19,6 +20,7 @@ export default function Home() {
   const [isLoggedIn] = useGlobalStore((state) => [state.authState.isLoggedIn])
   const { initFetchUserRepos, fetchUserReposStatus, userRepos } = useFetchUserRepos()
   const [isOpen, setIsOpen] = React.useState(false)
+  const [isCreateProfileModalOpen, setIsCreateProfileModalOpen] = React.useState(false)
 
   React.useEffect(() => {
     if (isLoggedIn) {
@@ -27,6 +29,7 @@ export default function Home() {
   }, [isLoggedIn])
 
   async function handleNewRepoBtnClick() {
+    // setIsCreateProfileModalOpen(true)
     setIsOpen(true)
   }
   console.log({ userRepos, fetchUserReposStatus })
@@ -75,6 +78,7 @@ export default function Home() {
         </div>
       </MainContent>
       <NewRepoModal isOpen={isOpen} setIsOpen={setIsOpen} />
+      <CreateProfileModal isOpen={isCreateProfileModalOpen} setIsOpen={setIsCreateProfileModalOpen} />
     </div>
   )
 }

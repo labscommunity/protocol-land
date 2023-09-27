@@ -1,3 +1,3 @@
-export function shortenAddress(address: string) {
-  return address.length > 11 ? address.slice(0, 4) + '...' + address.slice(-4) : address
+export function shortenAddress(address: string, range = 4) {
+  return address.length > 11 ? address.slice(0, range) + '...' + address.slice(-range) : address
 }

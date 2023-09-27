@@ -4,6 +4,7 @@ import { HashRouter, Route, Routes } from 'react-router-dom'
 import AppLayout from './layouts/AppLayout'
 import Home from './pages/home/Home'
 import { CreateIssuePage, ReadIssuePage } from './pages/issue'
+import Profile from './pages/profile/Profile'
 import { NewPullRequest, ReadPullRequest } from './pages/pull'
 import Repository from './pages/repository/Repository'
 
@@ -13,6 +14,7 @@ function App() {
       <AppLayout>
         <Routes>
           <Route index path="/" element={<Home />} />
+          <Route index path="/profile" element={<Profile />} />
           <Route path="/repository/:id" element={<Repository />} />
           <Route path="/repository/:id/pull/new" element={<NewPullRequest />} />
           <Route path="/repository/:id/pull/:pullId" element={<ReadPullRequest />} />
