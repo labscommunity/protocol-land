@@ -8887,6 +8887,14 @@ react-side-effect@^2.1.0:
   resolved "https://registry.yarnpkg.com/react-side-effect/-/react-side-effect-2.1.2.tgz#dc6345b9e8f9906dc2eeb68700b615e0b4fe752a"
   integrity sha512-PVjOcvVOyIILrYoyGEpDN3vmYNLdy1CajSFNt4TDsVQC5KpTijDvWVoR+/7Rz2xT978D8/ZtFceXxzsPwZEDvw==
 
+react-timezone-select@^2.1.2:
+  version "2.1.2"
+  resolved "https://registry.yarnpkg.com/react-timezone-select/-/react-timezone-select-2.1.2.tgz#ea2771b5de8937e97c8bf559a9148af5a6f3229c"
+  integrity sha512-3oez+ynIyjXK619b61jP6TS43Xj2hxdsC4ilqfMgg+HN7nWrkmi3W2vb+njCk/bP2PEsCyfpYipsjr226j4oow==
+  dependencies:
+    spacetime "^7.4.1"
+    timezone-soft "^1.4.1"
+
 react@^18.2.0:
   version "18.2.0"
   resolved "https://registry.yarnpkg.com/react/-/react-18.2.0.tgz#555bd98592883255fa00de14f1151a917b5d77d5"
@@ -9550,6 +9558,11 @@ space-separated-tokens@^2.0.0:
   resolved "https://registry.yarnpkg.com/space-separated-tokens/-/space-separated-tokens-2.0.2.tgz#1ecd9d2350a3844572c3f4a312bceb018348859f"
   integrity sha512-PEGlAwrG8yXGXRjW32fGbg66JAlOAwbObuqVoJpv/mRgoWDQfgH1wDPvtzWyUSNAXBGSk8h755YDbbcEy3SH2Q==
 
+spacetime@^7.4.1:
+  version "7.4.7"
+  resolved "https://registry.yarnpkg.com/spacetime/-/spacetime-7.4.7.tgz#58e88c688727ff9b8e7be243404f511c89399828"
+  integrity sha512-5qVgPHUQj9TD4g1Xl68tXXwEi/27Xatvroyj8VU8/E7RgaqLJNaTte5tu3GRowuMqHcNMxs7UfzKeqAlLCo3tQ==
+
 spdx-correct@^3.0.0:
   version "3.2.0"
   resolved "https://registry.yarnpkg.com/spdx-correct/-/spdx-correct-3.2.0.tgz#4f5ab0668f0059e34f9c00dce331784a12de4e9c"
@@ -9901,6 +9914,11 @@ timers-ext@0.1, timers-ext@0.1.x:
   dependencies:
     es5-ext "~0.10.46"
     next-tick "1"
+
+timezone-soft@^1.4.1:
+  version "1.4.1"
+  resolved "https://registry.yarnpkg.com/timezone-soft/-/timezone-soft-1.4.1.tgz#854eb224545645d9ddad8bcd09144522b0652156"
+  integrity sha512-AnKhVnQmOjKHhdQXXe7cO7MyRGIHEGzedax4Y2N7nOr9dOYEFEBkWFJJwJTvPQvXsEtbWfa6xJj34iZKdC+W+g==
 
 tiny-case@^1.0.3:
   version "1.0.3"

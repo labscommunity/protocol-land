@@ -9,13 +9,16 @@ const initialAuthState = {
   method: null
 }
 
-const createAuthSlice: StateCreator<CombinedSlices, [['zustand/immer', never], never], [], AuthSlice> = (set) => ({
+const createAuthSlice: StateCreator<CombinedSlices, [['zustand/immer', never], never], [], AuthSlice> = (set, get) => ({
   authState: initialAuthState,
   authActions: {
-    login: (value: AuthState) =>
+    login: async (value: AuthState) => {
+      await get().userActions.setUserDetails()
+
       set((state) => {
         state.authState = value
-      }),
+      })
+    },
     logout: () =>
       set((state) => {
         state.authState = initialAuthState

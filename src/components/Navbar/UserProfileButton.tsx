@@ -37,7 +37,7 @@ export default function UserProfileButton() {
   }, [connected, address, strategy])
 
   function openProfileModal() {
-    navigate('/profile')
+    navigate(`/user/${address}`)
   }
 
   if (!connected)

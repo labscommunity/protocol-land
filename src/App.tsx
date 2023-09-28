@@ -14,7 +14,7 @@ function App() {
       <AppLayout>
         <Routes>
           <Route index path="/" element={<Home />} />
-          <Route index path="/profile" element={<Profile />} />
+          <Route index path="/user/:id" element={<Profile />} />
           <Route path="/repository/:id" element={<Repository />} />
           <Route path="/repository/:id/pull/new" element={<NewPullRequest />} />
           <Route path="/repository/:id/pull/:pullId" element={<ReadPullRequest />} />

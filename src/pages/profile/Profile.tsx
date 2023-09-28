@@ -1,4 +1,9 @@
 import { Tab } from '@headlessui/react'
+import React from 'react'
+import { useParams } from 'react-router-dom'
+
+import { useGlobalStore } from '@/stores/globalStore'
+import { User } from '@/types/user'
 
 // import { Button } from '@/components/common/buttons'
 import Sidebar from './components/Sidebar'
@@ -7,9 +12,27 @@ import { rootTabConfig } from './config/tabConfig'
 const activeClasses = 'border-b-[3px] border-[#8a6bec] text-[#8a6bec] font-medium'
 
 export default function Profile() {
+  const [status, setStatus] = React.useState('PENDING')
+  const [userDetails, setUserDetails] = React.useState<User>({})
+  const [fetchUserDetailsByAddress] = useGlobalStore((state) => [state.userActions.fetchUserDetailsByAddress])
+  const { id } = useParams()
+
+  React.useEffect(() => {
+    if (id) {
+      fetchUserDetails(id)
+    }
+  }, [id])
+
+  async function fetchUserDetails(address: string) {
+    console.log(status)
+    const userDetails = await fetchUserDetailsByAddress(address)
+    setUserDetails(userDetails)
+    setStatus('SUCCESS')
+  }
+
   return (
     <div className="h-full flex-1 flex max-w-[1280px] mx-auto w-full mt-12 gap-4">
-      <Sidebar />
+      <Sidebar userDetails={userDetails} />
       <div className="flex flex-col flex-1 px-8 gap-4">
         {/* <div className="flex flex-col gap-4">
           <div className="flex justify-between items-center">

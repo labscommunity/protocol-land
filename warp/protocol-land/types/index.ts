@@ -7,10 +7,24 @@ export type ContractState = {
 }
 
 export type User = {
-  fullName: string
-  userName: string
-  profilePicture: string
-  bio: string
+  fullName?: string
+  userName?: string
+  avatar?: string
+  bio?: string
+  timezone?: Timezone
+  location?: string
+  twitter?: string
+  email?: string
+  website?: string
+  readmeTxId?: string
+}
+
+export type Timezone = {
+  value: string
+  label: string
+  offset: number
+  abbrev: string
+  altName: string
 }
 
 type Address = string
@@ -118,7 +132,9 @@ const repoFnList = [
   'addAssigneeToIssue',
   'addCommentToIssue',
   'createNewBounty',
-  'updateBounty'
+  'updateBounty',
+  'updateProfileDetails',
+  'getUserDetails'
 ] as const
 
 export type RepositoryFunction = (typeof repoFnList)[number] // more types will be added later

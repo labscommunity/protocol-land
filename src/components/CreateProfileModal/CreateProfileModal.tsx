@@ -48,7 +48,7 @@ export default function CreateProfileModal({ setIsOpen, isOpen }: NewRepoModalPr
     setIsSubmitting(true)
 
     //
-    console.log({ data })
+    console.log({ data, avatarFile })
   }
 
   async function handleAvatarSelectClick() {
