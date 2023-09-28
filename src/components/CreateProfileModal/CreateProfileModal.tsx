@@ -3,7 +3,7 @@ import { yupResolver } from '@hookform/resolvers/yup'
 import clsx from 'clsx'
 import React, { Fragment } from 'react'
 import { useForm } from 'react-hook-form'
-import { AiFillCloseCircle } from 'react-icons/ai'
+import { AiFillCamera, AiFillCloseCircle } from 'react-icons/ai'
 // import { useNavigate } from 'react-router-dom'
 import * as yup from 'yup'
 
@@ -20,16 +20,18 @@ const schema = yup
     fullname: yup.string().required('Full name is required'),
     username: yup
       .string()
+      .required('Username is required')
       .matches(/^[a-z\d](?:[a-z\d]|-(?=[a-z\d])){0,38}$/i, 'Invalid username format')
-      .required('Username is required'),
-    bio: yup.string().required('bio is required')
   })
   .required()
 
 export default function CreateProfileModal({ setIsOpen, isOpen }: NewRepoModalProps) {
+  const avatarInputRef = React.useRef<HTMLInputElement>(null)
   const [isSubmitting, setIsSubmitting] = React.useState(false)
-//   const navigate = useNavigate()
-//   const [userAddress] = useGlobalStore((state) => [state.authState.address])
+  const [avatarUrl, setAvatarUrl] = React.useState<string | null>(null)
+  const [avatarFile, setAvatarFile] = React.useState<null | File>(null)
+  //   const navigate = useNavigate()
+  //   const [userAddress] = useGlobalStore((state) => [state.authState.address])
   const {
     register,
     handleSubmit,
@@ -46,8 +48,22 @@ export default function CreateProfileModal({ setIsOpen, isOpen }: NewRepoModalPr
     setIsSubmitting(true)
 
     //
-    console.log({data})
+    console.log({ data })
   }
+
+  async function handleAvatarSelectClick() {
+    avatarInputRef.current?.click()
+  }
+
+  async function handleAvatarChange(evt: React.ChangeEvent<HTMLInputElement>) {
+    if (evt.target.files && evt.target.files[0]) {
+      const url = URL.createObjectURL(evt.target.files[0])
+
+      setAvatarFile(evt.target.files[0])
+      setAvatarUrl(url)
+    }
+  }
+
   return (
     <Transition appear show={isOpen} as={Fragment}>
       <Dialog as="div" className="relative z-10" onClose={closeModal}>
@@ -82,6 +98,31 @@ export default function CreateProfileModal({ setIsOpen, isOpen }: NewRepoModalPr
                   <AiFillCloseCircle onClick={closeModal} className="h-6 w-6 text-liberty-dark-100 cursor-pointer" />
                 </div>
                 <div className="mt-2 flex flex-col gap-2.5">
+                  <div className="flex justify-center">
+                    {avatarUrl && (
+                      <div
+                        onClick={handleAvatarSelectClick}
+                        className="relative hover:bg-opacity-50 transition-all duration-300"
+                      >
+                        <img src={avatarUrl} className="rounded-full w-32 h-32" />
+                        <div className="absolute inset-0 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity duration-300">
+                          <span className="text-white cursor-pointer flex items-center justify-center h-full w-full font-bold text-xl bg-black bg-opacity-50 p-2 rounded-full">
+                            <AiFillCamera className="w-8 h-8 text-white" />
+                          </span>
+                        </div>
+                        <input onChange={handleAvatarChange} ref={avatarInputRef} type="file" hidden />
+                      </div>
+                    )}
+                    {!avatarUrl && (
+                      <div
+                        onClick={handleAvatarSelectClick}
+                        className="cursor-pointer w-32 h-32 bg-slate-500 rounded-full flex items-center justify-center"
+                      >
+                        <AiFillCamera className="w-8 h-8 text-white" />
+                        <input onChange={handleAvatarChange} ref={avatarInputRef} type="file" hidden />
+                      </div>
+                    )}
+                  </div>
                   <div>
                     <label htmlFor="fullname" className="block mb-1 text-md font-medium text-liberty-dark-100">
                       Full name
@@ -111,21 +152,6 @@ export default function CreateProfileModal({ setIsOpen, isOpen }: NewRepoModalPr
                       placeholder="johncancode"
                     />
                     {errors.username && <p className="text-red-500 text-sm italic mt-2">{errors.username?.message}</p>}
-                  </div>
-
-                  <div>
-                    <label htmlFor="bio" className="block mb-1 text-md font-medium text-liberty-dark-100">
-                      Bio
-                    </label>
-                    <textarea
-                      {...register('bio')}
-                      className={clsx(
-                        'bg-gray-50 border text-liberty-dark-100 text-md rounded-lg focus:ring-liberty-dark-50 focus:border-liberty-dark-50 block w-full p-2.5',
-                        errors.bio ? 'border-red-500' : 'border-gray-300'
-                      )}
-                      placeholder="John Doe is a really cool person in an imaginary world"
-                    />
-                    {errors.bio && <p className="text-red-500 text-sm italic mt-2">{errors.bio?.message}</p>}
                   </div>
                 </div>
 

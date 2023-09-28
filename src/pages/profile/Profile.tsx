@@ -1,7 +1,6 @@
 import { Tab } from '@headlessui/react'
 
-import { Button } from '@/components/common/buttons'
-
+// import { Button } from '@/components/common/buttons'
 import Sidebar from './components/Sidebar'
 import { rootTabConfig } from './config/tabConfig'
 
@@ -12,7 +11,7 @@ export default function Profile() {
     <div className="h-full flex-1 flex max-w-[1280px] mx-auto w-full mt-12 gap-4">
       <Sidebar />
       <div className="flex flex-col flex-1 px-8 gap-4">
-        <div className="flex flex-col gap-4">
+        {/* <div className="flex flex-col gap-4">
           <div className="flex justify-between items-center">
             <h2 className="text-2xl text-liberty-dark-100 font-medium">About me</h2>
             <Button variant="solid" className="rounded-full">
@@ -24,7 +23,7 @@ export default function Profile() {
             incidunt quibusdam. At, dicta, voluptatem pariatur blanditiis, voluptatibus fuga tempora assumenda sint
             distinctio nobis provident modi perspiciatis.
           </p>
-        </div>
+        </div> */}
 
         <div>
           <Tab.Group>
