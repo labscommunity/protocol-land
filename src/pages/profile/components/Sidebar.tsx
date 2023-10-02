@@ -66,7 +66,12 @@ export default function Sidebar({
   const [isSubmitting, setIsSubmitting] = React.useState(false)
   const { id } = useParams()
   const [avatar, setAvatar] = React.useState<null | File>(null)
-  const [saveUserDetails] = useGlobalStore((state) => [state.userActions.saveUserDetails])
+  const [address, isLoggedIn, saveUserDetails] = useGlobalStore((state) => [
+    state.authState.address,
+    state.authState.isLoggedIn,
+    state.userActions.saveUserDetails
+  ])
+
   const {
     register,
     handleSubmit,
@@ -219,6 +224,7 @@ export default function Sidebar({
             </div>
           </div>
         </div>
+
         <div className="w-full mt-4 flex flex-col gap-2">
           <Button
             isLoading={isSubmitting}
@@ -253,33 +259,35 @@ export default function Sidebar({
         {userDetails.location && (
           <div className="flex gap-2 items-center text-liberty-dark-100 text-lg">
             <TiLocation className="w-5 h-5" />
-            <h4>Hyderabad, India</h4>
+            <h4>{userDetails.location}</h4>
           </div>
         )}
         {userDetails.twitter && (
           <div className="flex gap-2 items-center text-liberty-dark-100 text-lg">
             <AiOutlineTwitter className="w-5 h-5" />
-            <h4>@kranthicodes</h4>
+            <h4>{userDetails.twitter}</h4>
           </div>
         )}
         {userDetails.email && (
           <div className="flex gap-2 items-center text-liberty-dark-100 text-lg">
             <AiTwotoneMail className="w-5 h-5" />
-            <h4>iamsaikranthi@gmail.com</h4>
+            <h4>{userDetails.email}</h4>
           </div>
         )}
         {userDetails.website && (
           <div className="flex gap-2 items-center text-liberty-dark-100 text-lg">
             <BsGlobe className="w-5 h-5" />
-            <h4>https://kranthicodes.com</h4>
+            <h4>{userDetails.website}</h4>
           </div>
         )}
       </div>
-      <div className="w-full mt-4">
-        <Button onClick={handleEditDetailsClick} className="w-full rounded-full" variant="solid">
-          Edit details
-        </Button>
-      </div>
+      {address === id! && isLoggedIn && (
+        <div className="w-full mt-4">
+          <Button onClick={handleEditDetailsClick} className="w-full rounded-full" variant="solid">
+            Edit details
+          </Button>
+        </div>
+      )}
     </div>
   )
 }

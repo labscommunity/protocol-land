@@ -24,7 +24,11 @@ export default function ReadMe({ readmeTxId }: { readmeTxId: string }) {
   const { id } = useParams()
   const [submitting, setSubmitting] = React.useState(false)
   const [mode, setMode] = React.useState<'READ' | 'EDIT'>('READ')
-  const [saveUserDetails] = useGlobalStore((state) => [state.userActions.saveUserDetails])
+  const [address, isLoggedIn, saveUserDetails] = useGlobalStore((state) => [
+    state.authState.address,
+    state.authState.isLoggedIn,
+    state.userActions.saveUserDetails
+  ])
   const [selectedTab, setSelectedTab] = React.useState<'write' | 'preview'>('write')
   const [content, setContent] = React.useState(
     '<div class="flex p-4 justify-center w-full">Hi there! 👋 Share a bit about yourself, your interests, and what you do.</div>'
@@ -101,13 +105,15 @@ export default function ReadMe({ readmeTxId }: { readmeTxId: string }) {
     <div className="flex w-full">
       <div className="flex flex-col bg-white w-full rounded-lg border-[1px] border-[#cbc9f6] px-4 py-2">
         <div className="flex justify-end">
-          <div
-            onClick={() => setMode('EDIT')}
-            className="flex gap-2 items-center hover:border-b-[1px] border-liberty-dark-100 cursor-pointer"
-          >
-            <AiFillEdit className="w-5 h-5 text-liberty-dark-100" />
-            <span className="text-liberty-dark-100 font-medium">Edit</span>
-          </div>
+          {address === id! && isLoggedIn && (
+            <div
+              onClick={() => setMode('EDIT')}
+              className="flex gap-2 items-center hover:border-b-[1px] border-liberty-dark-100 cursor-pointer"
+            >
+              <AiFillEdit className="w-5 h-5 text-liberty-dark-100" />
+              <span className="text-liberty-dark-100 font-medium">Edit</span>
+            </div>
+          )}
         </div>
         <div className="flex p-2 w-full mde-preview">
           <MarkdownView
