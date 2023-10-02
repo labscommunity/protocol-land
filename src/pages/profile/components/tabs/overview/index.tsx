@@ -1,4 +1,11 @@
+import { User } from '@/types/user'
 
-export default function OverviewTab() {
-  return <div>overview tab</div>
+import ReadMe from './components/ReadMe'
+
+export default function OverviewTab({ userDetails }: { userDetails: User }) {
+  return (
+    <div className="flex flex-col w-full">
+      <ReadMe readmeTxId={userDetails.readmeTxId || ''} />
+    </div>
+  )
 }

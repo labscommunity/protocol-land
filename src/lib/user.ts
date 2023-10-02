@@ -35,8 +35,40 @@ export async function uploadUserAvatar(avatar: File) {
   const dataTxResponse = await window.arweaveWallet.dispatch(transaction)
 
   if (!dataTxResponse.id) {
-    throw new Error('Failed to post Git repository')
+    throw new Error('Failed to post avatar')
   }
 
   return dataTxResponse.id
 }
+
+export async function uploadUserReadMe(content: string) {
+    const blob = new Blob([content], { type: "text/plain;charset=utf-8" })
+
+    const address = useGlobalStore.getState().authState.address
+    const userSigner = new InjectedArweaveSigner(window.arweaveWallet)
+    await userSigner.setPublicKey()
+  
+    const data = (await toArrayBuffer(blob)) as ArrayBuffer
+    await waitFor(500)
+  
+    const inputTags = [
+      { name: 'App-Name', value: 'Protocol.Land' },
+      { name: 'Content-Type', value: blob.type },
+      { name: 'Creator', value: address || '' },
+      { name: 'Type', value: 'readme-update' }
+    ]
+  
+    const transaction = await arweave.createTransaction({
+      data
+    })
+  
+    inputTags.forEach((tag) => transaction.addTag(tag.name, tag.value))
+  
+    const dataTxResponse = await window.arweaveWallet.dispatch(transaction)
+  
+    if (!dataTxResponse.id) {
+      throw new Error('Failed to post user readme')
+    }
+  
+    return dataTxResponse.id
+  }

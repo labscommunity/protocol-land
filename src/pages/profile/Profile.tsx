@@ -67,7 +67,7 @@ export default function Profile() {
             <Tab.Panels className={'mt-4 px-2 flex flex-col flex-1'}>
               {rootTabConfig.map((TabItem) => (
                 <Tab.Panel className={'flex flex-col flex-1'}>
-                  <TabItem.Component />
+                  <TabItem.Component userDetails={userDetails} />
                 </Tab.Panel>
               ))}
             </Tab.Panels>
