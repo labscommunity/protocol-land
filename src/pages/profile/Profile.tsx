@@ -3,6 +3,8 @@ import React from 'react'
 import { useParams } from 'react-router-dom'
 
 import { useGlobalStore } from '@/stores/globalStore'
+import { fetchUserRepos } from '@/stores/user/actions'
+import { Repo } from '@/types/repository'
 import { User } from '@/types/user'
 
 // import { Button } from '@/components/common/buttons'
@@ -13,6 +15,7 @@ const activeClasses = 'border-b-[3px] border-[#8a6bec] text-[#8a6bec] font-mediu
 
 export default function Profile() {
   const [status, setStatus] = React.useState('PENDING')
+  const [userRepos, setUserRepos] = React.useState<Repo[]>([])
   const [userDetails, setUserDetails] = React.useState<User>({})
   const [fetchUserDetailsByAddress] = useGlobalStore((state) => [state.userActions.fetchUserDetailsByAddress])
   const { id } = useParams()
@@ -24,30 +27,19 @@ export default function Profile() {
   }, [id])
 
   async function fetchUserDetails(address: string) {
-    console.log(status)
     const userDetails = await fetchUserDetailsByAddress(address)
+    const repos = await fetchUserRepos(address)
+
+    setUserRepos(repos)
     setUserDetails(userDetails)
+
     setStatus('SUCCESS')
   }
 
   return (
-    <div className="h-full flex-1 flex max-w-[1280px] mx-auto w-full mt-12 gap-4">
+    <div className="h-full flex-1 flex max-w-[1280px] mx-auto w-full mt-12 gap-4 pb-12">
       <Sidebar setUserDetails={setUserDetails} userDetails={userDetails} />
       <div className="flex flex-col flex-1 px-8 gap-4">
-        {/* <div className="flex flex-col gap-4">
-          <div className="flex justify-between items-center">
-            <h2 className="text-2xl text-liberty-dark-100 font-medium">About me</h2>
-            <Button variant="solid" className="rounded-full">
-              Edit
-            </Button>
-          </div>
-          <p className="text-liberty-dark-100 text-md">
-            Lorem ipsum dolor sit amet consectetur adipisicing elit. Distinctio est quisquam exercitationem sunt
-            incidunt quibusdam. At, dicta, voluptatem pariatur blanditiis, voluptatibus fuga tempora assumenda sint
-            distinctio nobis provident modi perspiciatis.
-          </p>
-        </div> */}
-
         <div>
           <Tab.Group>
             <Tab.List className="flex text-liberty-dark-100 text-lg gap-10 border-b-[1px] border-[#cbc9f6]">
@@ -67,7 +59,7 @@ export default function Profile() {
             <Tab.Panels className={'mt-4 px-2 flex flex-col flex-1'}>
               {rootTabConfig.map((TabItem) => (
                 <Tab.Panel className={'flex flex-col flex-1'}>
-                  <TabItem.Component userDetails={userDetails} />
+                  <TabItem.Component userDetails={userDetails} userRepos={userRepos} />
                 </Tab.Panel>
               ))}
             </Tab.Panels>

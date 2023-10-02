@@ -45,17 +45,19 @@ export default function Sidebar({ repos, isLoading }: { repos: Repo[]; isLoading
       )}
       {isLoggedIn && hasRepos && (
         <div className="w-full text-left py-4">
-          {repos.map((repo) => (
-            <Link to={`/repository/${repo.id}`}>
-              <Button
-                className="text-liberty-dark-100 !pb-2 text-[18px] flex gap-2 items-center w-full hover:bg-[#4487F5] hover:rounded-md !px-2 hover:text-white"
-                variant="link"
-              >
-                <RiGitRepositoryFill className="w-5 h-5 text-inherit" />
-                {repo.name}
-              </Button>
-            </Link>
-          ))}
+          {repos.map((repo) =>
+            repo.id ? (
+              <Link to={`/repository/${repo.id}`}>
+                <Button
+                  className="text-liberty-dark-100 !pb-2 text-[18px] flex gap-2 items-center w-full hover:bg-[#4487F5] hover:rounded-md !px-2 hover:text-white"
+                  variant="link"
+                >
+                  <RiGitRepositoryFill className="w-5 h-5 text-inherit" />
+                  {repo.name}
+                </Button>
+              </Link>
+            ) : null
+          )}
         </div>
       )}
     </div>

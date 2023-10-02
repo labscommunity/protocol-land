@@ -2,6 +2,8 @@ import { InjectedArweaveSigner } from 'warp-contracts-plugin-signature'
 
 import { CONTRACT_TX_ID } from '@/helpers/constants'
 import getWarpContract from '@/helpers/getWrapContract'
+import { withAsync } from '@/helpers/withAsync'
+import { Repo } from '@/types/repository'
 import { User } from '@/types/user'
 
 export const getUserDetailsFromContract = async (): Promise<{ result: User }> => {
@@ -53,4 +55,38 @@ export const saveUserDetails = async (details: User, address: string): Promise<{
   if (!userDetails) return { result: {} }
 
   return { result: userDetails }
+}
+
+export const fetchUserRepos = async (address: string) => {
+  let repos: Repo[] = []
+
+  const contract = getWarpContract(CONTRACT_TX_ID)
+
+  const { response: ownerReposResponse } = await withAsync(() =>
+    contract.viewState({
+      function: 'getRepositoriesByOwner',
+      payload: {
+        owner: address
+      }
+    })
+  )
+
+  const { response: collabResponse } = await withAsync(() =>
+    contract.viewState({
+      function: 'getRepositoriesByContributor',
+      payload: {
+        contributor: address
+      }
+    })
+  )
+
+  if (ownerReposResponse) {
+    repos = [...repos, ...ownerReposResponse.result]
+  }
+
+  if (collabResponse) {
+    repos = [...repos, collabResponse]
+  }
+
+  return repos
 }
