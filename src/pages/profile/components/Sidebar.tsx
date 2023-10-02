@@ -10,6 +10,8 @@ import * as yup from 'yup'
 
 import { Button } from '@/components/common/buttons'
 import { shortenAddress } from '@/helpers/shortenAddress'
+import { withAsync } from '@/helpers/withAsync'
+import { uploadUserAvatar } from '@/lib/user'
 import { useGlobalStore } from '@/stores/globalStore'
 import { User } from '@/types/user'
 
@@ -54,29 +56,54 @@ const schema = yup.object().shape(
   ]
 )
 
-export default function Sidebar({ userDetails }: { userDetails: User }) {
+export default function Sidebar({
+  userDetails,
+  setUserDetails
+}: {
+  userDetails: User
+  setUserDetails: (details: User) => void
+}) {
+  const [isSubmitting, setIsSubmitting] = React.useState(false)
   const { id } = useParams()
   const [avatar, setAvatar] = React.useState<null | File>(null)
   const [saveUserDetails] = useGlobalStore((state) => [state.userActions.saveUserDetails])
   const {
     register,
     handleSubmit,
-    formState: { errors }
+    formState: { errors },
+    setValue
   } = useForm({
     resolver: yupResolver(schema)
   })
 
   const [mode, setMode] = React.useState<'READ' | 'EDIT'>('READ')
 
+  React.useEffect(() => {
+    if (mode === 'EDIT') {
+      for (const [key, value] of Object.entries(userDetails)) {
+        setValue(key as any, value)
+      }
+    }
+  }, [mode])
+
   async function handleSaveDetailsClick(data: yup.InferType<typeof schema>) {
-    console.log(avatar)
+    setIsSubmitting(true)
+
     const updatedData = getUpdatedFields(userDetails || {}, data)
 
+    if (avatar) {
+      const { response } = await withAsync(() => uploadUserAvatar(avatar))
+
+      if (response) updatedData.avatar = response
+    }
+
     if (Object.keys(updatedData).length > 0) {
-      saveUserDetails(updatedData, id!)
+      await saveUserDetails(updatedData, id!)
+      setUserDetails({ ...userDetails, ...updatedData })
     }
 
     setMode('READ')
+    setIsSubmitting(false)
   }
 
   async function handleEditDetailsClick() {
@@ -192,9 +219,22 @@ export default function Sidebar({ userDetails }: { userDetails: User }) {
             </div>
           </div>
         </div>
-        <div className="w-full mt-4">
-          <Button onClick={handleSubmit(handleSaveDetailsClick)} className="w-full rounded-full" variant="solid">
+        <div className="w-full mt-4 flex flex-col gap-2">
+          <Button
+            isLoading={isSubmitting}
+            disabled={isSubmitting}
+            onClick={handleSubmit(handleSaveDetailsClick)}
+            className="w-full rounded-full flex items-center justify-center"
+            variant="solid"
+          >
             Save details
+          </Button>
+          <Button
+            onClick={() => setMode('READ')}
+            className="w-full rounded-full flex items-center justify-center"
+            variant="outline"
+          >
+            Cancel
           </Button>
         </div>
       </div>

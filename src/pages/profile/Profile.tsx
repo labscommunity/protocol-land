@@ -32,7 +32,7 @@ export default function Profile() {
 
   return (
     <div className="h-full flex-1 flex max-w-[1280px] mx-auto w-full mt-12 gap-4">
-      <Sidebar userDetails={userDetails} />
+      <Sidebar setUserDetails={setUserDetails} userDetails={userDetails} />
       <div className="flex flex-col flex-1 px-8 gap-4">
         {/* <div className="flex flex-col gap-4">
           <div className="flex justify-between items-center">

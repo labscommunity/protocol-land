@@ -61,7 +61,7 @@ export default function Avatar({
           <BsFillPersonFill className="w-32 h-32 text-white" />
         </div>
       )}
-      {url && <img src="https://avatars.githubusercontent.com/u/57343520" className="rounded-full" alt="profile-pic" />}
+      {url && <img src={`https://arweave.net/${url}`} className="rounded-full" alt="profile-pic" />}
     </div>
   )
 }

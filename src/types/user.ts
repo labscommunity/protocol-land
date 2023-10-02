@@ -2,7 +2,6 @@ export type User = {
   fullname?: string
   username?: string
   avatar?: string
-  bio?: string
 //   timezone?: Timezone
   location?: string
   twitter?: string
