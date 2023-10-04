@@ -29,8 +29,8 @@ export default function Home() {
   }, [isLoggedIn])
 
   async function handleNewRepoBtnClick() {
-    setIsCreateProfileModalOpen(true)
-    // setIsOpen(true)
+    // setIsCreateProfileModalOpen(true)
+    setIsOpen(true)
   }
   console.log({ userRepos, fetchUserReposStatus })
   return (
