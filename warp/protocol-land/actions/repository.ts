@@ -15,6 +15,7 @@ export async function initializeNewRepository(
     id: payload.id,
     name: payload.name,
     description: payload.description,
+    defaultBranch: 'master',
     dataTxId: payload.dataTxId,
     owner: caller,
     contributors: [],

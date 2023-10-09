@@ -1,4 +1,4 @@
-import { ContractResult, ContractState, EvolveAction } from '../types'
+import { ContractResult, ContractState, EvolveAction, Repo } from '../types'
 
 declare const ContractError
 
@@ -14,4 +14,16 @@ export async function evolveContract(
   state.evolve = value
 
   return { state }
+}
+
+export function evolveRepoState(repoObj: Repo) {
+  const defaultRepo = {
+    description: '',
+    defaultBranch: 'master',
+    pullRequests: [],
+    issues: [],
+    contributors: []
+  }
+
+  return { ...defaultRepo, ...repoObj }
 }

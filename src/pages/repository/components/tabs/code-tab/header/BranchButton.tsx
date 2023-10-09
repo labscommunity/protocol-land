@@ -39,7 +39,7 @@ export default function BranchButton() {
             leaveFrom="opacity-100"
             leaveTo="opacity-0"
           >
-            <Listbox.Options className="absolute mt-1 max-h-60 w-full overflow-auto rounded-md bg-white py-1 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none font-medium">
+            <Listbox.Options className="absolute mt-1 w-[300px] max-h-60 overflow-auto rounded-md bg-white py-1 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none font-medium">
               {branchState.branchList.map((branch, idx) => (
                 <Listbox.Option
                   key={idx}
@@ -50,10 +50,21 @@ export default function BranchButton() {
                   }
                   value={branch}
                 >
-                  {({ selected }) => (
+                  {({ selected, active }) => (
                     <span>
-                      <span className={`block hover:text-[white] truncate ${selected ? 'font-medium' : 'font-normal'}`}>
+                      <span
+                        className={`flex items-center justify-between hover:text-[white] truncate ${
+                          selected ? 'font-medium' : 'font-normal'
+                        }`}
+                      >
                         {branch}
+                        <span
+                          className={`border-[1px] ${
+                            active ? 'border-white' : 'border-liberty-dark-100'
+                          } rounded-full px-2 text-sm`}
+                        >
+                          default
+                        </span>
                       </span>
                       {selected ? (
                         <span className="absolute inset-y-0 left-0 flex items-center pl-3 ">
@@ -64,6 +75,9 @@ export default function BranchButton() {
                   )}
                 </Listbox.Option>
               ))}
+              <div className="py-2 flex justify-center items-center text-[#4388f6]">
+                <span className="cursor-pointer">View all branches</span>
+              </div>
             </Listbox.Options>
           </Transition>
         </div>

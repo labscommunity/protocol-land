@@ -35,6 +35,7 @@ export type Repo = {
   id: string
   name: string
   description: string
+  defaultBranch: string
   dataTxId: string
   owner: string
   pullRequests: PullRequest[]
