@@ -41,6 +41,7 @@ export type Repo = {
   pullRequests: PullRequest[]
   issues: Issue[]
   contributors: string[]
+  timestamp: number
 }
 
 export type PullRequest = {

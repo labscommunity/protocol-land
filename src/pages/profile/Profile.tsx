@@ -17,7 +17,7 @@ const activeClasses = 'border-b-[3px] border-[#8a6bec] text-[#8a6bec] font-mediu
 export default function Profile() {
   const [status, setStatus] = React.useState('PENDING')
   const [userRepos, setUserRepos] = React.useState<Repo[]>([])
-  const [userDetails, setUserDetails] = React.useState<User>({})
+  const [userDetails, setUserDetails] = React.useState<Partial<User>>({})
   const [fetchUserDetailsByAddress] = useGlobalStore((state) => [state.userActions.fetchUserDetailsByAddress])
   const { id } = useParams()
 

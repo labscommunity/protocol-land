@@ -60,8 +60,8 @@ export default function Sidebar({
   userDetails,
   setUserDetails
 }: {
-  userDetails: User
-  setUserDetails: (details: User) => void
+  userDetails: Partial<User>
+  setUserDetails: (details: Partial<User>) => void
 }) {
   const [isSubmitting, setIsSubmitting] = React.useState(false)
   const { id } = useParams()
@@ -115,7 +115,7 @@ export default function Sidebar({
     setMode('EDIT')
   }
 
-  function getUpdatedFields(originalData: User, updatedData: any): Partial<User> {
+  function getUpdatedFields(originalData: Partial<User>, updatedData: any): Partial<User> {
     const changes: Partial<User> = {}
 
     Object.keys(updatedData).forEach((key: string) => {
@@ -253,7 +253,7 @@ export default function Sidebar({
       <div className="flex flex-col">
         {userDetails.fullname && <h2 className="font-bold text-liberty-dark-100 text-2xl">{userDetails.fullname}</h2>}
         {userDetails.username && <h3 className="font-medium text-liberty-dark-100 text-lg">{userDetails.username}</h3>}
-        <h3 className="font-medium text-liberty-dark-100 text-lg">{shortenAddress(id!, 9)}</h3>
+        <h3 className="font-medium text-liberty-dark-100 text-lg">{shortenAddress(id!, 12)}</h3>
       </div>
       <div className="flex flex-col gap-1">
         {userDetails.location && (

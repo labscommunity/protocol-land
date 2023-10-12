@@ -26,14 +26,23 @@ export const getUserDetailsByAddressFromContract = async (address: string): Prom
     }
   } = await contract.readState()
 
-  const userDetails = users[address]
+  const userDetails = users[address] as User
 
-  if (!userDetails) return { result: {} }
+  if (!userDetails)
+    return {
+      result: {
+        statistics: {
+          commits: [],
+          pullRequests: [],
+          issues: []
+        }
+      }
+    }
 
   return { result: userDetails }
 }
 
-export const saveUserDetails = async (details: User, address: string): Promise<{ result: User }> => {
+export const saveUserDetails = async (details: Partial<User>, address: string): Promise<{ result: User }> => {
   const userSigner = new InjectedArweaveSigner(window.arweaveWallet)
   await userSigner.setPublicKey()
 
@@ -52,7 +61,16 @@ export const saveUserDetails = async (details: User, address: string): Promise<{
 
   const userDetails = users[address]
 
-  if (!userDetails) return { result: {} }
+  if (!userDetails)
+    return {
+      result: {
+        statistics: {
+          commits: [],
+          pullRequests: [],
+          issues: []
+        }
+      }
+    }
 
   return { result: userDetails }
 }

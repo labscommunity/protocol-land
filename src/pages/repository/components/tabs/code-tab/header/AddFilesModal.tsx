@@ -62,7 +62,8 @@ export default function AddFilesModal({ setIsOpen, isOpen }: NewBranchModal) {
         id: id!,
         message: data.commit,
         name: userRepo.name,
-        owner: address!
+        owner: address!,
+        defaultBranch: userRepo.defaultBranch || 'master'
       })
       console.log({ result })
 

@@ -40,14 +40,15 @@ const createPullRequestSlice: StateCreator<CombinedSlices, [['zustand/immer', ne
     },
     createIssue: async (title, description) => {
       const repo = get().repoCoreState.selectedRepo.repo
+      const address = get().authState.address
 
-      if (!repo) {
+      if (!repo || !address) {
         set((state) => (state.issuesState.status = 'ERROR'))
 
         return
       }
 
-      const { error, response } = await withAsync(() => createNewIssue(title, description, repo.id))
+      const { error, response } = await withAsync(() => createNewIssue(title, description, repo.id, address))
 
       if (!error && response) {
         return response

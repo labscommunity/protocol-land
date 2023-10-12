@@ -10,9 +10,10 @@ import { useGlobalStore } from '@/stores/globalStore'
 import NewBranchModal from './NewBranchModal'
 
 export default function BranchButton() {
-  const [branchState, branchActions, isContributor] = useGlobalStore((state) => [
+  const [branchState, branchActions, selectedRepo, isContributor] = useGlobalStore((state) => [
     state.branchState,
     state.branchActions,
+    state.repoCoreState.selectedRepo,
     state.repoCoreActions.isContributor
   ])
 
@@ -58,13 +59,15 @@ export default function BranchButton() {
                         }`}
                       >
                         {branch}
-                        <span
-                          className={`border-[1px] ${
-                            active ? 'border-white' : 'border-liberty-dark-100'
-                          } rounded-full px-2 text-sm`}
-                        >
-                          default
-                        </span>
+                        {branch === selectedRepo?.repo?.defaultBranch && (
+                          <span
+                            className={`border-[1px] ${
+                              active ? 'border-white' : 'border-liberty-dark-100'
+                            } rounded-full px-2 text-sm`}
+                          >
+                            default
+                          </span>
+                        )}
                       </span>
                       {selected ? (
                         <span className="absolute inset-y-0 left-0 flex items-center pl-3 ">

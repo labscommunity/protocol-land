@@ -5,7 +5,9 @@ import { CONTRACT_TX_ID } from '@/helpers/constants'
 import getWarpContract from '@/helpers/getWrapContract'
 import { waitFor } from '@/helpers/waitFor'
 import { withAsync } from '@/helpers/withAsync'
+import { useGlobalStore } from '@/stores/globalStore'
 
+import { postPRStatDataTxToArweave } from '../user'
 import { postUpdatedRepo } from '.'
 import { checkoutBranch } from './branch'
 import { FSType, fsWithName } from './helpers/fsWithName'
@@ -29,6 +31,8 @@ export async function postNewPullRequest({
   compareBranch,
   repoId
 }: PostNewPROptions) {
+  const address = useGlobalStore.getState().authState.address
+
   const fs = fsWithName(repoName)
   const dir = `/${repoName}`
 
@@ -64,7 +68,11 @@ export async function postNewPullRequest({
   const PRs = repo.pullRequests
   const PR = PRs[PRs.length - 1]
 
-  if (!PR) return
+  if (!PR || !PR.id) return
+
+  if (address) {
+    await postPRStatDataTxToArweave(address, repoName, PR)
+  }
 
   return PR
 }

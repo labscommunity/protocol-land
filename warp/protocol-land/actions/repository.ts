@@ -20,7 +20,8 @@ export async function initializeNewRepository(
     owner: caller,
     contributors: [],
     pullRequests: [],
-    issues: []
+    issues: [],
+    timestamp: Date.now()
   }
 
   state.repos[repo.id] = repo

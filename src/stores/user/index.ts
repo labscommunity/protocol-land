@@ -8,7 +8,13 @@ import { UserSlice } from './types'
 
 const initialUserState = {
   userRepos: [],
-  userDetails: {}
+  userDetails: {
+    statistics: {
+      commits: [],
+      pullRequests: [],
+      issues: []
+    }
+  }
 }
 
 const createUserSlice: StateCreator<CombinedSlices, [['zustand/immer', never], never], [], UserSlice> = (set, get) => ({
@@ -39,7 +45,18 @@ const createUserSlice: StateCreator<CombinedSlices, [['zustand/immer', never], n
         return response.result
       }
 
-      return {}
+      return {
+        statistics: {
+          commits: [],
+          pullRequests: [],
+          issues: []
+        }
+      }
+    },
+    updateUserContributionStats: async (data) => {
+      set((state) => {
+        state.userState.userDetails.statistics = data
+      })
     },
     saveUserDetails: async (details, address: string) => {
       const { response } = await withAsync(() => saveUserDetails(details, address))

@@ -3,8 +3,17 @@ import { FileWithPath } from 'react-dropzone'
 
 import { withAsync } from '@/helpers/withAsync'
 import { postUpdatedRepo } from '@/lib/git'
-import { addFilesForCommit, commitFiles, getAllCommits, getFirstCommit, stageFilesForCommit } from '@/lib/git/commit'
+import { getCurrentBranch } from '@/lib/git/branch'
+import {
+  addFilesForCommit,
+  commitFiles,
+  getAllCommits,
+  getFirstCommit,
+  readCommit,
+  stageFilesForCommit
+} from '@/lib/git/commit'
 import { fsWithName } from '@/lib/git/helpers/fsWithName'
+import { postCommitStatDataTxToArweave } from '@/lib/user'
 import { CommitResult } from '@/types/commit'
 
 type AddFilesOptions = {
@@ -13,6 +22,7 @@ type AddFilesOptions = {
   message: string
   owner: string
   id: string
+  defaultBranch: string
 }
 
 export default function useCommit() {
@@ -38,7 +48,7 @@ export default function useCommit() {
     }
   }
 
-  async function addFiles({ files, id, message, name, owner }: AddFilesOptions) {
+  async function addFiles({ files, id, message, name, owner, defaultBranch }: AddFilesOptions) {
     const fs = fsWithName(name)
     const dir = `/${name}`
 
@@ -58,13 +68,23 @@ export default function useCommit() {
 
     if (stagingError) throw new Error('Failed to stage files')
 
-    const { error: commitError } = await withAsync(() => commitFiles({ fs, dir, message, owner }))
+    const { error: commitError, response: commitSHA } = await withAsync(() => commitFiles({ fs, dir, message, owner }))
 
-    if (commitError) throw new Error('Failed to commit files')
+    if (commitError || !commitSHA) throw new Error('Failed to commit files')
 
     const { error, response } = await withAsync(() => postUpdatedRepo({ fs, dir, owner, id }))
 
     if (error) throw new Error('Failed to update repository')
+
+    const { result: currentBranch } = await getCurrentBranch({ fs, dir })
+
+    if (currentBranch === defaultBranch) {
+      const { response: commit } = await withAsync(() => readCommit({ fs, dir, oid: commitSHA }))
+
+      if (commit) {
+        await withAsync(() => postCommitStatDataTxToArweave({ repoName: name, commit }))
+      }
+    }
 
     return response
   }

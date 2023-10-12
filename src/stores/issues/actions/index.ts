@@ -2,8 +2,9 @@ import { InjectedArweaveSigner } from 'warp-contracts-plugin-signature'
 
 import { CONTRACT_TX_ID } from '@/helpers/constants'
 import getWarpContract from '@/helpers/getWrapContract'
+import { postIssueStatDataTxToArweave } from '@/lib/user'
 
-export async function createNewIssue(title: string, description: string, repoId: string) {
+export async function createNewIssue(title: string, description: string, repoId: string, address: string) {
   const userSigner = new InjectedArweaveSigner(window.arweaveWallet)
   await userSigner.setPublicKey()
 
@@ -31,7 +32,13 @@ export async function createNewIssue(title: string, description: string, repoId:
   const issues = repo.issues
   const issue = issues[issues.length - 1]
 
-  if (!issue) return
+  if (!issue || !issue.id) return
+
+  try {
+    await postIssueStatDataTxToArweave(address, repo.name, issue)
+  } catch (error) {
+    //silently ignore
+  }
 
   return issue
 }

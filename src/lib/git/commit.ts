@@ -64,7 +64,21 @@ export async function commitFiles({ fs, dir, message, owner }: CommitFilesOption
 
   if (!sha) return false
 
-  return true
+  return sha
+}
+
+export async function readCommit({ fs, dir, oid }: ReadCommitOptions) {
+  const result = await git.readCommit({
+    fs,
+    dir,
+    oid
+  })
+
+  if (!result || !result.commit) {
+    return null
+  }
+
+  return result.commit
 }
 
 type CommonCommitOptions = {
@@ -83,4 +97,8 @@ type StageFilesForCommitOptions = CommonCommitOptions & {
 type CommitFilesOptions = CommonCommitOptions & {
   message: string
   owner: string
+}
+
+type ReadCommitOptions = CommonCommitOptions & {
+  oid: string
 }

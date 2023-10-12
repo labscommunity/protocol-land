@@ -1,3 +1,4 @@
+import { UserContributionData } from '@/lib/user'
 import { Repo } from '@/types/repository'
 import { User } from '@/types/user'
 
@@ -16,5 +17,6 @@ export type UserActions = {
   setUserDetails: () => Promise<void>
   getUserRepositoryMetaById: (id: string) => Repo | undefined
   fetchUserDetailsByAddress: (address: string) => Promise<User>
-  saveUserDetails: (details: User, address: string) => Promise<void>
+  saveUserDetails: (details: Partial<User>, address: string) => Promise<void>
+  updateUserContributionStats: (data: UserContributionData) => Promise<void>
 }
