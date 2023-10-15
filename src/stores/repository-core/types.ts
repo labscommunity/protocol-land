@@ -1,3 +1,4 @@
+import { UserCommit, UserContributionData, UserPROrIssue } from '@/lib/user'
 import { Repo } from '@/types/repository'
 
 export interface RepoCoreSlice {
@@ -10,6 +11,11 @@ export type RepoCoreState = {
     status: ApiStatus
     error: unknown | null
     repo: Repo | null
+    statistics: {
+      commits: UserCommit[]
+      pullRequests: UserPROrIssue[]
+      issues: UserPROrIssue[]
+    }
   }
   git: {
     status: ApiStatus
@@ -27,6 +33,7 @@ export type RepoCoreActions = {
   addContributor: (address: string) => Promise<void>
   fetchAndLoadRepository: (id: string) => Promise<void>
   loadFilesFromRepo: () => Promise<void>
+  setRepoContributionStats: (data: UserContributionData) => void
   isRepoOwner: () => boolean
   isContributor: () => boolean
   reset: () => void

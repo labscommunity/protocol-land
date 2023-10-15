@@ -228,8 +228,8 @@ export async function computeContributionsFromRepo(
   return { commits: userCommits, issues: userIssues, pullRequests: userPRs }
 }
 
-export async function queryAndTransformContributionData(address: string) {
-  const queryObject = prepareContributionsQueryObject(address)
+export async function queryAndTransformUserContributionData(address: string) {
+  const queryObject = prepareUserContributionsQueryObject(address)
 
   const results = await arweave.api.post('/graphql', queryObject)
 
@@ -245,6 +245,25 @@ export async function queryAndTransformContributionData(address: string) {
   const userContributionData = transformGQLResponseToContributionData(data)
 
   return userContributionData
+}
+
+export async function queryAndTransformRepoContributionData(name: string) {
+  const queryObject = prepareRepoContributionsQueryObject(name)
+
+  const results = await arweave.api.post('/graphql', queryObject)
+
+  if (results.data?.errors && results.data?.errors.length)
+    return {
+      commits: [],
+      issues: [],
+      pullRequests: []
+    }
+
+  const data = results.data?.data?.transactions?.edges ?? []
+
+  const repoContributionsData = transformGQLResponseToContributionData(data)
+
+  return repoContributionsData
 }
 
 export function transformContributionData(statistics: UserContributionData): FormattedContribution[] {
@@ -413,7 +432,7 @@ const timestampToDate = (timestamp: number | string) => {
   return format(date, 'yyyy-MM-dd')
 }
 
-const prepareContributionsQueryObject = (address: string) => {
+const prepareUserContributionsQueryObject = (address: string) => {
   return {
     query: `
      {
@@ -422,6 +441,46 @@ const prepareContributionsQueryObject = (address: string) => {
         tags: [
           { name: "App-Name", values: "Protocol.Land" }
           { name: "User", values: "${address}" }
+          { name: "Type", values: ["stats-issue", "stats-pullrequest", "stats-commit"] }
+        ]
+      ) {
+        edges {
+          node {
+            ...TransactionCommon
+          }
+        }
+      }
+    }
+    fragment TransactionCommon on Transaction {
+      id
+      owner {
+        address
+      }
+      bundledIn {
+        id
+      }
+      block {
+        height
+        timestamp
+      }
+      tags {
+        name
+        value
+      }
+    }
+    `
+  }
+}
+
+const prepareRepoContributionsQueryObject = (name: string) => {
+  return {
+    query: `
+     {
+      transactions(
+        first: 100
+        tags: [
+          { name: "App-Name", values: "Protocol.Land" }
+          { name: "Repo", values: "${name}" }
           { name: "Type", values: ["stats-issue", "stats-pullrequest", "stats-commit"] }
         ]
       ) {

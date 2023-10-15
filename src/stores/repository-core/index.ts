@@ -18,7 +18,12 @@ const initialRepoCoreState: RepoCoreState = {
   selectedRepo: {
     status: 'IDLE',
     error: null,
-    repo: null
+    repo: null,
+    statistics: {
+      commits: [],
+      pullRequests: [],
+      issues: []
+    }
   },
   git: {
     status: 'IDLE',
@@ -100,6 +105,11 @@ const createRepoCoreSlice: StateCreator<CombinedSlices, [['zustand/immer', never
           state.repoCoreState.selectedRepo.repo!.description = description
         })
       }
+    },
+    setRepoContributionStats: (data) => {
+      set((state) => {
+        state.repoCoreState.selectedRepo.statistics = data
+      })
     },
     addContributor: async (address: string) => {
       const repo = get().repoCoreState.selectedRepo.repo

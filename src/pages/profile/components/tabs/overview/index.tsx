@@ -8,7 +8,7 @@ import {
   ContributionStreak,
   FormattedContribution,
   getCurrentContributionStreak,
-  queryAndTransformContributionData,
+  queryAndTransformUserContributionData,
   transformContributionData,
   UserContributionData
 } from '@/lib/user'
@@ -63,7 +63,7 @@ export default function OverviewTab({ userDetails, userRepos }: { userDetails: P
   }
 
   async function fetchContributions(address: string) {
-    const userContributionData = await queryAndTransformContributionData(address)
+    const userContributionData = await queryAndTransformUserContributionData(address)
     const userContributionPercentages = calculatePercentages(userContributionData)
 
     await updateUserContributionStats(userContributionData)

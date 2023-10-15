@@ -1,6 +1,7 @@
 import Branches from './Branches'
 import Contributors from './Contributors'
 import General from './General'
+import Insights from './Insights'
 
 export const tabConfig = [
   {
@@ -8,11 +9,15 @@ export const tabConfig = [
     Component: General
   },
   {
+    title: 'Branches',
+    Component: Branches
+  },
+  {
     title: 'Contributors',
     Component: Contributors
   },
   {
-    title: 'Branches',
-    Component: Branches
+    title: 'Insights',
+    Component: Insights
   }
 ]
