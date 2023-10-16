@@ -119,12 +119,10 @@ export default function SearchBar() {
           onFocus={() => setIsFocused(true)}
           className="w-full pl-4 text-md outline-none focus:outline-none bg-transparent text-liberty-dark-100"
         />
-        <div className="flex items-center gap-2">
-          {searchValue && (
-            <RiCloseCircleLine onClick={handleSearchReset} className="w-5 h-5 text-gray-500 cursor-pointer" />
-          )}
-          <BiSearch className="w-5 h-5 text-gray-500" />
-        </div>
+        {searchValue && (
+          <RiCloseCircleLine onClick={handleSearchReset} className="w-5 h-5 text-gray-500 cursor-pointer" />
+        )}
+        {!searchValue && <BiSearch className="w-5 h-5 text-gray-500" />}
       </div>
       <AnimatePresence>
         {showResultsBox && searchValue.length > 0 && (
