@@ -23,7 +23,7 @@ export default function Repository() {
     fetchAndLoadRepository(id!)
 
     return () => reset()
-  }, [])
+  }, [id])
 
   const isReady = selectedRepo.status === 'SUCCESS'
 

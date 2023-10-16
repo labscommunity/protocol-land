@@ -1,3 +1,5 @@
+import { User } from './user'
+
 export type Repo = {
   id: string
   name: string
@@ -70,3 +72,19 @@ export type PullRequestStatus = 'OPEN' | 'CLOSED' | 'MERGED'
 export type IssueStatus = 'OPEN' | 'CLOSED' | 'COMPLETED'
 
 export type BountyStatus = 'ACTIVE' | 'CLAIMED' | 'EXPIRED' | 'CLOSED'
+
+export type WarpReadState = {
+  cachedValue: {
+    state: ContractState
+  }
+}
+
+export type ContractState = {
+  users: Record<string, User>
+  repos: Repositories
+  canEvolve: boolean
+  evolve: null | any
+  owner: string
+}
+
+export type Repositories = Record<string, Repo>

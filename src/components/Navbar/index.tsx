@@ -1,5 +1,6 @@
 import { useNavigate } from 'react-router-dom'
 
+import SearchBar from './SearchBar'
 import UserProfileButton from './UserProfileButton'
 
 export default function Navbar() {
@@ -17,8 +18,10 @@ export default function Navbar() {
       >
         Protocol Land
       </h2>
-
-      <UserProfileButton />
+      <div className="flex-1 w-full flex justify-end items-center gap-16">
+        <SearchBar />
+        <UserProfileButton />
+      </div>
     </div>
   )
 }
