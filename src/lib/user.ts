@@ -515,16 +515,16 @@ const prepareRepoContributionsQueryObject = (name: string) => {
 const gqlResponseTransformationHandlers: Record<string, (data: GQLEdge) => UserCommit | UserPROrIssue> = {
   'stats-commit': (data): UserCommit => ({
     email: getValueFromTags(data.node.tags, 'Email'),
-    timestamp: parseInt(getValueFromTags(data.node.tags, 'Timestamp'), 10),
+    timestamp: getTimestampFromNode(data.node),
     timezoneOffset: parseInt(getValueFromTags(data.node.tags, 'Timezone-Offset'), 10)
   }),
   'stats-issue': (data): UserPROrIssue => ({
     author: getValueFromTags(data.node.tags, 'User'),
-    timestamp: parseInt(getValueFromTags(data.node.tags, 'Timestamp'), 10)
+    timestamp: getTimestampFromNode(data.node)
   }),
   'stats-pullrequest': (data): UserPROrIssue => ({
     author: getValueFromTags(data.node.tags, 'User'),
-    timestamp: parseInt(getValueFromTags(data.node.tags, 'Timestamp'), 10)
+    timestamp: getTimestampFromNode(data.node)
   })
 }
 
@@ -552,6 +552,12 @@ function getValueFromTags(tags: Array<{ name: string; value: string }>, name: st
   const tag = tags.find((tag) => tag.name === name)
 
   return tag ? tag.value : ''
+}
+
+function getTimestampFromNode(node: GQLNode) {
+  if (!node.block) return parseInt(getValueFromTags(node.tags, 'Timestamp'), 10)
+
+  return node.block.timestamp
 }
 
 export type UserCommit = {
@@ -600,4 +606,10 @@ type GQLEdge = {
 
 type GQLNode = {
   tags: Array<{ name: string; value: string }>
+  block: GQLBlock
+}
+
+type GQLBlock = {
+  height: number
+  timestamp: number
 }

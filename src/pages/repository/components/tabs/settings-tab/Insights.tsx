@@ -69,10 +69,18 @@ export default function Insights() {
 
     const totalItems = totalCommits + totalPRs + totalIssues
 
+    if (totalItems > 0) {
+      return {
+        commits: ((totalCommits / totalItems) * 100).toFixed(0) + '%',
+        pullRequests: ((totalPRs / totalItems) * 100).toFixed(0) + '%',
+        issues: ((totalIssues / totalItems) * 100).toFixed(0) + '%'
+      }
+    }
+
     return {
-      commits: ((totalCommits / totalItems) * 100).toFixed(0) + '%',
-      pullRequests: ((totalPRs / totalItems) * 100).toFixed(0) + '%',
-      issues: ((totalIssues / totalItems) * 100).toFixed(0) + '%'
+      commits: '0%',
+      issues: '0%',
+      pullRequests: '0%'
     }
   }
 
