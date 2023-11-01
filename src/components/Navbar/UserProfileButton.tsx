@@ -41,7 +41,7 @@ export default function UserProfileButton() {
     navigate(`/user/${address}`)
   }
 
-  if (!connected)
+  if (!connected || !address)
     return (
       <Button className="rounded-[20px] font-medium !px-4 py-[10px]" variant="primary-solid" onClick={connect}>
         Connect

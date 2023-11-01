@@ -86,14 +86,14 @@ export default function CodeTab({ repoName = '' }: Props) {
         <div className="flex w-full justify-between">
           <Button
             onClick={onGoBackClick}
-            className="flex gap-2 items-center rounded-full font-medium h-[40px]"
-            variant="outline"
+            className="gap-2 font-medium"
+            variant="primary-outline"
           >
             <FiArrowLeft className="w-5 h-5 text-[inherit]" /> Go back
           </Button>
           {contributor && (
             <div>
-              <Button className="flex gap-2 items-center rounded-full font-medium" variant="solid">
+              <Button className="gap-2 font-medium" variant="primary-solid">
                 <FiEdit3 className="w-5 h-5 text-[inherit]" />
                 Edit
               </Button>
@@ -101,17 +101,17 @@ export default function CodeTab({ repoName = '' }: Props) {
           )}
         </div>
         <div className="flex w-full h-full mb-4">
-          <div className="w-full flex flex-col pt-[3px]">
-            <div className="flex font-medium border-[1.2px] border-b-0 bg-[#5E70AB] px-4 py-2 text-[whitesmoke] rounded-t-lg border-liberty-light-400">
+          <div className="w-full flex flex-col border-gray-300 border-[1px] rounded-lg bg-white overflow-hidden">
+            <div className="rounded-t-lg flex justify-between bg-gray-200 border-b-[1px] border-gray-300 items-center gap-2 py-2 px-4 text-gray-900 font-medium">
               {filename}
             </div>
             {isImage(filename) ? (
-              <div className="min-h-[100%] w-full border-[1.2px] rounded-b-lg overflow-hidden bg-white border-liberty-light-400 flex items-center justify-center">
+              <div className="min-h-[100%] w-full overflow-hidden bg-white flex items-center justify-center">
                 <img src={fileContent} alt="Image" />
               </div>
             ) : (
               <CodeMirror
-                className="min-h-[100%] w-full border-[1.2px] rounded-b-lg overflow-hidden border-liberty-light-400"
+                className="min-h-[100%] w-full"
                 value={fileContent}
                 minHeight="200px"
                 height="100%"
