@@ -80,7 +80,7 @@ export async function getIssueById(
 
 export async function updateIssueStatus(
   state: ContractState,
-  { input: { payload } }: RepositoryAction
+  { input: { payload }, caller }: RepositoryAction
 ): Promise<ContractResult<ContractState>> {
   if (!payload.status || !payload.repoId || !payload.issueId) {
     throw new ContractError('Invalid inputs supplied.')
@@ -90,6 +90,12 @@ export async function updateIssueStatus(
 
   if (!repo) {
     throw new ContractError('Repository not found.')
+  }
+
+  const hasPermissions = caller === repo.owner || repo.contributors.indexOf(caller) > -1
+
+  if (!hasPermissions) {
+    throw new ContractError('Error: You dont have permissions for this operation.')
   }
 
   const issue = repo.issues[+payload.issueId - 1]
@@ -105,7 +111,7 @@ export async function updateIssueStatus(
 
 export async function addAssigneeToIssue(
   state: ContractState,
-  { input: { payload } }: RepositoryAction
+  { input: { payload }, caller }: RepositoryAction
 ): Promise<ContractResult<ContractState>> {
   if (!payload.repoId || !payload.issueId || !payload.assignees) {
     throw new ContractError('Invalid inputs supplied.')
@@ -115,6 +121,12 @@ export async function addAssigneeToIssue(
 
   if (!repo) {
     throw new ContractError('Repo not found.')
+  }
+
+  const hasPermissions = caller === repo.owner || repo.contributors.indexOf(caller) > -1
+
+  if (!hasPermissions) {
+    throw new ContractError('Error: You dont have permissions for this operation.')
   }
 
   const issue = repo.issues[+payload.issueId - 1]
@@ -140,6 +152,12 @@ export async function addCommentToIssue(
 
   if (!repo) {
     throw new ContractError('Repo not found.')
+  }
+
+  const hasPermissions = caller === repo.owner || repo.contributors.indexOf(caller) > -1
+
+  if (!hasPermissions) {
+    throw new ContractError('Error: You dont have permissions for this operation.')
   }
 
   const issue = repo.issues[+payload.issueId - 1]
@@ -236,7 +254,7 @@ export async function updateBounty(
   }
 
   if (caller !== issue.author) {
-    throw new ContractError('Only author of this issue can create bounties.')
+    throw new ContractError('Only author of this issue can update bounties.')
   }
 
   const bounty = issue.bounties[+payload.bountyId - 1]
