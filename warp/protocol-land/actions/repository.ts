@@ -101,7 +101,7 @@ export async function getAllRepositoriesByContributor(
 
 export async function updateRepositoryDetails(
   state: ContractState,
-  { input: { payload } }: RepositoryAction
+  { input: { payload }, caller }: RepositoryAction
 ): Promise<ContractResult<ContractState>> {
   // validate payload
   if (!payload.id) {
@@ -112,6 +112,10 @@ export async function updateRepositoryDetails(
 
   if (!repo) {
     throw new ContractError('Repository not found.')
+  }
+
+  if (caller !== repo.owner) {
+    throw new ContractError('Error: Only repo owner can update repo details.')
   }
 
   if (payload.name) {
@@ -127,7 +131,7 @@ export async function updateRepositoryDetails(
 
 export async function addContributor(
   state: ContractState,
-  { input: { payload } }: RepositoryAction
+  { input: { payload }, caller }: RepositoryAction
 ): Promise<ContractResult<ContractState>> {
   // validate payload
   if (!payload.id || !payload.contributor) {
@@ -138,6 +142,10 @@ export async function addContributor(
 
   if (!repo) {
     throw new ContractError('Repository not found.')
+  }
+
+  if (caller !== repo.owner) {
+    throw new ContractError('Error: Only repo owner can update repo details.')
   }
 
   const contributorExists = repo.contributors.find((address) => address === payload.contributor)
