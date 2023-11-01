@@ -5,7 +5,7 @@ import { CommitResult } from '@/types/commit'
 
 export default function TableHead({ commit }: { commit: CommitResult }) {
   return (
-    <div className="flex justify-between bg-liberty-light-800 text-[whitesmoke] items-center gap-2 py-2 px-4 border-b-[1px] border-liberty-light-400">
+    <div className="flex justify-between bg-gray-200 text-gray-900 items-center gap-2 py-[10px] px-4 border-b-[1px] border-gray-300 text-sm font-medium">
       {commit && (
         <>
           <span title={commit.commit.author.name}>{shortenAddress(commit.commit.author.name)}</span>

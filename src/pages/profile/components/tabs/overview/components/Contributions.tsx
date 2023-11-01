@@ -37,9 +37,9 @@ export default function Contributions({ contributions = [], percentages, streakD
       return 'color-empty'
     }
 
-    if (value.count >= 10) return `fill-purple-700`
-    if (value.count >= 5) return `fill-purple-500`
-    if (value.count >= 1) return `fill-purple-300`
+    if (value.count >= 10) return `fill-primary-700`
+    if (value.count >= 5) return `fill-primary-500`
+    if (value.count >= 1) return `fill-primary-300`
   }
 
   function getTooltipDataAttrs(value: { date: Date; count: number }) {
@@ -55,7 +55,7 @@ export default function Contributions({ contributions = [], percentages, streakD
   }
 
   return (
-    <div className="flex flex-col w-full border-[1px] border-[#cbc9f6] bg-white rounded-lg">
+    <div className="flex flex-col w-full border-gray-300 border-[1px] rounded-lg overflow-hidden bg-white">
       {/* <div className="flex items-center text-liberty-dark-100 justify-end px-4 pt-2 font-medium">
         <div
           onClick={handleRefresh}
@@ -75,20 +75,20 @@ export default function Contributions({ contributions = [], percentages, streakD
         />
         <Tooltip id="contribution-tooltip" />
       </div>
-      <div className="w-full border-b-[1px] border-[#cbc9f6]" />
+      <div className="w-full border-b-[1px] border-gray-200" />
       <div className="w-full p-4 flex">
         <div className="flex w-[50%] flex-col gap-2 pr-4">
-          <div className="flex text-liberty-dark-100 justify-between">
-            <span className="text-lg font-medium">Total Commits:</span>
-            <span className="text-xl font-medium">{percentages.commits}</span>
+          <div className="flex justify-between">
+            <span className="text-lg text-gray-600 font-medium">Total Commits:</span>
+            <span className="text-xl font-medium text-gray-900">{percentages.commits}</span>
           </div>
-          <div className="flex text-liberty-dark-100 justify-between">
-            <span className="text-lg font-medium">Total PRs:</span>
-            <span className="text-xl font-medium">{percentages.pullRequests}</span>
+          <div className="flex justify-between">
+            <span className="text-lg text-gray-600 font-medium">Total PRs:</span>
+            <span className="text-xl  text-gray-900 font-medium">{percentages.pullRequests}</span>
           </div>
-          <div className="flex text-liberty-dark-100 justify-between">
-            <span className="text-lg font-medium">Total Issues:</span>
-            <span className="text-xl font-medium">{percentages.issues}</span>
+          <div className="flex justify-between">
+            <span className="text-lg text-gray-600 font-medium">Total Issues:</span>
+            <span className="text-xl  text-gray-900 font-medium">{percentages.issues}</span>
           </div>
         </div>
         <div className="flex w-[50%] items-center border-l-[1px] border-[#cbc9f6] justify-center gap-4">

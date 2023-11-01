@@ -135,14 +135,14 @@ export default function Sidebar({
         <Avatar setAvatar={setAvatar} mode={'EDIT'} url={userDetails?.avatar} />
         <div className="flex flex-col gap-2">
           <div>
-            <label htmlFor="fullname" className="block mb-1 text-md font-medium text-liberty-dark-100">
+            <label htmlFor="fullname" className="block mb-1 text-sm font-medium text-gray-600">
               Full name
             </label>
             <input
               type="text"
               {...register('fullname')}
               className={clsx(
-                'bg-gray-50 border text-liberty-dark-100 text-md rounded-lg focus:ring-liberty-dark-50 focus:border-liberty-dark-50 block w-full px-2.5 py-1',
+                'bg-white border-[1px] text-gray-900 text-base rounded-lg hover:shadow-[0px_2px_4px_0px_rgba(0,0,0,0.10)] focus:border-primary-500 focus:border-[1.5px] block w-full px-2.5 py-1 outline-none',
                 errors.fullname ? 'border-red-500' : 'border-gray-300'
               )}
               placeholder="John Doe"
@@ -150,73 +150,73 @@ export default function Sidebar({
             {errors.fullname && <p className="text-red-500 text-sm italic mt-2">{errors.fullname?.message}</p>}
           </div>
           <div>
-            <label htmlFor="username" className="block mb-1 text-md font-medium text-liberty-dark-100">
+            <label htmlFor="username" className="block mb-1 text-sm font-medium text-gray-600">
               Username
             </label>
             <input
               type="text"
               {...register('username')}
               className={clsx(
-                'bg-gray-50 border text-liberty-dark-100 text-md rounded-lg focus:ring-liberty-dark-50 focus:border-liberty-dark-50 block w-full px-2.5 py-1',
+                'bg-white border-[1px] text-gray-900 text-base rounded-lg hover:shadow-[0px_2px_4px_0px_rgba(0,0,0,0.10)] focus:border-primary-500 focus:border-[1.5px] block w-full px-2.5 py-1 outline-none',
                 errors.username ? 'border-red-500' : 'border-gray-300'
               )}
               placeholder="johncancode"
             />
             {errors.username && <p className="text-red-500 text-sm italic mt-2">{errors.username?.message}</p>}
           </div>
-          <h3 className="font-medium text-liberty-dark-100 text-md">{shortenAddress(id!, 9)}</h3>
+          <h3 className="font-medium text-gray-600 text-md">{shortenAddress(id!, 9)}</h3>
         </div>
         <div className="flex flex-col gap-2  w-full">
-          <div className="flex gap-2 items-center text-liberty-dark-100">
+          <div className="flex gap-2 items-center text-gray-900">
             <TiLocation className="w-5 h-5" />
             <div className="w-full">
               <input
                 type="text"
                 {...register('location')}
                 className={clsx(
-                  'bg-gray-50 border text-liberty-dark-100 text-md rounded-lg focus:ring-liberty-dark-50 focus:border-liberty-dark-50 block w-full px-2.5 py-1',
+                  'bg-white border-[1px] text-gray-900 text-base rounded-lg hover:shadow-[0px_2px_4px_0px_rgba(0,0,0,0.10)] focus:border-primary-500 focus:border-[1.5px] block w-full px-2.5 py-1 outline-none',
                   errors.location ? 'border-red-500' : 'border-gray-300'
                 )}
                 placeholder="Askaban"
               />
             </div>
           </div>
-          <div className="flex gap-2 items-center text-liberty-dark-100">
+          <div className="flex gap-2 items-center text-gray-900">
             <AiOutlineTwitter className="w-5 h-5" />
             <div className="w-full">
               <input
                 type="text"
                 {...register('twitter')}
                 className={clsx(
-                  'bg-gray-50 border text-liberty-dark-100 text-md rounded-lg focus:ring-liberty-dark-50 focus:border-liberty-dark-50 block w-full px-2.5 py-1',
+                  'bg-white border-[1px] text-gray-900 text-base rounded-lg hover:shadow-[0px_2px_4px_0px_rgba(0,0,0,0.10)] focus:border-primary-500 focus:border-[1.5px] block w-full px-2.5 py-1 outline-none',
                   errors.twitter ? 'border-red-500' : 'border-gray-300'
                 )}
                 placeholder="@johntheman"
               />
             </div>
           </div>
-          <div className="flex gap-2 items-center text-liberty-dark-100">
+          <div className="flex gap-2 items-center text-gray-900">
             <AiTwotoneMail className="w-5 h-5" />
             <div className="w-full">
               <input
                 type="text"
                 {...register('email')}
                 className={clsx(
-                  'bg-gray-50 border text-liberty-dark-100 text-md rounded-lg focus:ring-liberty-dark-50 focus:border-liberty-dark-50 block w-full px-2.5 py-1',
+                  'bg-white border-[1px] text-gray-900 text-base rounded-lg hover:shadow-[0px_2px_4px_0px_rgba(0,0,0,0.10)] focus:border-primary-500 focus:border-[1.5px] block w-full px-2.5 py-1 outline-none',
                   errors.email ? 'border-red-500' : 'border-gray-300'
                 )}
                 placeholder="johndoe@domain.com"
               />
             </div>
           </div>
-          <div className="flex gap-2 items-center text-liberty-dark-100">
+          <div className="flex gap-2 items-center text-gray-900">
             <BsGlobe className="w-5 h-5" />
             <div className="w-full">
               <input
                 type="text"
                 {...register('website')}
                 className={clsx(
-                  'bg-gray-50 border text-liberty-dark-100 text-md rounded-lg focus:ring-liberty-dark-50 focus:border-liberty-dark-50 block w-full px-2.5 py-1',
+                  'bg-white border-[1px] text-gray-900 text-base rounded-lg hover:shadow-[0px_2px_4px_0px_rgba(0,0,0,0.10)] focus:border-primary-500 focus:border-[1.5px] block w-full px-2.5 py-1 outline-none',
                   errors.website ? 'border-red-500' : 'border-gray-300'
                 )}
                 placeholder="https://mycoolsite.com"
@@ -230,15 +230,15 @@ export default function Sidebar({
             isLoading={isSubmitting}
             disabled={isSubmitting}
             onClick={handleSubmit(handleSaveDetailsClick)}
-            className="w-full rounded-full flex items-center justify-center"
-            variant="solid"
+            className="w-full justify-center font-medium"
+            variant="primary-solid"
           >
             Save details
           </Button>
           <Button
             onClick={() => setMode('READ')}
-            className="w-full rounded-full flex items-center justify-center"
-            variant="outline"
+            className="w-full font-medium justify-center"
+            variant="primary-outline"
           >
             Cancel
           </Button>
@@ -251,31 +251,31 @@ export default function Sidebar({
     <div className="flex flex-col w-[296px] gap-4">
       <Avatar setAvatar={setAvatar} mode={'READ'} url={userDetails?.avatar} />
       <div className="flex flex-col">
-        {userDetails.fullname && <h2 className="font-bold text-liberty-dark-100 text-2xl">{userDetails.fullname}</h2>}
-        {userDetails.username && <h3 className="font-medium text-liberty-dark-100 text-lg">{userDetails.username}</h3>}
-        <h3 className="font-medium text-liberty-dark-100 text-lg">{shortenAddress(id!, 12)}</h3>
+        {userDetails.fullname && <h2 className="font-bold text-gray-900 text-2xl">{userDetails.fullname}</h2>}
+        {userDetails.username && <h3 className="font-medium text-gray-600 text-lg">{userDetails.username}</h3>}
+        <h3 className="font-medium text-gray-600 text-lg">{shortenAddress(id!, 12)}</h3>
       </div>
       <div className="flex flex-col gap-1">
         {userDetails.location && (
-          <div className="flex gap-2 items-center text-liberty-dark-100 text-lg">
+          <div className="flex gap-2 items-center text-gray-600 text-lg">
             <TiLocation className="w-5 h-5" />
             <h4>{userDetails.location}</h4>
           </div>
         )}
         {userDetails.twitter && (
-          <div className="flex gap-2 items-center text-liberty-dark-100 text-lg">
+          <div className="flex gap-2 items-center text-gray-600 text-lg">
             <AiOutlineTwitter className="w-5 h-5" />
             <h4>{userDetails.twitter}</h4>
           </div>
         )}
         {userDetails.email && (
-          <div className="flex gap-2 items-center text-liberty-dark-100 text-lg">
+          <div className="flex gap-2 items-center text-gray-600 text-lg">
             <AiTwotoneMail className="w-5 h-5" />
             <h4>{userDetails.email}</h4>
           </div>
         )}
         {userDetails.website && (
-          <div className="flex gap-2 items-center text-liberty-dark-100 text-lg">
+          <div className="flex gap-2 items-center text-gray-600 text-lg">
             <BsGlobe className="w-5 h-5" />
             <h4>{userDetails.website}</h4>
           </div>
@@ -283,7 +283,7 @@ export default function Sidebar({
       </div>
       {address === id! && isLoggedIn && (
         <div className="w-full mt-4">
-          <Button onClick={handleEditDetailsClick} className="w-full rounded-full" variant="solid">
+          <Button onClick={handleEditDetailsClick} className="w-full justify-center" variant="primary-solid">
             Edit details
           </Button>
         </div>

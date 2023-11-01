@@ -31,9 +31,9 @@ export default function IssuesTab() {
   const hasPRs = issuesList.length > 0
   return (
     <div className="w-full pb-6 flex gap-8">
-      <div className="flex flex-col w-full">
+      <div className="flex flex-col w-full border-gray-300 border-[1px] rounded-lg overflow-hidden bg-white">
         <TableHeader view={view} setView={setView} />
-        <div className="rounded-b-lg w-full bg-[whitesmoke] text-liberty-dark-100 overflow-hidden">
+        <div className="rounded-b-lg w-full bg-white text-gray-900 overflow-hidden">
           {!hasPRs && (
             <div className="flex flex-col gap-2 h-32 w-full items-center justify-center">
               <VscIssues className="h-7 w-7" />

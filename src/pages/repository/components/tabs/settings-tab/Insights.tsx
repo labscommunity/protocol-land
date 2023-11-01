@@ -90,8 +90,8 @@ export default function Insights() {
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="w-full border-b-[1px] border-[#cbc9f6] py-1">
-        <h1 className="text-2xl text-liberty-dark-100">Contributions</h1>
+      <div className="w-full border-b-[1px] border-gray-200 py-1">
+        <h1 className="text-2xl text-gray-900">Contributions</h1>
       </div>
       <div className="flex flex-col gap-4">
         <Contributions

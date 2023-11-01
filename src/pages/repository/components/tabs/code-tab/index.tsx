@@ -128,10 +128,10 @@ export default function CodeTab({ repoName = '' }: Props) {
   }
 
   return (
-    <div className="flex flex-col gap-2 w-full">
+    <div className="flex flex-col gap-6 w-full">
       <Header />
       <div className="flex w-full">
-        <div className="border-liberty-light-200 border-[1.5px] w-full rounded-lg bg-[whitesmoke] text-liberty-dark-100 overflow-hidden">
+        <div className="border-gray-300 border-[1px] w-full rounded-lg bg-white overflow-hidden">
           <TableHead commit={commitsList[0]} />
           {!git.fileObjects.length && (
             <div className="py-6 flex gap-2 justify-center items-center">

@@ -32,7 +32,7 @@ export default function PullRequestsTab() {
 
   return (
     <div className="w-full pb-6 flex gap-8">
-      <div className="flex flex-col w-full">
+      <div className="flex flex-col w-full border-gray-300 border-[1px] rounded-lg bg-white overflow-hidden">
         <TableHeader view={view} setView={setView} />
         <div className="rounded-b-lg w-full bg-[whitesmoke] text-liberty-dark-100 overflow-hidden">
           {!hasPRs && (

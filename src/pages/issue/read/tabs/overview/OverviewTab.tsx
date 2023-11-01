@@ -54,36 +54,34 @@ export default function OverviewTab() {
 
   const isOpen = selectedIssue.status === 'OPEN'
 
-  console.log({ selectedIssue })
-
   return (
     <div className="flex gap-6">
       <div className="flex flex-col w-full gap-14">
         <div className="flex flex-col gap-8">
-          <div className="flex flex-col border-[1px] border-[#cbc9f6] rounded-lg overflow-hidden">
-            <div className="flex justify-between bg-[#5E70AB] px-4 py-2 text-white">
+          <div className="flex flex-col border-gray-300 border-[1px] w-full rounded-lg bg-white overflow-hidden">
+            <div className="flex justify-between bg-gray-200 text-gray-900 px-4 py-2 border-b-[1px] border-gray-300">
               <span>{shortenAddress(selectedIssue.author)}</span>
               <span> {formatDistanceToNow(new Date(selectedIssue.timestamp), { addSuffix: true })}</span>
             </div>
-            <div className="text-liberty-dark-100 p-2 bg-white overflow-auto max-h-[50vh] h-full">
+            <div className="text-gray-900 p-2 bg-white overflow-auto max-h-[50vh] h-full">
               <MDEditor.Markdown source={selectedIssue.description} />
             </div>
           </div>
           {selectedIssue.comments &&
             selectedIssue.comments.map((comment) => (
-              <div className="flex flex-col border-[1px] border-[#cbc9f6] rounded-lg overflow-hidden">
-                <div className="flex justify-between bg-[#5E70AB] px-4 py-2 text-white">
+              <div className="flex flex-col border-[1px] border-gray-300 rounded-lg overflow-hidden">
+                <div className="flex justify-between bg-gray-200 border-b-[1px] border-gray-300 text-gray-900 px-4 py-2">
                   <span>{shortenAddress(comment.author)}</span>
                   <span> {formatDistanceToNow(new Date(comment.timestamp), { addSuffix: true })}</span>
                 </div>
-                <div className="text-liberty-dark-100 p-2 h-32 bg-white">
+                <div className="text-gray-900 p-2 h-32 bg-white">
                   <MDEditor.Markdown source={comment.description} />
                 </div>
               </div>
             ))}
         </div>
 
-        <div className="flex flex-col border-t-[1px] border-[#cbc9f6] pt-4">
+        <div className="flex flex-col border-t-[1px] border-gray-200 pt-4">
           {isOpen && (
             <MDEditor height={180} preview="edit" value={commentVal} onChange={(val) => setCommentVal(val!)} />
           )}
@@ -92,8 +90,8 @@ export default function OverviewTab() {
               <Button
                 isLoading={isSubmittingClose}
                 onClick={handleCloseButtonClick}
-                className="rounded-full bg-purple-600 flex items-center"
-                variant="solid"
+                variant="secondary"
+                className="w-28 justify-center"
               >
                 Close
               </Button>
@@ -101,8 +99,8 @@ export default function OverviewTab() {
                 onClick={handleAddComment}
                 isLoading={isSubmittingComment}
                 disabled={commentVal.length === 0 || isSubmittingComment}
-                className="rounded-full !bg-[#38a457] disabled:cursor-not-allowed disabled:!bg-[#9dd5ad] flex items-center"
-                variant="solid"
+                variant="primary-solid"
+                className="w-28 justify-center"
               >
                 Comment
               </Button>
@@ -110,12 +108,7 @@ export default function OverviewTab() {
           )}
           {!isOpen && (
             <div className="flex w-full justify-center gap-4 py-4">
-              <Button
-                isLoading={isSubmittingClose}
-                onClick={handleReopen}
-                className="rounded-full !bg-[#38a457] flex items-center"
-                variant="solid"
-              >
+              <Button isLoading={isSubmittingClose} onClick={handleReopen} variant="primary-solid">
                 Re-Open
               </Button>
             </div>

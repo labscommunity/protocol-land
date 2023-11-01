@@ -1,4 +1,7 @@
-import { AiFillFolder, AiOutlineFileText } from 'react-icons/ai'
+import SVG from 'react-inlinesvg'
+
+import CodeFileIcon from '@/assets/icons/code-file.svg'
+import CodeFolderIcon from '@/assets/icons/code-folder.svg'
 
 type Props = {
   isFolder: boolean
@@ -8,7 +11,7 @@ type Props = {
 }
 
 export default function Row({ isFolder, item, onFolderClick, onFileClick }: Props) {
-  const Icon = isFolder ? AiFillFolder : AiOutlineFileText
+  const Icon = isFolder ? CodeFolderIcon : CodeFileIcon
 
   function handleRowClick() {
     if (isFolder) onFolderClick(item)
@@ -18,9 +21,9 @@ export default function Row({ isFolder, item, onFolderClick, onFileClick }: Prop
   return (
     <div
       onClick={handleRowClick}
-      className="flex cursor-pointer hover:bg-liberty-light-300 items-center gap-2 py-2 px-4 border-b-[1px] border-liberty-light-600 last:border-b-0"
+      className="flex bg-gray-50 cursor-pointer hover:bg-primary-50 text-gray-600 hover:text-gray-900 items-center gap-4 py-[10px] px-4 border-b-[1px] border-gray-300 last:border-b-0"
     >
-      <Icon className="w-5 h-5" /> <span>{item.path}</span>
+      <SVG src={Icon} className="w-5 h-5" /> <span>{item.path}</span>
     </div>
   )
 }

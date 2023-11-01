@@ -13,8 +13,6 @@ import { useFetchUserRepos } from './hooks/useFetchUserRepos'
 const style = {
   '--bg-right-btm-img-url': `url(${BottomRightImg})`
 } as React.CSSProperties
-const afterClasses =
-  'after:content-[""] relative after:z-[-1] z-[1] after:bg-[image:var(--bg-right-btm-img-url)] after:bg-cover after:bg-no-repeat after:bg-left-top after:right-0 after:bottom-0 after:absolute after:w-[100%] after:h-[100%] after:opacity-30'
 
 export default function Home() {
   const [isLoggedIn] = useGlobalStore((state) => [state.authState.isLoggedIn])
@@ -41,36 +39,45 @@ export default function Home() {
           <div
             style={style}
             className={
-              'bg-[#414E7A] p-6 h-[300px] flex flex-col items-center gap-10 justify-center rounded-xl ' + afterClasses
+              'bg-primary-100 p-6 h-[300px] flex flex-col items-center gap-10 justify-center rounded-2xl border-[1px] border-primary-200'
             }
           >
-            <h1 className="text-[whitesmoke] text-6xl text-center font-extralight tracking-wide">
-              Game changing decentralized code collaboration
+            <h1 className="text-primary-600 text-4xl text-center font-bold">
+              Game changing decentralized <br />
+              code collaboration
             </h1>
-            <Button className="rounded-[20px] opacity-100" variant="solid">
+            <Button className="font-medium" variant="primary-solid">
               Explore
             </Button>
           </div>
           <div className="flex gap-4 w-full">
             <div
-              className={'bg-[#414E7A] p-6 h-[200px] w-full flex flex-col items-center gap-4 justify-center rounded-xl'}
+              className={
+                'bg-primary-100 p-6 h-[200px] w-full flex flex-col items-center gap-4 justify-center rounded-2xl border-[1px] border-primary-200'
+              }
             >
-              <div className="flex flex-col text-center text-[whitesmoke] gap-2">
-                <h1 className="text-xl font-medium tracking-wide">Create a new repository</h1>
-                <p>Start a new project from scratch, invite collaborators and get rolling within seconds.</p>
+              <div className="flex flex-col text-center gap-2">
+                <h1 className="text-2xl font-bold tracking-wide text-primary-600">Create a new repository</h1>
+                <p className="text-base font-medium text-primary-500">
+                  Start a new project from scratch, invite collaborators and get rolling within seconds.
+                </p>
               </div>
-              <Button onClick={handleNewRepoBtnClick} className="rounded-[20px]" variant="solid">
+              <Button onClick={handleNewRepoBtnClick} variant="primary-solid">
                 Create Repository
               </Button>
             </div>
             <div
-              className={'bg-[#414E7A] p-6 h-[200px] w-full flex flex-col items-center gap-4 justify-center rounded-xl'}
+              className={
+                'bg-primary-100 p-6 h-[200px] w-full flex flex-col items-center gap-4 justify-center rounded-xl'
+              }
             >
               <div className="flex flex-col text-center text-[whitesmoke] gap-2">
-                <h1 className="text-xl font-medium tracking-wide">Import an existing repository</h1>
-                <p>Bring your existing repository from Github, Gitlab etc. and continue where you left off.</p>
+                <h1 className="text-2xl font-bold tracking-wide text-primary-600">Import an existing repository</h1>
+                <p className="text-base font-medium text-primary-500">
+                  Bring your existing repository from Github, Gitlab etc. and continue where you left off.
+                </p>
               </div>
-              <Button className="rounded-[20px]" variant="solid">
+              <Button variant="primary-solid">
                 Import Repository
               </Button>
             </div>

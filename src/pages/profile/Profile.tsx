@@ -12,7 +12,7 @@ import Sidebar from './components/Sidebar'
 import SidebarLoading from './components/SidebarLoading'
 import { rootTabConfig } from './config/tabConfig'
 
-const activeClasses = 'border-b-[3px] border-[#8a6bec] text-[#8a6bec] font-medium'
+const activeClasses = 'border-b-[2px] border-primary-600 text-gray-900 font-medium'
 
 export default function Profile() {
   const [status, setStatus] = React.useState('PENDING')
@@ -44,12 +44,12 @@ export default function Profile() {
       <div className="flex flex-col flex-1 px-8 gap-4">
         <div>
           <Tab.Group>
-            <Tab.List className="flex text-liberty-dark-100 text-lg gap-10 border-b-[1px] border-[#cbc9f6]">
+            <Tab.List className="flex text-gray-500 text-lg gap-10 border-b-[1px] border-gray-200">
               {rootTabConfig.map((tab) => (
                 <Tab className="focus-visible:outline-none">
                   {({ selected }) => (
                     <div
-                      className={`flex items-center gap-2 py-2 px-2 justify-center ${selected ? activeClasses : ''}`}
+                      className={`flex items-center gap-2 py-[10px] px-4 justify-center ${selected ? activeClasses : ''}`}
                     >
                       <tab.Icon className="w-5 h-5" />
                       {tab.title}

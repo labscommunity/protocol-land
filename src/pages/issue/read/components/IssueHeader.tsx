@@ -28,13 +28,13 @@ export default function IssueHeader({ issue }: { issue: Issue }) {
   const StatusComponent = statusMap[issue.status]
 
   return (
-    <div className="flex flex-col gap-2 border-b-[1px] border-[#cbc9f6] pb-4">
-      <h1 className="text-3xl text-liberty-dark-100">
-        {issue?.title} <span className="text-[#A942F9] ml-2">#{issue?.id}</span>
+    <div className="flex flex-col gap-2 border-b-[1px] border-gray-200 pb-4">
+      <h1 className="text-3xl text-gray-900">
+        {issue?.title} <span className="text-primary-600 ml-2">#{issue?.id}</span>
       </h1>
       <div className="flex items-center gap-4">
         {issue && <StatusComponent status={issue!.status} />}
-        <div className='text-liberty-dark-100'>
+        <div className='text-gray-600'>
           {shortenAddress(issue.author)} has opened this issue{' '}
           {formatDistanceToNow(new Date(issue.timestamp), { addSuffix: true })}
         </div>

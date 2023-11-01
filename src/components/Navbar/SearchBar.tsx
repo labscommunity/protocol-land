@@ -96,33 +96,33 @@ export default function SearchBar() {
     handleResultBoxAnimationComplete()
   }
 
-  console.log({ results })
+  console.log({ results, isLoading, showResultsBox })
 
   return (
     <motion.div
       ref={searchBoxRef}
       initial={{ width: '25%' }}
-      animate={{ width: isFocused ? '80%' : '25%' }}
+      animate={{ width: isFocused ? '65%' : '25%' }}
       transition={{ duration: 0.5 }}
-      className="relative bg-gray-200 rounded ml-20"
+      className="relative rounded-[8px] ml-20 bg-white border-primary-300 hover:border-primary-600 focus-within:shadow-[0px_2px_4px_0px_rgba(0,0,0,0.10)] hover:shadow-[0px_2px_4px_0px_rgba(0,0,0,0.10)] hover:bg-primary-50 border-[1px]"
       onAnimationComplete={handleInputAnimationComplete}
     >
-      <div className="bg-[#F9FAFB] rounded flex items-center w-full p-2 shadow-sm">
-        <RiGitRepositoryFill className="w-5 h-5 text-gray-500" />
+      <div className="rounded flex items-center w-full p-2 shadow-sm">
+        <BiSearch className="w-6 h-6 text-primary-600 relative top-[1px]" />
+        {/* <RiGitRepositoryFill className={`w-5 h-5 ${searchValue.length > 0 ? 'text-gray-900' : 'text-gray-500'}`} /> */}
 
         <input
           type="text"
           ref={searchInputRef}
-          placeholder="my-cool-repo"
+          placeholder="Find a repository..."
           value={searchValue}
           onChange={handleInputChange}
           onFocus={() => setIsFocused(true)}
-          className="w-full pl-4 text-md outline-none focus:outline-none bg-transparent text-liberty-dark-100"
+          className="w-full pl-2 text-base outline-none focus:outline-none bg-transparent text-primary-900 placeholder:text-primary-600"
         />
         {searchValue && (
-          <RiCloseCircleLine onClick={handleSearchReset} className="w-5 h-5 text-gray-500 cursor-pointer" />
+          <RiCloseCircleLine onClick={handleSearchReset} className="w-5 h-5 text-primary-600 cursor-pointer" />
         )}
-        {!searchValue && <BiSearch className="w-5 h-5 text-gray-500" />}
       </div>
       <AnimatePresence>
         {showResultsBox && searchValue.length > 0 && (
@@ -130,7 +130,7 @@ export default function SearchBar() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0, transition: { duration: 0.5 } }}
-            className="absolute top-[45px] z-10 w-full bg-[#F9FAFB] rounded p-2"
+            className="absolute top-[45px] z-10 w-full bg-white rounded-[8px] p-2 shadow-[0px_2px_4px_0px_rgba(0,0,0,0.10)] border-[1px] border-gray-300"
           >
             {isLoading && (
               <div className="w-full flex gap-2 flex-col h-[80px] justify-center items-center">Loading...</div>
@@ -140,14 +140,14 @@ export default function SearchBar() {
                 {results.map((repo) => (
                   <div
                     onClick={() => handleSearchItemClick(repo.id)}
-                    className="flex flex-col gap-1 hover:bg-[#4487F5] hover:text-white hover:rounded py-1 px-2 [&>div>svg]:hover:text-white [&>div.search-repo-item-meta>span]:hover:text-white cursor-pointer"
+                    className="flex flex-col gap-1 hover:bg-primary-50 hover:text-gray-900 [&>div>svg]:hover:text-gray-900 [&>div.search-repo-item-meta>span]:hover:text-gray-900 hover:rounded py-1 px-2 cursor-pointer"
                   >
                     <div className="flex items-center gap-4 search-repo-item-meta">
-                      <RiGitRepositoryFill className="w-5 h-5 text-gray-500" />
-                      <span className="text-liberty-dark-100">{repo.name}</span>
+                      <RiGitRepositoryFill className="w-5 h-5 text-gray-700" />
+                      <span className="text-gray-700">{repo.name}</span>
                     </div>
                     <div className="flex search-repo-item-meta">
-                      <span className="text-liberty-dark-100">Owner: {shortenAddress(repo.owner, 8)}</span>
+                      <span className="text-gray-700">Owner: {shortenAddress(repo.owner, 8)}</span>
                     </div>
                   </div>
                 ))}
@@ -155,7 +155,7 @@ export default function SearchBar() {
             )}
             {results.length === 0 && !isLoading && (
               <div className="w-full flex gap-2 flex-col h-[80px] justify-center items-center">
-                <h1 className="text-liberty-dark-100 text-lg">No results found.</h1>
+                <h1 className="text-gray-700 text-lg">No results found.</h1>
               </div>
             )}
           </motion.div>

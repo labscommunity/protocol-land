@@ -13,7 +13,7 @@ export default function BranchDropdown({ selectedItem, setSelectedItem, items, l
   return (
     <Listbox value={selectedItem} onChange={setSelectedItem}>
       <div className="relative mt-1">
-        <Listbox.Button className="relative w-60 text-liberty-dark-100 flex gap-2 items-center justify-between cursor-default rounded-lg bg-white py-2 px-3 text-left shadow-md focus:outline-none focus-visible:border-indigo-500 focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-opacity-75 focus-visible:ring-offset-2 focus-visible:ring-offset-orange-300 sm:text-sm">
+        <Listbox.Button className="relative w-60 text-gray-900 flex gap-2 items-center justify-between cursor-default rounded-lg bg-white py-2 px-3 text-left shadow-md focus:outline-none focus-visible:border-indigo-500 focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-opacity-75 focus-visible:ring-offset-2 focus-visible:ring-offset-orange-300 sm:text-sm">
           <div className="flex gap-2 overflow-hidden">
             <Listbox.Label>{label}:</Listbox.Label>
             <span className="block truncate font-medium ">{selectedItem}</span>
@@ -28,7 +28,7 @@ export default function BranchDropdown({ selectedItem, setSelectedItem, items, l
               <Listbox.Option
                 className={({ active }) =>
                   `relative cursor-default select-none py-2 pl-10 pr-4 ${
-                    active ? 'bg-amber-100 text-amber-900' : 'text-gray-900'
+                    active ? 'bg-primary-100 text-gray-900' : 'text-gray-900'
                   }`
                 }
                 key={idx}

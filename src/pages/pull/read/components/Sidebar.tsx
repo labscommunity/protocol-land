@@ -34,24 +34,24 @@ export default function Sidebar() {
             onClick={handlePRApproval}
             isLoading={isApproving}
             disabled={isApproving}
-            variant="solid"
-            className="rounded-full items-center flex justify-center gap-2"
+            variant="primary-solid"
+            className="justify-center w-full font-medium"
           >
             Approve
           </Button>
         )}
-        <div className="flex justify-between items-center border-b-[1px] border-[#cbc9f6] pb-1 text-liberty-dark-100">
+        <div className="flex justify-between items-center border-b-[1px] border-gray-200 pb-1 text-gray-900">
           <h1 className="text-lg font-medium">Reviewers</h1>
           <ReviewerAdd />
         </div>
         {PR && PR.reviewers.length === 0 && (
           <div>
-            <p className="text-liberty-dark-100">No reviews yet</p>
+            <p className="text-gray-900">No reviews yet</p>
           </div>
         )}
         {PR &&
           PR.reviewers.map((reviewer) => (
-            <div className="flex items-center gap-1 text-liberty-dark-100">
+            <div className="flex items-center gap-1 text-gray-900">
               {reviewer.approved ? (
                 <FiCheck className="min-w-[16px] h-4 !text-green-600" />
               ) : (

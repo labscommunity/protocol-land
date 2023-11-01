@@ -60,18 +60,18 @@ export default function CreatePullRequest() {
   const isBranchReady = baseBranch && compareBranch
 
   return (
-    <div className="h-full flex-1 flex flex-col max-w-[1280px] mx-auto w-full mt-6 gap-8">
+    <div className="h-full flex-1 flex flex-col max-w-[800px] mx-auto w-full mt-6 gap-8">
       <div className="flex flex-col gap-4">
-        <div className="flex flex-col gap-1 border-b-[1px] border-[#cbc9f6] pb-2 text-liberty-dark-100">
+        <div className="flex flex-col gap-1 border-b-[1px] border-gray-200 pb-2 text-gray-900">
           <h1 className="text-3xl ">Create a new pull request</h1>
-          <p className="text-lg">Choose two branches to see what's changed and start a new pull request.</p>
+          <p className="text-lg text-gray-500">Choose two branches to see what's changed and start a new pull request.</p>
         </div>
         {!isBranchReady && <BranchLoading />}
         {isBranchReady && (
-          <div className="flex gap-10 items-center justify-center shadow-[rgba(0,_0,_0,_0.24)_0px_3px_8px] py-8 bg-[#DBC7F5] rounded-md">
+          <div className="flex gap-10 items-center justify-center py-8 bg-primary-100 border-[1px] border-gray-300 rounded-md">
             <BranchDropdown label="Base" items={branchList} selectedItem={baseBranch} setSelectedItem={setBaseBranch} />
             <div className="h-full flex items-center">
-              <BiGitCompare className="w-6 h-6 text-liberty-dark-100" />
+              <BiGitCompare className="w-6 h-6 text-gray-600" />
             </div>
             <BranchDropdown
               label="Compare"

@@ -4,10 +4,12 @@ import clsx from 'clsx'
 import React, { Fragment } from 'react'
 import { FileWithPath, useDropzone } from 'react-dropzone'
 import { useForm } from 'react-hook-form'
-import { AiFillCloseCircle } from 'react-icons/ai'
+import SVG from 'react-inlinesvg'
 import { useParams } from 'react-router-dom'
 import * as yup from 'yup'
 
+import CloseCrossIcon from '@/assets/icons/close-cross.svg'
+import FolderBrowseIcon from '@/assets/icons/folder-browse.svg'
 import { Button } from '@/components/common/buttons'
 import useCommit from '@/pages/repository/hooks/useCommit'
 import { useGlobalStore } from '@/stores/globalStore'
@@ -43,7 +45,7 @@ export default function AddFilesModal({ setIsOpen, isOpen }: NewBranchModal) {
   const [files, setFiles] = React.useState<FileWithPath[]>([])
   const [isSubmitting, setIsSubmitting] = React.useState(false)
 
-  const { getRootProps, getInputProps, isDragActive } = useDropzone({ onDrop })
+  const { getRootProps, getInputProps, isDragActive, inputRef } = useDropzone({ onDrop })
 
   function closeModal() {
     setIsOpen(false)
@@ -90,7 +92,7 @@ export default function AddFilesModal({ setIsOpen, isOpen }: NewBranchModal) {
         </Transition.Child>
 
         <div className="fixed inset-0 overflow-y-auto">
-          <div className="flex min-h-full items-center justify-center p-4 text-center">
+          <div className="flex min-h-full items-center justify-center text-center">
             <Transition.Child
               as={Fragment}
               enter="ease-out duration-300"
@@ -100,52 +102,62 @@ export default function AddFilesModal({ setIsOpen, isOpen }: NewBranchModal) {
               leaveFrom="opacity-100 scale-100"
               leaveTo="opacity-0 scale-95"
             >
-              <Dialog.Panel className="w-full max-w-2xl transform overflow-hidden rounded-lg bg-white p-6 text-left align-middle shadow-xl transition-all">
+              <Dialog.Panel className="w-full max-w-[368px] transform overflow-hidden rounded-2xl bg-white p-6 text-left align-middle shadow-xl transition-all">
                 <div className="w-full flex justify-between align-middle">
-                  <Dialog.Title as="h3" className="text-xl font-medium leading-6 text-liberty-dark-100">
-                    Add Files/Folder
+                  <Dialog.Title as="h3" className="text-xl font-medium text-gray-900">
+                    Upload new Files/Folders
                   </Dialog.Title>
-                  <AiFillCloseCircle onClick={closeModal} className="h-6 w-6 text-liberty-dark-100 cursor-pointer" />
+                  <SVG onClick={closeModal} src={CloseCrossIcon} className="w-6 h-6 cursor-pointer" />
                 </div>
-                <div className="mt-10 flex flex-col gap-2.5">
+                <div className="mt-6 flex flex-col">
+                  <span className="mb-2 font-medium text-sm text-gray-600">Upload files</span>
                   <div
-                    className="flex cursor-pointer flex-col overflow-auto p-4 items-center h-36 max-h-36 border-2 border-liberty-light-400 border-dashed"
+                    className="flex cursor-pointer flex-col overflow-auto items-center h-36 max-h-36 border-[1px] border-gray-300 rounded-lg border-dashed"
                     {...getRootProps()}
                   >
                     <input {...getInputProps()} />
                     {files.length === 0 && (
-                      <div className="h-full flex justify-center items-center">
+                      <div className="h-full w-full py-6 px-12 flex justify-center items-center">
                         {!isDragActive && (
-                          <span className="text-liberty-dark-100 font-medium">
-                            Drag 'n' drop some files here, or click to select files
-                          </span>
+                          <div className="flex flex-col gap-4 items-center">
+                            <span className="text-gray-700 text-sm text-center">
+                              Drag and drop your files here, or click 'Browse Files'
+                            </span>
+                            <Button
+                              className="gap-2"
+                              onClick={inputRef.current?.click || undefined}
+                              variant="primary-outline"
+                            >
+                              <SVG src={FolderBrowseIcon} className="w-5 h-5" /> Browse Files
+                            </Button>
+                          </div>
                         )}
                         {isDragActive && (
-                          <span className="text-liberty-dark-100 font-medium">Drop the files here ...</span>
+                          <span className="text-gray-700 text-sm text-center">Drop the files here ...</span>
                         )}
                       </div>
                     )}
                     {files.length > 0 && (
-                      <div className="flex flex-col w-full gap-1">
+                      <div className="flex py-[10px] px-6 flex-col w-full gap-2">
                         {files.map((file) => (
                           <div className="w-full flex">
-                            <span className="text-liberty-dark-100">{file?.path || ''}</span>
+                            <span className="text-gray-600 text-sm font-medium">{file?.path || ''}</span>
                           </div>
                         ))}
                       </div>
                     )}
                   </div>
                 </div>
-                <div className="mt-3 flex flex-col gap-2.5">
+                <div className="mt-3 flex flex-col">
                   <div>
-                    <label htmlFor="title" className="block mb-1 text-md font-medium text-liberty-dark-100">
+                    <label htmlFor="title" className="mb-1 block font-medium text-sm text-gray-600">
                       Commit message
                     </label>
                     <input
                       type="text"
                       {...register('commit')}
                       className={clsx(
-                        'bg-gray-50 border  text-liberty-dark-100 text-md rounded-lg focus:ring-liberty-dark-50 focus:border-liberty-dark-50 block w-full p-2.5',
+                        'bg-white border-[1px] text-gray-900 text-base rounded-lg hover:shadow-[0px_2px_4px_0px_rgba(0,0,0,0.10)] focus:border-primary-500 focus:border-[1.5px] block w-full px-3 py-[10px] outline-none',
                         errors.commit ? 'border-red-500' : 'border-gray-300'
                       )}
                       placeholder="Example: Add README.md file"
@@ -155,45 +167,15 @@ export default function AddFilesModal({ setIsOpen, isOpen }: NewBranchModal) {
                 </div>
 
                 <div className="mt-6">
-                  {isSubmitting && (
-                    <Button
-                      variant="solid"
-                      className="mt-4 flex items-center !px-4 rounded-md cursor-not-allowed"
-                      disabled
-                    >
-                      <svg
-                        className="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
-                        xmlns="http://www.w3.org/2000/svg"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                      >
-                        <circle
-                          className="opacity-25"
-                          cx="12"
-                          cy="12"
-                          r="10"
-                          stroke="currentColor"
-                          stroke-width="4"
-                        ></circle>
-                        <path
-                          className="opacity-75"
-                          fill="currentColor"
-                          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                        ></path>
-                      </svg>
-                      Processing...
-                    </Button>
-                  )}
-                  {!isSubmitting && (
-                    <Button
-                      //   disabled={Object.keys(errors).length > 0}
-                      className="rounded-md disabled:bg-opacity-[0.7]"
-                      onClick={handleSubmit(handleCommitSubmit)}
-                      variant="solid"
-                    >
-                      Commit
-                    </Button>
-                  )}
+                  <Button
+                    disabled={Object.keys(errors).length > 0 || isSubmitting}
+                    isLoading={isSubmitting}
+                    className="w-full justify-center font-medium"
+                    onClick={handleSubmit(handleCommitSubmit)}
+                    variant="primary-solid"
+                  >
+                    Upload
+                  </Button>
                 </div>
               </Dialog.Panel>
             </Transition.Child>

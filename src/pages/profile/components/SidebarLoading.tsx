@@ -1,7 +1,3 @@
-import { AiOutlineTwitter, AiTwotoneMail } from 'react-icons/ai'
-import { BsGlobe } from 'react-icons/bs'
-import { TiLocation } from 'react-icons/ti'
-
 export default function SidebarLoading() {
   return (
     <div className="flex flex-col w-[296px] gap-4">
@@ -12,21 +8,21 @@ export default function SidebarLoading() {
         <div className="h-3 bg-gray-200 rounded-full dark:bg-gray-700 w-full mb-3 animate-pulse"></div>
         <div className="h-3 bg-gray-200 rounded-full dark:bg-gray-700 w-full mb-3 animate-pulse"></div>
       </div>
-      <div className="flex flex-col gap-1">
+      <div className="flex flex-col gap-2">
         <div className="flex gap-2 items-center text-liberty-dark-100 text-lg">
-          <TiLocation className="w-5 h-5" />
+          {/* <TiLocation className="w-5 h-5" /> */}
           <div className="h-2 bg-gray-200 rounded-full dark:bg-gray-700 w-full animate-pulse"></div>
         </div>
         <div className="flex gap-2 items-center text-liberty-dark-100 text-lg">
-          <AiOutlineTwitter className="w-5 h-5" />
+          {/* <AiOutlineTwitter className="w-5 h-5" /> */}
           <div className="h-2 bg-gray-200 rounded-full dark:bg-gray-700 w-full animate-pulse"></div>
         </div>
         <div className="flex gap-2 items-center text-liberty-dark-100 text-lg">
-          <AiTwotoneMail className="w-5 h-5" />
+          {/* <AiTwotoneMail className="w-5 h-5" /> */}
           <div className="h-2 bg-gray-200 rounded-full dark:bg-gray-700 w-full animate-pulse"></div>
         </div>
         <div className="flex gap-2 items-center text-liberty-dark-100 text-lg">
-          <BsGlobe className="w-5 h-5" />
+          {/* <BsGlobe className="w-5 h-5" /> */}
           <div className="h-2 bg-gray-200 rounded-full dark:bg-gray-700 w-full animate-pulse"></div>
         </div>
       </div>

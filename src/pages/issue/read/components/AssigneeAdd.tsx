@@ -39,7 +39,7 @@ export default function AssigneeAdd() {
                     key={idx}
                     className={({ active }) =>
                       `relative cursor-default select-none py-2 pl-2 pr-4 ${
-                        active ? 'bg-amber-100 text-amber-900' : 'text-gray-900'
+                        active ? 'bg-primary-100 font-medium' : 'text-gray-900'
                       }`
                     }
                     value={address}
@@ -48,7 +48,7 @@ export default function AssigneeAdd() {
                       return (
                         <>
                           <span
-                            className={`flex gap-2 items-center truncate text-liberty-dark-100 ${
+                            className={`flex gap-2 items-center truncate text-gray-900 ${
                               selected ? 'font-medium' : 'font-normal'
                             }`}
                           >

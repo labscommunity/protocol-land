@@ -34,7 +34,7 @@ export default function Avatar({
           <div onClick={handleAvatarSelectClick} className="relative hover:bg-opacity-50 transition-all duration-300">
             <img src={avatarUrl} className="rounded-full w-full h-[296px]" />
             <div className="absolute inset-0 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity duration-300">
-              <span className="text-white cursor-pointer flex items-center justify-center h-full w-full font-bold text-xl bg-black bg-opacity-50 p-2 rounded-full">
+              <span className="text-white cursor-pointer flex items-center justify-center h-full w-full font-bold text-xl bg-gray-400 p-2 rounded-full">
                 <AiFillCamera className="w-32 h-32 text-white" />
               </span>
             </div>
@@ -44,7 +44,7 @@ export default function Avatar({
         {!avatarUrl && (
           <div
             onClick={handleAvatarSelectClick}
-            className="cursor-pointer  w-full h-[296px] bg-slate-500 rounded-full flex items-center justify-center"
+            className="cursor-pointer  w-full h-[296px] bg-gray-400 rounded-full flex items-center justify-center"
           >
             <AiFillCamera className="w-32 h-32 text-white" />
             <input onChange={handleAvatarChange} ref={avatarInputRef} type="file" hidden />
@@ -57,7 +57,7 @@ export default function Avatar({
   return (
     <div className="flex">
       {!url && (
-        <div className="w-full rounded-full bg-slate-400 h-[296px] flex items-center justify-center">
+        <div className="w-full rounded-full bg-gray-400 h-[296px] flex items-center justify-center">
           <BsFillPersonFill className="w-32 h-32 text-white" />
         </div>
       )}

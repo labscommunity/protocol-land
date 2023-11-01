@@ -3,9 +3,9 @@ export default function RepoHeaderLoading() {
     <div className="flex flex-col gap-4">
       <div className="flex justify-between w-full">
         <div className="flex gap-6 w-full">
-          <div className="bg-liberty-light-400 rounded-full w-16 h-16 flex justify-center items-center animate-pulse">
+          <div className="bg-gray-300 rounded-full w-16 h-16 flex justify-center items-center animate-pulse">
             <svg
-              className="w-6 h-6 text-gray-200 dark:text-gray-600"
+              className="w-6 h-6 text-gray-200 dark:text-gray-400"
               aria-hidden="true"
               xmlns="http://www.w3.org/2000/svg"
               fill="currentColor"
@@ -15,20 +15,20 @@ export default function RepoHeaderLoading() {
             </svg>
           </div>
           <div className="flex-1">
-            <div className="h-3 bg-gray-200 rounded-full dark:bg-gray-700 w-[50%] mb-3 animate-pulse"></div>
-            <div className="h-2 bg-gray-200 rounded-full dark:bg-gray-700 w-[20%] mb-2 animate-pulse"></div>
-            <div className="h-2 bg-gray-200 rounded-full dark:bg-gray-700 w-[30%] mb-2 animate-pulse"></div>
-            <div className="h-2 bg-gray-200 rounded-full dark:bg-gray-700 w-[40%] mb-4 animate-pulse"></div>
+            <div className="h-3 bg-gray-200 rounded-full dark:bg-gray-400 w-[50%] mb-3 animate-pulse"></div>
+            <div className="h-2 bg-gray-200 rounded-full dark:bg-gray-400 w-[20%] mb-2 animate-pulse"></div>
+            <div className="h-2 bg-gray-200 rounded-full dark:bg-gray-400 w-[30%] mb-2 animate-pulse"></div>
+            <div className="h-2 bg-gray-200 rounded-full dark:bg-gray-400 w-[40%] mb-4 animate-pulse"></div>
           </div>
         </div>
       </div>
       <div className="animate-pulse w-full">
-        <div className="h-2 bg-gray-200 rounded-full dark:bg-gray-700 w-[50%] mb-3 animate-pulse"></div>
-        <div className="h-2 bg-gray-200 rounded-full dark:bg-gray-700 w-[20%] mb-2 animate-pulse"></div>
+        <div className="h-2 bg-gray-200 rounded-full dark:bg-gray-400 w-[50%] mb-3 animate-pulse"></div>
+        <div className="h-2 bg-gray-200 rounded-full dark:bg-gray-400 w-[20%] mb-2 animate-pulse"></div>
       </div>
       <div className="animate-pulse w-full">
-        <div className="h-2 bg-gray-200 rounded-full dark:bg-gray-700 w-[50%] mb-3 animate-pulse"></div>
-        <div className="h-2 bg-gray-200 rounded-full dark:bg-gray-700 w-[20%] mb-2 animate-pulse"></div>
+        <div className="h-2 bg-gray-200 rounded-full dark:bg-gray-400 w-[50%] mb-3 animate-pulse"></div>
+        <div className="h-2 bg-gray-200 rounded-full dark:bg-gray-400 w-[20%] mb-2 animate-pulse"></div>
       </div>
     </div>
   )

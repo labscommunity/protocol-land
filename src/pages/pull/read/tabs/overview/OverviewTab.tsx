@@ -42,9 +42,9 @@ export default function OverviewTab() {
   return (
     <div className="flex gap-6">
       <div className="flex flex-col w-full gap-4">
-        <div className="flex flex-col border-[1px] border-[#cbc9f6] rounded-lg overflow-hidden">
-          <div className="flex font-medium bg-[#5E70AB] px-4 py-2 text-white">Description</div>
-          <div className="text-liberty-dark-100 p-2 h-32 bg-white">{PR && PR.description}</div>
+        <div className="flex flex-col border-gray-300 border-[1px] w-full rounded-lg bg-white overflow-hidden">
+          <div className="flex justify-between bg-gray-200 border-b-[1px] border-gray-300 text-gray-900 font-medium px-4 py-2">Description</div>
+          <div className="text-gray-900 p-2 h-32 bg-white">{PR && PR.description}</div>
         </div>
         {PR && PR.status === 'OPEN' && (
           <div className="flex w-full py-4 justify-center gap-4">
@@ -52,8 +52,8 @@ export default function OverviewTab() {
               onClick={handleMergePullRequest}
               disabled={isSubmittingMerge}
               isLoading={isSubmittingMerge}
-              className="rounded-full !bg-[#37A457] flex gap-1 items-center"
-              variant="solid"
+              className="gap-2 justify-center font-medium"
+              variant="primary-solid"
             >
               <FiGitMerge className="w-4 h-4" />
               Merge
@@ -61,8 +61,8 @@ export default function OverviewTab() {
 
             <Button
               onClick={handleClosePullRequest}
-              className="rounded-full bg-red-600 flex gap-1 items-center"
-              variant="solid"
+              className="gap-2 justify-center font-medium"
+              variant="secondary"
               disabled={isSubmittingClose}
               isLoading={isSubmittingClose}
             >

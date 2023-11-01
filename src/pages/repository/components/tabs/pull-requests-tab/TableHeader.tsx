@@ -22,19 +22,19 @@ export default function TableHeader({ view, setView }: Props) {
   const contributor = isContributor()
 
   return (
-    <div className="rounded-t-lg flex justify-between bg-liberty-light-800 text-[whitesmoke] items-center gap-2 py-2 px-4">
+    <div className="rounded-t-lg flex justify-between bg-gray-200 border-b-[1px] border-gray-300 items-center gap-2 py-2 px-4">
       <div className="flex items-center gap-1">
         <span
           onClick={() => setView('OPEN')}
-          className={`font-medium px-4 py-1 rounded-full hover:bg-[#4487F5] cursor-pointer ${
-            view === 'OPEN' ? 'bg-[#4487F5]' : ''
+          className={`font-medium hover:text-white px-4 py-1 text-gray-900 rounded-lg hover:bg-primary-600 cursor-pointer ${
+            view === 'OPEN' ? 'bg-primary-700 text-white shadow-[0px_2px_4px_0px_rgba(0,0,0,0.05)]' : ''
           }`}
         >
           Open
         </span>
         <span
-          className={`font-medium px-4 py-1 rounded-full hover:bg-[#4487F5] cursor-pointer ${
-            view === 'CLOSED' ? 'bg-[#4487F5]' : ''
+          className={`font-medium px-4 py-1 rounded-lg hover:text-white text-gray-900 hover:bg-primary-600 cursor-pointer ${
+            view === 'CLOSED' ? 'bg-primary-700 text-white shadow-[0px_2px_4px_0px_rgba(0,0,0,0.05)]' : ''
           }`}
           onClick={() => setView('CLOSED')}
         >
@@ -44,9 +44,9 @@ export default function TableHeader({ view, setView }: Props) {
       {contributor && (
         <div
           onClick={handleNewPRButtonClick}
-          className=" cursor-pointer flex items-center bg-[#38a457] rounded-full gap-1 font-medium px-4 py-1"
+          className="hover:bg-primary-50 active:bg-primary-100 active:shadow-[0px_2px_6px_0px_rgba(0,0,0,0.05)] cursor-pointer flex items-center border-[1.5px] border-primary-600 bg-white shadow-[0px_2px_4px_0px_rgba(0,0,0,0.05)] rounded-lg gap-1 text-primary-700 font-medium px-4 py-1"
         >
-          <span className="text-white">New pull request</span>
+          <span>New pull request</span>
         </div>
       )}
     </div>

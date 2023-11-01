@@ -18,8 +18,8 @@ export default function AddFilesButton() {
     <div className="flex">
       <Button
         onClick={() => setIsAddFilesModalOpen(true)}
-        className="rounded-lg flex items-center py-[4px] px-4 font-medium gap-1"
-        variant="solid"
+        className="gap-2"
+        variant="primary-solid"
       >
         <AiOutlinePlus className="w-5 h-5" /> Add Files
       </Button>

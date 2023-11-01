@@ -1,7 +1,11 @@
-import { AiOutlineFork, AiOutlineStar } from 'react-icons/ai'
-import { FaClone } from 'react-icons/fa'
-import { FiGitBranch, FiGitCommit, FiHardDrive, FiTag } from 'react-icons/fi'
+import SVG from 'react-inlinesvg'
 
+import IconCloneOutline from '@/assets/icons/clone-outline.svg'
+import IconCommitOutline from '@/assets/icons/commit-outline.svg'
+import IconDriveOutline from '@/assets/icons/drive-outline.svg'
+import IconForkOutline from '@/assets/icons/fork-outline.svg'
+import IconStarOutline from '@/assets/icons/star-outline.svg'
+import IconTagOutline from '@/assets/icons/tag-outline.svg'
 import { Button } from '@/components/common/buttons'
 import { Repo } from '@/types/repository'
 
@@ -23,58 +27,52 @@ export default function RepoHeader({ repo, isLoading }: Props) {
   return (
     <div className="flex flex-col gap-4">
       <div className="flex justify-between">
-        <div className="flex gap-6">
-          <div className="bg-white rounded-full w-16 h-16 flex justify-center items-center">
-            <h4 className="text-2xl font-bold tracking-wide text-liberty-dark-100">SK</h4>
+        <div className="flex gap-4 items-center">
+          <div className="bg-white rounded-full w-12 h-12 flex justify-center items-center border-[1px] border-gray-300">
+            <h4 className="text-2xl font-bold tracking-wide text-gray-900">SK</h4>
           </div>
           <div>
-            <h1 className="text-3xl font-medium text-liberty-dark-100">{repo.name}</h1>
-            <p className="text-liberty-dark-50">Transaction ID: {repo.dataTxId}</p>
+            <h1 className="text-xl font-bold text-gray-900">{repo.name}</h1>
+            <p className="text-gray-900 text-base">
+              <span className="text-gray-600">Transaction ID:</span> {repo.dataTxId}
+            </p>
           </div>
         </div>
         <div className="flex items-center justify-start gap-4">
-          <Button className="rounded-[20px] py-[7px] flex gap-1 items-center" variant="outline">
-            <AiOutlineStar className="h-6 w-6" />
-            <span className="font-medium">10</span>
+          <Button className="rounded-[20px] flex gap-2 items-center" variant="secondary">
+            <SVG className="w-5 h-5" src={IconStarOutline} />
+            <span className="text-gray-900 font-medium">10</span>
           </Button>
-          <Button className="rounded-[20px] flex gap-2 items-center" variant="solid">
-            <AiOutlineFork className="h-6 w-6" />
-            Fork
+          <Button className="rounded-[20px] flex gap-2 items-center" variant="secondary">
+            <SVG src={IconForkOutline} />
+            <span className="text-gray-900 font-medium">Fork</span>
           </Button>
-          <Button onClick={downloadRepository} className="rounded-[20px] flex gap-2 items-center" variant="solid">
-            <FaClone className="h-5 w-5" />
-            Clone
+          <Button onClick={downloadRepository} className="rounded-[20px] flex gap-2 items-center" variant="secondary">
+            <SVG src={IconCloneOutline} />
+            <span className="text-gray-900 font-medium">Clone</span>
           </Button>
         </div>
       </div>
-      <div className="flex gap-4 items-center text-liberty-dark-100">
-        <div className="flex gap-2 items-center">
-          <FiGitCommit className="h-5 w-5" />
-          <p>
-            <span className="font-medium">100</span> Commit
-          </p>
+      <div className="flex gap-3 items-center text-gray-900">
+        <div className="flex gap-1 items-center px-4 py-1 bg-gray-200 rounded-[4px] cursor-default">
+          <SVG src={IconCommitOutline} />
+          <p>100 Commit</p>
         </div>
-        <div className="flex gap-2 items-center">
-          <FiGitBranch className="h-5 w-5" />
-          <p>
-            <span className="font-medium">100</span> Branches
-          </p>
+        <div className="flex gap-1 items-center px-4 py-1 bg-gray-200 rounded-[4px] cursor-default">
+          <SVG src={IconForkOutline} />
+          <p>100 Branches</p>
         </div>
-        <div className="flex gap-2 items-center">
-          <FiTag className="h-5 w-5" />
-          <p>
-            <span className="font-medium">100</span> Tags
-          </p>
+        <div className="flex gap-1 items-center px-4 py-1 bg-gray-200 rounded-[4px] cursor-default">
+          <SVG src={IconTagOutline} />
+          <p>100 Tags</p>
         </div>
-        <div className="flex gap-2 items-center">
-          <FiHardDrive className="h-5 w-5" />
-          <p>
-            <span className="font-medium">1.1 MB</span> Files
-          </p>
+        <div className="flex gap-1 items-center px-4 py-1 bg-gray-200 rounded-[4px] cursor-default">
+          <SVG src={IconDriveOutline} />
+          <p>1.1 MB</p>
         </div>
       </div>
       <div>
-        <p className="text-liberty-dark-100">{repo.description}</p>
+        <p className="text-gray-600">{repo.description}</p>
       </div>
     </div>
   )

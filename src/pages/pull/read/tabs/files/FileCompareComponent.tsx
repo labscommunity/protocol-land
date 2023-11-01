@@ -48,8 +48,8 @@ export default function FileCompareComponent({ fileStatus, base, compare, repoNa
   const Modified = CodeMirrorMerge.Modified
   
   return (
-    <div className="w-full py-2 flex flex-col ">
-      <div className="flex font-medium bg-[#5E70AB] px-4 py-2 text-white rounded-t-xl overflow-hidden">
+    <div className="w-full flex flex-col border-gray-300 border-[1px] rounded-t-xl">
+      <div className="flex font-medium bg-gray-200 text-gray-900 px-4 py-3 border-b-[1px] border-gray-300 rounded-t-xl overflow-hidden">
         {fileStatus[0]}
       </div>
       <CodeMirrorMerge

@@ -54,7 +54,7 @@ export default function Contributors() {
       <div className="flex flex-col gap-4">
         <div className="flex flex-col">
           <div className="w-[50%]">
-            <label htmlFor="title" className="block mb-1 text-md font-medium text-liberty-dark-100">
+            <label htmlFor="title" className="block mb-1 text-sm font-medium text-gray-600">
               Add new contributor
             </label>
             <div className="flex items-center gap-4">
@@ -62,33 +62,33 @@ export default function Contributors() {
                 type="text"
                 {...register('address')}
                 className={clsx(
-                  'bg-gray-50 border  text-liberty-dark-100 text-md rounded-lg focus:ring-liberty-dark-50 focus:border-liberty-dark-50 block w-full p-2.5',
+                  'bg-white border-[1px] text-gray-900 text-base rounded-lg hover:shadow-[0px_2px_4px_0px_rgba(0,0,0,0.10)] focus:border-primary-500 focus:border-[1.5px] block w-full px-3 py-[10px] outline-none',
                   errors.address ? 'border-red-500' : 'border-gray-300'
                 )}
                 placeholder="Arweave address"
                 disabled={!repoOwner}
               />
-              <Button disabled={!repoOwner} onClick={handleSubmit(handleAddButtonClick)} className="rounded-full disabled:bg-gray-400" variant="solid">
+              <Button disabled={!repoOwner} onClick={handleSubmit(handleAddButtonClick)} variant="primary-solid">
                 Add
               </Button>
             </div>
           </div>
           {errors.address && <p className="text-red-500 text-sm italic mt-2">{errors.address?.message}</p>}
         </div>
-        <div className="flex flex-col">
-          <div className="flex font-medium bg-[#5E70AB] px-4 py-2 text-white rounded-t-xl overflow-hidden">
+        <div className="flex flex-col border-gray-300 border-[1px] rounded-lg overflow-hidden bg-white">
+          <div className="flex font-medium bg-gray-200 border-b-[1px] border-gray-300 text-gray-900 px-4 py-2 rounded-t-lg overflow-hidden">
             <div className="w-[50%]">Address</div>
             <div className="w-[50%]">Role</div>
           </div>
           {repo && (
-            <div className="flex bg-white cursor-pointer hover:bg-liberty-light-300 text-liberty-dark-100 items-center gap-2 py-2 px-4 border-b-[1px] border-liberty-light-600 last:border-b-0">
+            <div className="flex bg-gray-50 cursor-pointer hover:bg-primary-50 text-gray-600 hover:text-gray-900 items-center gap-4 py-[10px] px-4 border-b-[1px] border-gray-300 last:border-b-0">
               <div className="w-[50%]">{repo.owner}</div>
               <div className="w-[50%]">Owner</div>
             </div>
           )}
           {repo &&
             repo?.contributors?.map((address) => (
-              <div className="flex bg-white cursor-pointer hover:bg-liberty-light-300 text-liberty-dark-100 items-center gap-2 py-2 px-4 border-b-[1px] border-liberty-light-600 last:border-b-0">
+              <div className="flex bg-gray-50 cursor-pointer hover:bg-primary-50 text-gray-600 hover:text-gray-900 items-center gap-4 py-[10px] px-4 border-b-[1px] border-gray-300 last:border-b-0">
                 <div className="w-[50%]">{address}</div>
                 <div className="w-[50%]">Contributor</div>
               </div>

@@ -56,10 +56,10 @@ export default function NewPRForm({ baseBranch, compareBranch, repoName }: Props
 
   return (
     <div className="flex flex-col gap-4">
-      <h1 className="text-2xl text-liberty-dark-100">Pull request details</h1>
-      <div className="flex flex-col gap-2">
+      <h1 className="text-2xl text-gray-900">Pull request details</h1>
+      <div className="flex flex-col gap-2.5">
         <div className="w-full">
-          <label htmlFor="title" className="block mb-1 text-md font-medium text-liberty-dark-100">
+          <label htmlFor="title" className="block mb-1 text-sm font-medium text-gray-600">
             Title
           </label>
           <div className="flex flex-col items-start gap-4">
@@ -67,7 +67,7 @@ export default function NewPRForm({ baseBranch, compareBranch, repoName }: Props
               type="text"
               {...register('title')}
               className={clsx(
-                'bg-gray-50 border  text-liberty-dark-100 text-md rounded-lg focus:ring-liberty-dark-50 focus:border-liberty-dark-50 block w-full p-2.5',
+                'bg-white border-[1px] text-gray-900 text-base rounded-lg hover:shadow-[0px_2px_4px_0px_rgba(0,0,0,0.10)] focus:border-primary-500 focus:border-[1.5px] block w-full px-3 py-[10px] outline-none',
                 errors.title ? 'border-red-500' : 'border-gray-300'
               )}
               placeholder="feature"
@@ -76,7 +76,7 @@ export default function NewPRForm({ baseBranch, compareBranch, repoName }: Props
           {errors.title && <p className="text-red-500 text-sm italic mt-2">{errors.title?.message}</p>}
         </div>
         <div className="w-full">
-          <label htmlFor="title" className="block mb-1 text-md font-medium text-liberty-dark-100">
+          <label htmlFor="title" className="block mb-1 text-sm font-medium text-gray-600">
             Description <span className="font-normal italic">(optional)</span>
           </label>
           <div className="flex flex-col items-start gap-4">
@@ -84,7 +84,7 @@ export default function NewPRForm({ baseBranch, compareBranch, repoName }: Props
               rows={6}
               {...register('description')}
               className={clsx(
-                'bg-gray-50 border resize-none text-liberty-dark-100 text-md rounded-lg focus:ring-liberty-dark-50 focus:border-liberty-dark-50 block w-full p-2.5',
+                'bg-white border-[1px] text-gray-900 text-base rounded-lg hover:shadow-[0px_2px_4px_0px_rgba(0,0,0,0.10)] focus:border-primary-500 focus:border-[1.5px] block w-full px-3 py-[10px] outline-none',
                 errors.description ? 'border-red-500' : 'border-gray-300'
               )}
               placeholder="Feature description"
@@ -95,8 +95,9 @@ export default function NewPRForm({ baseBranch, compareBranch, repoName }: Props
         <div className="mt-6 w-full flex justify-center">
           <Button
             onClick={handlePRSubmit(handleCreateButtonClick)}
-            variant="solid"
-            className="rounded-full font-medium"
+            variant="primary-solid"
+            className="font-medium"
+            disabled={Object.keys(errors).length > 0 || isSubmitting}
           >
             {isSubmitting ? 'Processing...' : 'Create Pull request'}
           </Button>

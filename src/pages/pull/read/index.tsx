@@ -9,7 +9,7 @@ import { useGlobalStore } from '@/stores/globalStore'
 import PullRequestHeader from './components/PullRequestHeader'
 import { rootTabConfig } from './config/tabConfig'
 
-const activeClasses = 'border-b-[3px] border-[#8a6bec] text-[#8a6bec] font-medium'
+const activeClasses = 'border-b-[2px] border-primary-600 text-gray-900 font-medium'
 
 export default function ReadPullRequest() {
   const { id, pullId } = useParams()
@@ -70,7 +70,7 @@ export default function ReadPullRequest() {
       {/* PR Meta Details close */}
       <div className="flex flex-col flex-1">
         <Tab.Group>
-          <Tab.List className="flex text-liberty-dark-100 text-lg gap-10 border-b-[1px] border-[#cbc9f6]">
+          <Tab.List className="flex text-gray-500 text-lg gap-10 border-b-[1px] border-gray-200">
             {rootTabConfig.map((tab) => (
               <Tab className="focus-visible:outline-none">
                 {({ selected }) => (

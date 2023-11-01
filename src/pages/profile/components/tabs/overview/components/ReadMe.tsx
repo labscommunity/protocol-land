@@ -74,16 +74,12 @@ export default function ReadMe({ readmeTxId }: { readmeTxId: string }) {
             isLoading={submitting}
             disabled={submitting}
             onClick={handleSaveButtonClick}
-            className="rounded-full flex items-center py-[4px] justify-center"
-            variant="solid"
+            className="py-[4px] justify-center"
+            variant="primary-solid"
           >
             Save
           </Button>
-          <Button
-            onClick={() => setMode('READ')}
-            className="rounded-full flex items-center py-[4px] justify-center"
-            variant="outline"
-          >
+          <Button onClick={() => setMode('READ')} className="py-[4px] justify-center" variant="primary-outline">
             Cancel
           </Button>
         </div>
@@ -95,7 +91,8 @@ export default function ReadMe({ readmeTxId }: { readmeTxId: string }) {
           generateMarkdownPreview={(markdown) => Promise.resolve(converter.makeHtml(markdown))}
           classes={{
             reactMde: 'rounded-lg',
-            preview: 'bg-white'
+            preview: 'bg-white',
+            textArea: 'outline-none'
           }}
         />
       </div>
@@ -104,15 +101,15 @@ export default function ReadMe({ readmeTxId }: { readmeTxId: string }) {
 
   return (
     <div className="flex w-full">
-      <div className="flex flex-col bg-white w-full rounded-lg border-[1px] border-[#cbc9f6] px-4 py-2">
+      <div className="flex flex-col bg-white w-full rounded-lg border-[1px] border-gray-300 px-4 py-2">
         <div className="flex justify-end">
           {address === id! && isLoggedIn && (
             <div
               onClick={() => setMode('EDIT')}
-              className="flex gap-2 items-center hover:border-b-[1px] border-liberty-dark-100 cursor-pointer"
+              className="flex gap-2 items-center hover:border-b-[1px] border-gray-300 cursor-pointer"
             >
-              <AiFillEdit className="w-5 h-5 text-liberty-dark-100" />
-              <span className="text-liberty-dark-100 font-medium">Edit</span>
+              <AiFillEdit className="w-5 h-5 text-gray-900" />
+              <span className="text-gray-900 font-medium">Edit</span>
             </div>
           )}
         </div>

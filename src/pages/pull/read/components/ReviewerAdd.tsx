@@ -4,9 +4,11 @@ import toast from 'react-hot-toast'
 import { FiCheck, FiPlus } from 'react-icons/fi'
 import { useParams } from 'react-router-dom'
 
+import { Button } from '@/components/common/buttons'
 import { useGlobalStore } from '@/stores/globalStore'
 
 export default function ReviewerAdd() {
+  const [isLoading, setIsLoading] = React.useState(false)
   const { pullId } = useParams()
   const [reviewers, setReviewers] = React.useState<string[]>([])
   const [addReviewers, getReviewersList] = useGlobalStore((state) => [
@@ -19,8 +21,12 @@ export default function ReviewerAdd() {
   async function handleReviwersSubmit() {
     //
     if (reviewers.length > 0 && pullId) {
+      setIsLoading(true)
+
       await addReviewers(+pullId, reviewers)
       toast.success('Successfully added reviewers')
+
+      setIsLoading(false)
     }
   }
 
@@ -39,7 +45,7 @@ export default function ReviewerAdd() {
                     key={idx}
                     className={({ active }) =>
                       `relative cursor-default select-none py-2 pl-2 pr-4 ${
-                        active ? 'bg-amber-100 text-amber-900' : 'text-gray-900'
+                        active ? 'bg-primary-100 text-gray-900' : 'text-gray-900'
                       }`
                     }
                     value={address}
@@ -48,7 +54,7 @@ export default function ReviewerAdd() {
                       return (
                         <>
                           <span
-                            className={`flex gap-2 items-center truncate text-liberty-dark-100 ${
+                            className={`flex gap-2 items-center truncate text-gray-900 ${
                               selected ? 'font-medium' : 'font-normal'
                             }`}
                           >
@@ -66,12 +72,15 @@ export default function ReviewerAdd() {
                 ))}
               {reviewers.length > 0 && (
                 <div className="p-2 mt-1 flex">
-                  <span
+                  <Button
                     onClick={handleReviwersSubmit}
-                    className="cursor-pointer w-full text-center font-medium text-white rounded-full bg-[#4388f6] py-[6px] px-2"
+                    className="w-full justify-center font-medium !py-[6px]"
+                    variant="primary-solid"
+                    isLoading={isLoading}
+                    disabled={isLoading}
                   >
-                    Submit
-                  </span>
+                    {isLoading ? 'Processing' : 'Submit'}
+                  </Button>
                 </div>
               )}
               {contributors && contributors.length === 0 && (

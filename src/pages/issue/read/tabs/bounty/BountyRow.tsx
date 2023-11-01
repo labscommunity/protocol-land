@@ -30,17 +30,17 @@ export default function BountyRow({ status, author, id, amount, expiry, timestam
   return (
     <div
       onClick={onClick}
-      className="flex cursor-pointer justify-between hover:bg-liberty-light-300 items-center gap-2 py-2 px-4 border-b-[1px] border-liberty-light-600 last:border-b-0"
+      className="flex cursor-pointer bg-gray-50 justify-between text-gray-600 hover:text-gray-900 hover:bg-primary-50 items-center gap-2 py-2 px-4 border-b-[1px] border-gray-300 last:border-b-0"
     >
       <div className="flex items-center gap-2">
         <Icon />
         <SVG
           src={ArweaveLogo}
-          className="w-5 h-5 [&>circle]:stroke-liberty-dark-100 [&>circle]:stroke-[2.5] [&>circle]:fill-none [&>path]:fill-liberty-dark-100"
+          className="w-5 h-5 [&>circle]:stroke-gray-900 [&>circle]:stroke-[2.5] [&>circle]:fill-none [&>path]:fill-gray-900"
         />
         <span className="font-medium text-lg">{amount.toFixed(2)} AR</span>
       </div>
-      <div className="flex gap-3 text-liberty-dark-100">
+      <div className="flex gap-3 text-gray-900">
         <span className="font-semibold">Reward#{id}</span>
         <span>opened by {shortenAddress(author)}</span>
         {timestamp && <span> {formatDistanceToNow(new Date(timestamp), { addSuffix: true })}</span>}

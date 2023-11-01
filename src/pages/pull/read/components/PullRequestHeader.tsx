@@ -25,16 +25,16 @@ const statusMap = {
 export default function PullRequestHeader({ PR }: { PR: PullRequest }) {
   const StatusComponent = statusMap[PR.status]
   return (
-    <div className="flex flex-col gap-2 border-b-[1px] border-[#cbc9f6] pb-4">
-      <h1 className="text-3xl text-liberty-dark-100">
-        {PR?.title} <span className="text-[#A942F9] ml-2">#{PR?.id}</span>
+    <div className="flex flex-col gap-2 border-b-[1px] border-gray-200 pb-4">
+      <h1 className="text-3xl text-gray-900">
+        {PR?.title} <span className="text-primary-600 ml-2">#{PR?.id}</span>
       </h1>
       <div className="flex items-center gap-4">
         {PR && <StatusComponent status={PR!.status} />}
-        <div className="text-liberty-dark-100 text-lg">
+        <div className="text-gray-900 text-lg">
           <span className="font-medium">{PR?.author && shortenAddress(PR?.author)} </span>
-          wants to merge <span className="text-[#3871cb] bg-[#cadeff] px-1">{PR?.compareBranch}</span> into{' '}
-          <span className="text-[#3871cb] bg-[#cadeff] px-1">{PR?.baseBranch}</span>
+          wants to merge <span className="text-primary-600 bg-primary-200 px-1">{PR?.compareBranch}</span> into{' '}
+          <span className="text-primary-600 bg-primary-200 px-1">{PR?.baseBranch}</span>
         </div>
       </div>
     </div>

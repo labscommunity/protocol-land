@@ -62,13 +62,13 @@ export default function General() {
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="w-full border-b-[1px] border-[#cbc9f6] py-1">
-        <h1 className="text-2xl text-liberty-dark-100">General Settings</h1>
+      <div className="w-full border-b-[1px] border-gray-200 py-1">
+        <h1 className="text-2xl text-gray-900">General Settings</h1>
       </div>
       <div className="flex flex-col gap-4">
         <div className="flex flex-col">
           <div className="w-[50%]">
-            <label htmlFor="title" className="block mb-1 text-md font-medium text-liberty-dark-100">
+            <label htmlFor="title" className="block mb-1 text-sm font-medium text-gray-600">
               Repository name
             </label>
             <div className="flex items-center gap-4">
@@ -76,19 +76,14 @@ export default function General() {
                 type="text"
                 {...registerTitle('title')}
                 className={clsx(
-                  'bg-gray-50 border  text-liberty-dark-100 text-md rounded-lg focus:ring-liberty-dark-50 focus:border-liberty-dark-50 block w-full p-2.5',
+                  'bg-white border-[1px] text-gray-900 text-base rounded-lg hover:shadow-[0px_2px_4px_0px_rgba(0,0,0,0.10)] focus:border-primary-500 focus:border-[1.5px] block w-full px-3 py-[10px] outline-none',
                   titleErrors.title ? 'border-red-500' : 'border-gray-300'
                 )}
                 defaultValue={selectedRepo?.name}
                 placeholder="my-cool-repo"
                 disabled
               />
-              <Button
-                disabled
-                onClick={handleTitleSubmit(handleRenameButtonClick)}
-                className="rounded-full cursor-not-allowed disabled:bg-gray-400"
-                variant="solid"
-              >
+              <Button disabled onClick={handleTitleSubmit(handleRenameButtonClick)} variant="primary-solid">
                 Rename
               </Button>
             </div>
@@ -97,7 +92,7 @@ export default function General() {
         </div>
         <div className="flex flex-col">
           <div className="w-[50%]">
-            <label htmlFor="title" className="block mb-1 text-md font-medium text-liberty-dark-100">
+            <label htmlFor="title" className="block mb-1 text-sm font-medium text-gray-600">
               Repository description
             </label>
             <div className="flex flex-col items-start gap-4">
@@ -106,7 +101,7 @@ export default function General() {
                 {...registerDescription('description')}
                 defaultValue={selectedRepo?.description}
                 className={clsx(
-                  'bg-gray-50 border  text-liberty-dark-100 text-md rounded-lg focus:ring-liberty-dark-50 focus:border-liberty-dark-50 block w-full p-2.5',
+                  'bg-white border-[1px] text-gray-900 text-base rounded-lg hover:shadow-[0px_2px_4px_0px_rgba(0,0,0,0.10)] focus:border-primary-500 focus:border-[1.5px] block w-full px-3 py-[10px] outline-none',
                   descriptionErrors.description ? 'border-red-500' : 'border-gray-300'
                 )}
                 placeholder="my-cool-repo"
@@ -115,8 +110,7 @@ export default function General() {
               <Button
                 disabled={!repoOwner}
                 onClick={handleDescriptionSubmit(handleUpdateButtonClick)}
-                className="rounded-full disabled:bg-gray-400"
-                variant="solid"
+                variant="primary-solid"
               >
                 Update
               </Button>

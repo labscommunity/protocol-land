@@ -10,17 +10,17 @@ export default function Sidebar({ repos, isLoading }: { repos: Repo[]; isLoading
   const hasRepos = repos.length > 0
 
   return (
-    <div className="w-[20%] py-8 px-6 border-r-[1px] border-[#cbc9f6] flex flex-col gap-2">
-      <h1 className="text-xl font-medium text-center text-liberty-dark-100">Repositories</h1>
+    <div className="w-[20%] py-8 px-6 border-r-[1px] border-gray-200 flex flex-col gap-2">
+      <h1 className="text-xl font-medium text-center text-gray-900">Repositories</h1>
 
       {!isLoggedIn && (
         <div className="w-full text-center py-4">
-          <h3 className="text-liberty-dark-100">Login to view your repositories</h3>
+          <h3 className="text-gray-900">Login to view your repositories</h3>
         </div>
       )}
       {isLoggedIn && !hasRepos && !isLoading && (
         <div className="w-full text-center py-4">
-          <h3 className="text-liberty-dark-100">No repositories found</h3>
+          <h3 className="text-gray-900">No repositories found</h3>
         </div>
       )}
       {isLoading && (
@@ -49,7 +49,7 @@ export default function Sidebar({ repos, isLoading }: { repos: Repo[]; isLoading
             repo.id ? (
               <Link to={`/repository/${repo.id}`}>
                 <Button
-                  className="text-liberty-dark-100 !pb-2 text-[18px] flex gap-2 items-center w-full hover:bg-[#4487F5] hover:rounded-md !px-2 hover:text-white"
+                  className="text-gray-900 !pb-2 text-[18px] flex gap-2 items-center w-full hover:bg-primary-600 hover:rounded-md !px-2 hover:text-white"
                   variant="link"
                 >
                   <RiGitRepositoryFill className="w-5 h-5 text-inherit" />
