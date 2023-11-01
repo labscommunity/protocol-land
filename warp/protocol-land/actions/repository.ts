@@ -31,7 +31,7 @@ export async function initializeNewRepository(
 
 export async function updateRepositoryTxId(
   state: ContractState,
-  { input: { payload } }: RepositoryAction
+  { input: { payload }, caller }: RepositoryAction
 ): Promise<ContractResult<ContractState>> {
   // validate payload
   if (!payload.dataTxId || !payload.id) {
@@ -42,6 +42,12 @@ export async function updateRepositoryTxId(
 
   if (!repo) {
     throw new ContractError('Repository not found.')
+  }
+
+  const hasPermissions = caller === repo.owner || repo.contributors.indexOf(caller) > -1
+
+  if (!hasPermissions) {
+    throw new ContractError('Error: You dont have permissions for this operation.')
   }
 
   repo.dataTxId = payload.dataTxId
