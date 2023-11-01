@@ -89,7 +89,7 @@ export async function getPullRequestById(
 
 export async function updatePullRequestStatus(
   state: ContractState,
-  { input: { payload } }: RepositoryAction
+  { input: { payload }, caller }: RepositoryAction
 ): Promise<ContractResult<ContractState>> {
   if (!payload.status || !payload.repoId || !payload.prId) {
     throw new ContractError('Invalid inputs supplied.')
@@ -99,6 +99,12 @@ export async function updatePullRequestStatus(
 
   if (!repo) {
     throw new ContractError('Repository not found.')
+  }
+
+  const hasPermissions = caller === repo.owner || repo.contributors.indexOf(caller) > -1
+
+  if (!hasPermissions) {
+    throw new ContractError('Error: You dont have permissions for this operation.')
   }
 
   const PR = repo.pullRequests[+payload.prId - 1]
@@ -114,7 +120,7 @@ export async function updatePullRequestStatus(
 
 export async function addReviewersToPR(
   state: ContractState,
-  { input: { payload } }: RepositoryAction
+  { input: { payload }, caller }: RepositoryAction
 ): Promise<ContractResult<ContractState>> {
   if (!payload.repoId || !payload.prId || !payload.reviewers) {
     throw new ContractError('Invalid inputs supplied.')
@@ -124,6 +130,12 @@ export async function addReviewersToPR(
 
   if (!repo) {
     throw new ContractError('Repository not found.')
+  }
+
+  const hasPermissions = caller === repo.owner || repo.contributors.indexOf(caller) > -1
+
+  if (!hasPermissions) {
+    throw new ContractError('Error: You dont have permissions for this operation.')
   }
 
   const PR = repo.pullRequests[+payload.prId - 1]
@@ -154,6 +166,12 @@ export async function approvePR(
 
   if (!repo) {
     throw new ContractError('Repository not found.')
+  }
+
+  const hasPermissions = caller === repo.owner || repo.contributors.indexOf(caller) > -1
+
+  if (!hasPermissions) {
+    throw new ContractError('Error: You dont have permissions for this operation.')
   }
 
   const PR = repo.pullRequests[+payload.prId - 1]
