@@ -1,6 +1,7 @@
 import React from 'react'
 import { useParams } from 'react-router-dom'
 
+import { waitFor } from '@/helpers/waitFor'
 import { withAsync } from '@/helpers/withAsync'
 import {
   computeContributionsFromRepo,
@@ -46,8 +47,9 @@ export default function OverviewTab({ userDetails, userRepos }: { userDetails: P
     if (statistics) handleTransformContributions(statistics)
   }, [statistics])
 
-  function handleTransformContributions(data: UserContributionData) {
+  async function handleTransformContributions(data: UserContributionData) {
     const transformedData = transformContributionData(data)
+    await waitFor(200)
     const streakData = getCurrentContributionStreak(transformedData)
 
     setContributions(transformedData)
