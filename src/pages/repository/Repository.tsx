@@ -28,7 +28,7 @@ export default function Repository() {
   const isReady = selectedRepo.status === 'SUCCESS'
 
   return (
-    <div className="h-full flex-1 flex flex-col max-w-[1280px] mx-auto w-full mt-6 gap-4">
+    <div className="h-full flex-1 flex flex-col max-w-[1280px] mx-auto w-full mt-6 gap-2">
       <RepoHeader isLoading={!isReady} repo={selectedRepo.repo!} />
       {!isReady && (
         <div className="flex h-[70%] items-center">
