@@ -1,4 +1,5 @@
 import { UserCommit, UserContributionData, UserPROrIssue } from '@/lib/user'
+import { CommitResult } from '@/types/commit'
 import { Repo } from '@/types/repository'
 
 export interface RepoCoreSlice {
@@ -24,6 +25,7 @@ export type RepoCoreState = {
     currentOid: string
     parentsOidList: string[]
     fileObjects: FileObject[]
+    commits: CommitResult[]
   }
 }
 
@@ -46,6 +48,7 @@ export type RepoCoreActions = {
     popParentOid: () => string
     goBack: () => Promise<void>
     downloadRepository: () => Promise<null | undefined>
+    setCommits: (commits: CommitResult[]) => void
   }
 }
 

@@ -31,7 +31,8 @@ const initialRepoCoreState: RepoCoreState = {
     rootOid: '',
     currentOid: '',
     fileObjects: [],
-    parentsOidList: []
+    parentsOidList: [],
+    commits: []
   }
 }
 
@@ -188,6 +189,8 @@ const createRepoCoreSlice: StateCreator<CombinedSlices, [['zustand/immer', never
       }
 
       if (response) {
+        await get().repoCoreActions.git.readFilesFromOid(response)
+
         set((state) => {
           state.repoCoreState.git.rootOid = response
           state.repoCoreState.git.currentOid = response
@@ -196,6 +199,11 @@ const createRepoCoreSlice: StateCreator<CombinedSlices, [['zustand/immer', never
       }
     },
     git: {
+      setCommits: (commits) => {
+        set((state) => {
+          state.repoCoreState.git.commits = commits
+        })
+      },
       setCurrentOid: (oid) => {
         set((state) => {
           state.repoCoreState.git.currentOid = oid
@@ -304,11 +312,18 @@ const createRepoCoreSlice: StateCreator<CombinedSlices, [['zustand/immer', never
         })
       },
       goBack: async () => {
+        let currentOid = ''
+
         set((state) => {
           const poppedOid = state.repoCoreState.git.parentsOidList.pop()
 
           state.repoCoreState.git.currentOid = poppedOid || ''
+          currentOid = poppedOid || ''
         })
+
+        if (currentOid) {
+          await get().repoCoreActions.git.readFilesFromOid(currentOid)
+        }
       }
     }
   }

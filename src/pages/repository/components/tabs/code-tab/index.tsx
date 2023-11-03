@@ -29,18 +29,25 @@ export default function CodeTab({ repoName = '' }: Props) {
   const [fileContent, setFileContent] = React.useState('')
   const [filename, setFilename] = React.useState('')
 
-  const { commitsList, fetchFirstCommit } = useCommit()
+  const { repoCommitsG, fetchFirstCommit } = useCommit()
 
   React.useEffect(() => {
+    if (git.fileObjects.length > 0) return
+
     loadFilesFromRepo()
-    fetchFirstCommit(repoName)
   }, [])
 
   React.useEffect(() => {
-    if (git.currentOid) {
-      gitActions.readFilesFromOid(git.currentOid)
-    }
-  }, [git.currentOid])
+    if (repoCommitsG.length > 0) return
+
+    fetchFirstCommit(repoName)
+  }, [])
+
+  // React.useEffect(() => {
+  //   if (git.currentOid) {
+  //     gitActions.readFilesFromOid(git.currentOid)
+  //   }
+  // }, [git.currentOid])
 
   function handleFolderClick(fileObject: any) {
     if (fileObject.oid !== git.currentOid) {
@@ -48,6 +55,7 @@ export default function CodeTab({ repoName = '' }: Props) {
     }
 
     gitActions.setCurrentOid(fileObject.oid)
+    gitActions.readFilesFromOid(fileObject.oid)
   }
 
   async function handleFileClick(fileObject: any) {
@@ -84,11 +92,7 @@ export default function CodeTab({ repoName = '' }: Props) {
     return (
       <div className="flex flex-col gap-2 w-full h-full">
         <div className="flex w-full justify-between">
-          <Button
-            onClick={onGoBackClick}
-            className="gap-2 font-medium"
-            variant="primary-outline"
-          >
+          <Button onClick={onGoBackClick} className="gap-2 font-medium" variant="primary-outline">
             <FiArrowLeft className="w-5 h-5 text-[inherit]" /> Go back
           </Button>
           {contributor && (
@@ -132,7 +136,7 @@ export default function CodeTab({ repoName = '' }: Props) {
       <Header />
       <div className="flex w-full">
         <div className="border-gray-300 border-[1px] w-full rounded-lg bg-white overflow-hidden">
-          <TableHead commit={commitsList[0]} />
+          <TableHead commit={repoCommitsG[0]} />
           {!git.fileObjects.length && (
             <div className="py-6 flex gap-2 justify-center items-center">
               <FiCode className="w-8 h-8 text-liberty-dark-100" />

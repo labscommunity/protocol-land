@@ -14,6 +14,7 @@ import {
 } from '@/lib/git/commit'
 import { fsWithName } from '@/lib/git/helpers/fsWithName'
 import { postCommitStatDataTxToArweave } from '@/lib/user'
+import { useGlobalStore } from '@/stores/globalStore'
 import { CommitResult } from '@/types/commit'
 
 type AddFilesOptions = {
@@ -26,6 +27,10 @@ type AddFilesOptions = {
 }
 
 export default function useCommit() {
+  const [repoCommitsG, setRepoCommitsG] = useGlobalStore((state) => [
+    state.repoCoreState.git.commits,
+    state.repoCoreActions.git.setCommits
+  ])
   const [commitsList, setCommitsList] = React.useState<CommitResult[]>([])
 
   async function fetchAllCommits(name: string) {
@@ -35,6 +40,7 @@ export default function useCommit() {
 
     if (commits && commits.length > 0) {
       setCommitsList(commits)
+      setRepoCommitsG(commits)
     }
   }
 
@@ -45,6 +51,7 @@ export default function useCommit() {
 
     if (commits && commits.length > 0) {
       setCommitsList(commits)
+      setRepoCommitsG(commits)
     }
   }
 
@@ -90,7 +97,9 @@ export default function useCommit() {
   }
 
   return {
+    repoCommitsG,
     commitsList,
+    setRepoCommitsG,
     fetchAllCommits,
     fetchFirstCommit,
     addFiles
