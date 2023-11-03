@@ -12,7 +12,8 @@ export default function OverviewTab() {
   const [isSubmittingClose, setIsSubmittingClose] = React.useState(false)
   const [isSubmittingComment, setIsSubmittingComment] = React.useState(false)
   const [commentVal, setCommentVal] = React.useState('')
-  const [selectedIssue, closeIssue, reopenIssue, addComment] = useGlobalStore((state) => [
+  const [isLoggedIn, selectedIssue, closeIssue, reopenIssue, addComment] = useGlobalStore((state) => [
+    state.authState.isLoggedIn,
     state.issuesState.selectedIssue,
     state.issuesActions.closeIssue,
     state.issuesActions.reopenIssue,
@@ -81,39 +82,41 @@ export default function OverviewTab() {
             ))}
         </div>
 
-        <div className="flex flex-col border-t-[1px] border-gray-200 pt-4">
-          {isOpen && (
-            <MDEditor height={180} preview="edit" value={commentVal} onChange={(val) => setCommentVal(val!)} />
-          )}
-          {isOpen && (
-            <div className="flex w-full justify-center gap-4 py-4">
-              <Button
-                isLoading={isSubmittingClose}
-                onClick={handleCloseButtonClick}
-                variant="secondary"
-                className="w-28 justify-center"
-              >
-                Close
-              </Button>
-              <Button
-                onClick={handleAddComment}
-                isLoading={isSubmittingComment}
-                disabled={commentVal.length === 0 || isSubmittingComment}
-                variant="primary-solid"
-                className="w-28 justify-center"
-              >
-                Comment
-              </Button>
-            </div>
-          )}
-          {!isOpen && (
-            <div className="flex w-full justify-center gap-4 py-4">
-              <Button isLoading={isSubmittingClose} onClick={handleReopen} variant="primary-solid">
-                Re-Open
-              </Button>
-            </div>
-          )}
-        </div>
+        {isLoggedIn && (
+          <div className="flex flex-col border-t-[1px] border-gray-200 pt-4">
+            {isOpen && (
+              <MDEditor height={180} preview="edit" value={commentVal} onChange={(val) => setCommentVal(val!)} />
+            )}
+            {isOpen && (
+              <div className="flex w-full justify-center gap-4 py-4">
+                <Button
+                  isLoading={isSubmittingClose}
+                  onClick={handleCloseButtonClick}
+                  variant="secondary"
+                  className="w-28 justify-center"
+                >
+                  Close
+                </Button>
+                <Button
+                  onClick={handleAddComment}
+                  isLoading={isSubmittingComment}
+                  disabled={commentVal.length === 0 || isSubmittingComment}
+                  variant="primary-solid"
+                  className="w-28 justify-center"
+                >
+                  Comment
+                </Button>
+              </div>
+            )}
+            {!isOpen && (
+              <div className="flex w-full justify-center gap-4 py-4">
+                <Button isLoading={isSubmittingClose} onClick={handleReopen} variant="primary-solid">
+                  Re-Open
+                </Button>
+              </div>
+            )}
+          </div>
+        )}
       </div>
       <Sidebar />
     </div>
