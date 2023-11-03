@@ -4,6 +4,7 @@ import clsx from 'clsx'
 import React from 'react'
 import { useState } from 'react'
 import { useForm } from 'react-hook-form'
+import { FaArrowLeft } from 'react-icons/fa'
 import { useNavigate, useParams } from 'react-router-dom'
 import * as yup from 'yup'
 
@@ -59,8 +60,17 @@ export default function CreateIssuePage() {
     }
   }
 
+  function goBack() {
+    navigate(-1)
+  }
+
   return (
     <div className="h-full flex-1 flex flex-col max-w-[800px] mx-auto w-full mt-6 gap-8">
+      <div>
+        <Button onClick={goBack} variant="primary-solid">
+          <FaArrowLeft className="h-4 w-4 text-white" />
+        </Button>
+      </div>
       <div className="flex flex-col gap-1 border-b-[1px] border-gray-200 pb-2 text-gray-900">
         <h1 className="text-3xl ">Create a new issue</h1>
         <p className="text-lg">As issues are created, they'll appear here in the repository's issues tab.</p>
