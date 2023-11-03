@@ -1,3 +1,4 @@
+import { useConnection } from 'arweave-wallet-kit'
 import React from 'react'
 
 import BottomRightImg from '@/assets/images/bg/banner-bg.svg'
@@ -19,6 +20,7 @@ export default function Home() {
   const { initFetchUserRepos, fetchUserReposStatus, userRepos } = useFetchUserRepos()
   const [isOpen, setIsOpen] = React.useState(false)
   const [isCreateProfileModalOpen, setIsCreateProfileModalOpen] = React.useState(false)
+  const { connect } = useConnection()
 
   React.useEffect(() => {
     if (isLoggedIn) {
@@ -27,10 +29,13 @@ export default function Home() {
   }, [isLoggedIn])
 
   async function handleNewRepoBtnClick() {
-    // setIsCreateProfileModalOpen(true)
-    setIsOpen(true)
+    if (!isLoggedIn) {
+      connect()
+    } else {
+      setIsOpen(true)
+    }
   }
-  console.log({ userRepos, fetchUserReposStatus })
+
   return (
     <div className="h-full flex flex-1">
       <Sidebar repos={userRepos} isLoading={fetchUserReposStatus === 'PENDING'} />
@@ -77,9 +82,7 @@ export default function Home() {
                   Bring your existing repository from Github, Gitlab etc. and continue where you left off.
                 </p>
               </div>
-              <Button variant="primary-solid">
-                Import Repository
-              </Button>
+              <Button variant="primary-solid">Import Repository</Button>
             </div>
           </div>
         </div>
