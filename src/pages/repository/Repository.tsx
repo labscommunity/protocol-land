@@ -13,7 +13,8 @@ const activeClasses = 'border-b-[2px] border-primary-600 text-gray-900 font-medi
 
 export default function Repository() {
   const { id } = useParams()
-  const [selectedRepo, fetchAndLoadRepository, reset] = useGlobalStore((state) => [
+  const [isLoggedIn, selectedRepo, fetchAndLoadRepository, reset] = useGlobalStore((state) => [
+    state.authState.isLoggedIn,
     state.repoCoreState.selectedRepo,
     state.repoCoreActions.fetchAndLoadRepository,
     state.repoCoreActions.reset
@@ -50,25 +51,31 @@ export default function Repository() {
         <div className="flex flex-col flex-1">
           <Tab.Group>
             <Tab.List className="flex text-gray-500 text-lg gap-10 border-b-[1px] border-gray-200">
-              {rootTabConfig.map((tab) => (
-                <Tab className="focus-visible:outline-none">
-                  {({ selected }) => (
-                    <div
-                      className={`flex items-center gap-2 py-[10px] px-4 justify-center ${selected ? activeClasses : ''}`}
-                    >
-                      <tab.Icon className="w-5 h-5" />
-                      {tab.title}
-                    </div>
-                  )}
-                </Tab>
-              ))}
+              {rootTabConfig
+                .filter((tab) => tab.title !== 'Settings' && !isLoggedIn)
+                .map((tab) => (
+                  <Tab className="focus-visible:outline-none">
+                    {({ selected }) => (
+                      <div
+                        className={`flex items-center gap-2 py-[10px] px-4 justify-center ${
+                          selected ? activeClasses : ''
+                        }`}
+                      >
+                        <tab.Icon className="w-5 h-5" />
+                        {tab.title}
+                      </div>
+                    )}
+                  </Tab>
+                ))}
             </Tab.List>
             <Tab.Panels className={'mt-4 flex flex-col flex-1'}>
-              {rootTabConfig.map((TabItem) => (
-                <Tab.Panel className={'flex flex-col flex-1'}>
-                  <TabItem.Component repoName={selectedRepo.repo?.name ?? ''} />
-                </Tab.Panel>
-              ))}
+              {rootTabConfig
+                .filter((tab) => tab.title !== 'Settings' && !isLoggedIn)
+                .map((TabItem) => (
+                  <Tab.Panel className={'flex flex-col flex-1'}>
+                    <TabItem.Component repoName={selectedRepo.repo?.name ?? ''} />
+                  </Tab.Panel>
+                ))}
             </Tab.Panels>
           </Tab.Group>
         </div>
