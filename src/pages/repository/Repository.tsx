@@ -52,7 +52,11 @@ export default function Repository() {
           <Tab.Group>
             <Tab.List className="flex text-gray-500 text-lg gap-10 border-b-[1px] border-gray-200">
               {rootTabConfig
-                .filter((tab) => tab.title !== 'Settings' && !isLoggedIn)
+                .filter((tab) => {
+                  if (isLoggedIn) return true
+
+                  return tab.title !== 'Settings'
+                })
                 .map((tab) => (
                   <Tab className="focus-visible:outline-none">
                     {({ selected }) => (
@@ -70,7 +74,11 @@ export default function Repository() {
             </Tab.List>
             <Tab.Panels className={'mt-4 flex flex-col flex-1'}>
               {rootTabConfig
-                .filter((tab) => tab.title !== 'Settings' && !isLoggedIn)
+                .filter((tab) => {
+                  if (isLoggedIn) return true
+
+                  return tab.title !== 'Settings'
+                })
                 .map((TabItem) => (
                   <Tab.Panel className={'flex flex-col flex-1'}>
                     <TabItem.Component repoName={selectedRepo.repo?.name ?? ''} />

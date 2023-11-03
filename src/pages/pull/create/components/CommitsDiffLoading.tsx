@@ -14,8 +14,8 @@ export default function CommitsDiffLoading() {
             preserveAspectRatio: 'xMidYMid slice'
           }
         }}
-        height={250}
-        width={250}
+        height={150}
+        width={300}
       />
     </div>
   )

@@ -3,7 +3,7 @@ import { useEffect } from 'react'
 import Lottie from 'react-lottie'
 import { useParams } from 'react-router-dom'
 
-import loadingFilesAnimation from '@/assets/load-files.json'
+import loadingFilesAnimation from '@/assets/searching-files.json'
 import { useGlobalStore } from '@/stores/globalStore'
 
 import PullRequestHeader from './components/PullRequestHeader'
@@ -54,8 +54,8 @@ export default function ReadPullRequest() {
               preserveAspectRatio: 'xMidYMid slice'
             }
           }}
-          height={200}
-          width={800}
+          height={150}
+          width={400}
         />
       </div>
     )
