@@ -1,7 +1,9 @@
 import { useEffect } from 'react'
 import { BiGitCompare } from 'react-icons/bi'
-import { useParams } from 'react-router-dom'
+import { FaArrowLeft } from 'react-icons/fa'
+import { useNavigate, useParams } from 'react-router-dom'
 
+import { Button } from '@/components/common/buttons'
 import { useGlobalStore } from '@/stores/globalStore'
 
 import BranchDropdown from './components/BranchDropdown'
@@ -12,6 +14,8 @@ import NewPRForm from './components/NewPRForm'
 
 export default function CreatePullRequest() {
   const { id } = useParams()
+  const navigate = useNavigate()
+
   const [
     selectedRepo,
     branchList,
@@ -56,15 +60,26 @@ export default function CreatePullRequest() {
     }
   }, [baseBranch, compareBranch])
 
+  function goBack() {
+    navigate(-1)
+  }
+
   const isDiffReady = status === 'SUCCESS' && selectedRepo.status === 'SUCCESS'
   const isBranchReady = baseBranch && compareBranch
 
   return (
     <div className="h-full flex-1 flex flex-col max-w-[800px] mx-auto w-full mt-6 gap-8">
       <div className="flex flex-col gap-4">
+        <div>
+          <Button onClick={goBack} variant="primary-solid">
+            <FaArrowLeft className="h-4 w-4 text-white" />
+          </Button>
+        </div>
         <div className="flex flex-col gap-1 border-b-[1px] border-gray-200 pb-2 text-gray-900">
           <h1 className="text-3xl ">Create a new pull request</h1>
-          <p className="text-lg text-gray-500">Choose two branches to see what's changed and start a new pull request.</p>
+          <p className="text-lg text-gray-500">
+            Choose two branches to see what's changed and start a new pull request.
+          </p>
         </div>
         {!isBranchReady && <BranchLoading />}
         {isBranchReady && (

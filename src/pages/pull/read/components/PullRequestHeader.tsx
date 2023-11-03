@@ -1,6 +1,9 @@
+import { FaArrowLeft } from 'react-icons/fa'
 import { FiGitMerge, FiGitPullRequest } from 'react-icons/fi'
 import { RiGitClosePullRequestLine } from 'react-icons/ri'
+import { useNavigate } from 'react-router-dom'
 
+import { Button } from '@/components/common/buttons'
 import { shortenAddress } from '@/helpers/shortenAddress'
 import { PullRequest, PullRequestStatus } from '@/types/repository'
 
@@ -24,8 +27,19 @@ const statusMap = {
 
 export default function PullRequestHeader({ PR }: { PR: PullRequest }) {
   const StatusComponent = statusMap[PR.status]
+  const navigate = useNavigate()
+
+  function goBack() {
+    navigate(-1)
+  }
+
   return (
     <div className="flex flex-col gap-2 border-b-[1px] border-gray-200 pb-4">
+      <div>
+        <Button onClick={goBack} variant="primary-solid">
+          <FaArrowLeft className="h-4 w-4 text-white" />
+        </Button>
+      </div>
       <h1 className="text-3xl text-gray-900">
         {PR?.title} <span className="text-primary-600 ml-2">#{PR?.id}</span>
       </h1>
