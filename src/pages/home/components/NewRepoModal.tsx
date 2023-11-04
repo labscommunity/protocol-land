@@ -9,6 +9,7 @@ import * as yup from 'yup'
 
 import CloseCrossIcon from '@/assets/icons/close-cross.svg'
 import { Button } from '@/components/common/buttons'
+import { trackGoogleAnalyticsEvent } from '@/helpers/google-analytics'
 import { createNewRepo, postNewRepo } from '@/lib/git'
 import { fsWithName } from '@/lib/git/helpers/fsWithName'
 import { useGlobalStore } from '@/stores/globalStore'
@@ -50,17 +51,23 @@ export default function NewRepoModal({ setIsOpen, isOpen }: NewRepoModalProps) {
     const { title, description } = data
     const owner = userAddress || 'Protocol.Land user'
 
-    const fs = fsWithName(title)
-    const createdRepo = await createNewRepo(title, fs, owner)
+    try {
+      const fs = fsWithName(title)
+      const createdRepo = await createNewRepo(title, fs, owner)
 
-    if (createdRepo && createdRepo.commit && createdRepo.repoBlob) {
-      const { repoBlob } = createdRepo
+      if (createdRepo && createdRepo.commit && createdRepo.repoBlob) {
+        const { repoBlob } = createdRepo
 
-      const result = await postNewRepo({ title, description, file: repoBlob, owner: userAddress })
+        const result = await postNewRepo({ title, description, file: repoBlob, owner: userAddress })
 
-      if (result.id) {
-        navigate(`/repository/${result.id}`)
+        if (result.id) {
+          trackGoogleAnalyticsEvent('Repository', 'Successfully create a repo', 'Create new repo')
+
+          navigate(`/repository/${result.id}`)
+        }
       }
+    } catch (error) {
+      trackGoogleAnalyticsEvent('Repository', 'Create repo failed', 'Create new repo')
     }
   }
 

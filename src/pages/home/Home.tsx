@@ -4,7 +4,7 @@ import React from 'react'
 import BottomRightImg from '@/assets/images/bg/banner-bg.svg'
 import { Button } from '@/components/common/buttons'
 import CreateProfileModal from '@/components/CreateProfileModal/CreateProfileModal'
-import { trackGoogleAnalyticsPageView } from '@/helpers/google-analytics'
+import { trackGoogleAnalyticsEvent, trackGoogleAnalyticsPageView } from '@/helpers/google-analytics'
 import { useGlobalStore } from '@/stores/globalStore'
 
 import MainContent from './components/MainContent'
@@ -17,7 +17,7 @@ const style = {
 } as React.CSSProperties
 
 export default function Home() {
-  const [isLoggedIn] = useGlobalStore((state) => [state.authState.isLoggedIn])
+  const [authState] = useGlobalStore((state) => [state.authState])
   const { initFetchUserRepos, fetchUserReposStatus, userRepos } = useFetchUserRepos()
   const [isOpen, setIsOpen] = React.useState(false)
   const [isCreateProfileModalOpen, setIsCreateProfileModalOpen] = React.useState(false)
@@ -28,17 +28,26 @@ export default function Home() {
   }, [])
 
   React.useEffect(() => {
-    if (isLoggedIn) {
+    if (authState.isLoggedIn) {
       initFetchUserRepos()
     }
-  }, [isLoggedIn])
+  }, [authState.isLoggedIn])
 
   async function handleNewRepoBtnClick() {
-    if (!isLoggedIn) {
+    if (!authState.isLoggedIn) {
       connect()
     } else {
       setIsOpen(true)
     }
+
+    trackGoogleAnalyticsEvent('Repository', 'Create Repository button click', 'Create new repo', {
+      user: authState.isLoggedIn
+        ? {
+            address: authState.address,
+            loginMethod: authState.method
+          }
+        : null
+    })
   }
 
   return (
