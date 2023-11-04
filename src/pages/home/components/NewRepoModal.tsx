@@ -32,7 +32,7 @@ const schema = yup
 export default function NewRepoModal({ setIsOpen, isOpen }: NewRepoModalProps) {
   const [isSubmitting, setIsSubmitting] = React.useState(false)
   const navigate = useNavigate()
-  const [userAddress] = useGlobalStore((state) => [state.authState.address])
+  const [authState] = useGlobalStore((state) => [state.authState])
   const {
     register,
     handleSubmit,
@@ -49,7 +49,7 @@ export default function NewRepoModal({ setIsOpen, isOpen }: NewRepoModalProps) {
     setIsSubmitting(true)
 
     const { title, description } = data
-    const owner = userAddress || 'Protocol.Land user'
+    const owner = authState.address || 'Protocol.Land user'
 
     try {
       const fs = fsWithName(title)
@@ -58,10 +58,15 @@ export default function NewRepoModal({ setIsOpen, isOpen }: NewRepoModalProps) {
       if (createdRepo && createdRepo.commit && createdRepo.repoBlob) {
         const { repoBlob } = createdRepo
 
-        const result = await postNewRepo({ title, description, file: repoBlob, owner: userAddress })
+        const result = await postNewRepo({ title, description, file: repoBlob, owner: authState.address })
 
         if (result.id) {
-          trackGoogleAnalyticsEvent('Repository', 'Successfully create a repo', 'Create new repo')
+          trackGoogleAnalyticsEvent('Repository', 'Successfully create a repo', 'Create new repo', {
+            user: {
+              address: authState.address,
+              loginMethod: authState.method
+            }
+          })
 
           navigate(`/repository/${result.id}`)
         }
