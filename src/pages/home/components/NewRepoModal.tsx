@@ -72,7 +72,12 @@ export default function NewRepoModal({ setIsOpen, isOpen }: NewRepoModalProps) {
         }
       }
     } catch (error) {
-      trackGoogleAnalyticsEvent('Repository', 'Create repo failed', 'Create new repo')
+      trackGoogleAnalyticsEvent('Repository', 'Create repo failed', 'Create new repo', {
+        user: {
+          address: authState.address,
+          loginMethod: authState.method
+        }
+      })
     }
   }
 
