@@ -16,11 +16,7 @@ export default function AddFilesButton() {
 
   return (
     <div className="flex">
-      <Button
-        onClick={() => setIsAddFilesModalOpen(true)}
-        className="gap-2"
-        variant="primary-solid"
-      >
+      <Button onClick={() => setIsAddFilesModalOpen(true)} className="gap-2" variant="primary-solid">
         <AiOutlinePlus className="w-5 h-5" /> Add Files
       </Button>
       <AddFilesModal isOpen={isAddFilesModalOpen} setIsOpen={setIsAddFilesModalOpen} />

@@ -1,6 +1,7 @@
 import React from 'react'
 import { FileWithPath } from 'react-dropzone'
 
+import { trackGoogleAnalyticsEvent } from '@/helpers/google-analytics'
 import { withAsync } from '@/helpers/withAsync'
 import { postUpdatedRepo } from '@/lib/git'
 import { getCurrentBranch } from '@/lib/git/branch'
@@ -61,7 +62,7 @@ export default function useCommit() {
 
     const { error: addFilesToFsError } = await withAsync(() => addFilesForCommit({ fs, dir, files }))
 
-    if (addFilesToFsError) throw new Error('Failed to add files to FS')
+    if (addFilesToFsError) throw trackAndThrowError('Failed to add files to FS', name, id)
 
     const filesPath = files.reduce((acc: string[], curr: FileWithPath) => {
       if (curr.path) {
@@ -73,15 +74,31 @@ export default function useCommit() {
 
     const { error: stagingError } = await withAsync(() => stageFilesForCommit({ fs, dir, filesPath }))
 
-    if (stagingError) throw new Error('Failed to stage files')
+    if (stagingError) throw trackAndThrowError('Failed to stage files', name, id)
 
     const { error: commitError, response: commitSHA } = await withAsync(() => commitFiles({ fs, dir, message, owner }))
 
-    if (commitError || !commitSHA) throw new Error('Failed to commit files')
+    if (commitError || !commitSHA) throw trackAndThrowError('Failed to commit files', name, id)
 
     const { error, response } = await withAsync(() => postUpdatedRepo({ fs, dir, owner, id }))
 
-    if (error) throw new Error('Failed to update repository')
+    if (error) throw trackAndThrowError('Failed to update repository', name, id)
+
+    if (response) {
+      const authState = useGlobalStore.getState().authState
+
+      trackGoogleAnalyticsEvent('Repository', 'Add files to repo', 'Add files', {
+        repo: {
+          name,
+          id
+        },
+        user: {
+          address: authState.address,
+          loginMethod: authState.method
+        },
+        result: 'SUCCESS'
+      })
+    }
 
     const { result: currentBranch } = await getCurrentBranch({ fs, dir })
 
@@ -94,6 +111,25 @@ export default function useCommit() {
     }
 
     return response
+  }
+
+  function trackAndThrowError(message: string, name: string, id: string) {
+    const authState = useGlobalStore.getState().authState
+
+    trackGoogleAnalyticsEvent('Repository', 'Add files to repo', 'Add files', {
+      repo: {
+        name,
+        id
+      },
+      user: {
+        address: authState.address,
+        loginMethod: authState.method
+      },
+      result: 'FAILED',
+      error: message
+    })
+
+    return new Error(message)
   }
 
   return {

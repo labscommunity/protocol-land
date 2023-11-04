@@ -5,6 +5,7 @@ import React from 'react'
 import { FiArrowLeft, FiCode, FiEdit3 } from 'react-icons/fi'
 
 import { Button } from '@/components/common/buttons'
+import { trackGoogleAnalyticsEvent } from '@/helpers/google-analytics'
 import { getFileContent, isImage } from '@/pages/repository/helpers/filenameHelper'
 import useCommit from '@/pages/repository/hooks/useCommit'
 import { useGlobalStore } from '@/stores/globalStore'
@@ -17,10 +18,12 @@ import TableHead from './TableHead'
 
 type Props = {
   repoName: string
+  id: string
 }
 
-export default function CodeTab({ repoName = '' }: Props) {
-  const [git, loadFilesFromRepo, gitActions, isContributor] = useGlobalStore((state) => [
+export default function CodeTab({ repoName = '', id = '' }: Props) {
+  const [authState, git, loadFilesFromRepo, gitActions, isContributor] = useGlobalStore((state) => [
+    state.authState,
     state.repoCoreState.git,
     state.repoCoreActions.loadFilesFromRepo,
     state.repoCoreActions.git,
@@ -83,10 +86,28 @@ export default function CodeTab({ repoName = '' }: Props) {
   }
 
   if (git.status === 'ERROR') {
+    trackGoogleAnalyticsEvent('Repository', 'Load a repo', 'Failed to load repo', {
+      id,
+      name: repoName,
+      user: {
+        address: authState.address,
+        loginMethod: authState.method
+      }
+    })
+
     return <RepoError />
   }
 
   if (git.status === 'SUCCESS' && fileContent.length > 0) {
+    trackGoogleAnalyticsEvent('Repository', 'Load a repo', 'Successfully loaded a repo', {
+      id,
+      name: repoName,
+      user: {
+        address: authState.address,
+        loginMethod: authState.method
+      }
+    })
+
     const contributor = isContributor()
 
     return (
