@@ -4,6 +4,7 @@ import React from 'react'
 import BottomRightImg from '@/assets/images/bg/banner-bg.svg'
 import { Button } from '@/components/common/buttons'
 import CreateProfileModal from '@/components/CreateProfileModal/CreateProfileModal'
+import { trackGoogleAnalyticsPageView } from '@/helpers/google-analytics'
 import { useGlobalStore } from '@/stores/globalStore'
 
 import MainContent from './components/MainContent'
@@ -21,6 +22,10 @@ export default function Home() {
   const [isOpen, setIsOpen] = React.useState(false)
   const [isCreateProfileModalOpen, setIsCreateProfileModalOpen] = React.useState(false)
   const { connect } = useConnection()
+
+  React.useEffect(() => {
+    trackGoogleAnalyticsPageView('pageview', '/', 'Home Page Visit')
+  }, [])
 
   React.useEffect(() => {
     if (isLoggedIn) {

@@ -1,9 +1,10 @@
 import { Tab } from '@headlessui/react'
 import { useEffect } from 'react'
 import Lottie from 'react-lottie'
-import { useParams } from 'react-router-dom'
+import { useLocation, useParams } from 'react-router-dom'
 
 import loadingFilesAnimation from '@/assets/searching-files.json'
+import { trackGoogleAnalyticsPageView } from '@/helpers/google-analytics'
 import { useGlobalStore } from '@/stores/globalStore'
 
 import PullRequestHeader from './components/PullRequestHeader'
@@ -12,6 +13,7 @@ import { rootTabConfig } from './config/tabConfig'
 const activeClasses = 'border-b-[2px] border-primary-600 text-gray-900 font-medium'
 
 export default function ReadPullRequest() {
+  const location = useLocation()
   const { id, pullId } = useParams()
   const [selectedRepo, fetchAndLoadRepository, pullRequestActions] = useGlobalStore((state) => [
     state.repoCoreState.selectedRepo,
@@ -37,6 +39,17 @@ export default function ReadPullRequest() {
       pullRequestActions.setBaseBranch(PR.baseBranch)
       pullRequestActions.setCompareBranch(PR.compareBranch)
       pullRequestActions.setBaseBranchOid(PR.baseBranchOid)
+
+      trackGoogleAnalyticsPageView('pageview', location.pathname, 'Read Pull Request Page Visit', {
+        name: selectedRepo.repo.name,
+        id: selectedRepo.repo.id,
+        PR: {
+          title: PR.title,
+          id: PR.id,
+          author: PR.author,
+          status: PR.status
+        }
+      })
     }
   }, [selectedRepo.repo])
 

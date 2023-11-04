@@ -1,9 +1,10 @@
 import { Tab } from '@headlessui/react'
 import React from 'react'
 import Lottie from 'react-lottie'
-import { useParams } from 'react-router-dom'
+import { useLocation, useParams } from 'react-router-dom'
 
 import loadingFilesAnimation from '@/assets/load-files.json'
+import { trackGoogleAnalyticsPageView } from '@/helpers/google-analytics'
 import { useGlobalStore } from '@/stores/globalStore'
 
 import IssueHeader from './components/IssueHeader'
@@ -13,6 +14,8 @@ const activeClasses = 'border-b-[2px] border-primary-600 text-gray-900 font-medi
 
 export default function ReadIssuePage() {
   const { id, issueId } = useParams()
+  const location = useLocation()
+
   const [status, repo, selectedIssue, fetchAndLoadRepository, setSelectedIssue] = useGlobalStore((state) => [
     state.repoCoreState.selectedRepo.status,
     state.repoCoreState.selectedRepo.repo,
@@ -34,6 +37,17 @@ export default function ReadIssuePage() {
       if (!issue) return
 
       setSelectedIssue(issue)
+
+      trackGoogleAnalyticsPageView('pageview', location.pathname, 'Read Issue Page Visit', {
+        name: repo.name,
+        id: repo.id,
+        issue: {
+          title: issue.title,
+          id: issue.id,
+          author: issue.author,
+          status: issue.status
+        }
+      })
     }
   }, [repo])
 

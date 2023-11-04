@@ -1,9 +1,10 @@
 import { useEffect } from 'react'
 import { BiGitCompare } from 'react-icons/bi'
 import { FaArrowLeft } from 'react-icons/fa'
-import { useNavigate, useParams } from 'react-router-dom'
+import { useLocation, useNavigate, useParams } from 'react-router-dom'
 
 import { Button } from '@/components/common/buttons'
+import { trackGoogleAnalyticsPageView } from '@/helpers/google-analytics'
 import { useGlobalStore } from '@/stores/globalStore'
 
 import BranchDropdown from './components/BranchDropdown'
@@ -15,6 +16,7 @@ import NewPRForm from './components/NewPRForm'
 export default function CreatePullRequest() {
   const { id } = useParams()
   const navigate = useNavigate()
+  const location = useLocation()
 
   const [
     selectedRepo,
@@ -51,6 +53,11 @@ export default function CreatePullRequest() {
   useEffect(() => {
     if (selectedRepo.repo) {
       setDefaultBranches()
+
+      trackGoogleAnalyticsPageView('pageview', location.pathname, 'Create Pull Request Page Visit', {
+        name: selectedRepo.repo.name,
+        id: selectedRepo.repo.id
+      })
     }
   }, [selectedRepo])
 

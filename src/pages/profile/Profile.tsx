@@ -1,7 +1,8 @@
 import { Tab } from '@headlessui/react'
 import React from 'react'
-import { useParams } from 'react-router-dom'
+import { useLocation, useParams } from 'react-router-dom'
 
+import { trackGoogleAnalyticsPageView } from '@/helpers/google-analytics'
 import { useGlobalStore } from '@/stores/globalStore'
 import { fetchUserRepos } from '@/stores/user/actions'
 import { Repo } from '@/types/repository'
@@ -20,6 +21,11 @@ export default function Profile() {
   const [userDetails, setUserDetails] = React.useState<Partial<User>>({})
   const [fetchUserDetailsByAddress] = useGlobalStore((state) => [state.userActions.fetchUserDetailsByAddress])
   const { id } = useParams()
+  const location = useLocation()
+
+  React.useEffect(() => {
+    trackGoogleAnalyticsPageView('pageview', location.pathname, 'Profile Page Visit')
+  }, [])
 
   React.useEffect(() => {
     if (id) {
@@ -49,7 +55,9 @@ export default function Profile() {
                 <Tab className="focus-visible:outline-none">
                   {({ selected }) => (
                     <div
-                      className={`flex items-center gap-2 py-[10px] px-4 justify-center ${selected ? activeClasses : ''}`}
+                      className={`flex items-center gap-2 py-[10px] px-4 justify-center ${
+                        selected ? activeClasses : ''
+                      }`}
                     >
                       <tab.Icon className="w-5 h-5" />
                       {tab.title}

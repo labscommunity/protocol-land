@@ -5,10 +5,11 @@ import React from 'react'
 import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { FaArrowLeft } from 'react-icons/fa'
-import { useNavigate, useParams } from 'react-router-dom'
+import { useLocation, useNavigate, useParams } from 'react-router-dom'
 import * as yup from 'yup'
 
 import { Button } from '@/components/common/buttons'
+import { trackGoogleAnalyticsPageView } from '@/helpers/google-analytics'
 import { useGlobalStore } from '@/stores/globalStore'
 
 const issuesSchema = yup
@@ -19,12 +20,14 @@ const issuesSchema = yup
 
 export default function CreateIssuePage() {
   const [isSubmitting, setIsSubmitting] = React.useState(false)
-  const [createIssue, fetchAndLoadRepository] = useGlobalStore((state) => [
+  const [selectedRepo, createIssue, fetchAndLoadRepository] = useGlobalStore((state) => [
+    state.repoCoreState.selectedRepo,
     state.issuesActions.createIssue,
     state.repoCoreActions.fetchAndLoadRepository
   ])
-  const navigate = useNavigate()
   const { id } = useParams()
+  const location = useLocation()
+  const navigate = useNavigate()
 
   const [value, setValue] = useState('**Hello world!!!**')
   const [preview, setPreview] = useState('edit')
@@ -41,6 +44,15 @@ export default function CreateIssuePage() {
       fetchAndLoadRepository(id)
     }
   }, [id])
+
+  React.useEffect(() => {
+    if (selectedRepo.repo) {
+      trackGoogleAnalyticsPageView('pageview', location.pathname, 'Create issue Page Visit', {
+        name: selectedRepo.repo.name,
+        id: selectedRepo.repo.id
+      })
+    }
+  }, [selectedRepo])
 
   function handlePreviewToggle() {
     if (preview === 'edit') {

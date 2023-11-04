@@ -1,4 +1,6 @@
+import React from 'react'
 import SVG from 'react-inlinesvg'
+import { useLocation } from 'react-router-dom'
 
 import IconCloneOutline from '@/assets/icons/clone-outline.svg'
 import IconCommitOutline from '@/assets/icons/commit-outline.svg'
@@ -7,6 +9,7 @@ import IconForkOutline from '@/assets/icons/fork-outline.svg'
 import IconStarOutline from '@/assets/icons/star-outline.svg'
 import IconTagOutline from '@/assets/icons/tag-outline.svg'
 import { Button } from '@/components/common/buttons'
+import { trackGoogleAnalyticsPageView } from '@/helpers/google-analytics'
 import { Repo } from '@/types/repository'
 
 import useRepository from '../hooks/useRepository'
@@ -19,7 +22,17 @@ type Props = {
 }
 
 export default function RepoHeader({ repo, isLoading }: Props) {
+  const location = useLocation()
   const { downloadRepository } = useRepository(repo?.name)
+
+  React.useEffect(() => {
+    if (repo && repo?.name) {
+      trackGoogleAnalyticsPageView('pageview', location.pathname, 'Repository Page Visit', {
+        name: repo.name,
+        id: repo.id
+      })
+    }
+  }, [repo])
 
   if (isLoading) {
     return <RepoHeaderLoading />
