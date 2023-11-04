@@ -8,6 +8,7 @@ import { FiChevronDown } from 'react-icons/fi'
 import { useNavigate } from 'react-router-dom'
 
 import { Button } from '@/components/common/buttons'
+import { trackGoogleAnalyticsEvent } from '@/helpers/google-analytics'
 import { shortenAddress } from '@/helpers/shortenAddress'
 import { useGlobalStore } from '@/stores/globalStore'
 
@@ -29,9 +30,17 @@ export default function UserProfileButton() {
       })
 
       connectedRef.current = true
+
+      trackGoogleAnalyticsEvent('Auth', 'Post connect button click', 'Login', {
+        user: { address, loginMethod: strategy }
+      })
     }
 
     if (connectedRef.current === true && connected === false) {
+      trackGoogleAnalyticsEvent('Auth', 'Post logout button click', 'Logout', {
+        user: { address, loginMethod: strategy }
+      })
+
       logout()
       connectedRef.current = false
     }
@@ -41,9 +50,32 @@ export default function UserProfileButton() {
     navigate(`/user/${address}`)
   }
 
+  async function handleConnectBtnClick() {
+    connect()
+
+    trackGoogleAnalyticsEvent('Auth', 'Connect button click', 'Connect Button', {
+      user: null
+    })
+  }
+
+  async function handleLogoutBtnClick() {
+    trackGoogleAnalyticsEvent('Auth', 'Logout button click', 'Logout Button', {
+      user: {
+        address,
+        longMethod: strategy
+      }
+    })
+
+    disconnect()
+  }
+
   if (!connected || !address)
     return (
-      <Button className="rounded-[20px] font-medium !px-4 py-[10px]" variant="primary-solid" onClick={connect}>
+      <Button
+        className="rounded-[20px] font-medium !px-4 py-[10px]"
+        variant="primary-solid"
+        onClick={handleConnectBtnClick}
+      >
         Connect
       </Button>
     )
@@ -97,7 +129,7 @@ export default function UserProfileButton() {
                       className={`${
                         active ? 'bg-primary-50 text-gray-900' : 'text-gray-900'
                       } group flex w-full items-center rounded-md px-2 py-2 text-sm`}
-                      onClick={disconnect}
+                      onClick={handleLogoutBtnClick}
                     >
                       <BiLogOutCircle className="mr-2 h-5 w-5" aria-hidden="true" />
                       Logout

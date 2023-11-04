@@ -8,7 +8,7 @@ const initializeGoogleAnalytics = () => {
   ReactGA4.initialize(VITE_GA_TRACKING_ID)
 }
 
-export const trackGoogleAnalyticsEvent = (category: string, action: string, label: string, data: Record<any, any>) => {
+export const trackGoogleAnalyticsEvent = (category: string, action: string, label: string, data?: Record<any, any>) => {
   ReactGA4.event({
     category,
     action,
