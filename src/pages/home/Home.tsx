@@ -1,7 +1,6 @@
 import { useConnection } from 'arweave-wallet-kit'
 import React from 'react'
 
-import BottomRightImg from '@/assets/images/bg/banner-bg.svg'
 import { Button } from '@/components/common/buttons'
 import CreateProfileModal from '@/components/CreateProfileModal/CreateProfileModal'
 import { trackGoogleAnalyticsEvent, trackGoogleAnalyticsPageView } from '@/helpers/google-analytics'
@@ -11,10 +10,6 @@ import MainContent from './components/MainContent'
 import NewRepoModal from './components/NewRepoModal'
 import Sidebar from './components/Sidebar'
 import { useFetchUserRepos } from './hooks/useFetchUserRepos'
-
-const style = {
-  '--bg-right-btm-img-url': `url(${BottomRightImg})`
-} as React.CSSProperties
 
 export default function Home() {
   const [authState] = useGlobalStore((state) => [state.authState])
@@ -49,7 +44,6 @@ export default function Home() {
       <MainContent>
         <div className="w-[70%] py-8 flex flex-col gap-8">
           <div
-            style={style}
             className={
               'bg-primary-100 p-6 h-[300px] flex flex-col items-center gap-10 justify-center rounded-2xl border-[1px] border-primary-200'
             }
