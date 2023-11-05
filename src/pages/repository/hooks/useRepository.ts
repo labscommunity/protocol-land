@@ -1,5 +1,6 @@
 import React from 'react'
 
+import { trackGoogleAnalyticsEvent } from '@/helpers/google-analytics'
 import { withAsync } from '@/helpers/withAsync'
 import { fsWithName } from '@/lib/git/helpers/fsWithName'
 import { getOidFromRef, readFileFromOid, readFilesFromOid } from '@/lib/git/helpers/oid'
@@ -105,6 +106,10 @@ export default function useRepository(name: string) {
 
     // Remove the download link from the DOM
     document.body.removeChild(downloadLink)
+
+    trackGoogleAnalyticsEvent('Repository', 'Download a repository', 'Download repository', {
+      repo_name: name
+    })
   }
 
   return {
