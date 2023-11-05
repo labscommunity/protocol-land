@@ -1,0 +1,187 @@
+import { Dialog, Transition } from '@headlessui/react'
+import { yupResolver } from '@hookform/resolvers/yup'
+import clsx from 'clsx'
+import React, { Fragment } from 'react'
+import { FileWithPath, useDropzone } from 'react-dropzone'
+import { useForm } from 'react-hook-form'
+import SVG from 'react-inlinesvg'
+import { useParams } from 'react-router-dom'
+import * as yup from 'yup'
+
+import CloseCrossIcon from '@/assets/icons/close-cross.svg'
+import FolderBrowseIcon from '@/assets/icons/folder-browse.svg'
+import { Button } from '@/components/common/buttons'
+import useCommit from '@/pages/repository/hooks/useCommit'
+import { useGlobalStore } from '@/stores/globalStore'
+
+type NewBranchModal = {
+  setIsOpen: (val: boolean) => void
+  isOpen: boolean
+}
+
+const schema = yup
+  .object({
+    commit: yup.string().required('Commit message is required.')
+  })
+  .required()
+
+export default function AddFilesModal({ setIsOpen, isOpen }: NewBranchModal) {
+  const {
+    register,
+    handleSubmit,
+    formState: { errors }
+  } = useForm({
+    resolver: yupResolver(schema)
+  })
+
+  const { addFiles } = useCommit()
+  const { id } = useParams()
+  const [userRepo, address, loadFilesFromRepo] = useGlobalStore((state) => [
+    state.repoCoreState.selectedRepo.repo,
+    state.authState.address,
+    state.repoCoreActions.loadFilesFromRepo
+  ])
+
+  const [files, setFiles] = React.useState<FileWithPath[]>([])
+  const [isSubmitting, setIsSubmitting] = React.useState(false)
+
+  const { getRootProps, getInputProps, isDragActive, inputRef } = useDropzone({ onDrop })
+
+  function closeModal() {
+    setIsOpen(false)
+  }
+
+  function onDrop(acceptedFiles: FileWithPath[]) {
+    setFiles(acceptedFiles)
+  }
+
+  async function handleCommitSubmit(data: yup.InferType<typeof schema>) {
+    if (files.length > 0 && userRepo) {
+      setIsSubmitting(true)
+
+      const result = await addFiles({
+        files,
+        id: id!,
+        message: data.commit,
+        name: userRepo.name,
+        owner: address!,
+        defaultBranch: userRepo.defaultBranch || 'master'
+      })
+      console.log({ result })
+
+      await loadFilesFromRepo()
+
+      setIsSubmitting(false)
+      closeModal()
+    }
+  }
+
+  return (
+    <Transition appear show={isOpen} as={Fragment}>
+      <Dialog as="div" className="relative z-10" onClose={closeModal}>
+        <Transition.Child
+          as={Fragment}
+          enter="ease-out duration-300"
+          enterFrom="opacity-0"
+          enterTo="opacity-100"
+          leave="ease-in duration-200"
+          leaveFrom="opacity-100"
+          leaveTo="opacity-0"
+        >
+          <div className="fixed inset-0 bg-black bg-opacity-25" />
+        </Transition.Child>
+
+        <div className="fixed inset-0 overflow-y-auto">
+          <div className="flex min-h-full items-center justify-center text-center">
+            <Transition.Child
+              as={Fragment}
+              enter="ease-out duration-300"
+              enterFrom="opacity-0 scale-95"
+              enterTo="opacity-100 scale-100"
+              leave="ease-in duration-200"
+              leaveFrom="opacity-100 scale-100"
+              leaveTo="opacity-0 scale-95"
+            >
+              <Dialog.Panel className="w-full max-w-[368px] transform overflow-hidden rounded-2xl bg-white p-6 text-left align-middle shadow-xl transition-all">
+                <div className="w-full flex justify-between align-middle">
+                  <Dialog.Title as="h3" className="text-xl font-medium text-gray-900">
+                    Upload new Files/Folders
+                  </Dialog.Title>
+                  <SVG onClick={closeModal} src={CloseCrossIcon} className="w-6 h-6 cursor-pointer" />
+                </div>
+                <div className="mt-6 flex flex-col">
+                  <span className="mb-2 font-medium text-sm text-gray-600">Upload files</span>
+                  <div
+                    className="flex cursor-pointer flex-col overflow-auto items-center h-36 max-h-36 border-[1px] border-gray-300 rounded-lg border-dashed"
+                    {...getRootProps()}
+                  >
+                    <input {...getInputProps()} />
+                    {files.length === 0 && (
+                      <div className="h-full w-full py-6 px-12 flex justify-center items-center">
+                        {!isDragActive && (
+                          <div className="flex flex-col gap-4 items-center">
+                            <span className="text-gray-700 text-sm text-center">
+                              Drag and drop your files here, or click 'Browse Files'
+                            </span>
+                            <Button
+                              className="gap-2"
+                              onClick={inputRef.current?.click || undefined}
+                              variant="primary-outline"
+                            >
+                              <SVG src={FolderBrowseIcon} className="w-5 h-5" /> Browse Files
+                            </Button>
+                          </div>
+                        )}
+                        {isDragActive && (
+                          <span className="text-gray-700 text-sm text-center">Drop the files here ...</span>
+                        )}
+                      </div>
+                    )}
+                    {files.length > 0 && (
+                      <div className="flex py-[10px] px-6 flex-col w-full gap-2">
+                        {files.map((file) => (
+                          <div className="w-full flex">
+                            <span className="text-gray-600 text-sm font-medium">{file?.path || ''}</span>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </div>
+                <div className="mt-3 flex flex-col">
+                  <div>
+                    <label htmlFor="title" className="mb-1 block font-medium text-sm text-gray-600">
+                      Commit message
+                    </label>
+                    <input
+                      type="text"
+                      {...register('commit')}
+                      className={clsx(
+                        'bg-white border-[1px] text-gray-900 text-base rounded-lg hover:shadow-[0px_2px_4px_0px_rgba(0,0,0,0.10)] focus:border-primary-500 focus:border-[1.5px] block w-full px-3 py-[10px] outline-none',
+                        errors.commit ? 'border-red-500' : 'border-gray-300'
+                      )}
+                      placeholder="Example: Add README.md file"
+                    />
+                    {errors.commit && <p className="text-red-500 text-sm italic mt-2">{errors.commit?.message}</p>}
+                  </div>
+                </div>
+
+                <div className="mt-6">
+                  <Button
+                    disabled={Object.keys(errors).length > 0 || isSubmitting}
+                    isLoading={isSubmitting}
+                    className="w-full justify-center font-medium"
+                    onClick={handleSubmit(handleCommitSubmit)}
+                    variant="primary-solid"
+                  >
+                    Upload
+                  </Button>
+                </div>
+              </Dialog.Panel>
+            </Transition.Child>
+          </div>
+        </div>
+      </Dialog>
+    </Transition>
+  )
+}

@@ -1,26 +1,35 @@
-import { defineConfig } from "vite";
-import vue from "@vitejs/plugin-vue";
-import { NodeGlobalsPolyfillPlugin } from "@esbuild-plugins/node-globals-polyfill";
+import { NodeGlobalsPolyfillPlugin } from '@esbuild-plugins/node-globals-polyfill'
+import react from '@vitejs/plugin-react'
+import rollupNodePolyFill from 'rollup-plugin-polyfill-node'
+import { fileURLToPath, URL } from 'url'
+import { defineConfig } from 'vite'
 
 // https://vitejs.dev/config/
 export default defineConfig({
-  plugins: [vue()],
-  server: {
-    port: 3000,
-  },
+  plugins: [react()],
   optimizeDeps: {
     esbuildOptions: {
+      // Node.js global to browser globalThis
+      define: {
+        global: 'globalThis'
+      },
       // Enable esbuild polyfill plugins
       plugins: [
         NodeGlobalsPolyfillPlugin({
-          process: true,
           buffer: true,
-        }),
-      ],
-      // Node.js global to browser globalThis
-      define: {
-        global: "globalThis",
-      },
-    },
+          process: true
+        })
+      ]
+    }
   },
-});
+  resolve: {
+    alias: {
+      '@': fileURLToPath(new URL('./src', import.meta.url))
+    }
+  },
+  build: {
+    rollupOptions: {
+      plugins: [rollupNodePolyFill()]
+    }
+  }
+})
