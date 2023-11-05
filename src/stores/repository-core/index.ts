@@ -1,5 +1,6 @@
 import { StateCreator } from 'zustand'
 
+import { trackGoogleAnalyticsEvent } from '@/helpers/google-analytics'
 import { withAsync } from '@/helpers/withAsync'
 import { addContributor, updateRepoDescription, updateRepoName } from '@/lib/git'
 
@@ -105,6 +106,13 @@ const createRepoCoreSlice: StateCreator<CombinedSlices, [['zustand/immer', never
         set((state) => {
           state.repoCoreState.selectedRepo.repo!.description = description
         })
+
+        trackGoogleAnalyticsEvent('Repository', 'Update repo description', 'Update description', {
+          repo_name: repo.name,
+          repo_id: repo.id,
+          description,
+          result: 'SUCCESS'
+        })
       }
     },
     setRepoContributionStats: (data) => {
@@ -126,6 +134,13 @@ const createRepoCoreSlice: StateCreator<CombinedSlices, [['zustand/immer', never
       if (!error) {
         set((state) => {
           state.repoCoreState.selectedRepo.repo!.contributors.push(address)
+        })
+
+        trackGoogleAnalyticsEvent('Repository', 'Add contributor to a repo', 'Add repo contributor', {
+          repo_name: repo.name,
+          repo_id: repo.id,
+          contributor_address: address,
+          result: 'SUCCESS'
         })
       }
     },

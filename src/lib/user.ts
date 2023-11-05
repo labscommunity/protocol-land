@@ -2,6 +2,7 @@ import Arweave from 'arweave'
 import { add, format, fromUnixTime, isFuture, isToday, isYesterday } from 'date-fns'
 import { InjectedArweaveSigner } from 'warp-contracts-plugin-signature'
 
+import { trackGoogleAnalyticsEvent } from '@/helpers/google-analytics'
 import { toArrayBuffer } from '@/helpers/toArrayBuffer'
 import { waitFor } from '@/helpers/waitFor'
 import { withAsync } from '@/helpers/withAsync'
@@ -77,6 +78,10 @@ export async function uploadUserReadMe(content: string) {
   if (!dataTxResponse.id) {
     throw new Error('Failed to post user readme')
   }
+
+  trackGoogleAnalyticsEvent('User', 'Update user readme', 'User readme update', {
+    readme_tx: dataTxResponse.id
+  })
 
   return dataTxResponse.id
 }

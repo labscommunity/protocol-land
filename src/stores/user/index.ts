@@ -1,5 +1,6 @@
 import { StateCreator } from 'zustand'
 
+import { trackGoogleAnalyticsEvent } from '@/helpers/google-analytics'
 import { withAsync } from '@/helpers/withAsync'
 
 import { CombinedSlices } from '../types'
@@ -66,6 +67,11 @@ const createUserSlice: StateCreator<CombinedSlices, [['zustand/immer', never], n
 
         set((state) => {
           state.userState.userDetails = userDetails
+        })
+
+        trackGoogleAnalyticsEvent('User', 'Update user details', 'User details update', {
+          ...details,
+          result: 'SUCCESS'
         })
       }
     }
