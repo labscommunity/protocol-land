@@ -48,8 +48,8 @@ export default function CreateIssuePage() {
   React.useEffect(() => {
     if (selectedRepo.repo) {
       trackGoogleAnalyticsPageView('pageview', location.pathname, 'Create issue Page Visit', {
-        name: selectedRepo.repo.name,
-        id: selectedRepo.repo.id
+        repo_name: selectedRepo.repo.name,
+        repo_id: selectedRepo.repo.id
       })
     }
   }, [selectedRepo])

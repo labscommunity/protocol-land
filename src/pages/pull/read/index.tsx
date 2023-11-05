@@ -41,14 +41,12 @@ export default function ReadPullRequest() {
       pullRequestActions.setBaseBranchOid(PR.baseBranchOid)
 
       trackGoogleAnalyticsPageView('pageview', location.pathname, 'Read Pull Request Page Visit', {
-        name: selectedRepo.repo.name,
-        id: selectedRepo.repo.id,
-        PR: {
-          title: PR.title,
-          id: PR.id,
-          author: PR.author,
-          status: PR.status
-        }
+        repo_name: selectedRepo.repo.name,
+        repo_id: selectedRepo.repo.id,
+        pr_title: PR.title,
+        pr_id: PR.id,
+        pr_author: PR.author,
+        pr_status: PR.status
       })
     }
   }, [selectedRepo.repo])

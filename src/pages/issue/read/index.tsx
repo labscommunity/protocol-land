@@ -39,14 +39,12 @@ export default function ReadIssuePage() {
       setSelectedIssue(issue)
 
       trackGoogleAnalyticsPageView('pageview', location.pathname, 'Read Issue Page Visit', {
-        name: repo.name,
-        id: repo.id,
-        issue: {
-          title: issue.title,
-          id: issue.id,
-          author: issue.author,
-          status: issue.status
-        }
+        repo_name: repo.name,
+        repo_id: repo.id,
+        issue_title: issue.title,
+        issue_id: issue.id,
+        issue_author: issue.author,
+        issue_status: issue.status
       })
     }
   }, [repo])

@@ -55,8 +55,8 @@ export default function CreatePullRequest() {
       setDefaultBranches()
 
       trackGoogleAnalyticsPageView('pageview', location.pathname, 'Create Pull Request Page Visit', {
-        name: selectedRepo.repo.name,
-        id: selectedRepo.repo.id
+        repo_name: selectedRepo.repo.name,
+        repo_id: selectedRepo.repo.id
       })
     }
   }, [selectedRepo])

@@ -28,8 +28,8 @@ export default function RepoHeader({ repo, isLoading }: Props) {
   React.useEffect(() => {
     if (repo && repo?.name) {
       trackGoogleAnalyticsPageView('pageview', location.pathname, 'Repository Page Visit', {
-        name: repo.name,
-        id: repo.id
+        repo_name: repo.name,
+        repo_id: repo.id
       })
     }
   }, [repo])
