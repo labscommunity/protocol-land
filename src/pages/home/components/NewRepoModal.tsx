@@ -62,22 +62,15 @@ export default function NewRepoModal({ setIsOpen, isOpen }: NewRepoModalProps) {
 
         if (result.id) {
           trackGoogleAnalyticsEvent('Repository', 'Successfully create a repo', 'Create new repo', {
-            user: {
-              address: authState.address,
-              loginMethod: authState.method
-            }
+            repo_id: result.id,
+            repo_name: title
           })
 
           navigate(`/repository/${result.id}`)
         }
       }
     } catch (error) {
-      trackGoogleAnalyticsEvent('Repository', 'Create repo failed', 'Create new repo', {
-        user: {
-          address: authState.address,
-          loginMethod: authState.method
-        }
-      })
+      trackGoogleAnalyticsEvent('Repository', 'Failed to create a new repo', 'Create new repo')
     }
   }
 

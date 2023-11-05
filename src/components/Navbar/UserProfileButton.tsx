@@ -31,15 +31,11 @@ export default function UserProfileButton() {
 
       connectedRef.current = true
 
-      trackGoogleAnalyticsEvent('Auth', 'Post connect button click', 'Login', {
-        user: { address, loginMethod: strategy }
-      })
+      trackGoogleAnalyticsEvent('Auth', 'Post connect button click', 'Login')
     }
 
     if (connectedRef.current === true && connected === false) {
-      trackGoogleAnalyticsEvent('Auth', 'Post logout button click', 'Logout', {
-        user: { address, loginMethod: strategy }
-      })
+      trackGoogleAnalyticsEvent('Auth', 'Post logout button click', 'Logout')
 
       logout()
       connectedRef.current = false
@@ -53,18 +49,11 @@ export default function UserProfileButton() {
   async function handleConnectBtnClick() {
     connect()
 
-    trackGoogleAnalyticsEvent('Auth', 'Connect button click', 'Connect Button', {
-      user: null
-    })
+    trackGoogleAnalyticsEvent('Auth', 'Connect button click', 'Connect Button')
   }
 
   async function handleLogoutBtnClick() {
-    trackGoogleAnalyticsEvent('Auth', 'Logout button click', 'Logout Button', {
-      user: {
-        address,
-        longMethod: strategy
-      }
-    })
+    trackGoogleAnalyticsEvent('Auth', 'Logout button click', 'Logout Button')
 
     disconnect()
   }

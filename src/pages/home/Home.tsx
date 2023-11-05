@@ -40,14 +40,7 @@ export default function Home() {
       setIsOpen(true)
     }
 
-    trackGoogleAnalyticsEvent('Repository', 'Create Repository button click', 'Create new repo', {
-      user: authState.isLoggedIn
-        ? {
-            address: authState.address,
-            loginMethod: authState.method
-          }
-        : null
-    })
+    trackGoogleAnalyticsEvent('Repository', 'Create Repository button click', 'Create new repo')
   }
 
   return (

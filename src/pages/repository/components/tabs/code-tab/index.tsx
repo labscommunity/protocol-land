@@ -22,8 +22,7 @@ type Props = {
 }
 
 export default function CodeTab({ repoName = '', id = '' }: Props) {
-  const [authState, git, loadFilesFromRepo, gitActions, isContributor] = useGlobalStore((state) => [
-    state.authState,
+  const [git, loadFilesFromRepo, gitActions, isContributor] = useGlobalStore((state) => [
     state.repoCoreState.git,
     state.repoCoreActions.loadFilesFromRepo,
     state.repoCoreActions.git,
@@ -87,12 +86,8 @@ export default function CodeTab({ repoName = '', id = '' }: Props) {
 
   if (git.status === 'ERROR') {
     trackGoogleAnalyticsEvent('Repository', 'Load a repo', 'Failed to load repo', {
-      id,
-      name: repoName,
-      user: {
-        address: authState.address,
-        loginMethod: authState.method
-      }
+      repo_id: id,
+      repo_name: repoName
     })
 
     return <RepoError />
@@ -100,12 +95,8 @@ export default function CodeTab({ repoName = '', id = '' }: Props) {
 
   if (git.status === 'SUCCESS' && fileContent.length > 0) {
     trackGoogleAnalyticsEvent('Repository', 'Load a repo', 'Successfully loaded a repo', {
-      id,
-      name: repoName,
-      user: {
-        address: authState.address,
-        loginMethod: authState.method
-      }
+      repo_id: id,
+      repo_name: repoName
     })
 
     const contributor = isContributor()

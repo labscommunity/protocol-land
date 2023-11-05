@@ -85,17 +85,9 @@ export default function useCommit() {
     if (error) throw trackAndThrowError('Failed to update repository', name, id)
 
     if (response) {
-      const authState = useGlobalStore.getState().authState
-
       trackGoogleAnalyticsEvent('Repository', 'Add files to repo', 'Add files', {
-        repo: {
-          name,
-          id
-        },
-        user: {
-          address: authState.address,
-          loginMethod: authState.method
-        },
+        repo_name: name,
+        repo_id: id,
         result: 'SUCCESS'
       })
     }
@@ -114,17 +106,9 @@ export default function useCommit() {
   }
 
   function trackAndThrowError(message: string, name: string, id: string) {
-    const authState = useGlobalStore.getState().authState
-
     trackGoogleAnalyticsEvent('Repository', 'Add files to repo', 'Add files', {
-      repo: {
-        name,
-        id
-      },
-      user: {
-        address: authState.address,
-        loginMethod: authState.method
-      },
+      repo_name: name,
+      repo_id: id,
       result: 'FAILED',
       error: message
     })

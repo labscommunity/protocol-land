@@ -81,7 +81,6 @@ const createBranchSlice: StateCreator<CombinedSlices, [['zustand/immer', never],
     createNewBranch: async (branchName) => {
       const repo = get().repoCoreState.selectedRepo.repo
       const currentBranch = get().branchState.currentBranch
-      const authState = get().authState
 
       if (!repo) {
         set((state) => (state.branchState.status = 'ERROR'))
@@ -98,18 +97,10 @@ const createBranchSlice: StateCreator<CombinedSlices, [['zustand/immer', never],
         })
 
         trackGoogleAnalyticsEvent('Repository', 'Create a new branch', 'Create branch', {
-          branch: {
-            new: branchName,
-            from: currentBranch
-          },
-          repo: {
-            name: repo.name,
-            id: repo.id
-          },
-          user: {
-            address: authState.address,
-            loginMethod: authState.method
-          },
+          branch_new: branchName,
+          branch_from: currentBranch,
+          repo_name: repo.name,
+          repo_id: repo.id,
           result: 'FAILED'
         })
       }
@@ -119,18 +110,10 @@ const createBranchSlice: StateCreator<CombinedSlices, [['zustand/immer', never],
         await get().branchActions.getActiveBranch()
 
         trackGoogleAnalyticsEvent('Repository', 'Create a new branch', 'Create branch', {
-          branch: {
-            new: branchName,
-            from: currentBranch
-          },
-          repo: {
-            name: repo.name,
-            id: repo.id
-          },
-          user: {
-            address: authState.address,
-            loginMethod: authState.method
-          },
+          branch_new: branchName,
+          branch_from: currentBranch,
+          repo_name: repo.name,
+          repo_id: repo.id,
           result: 'SUCCESS'
         })
       }
@@ -143,7 +126,6 @@ const createBranchSlice: StateCreator<CombinedSlices, [['zustand/immer', never],
 
       const repo = get().repoCoreState.selectedRepo.repo
       const currentBranch = get().branchState.currentBranch
-      const authState = get().authState
 
       if (!repo) {
         set((state) => (state.branchState.status = 'ERROR'))
@@ -160,18 +142,10 @@ const createBranchSlice: StateCreator<CombinedSlices, [['zustand/immer', never],
         })
 
         trackGoogleAnalyticsEvent('Repository', 'Switch to a different branch', 'Switch branch', {
-          branch: {
-            to: branchName,
-            from: currentBranch
-          },
-          repo: {
-            name: repo.name,
-            id: repo.id
-          },
-          user: {
-            address: authState.address,
-            loginMethod: authState.method
-          },
+          branch_to: branchName,
+          branch_from: currentBranch,
+          repo_name: repo.name,
+          repo_id: repo.id,
           result: 'FAILED'
         })
       }
@@ -181,18 +155,10 @@ const createBranchSlice: StateCreator<CombinedSlices, [['zustand/immer', never],
         await get().repoCoreActions.loadFilesFromRepo()
 
         trackGoogleAnalyticsEvent('Repository', 'Switch to a different branch', 'Switch branch', {
-          branch: {
-            to: branchName,
-            from: currentBranch
-          },
-          repo: {
-            name: repo.name,
-            id: repo.id
-          },
-          user: {
-            address: authState.address,
-            loginMethod: authState.method
-          },
+          branch_to: branchName,
+          branch_from: currentBranch,
+          repo_name: repo.name,
+          repo_id: repo.id,
           result: 'SUCCESS'
         })
       }
