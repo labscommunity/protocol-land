@@ -61,7 +61,7 @@ export default function NewRepoModal({ setIsOpen, isOpen }: NewRepoModalProps) {
         const result = await postNewRepo({ title, description, file: repoBlob, owner: authState.address })
 
         if (result.id) {
-          trackGoogleAnalyticsEvent('Repository', 'Successfully create a repo', 'Create new repo', {
+          trackGoogleAnalyticsEvent('Repository', 'Successfully created a repo', 'Create new repo', {
             repo_id: result.id,
             repo_name: title
           })
