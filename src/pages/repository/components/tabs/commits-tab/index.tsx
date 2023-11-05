@@ -11,7 +11,7 @@ export default function CommitsTab() {
   const { repoCommitsG, fetchAllCommits } = useCommit()
 
   React.useEffect(() => {
-    if (userRepo && repoCommitsG.length === 0) {
+    if (userRepo && repoCommitsG.length <= 1) {
       fetchAllCommits(userRepo.name)
     }
   }, [userRepo])
