@@ -4,6 +4,7 @@ import Lottie from 'react-lottie'
 import { useParams } from 'react-router-dom'
 
 import repoLoadingAnimation from '@/assets/repo-loading.json'
+import { trackGoogleAnalyticsEvent } from '@/helpers/google-analytics'
 import { useGlobalStore } from '@/stores/globalStore'
 
 import RepoHeader from './components/RepoHeader'
@@ -13,8 +14,8 @@ const activeClasses = 'border-b-[2px] border-primary-600 text-gray-900 font-medi
 
 export default function Repository() {
   const { id } = useParams()
-  const [isLoggedIn, selectedRepo, fetchAndLoadRepository, reset] = useGlobalStore((state) => [
-    state.authState.isLoggedIn,
+  const [authState, selectedRepo, fetchAndLoadRepository, reset] = useGlobalStore((state) => [
+    state.authState,
     state.repoCoreState.selectedRepo,
     state.repoCoreActions.fetchAndLoadRepository,
     state.repoCoreActions.reset
@@ -25,6 +26,19 @@ export default function Repository() {
 
     return () => reset()
   }, [id])
+
+  function handleTabChangeEventTracking(idx: number) {
+    const tab = rootTabConfig[idx]
+    const repo = selectedRepo.repo
+
+    if (tab && repo) {
+      trackGoogleAnalyticsEvent('Repository', 'Tab click to change active tab', 'Change tab', {
+        tab: tab.title,
+        repo_name: repo.name,
+        repo_id: repo.id
+      })
+    }
+  }
 
   const isReady = selectedRepo.status === 'SUCCESS'
 
@@ -49,11 +63,11 @@ export default function Repository() {
       )}
       {isReady && (
         <div className="flex flex-col flex-1">
-          <Tab.Group>
+          <Tab.Group onChange={handleTabChangeEventTracking}>
             <Tab.List className="flex text-gray-500 text-lg gap-10 border-b-[1px] border-gray-200">
               {rootTabConfig
                 .filter((tab) => {
-                  if (isLoggedIn) return true
+                  if (authState.isLoggedIn) return true
 
                   return tab.title !== 'Settings'
                 })
@@ -75,13 +89,13 @@ export default function Repository() {
             <Tab.Panels className={'mt-4 flex flex-col flex-1'}>
               {rootTabConfig
                 .filter((tab) => {
-                  if (isLoggedIn) return true
+                  if (authState.isLoggedIn) return true
 
                   return tab.title !== 'Settings'
                 })
                 .map((TabItem) => (
                   <Tab.Panel className={'flex flex-col flex-1'}>
-                    <TabItem.Component repoName={selectedRepo.repo?.name ?? ''} />
+                    <TabItem.Component repoName={selectedRepo.repo?.name ?? ''} id={selectedRepo.repo?.id ?? ''} />
                   </Tab.Panel>
                 ))}
             </Tab.Panels>

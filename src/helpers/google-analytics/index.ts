@@ -9,28 +9,34 @@ const initializeGoogleAnalytics = () => {
 }
 
 export const trackGoogleAnalyticsEvent = (category: string, action: string, label: string, data?: Record<any, any>) => {
+  const user = useGlobalStore.getState().authState
+  const auth = {
+    user_address: user.address,
+    user_loginMethod: user.method
+  }
+
   ReactGA4.event({
     category,
     action,
     label,
-    ...data
+    ...data,
+    ...auth
   })
 }
 
 export const trackGoogleAnalyticsPageView = (hitType: string, page: string, title: string, data?: Record<any, any>) => {
   const user = useGlobalStore.getState().authState
+  const auth = {
+    user_address: user.address,
+    user_loginMethod: user.method
+  }
 
   ReactGA4.send({
     hitType,
     page,
     title,
-    user: user
-      ? {
-          address: user.address,
-          loginMethod: user.method
-        }
-      : null,
-    ...data
+    ...data,
+    ...auth
   })
 }
 
