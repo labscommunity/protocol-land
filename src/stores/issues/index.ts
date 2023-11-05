@@ -1,5 +1,6 @@
 import { StateCreator } from 'zustand'
 
+import { trackGoogleAnalyticsEvent } from '@/helpers/google-analytics'
 import { withAsync } from '@/helpers/withAsync'
 import { Issue } from '@/types/repository'
 
@@ -51,7 +52,23 @@ const createPullRequestSlice: StateCreator<CombinedSlices, [['zustand/immer', ne
       const { error, response } = await withAsync(() => createNewIssue(title, description, repo.id, address))
 
       if (!error && response) {
+        trackGoogleAnalyticsEvent('Repository', 'Create a new issue', 'Create issue', {
+          repo_name: repo.name,
+          repo_id: repo.id,
+          issue_id: response.id,
+          result: 'SUCCESS'
+        })
+
         return response
+      }
+
+      if (error) {
+        trackGoogleAnalyticsEvent('Repository', 'Create a new issue', 'Create issue', {
+          repo_name: repo.name,
+          repo_id: repo.id,
+          issue_id: response.id,
+          result: 'FAILED'
+        })
       }
     },
     reopenIssue: async (id) => {
@@ -69,6 +86,22 @@ const createPullRequestSlice: StateCreator<CombinedSlices, [['zustand/immer', ne
         set((state) => {
           state.repoCoreState.selectedRepo.repo!.issues[id - 1].status = 'OPEN'
         })
+
+        trackGoogleAnalyticsEvent('Repository', 'Reopen a issue', 'Reopen issue', {
+          repo_name: repo.name,
+          repo_id: repo.id,
+          issue_id: id,
+          result: 'SUCCESS'
+        })
+      }
+
+      if (error) {
+        trackGoogleAnalyticsEvent('Repository', 'Reopen a issue', 'Reopen issue', {
+          repo_name: repo.name,
+          repo_id: repo.id,
+          issue_id: id,
+          result: 'FAILED'
+        })
       }
     },
     closeIssue: async (id) => {
@@ -85,6 +118,22 @@ const createPullRequestSlice: StateCreator<CombinedSlices, [['zustand/immer', ne
       if (!error) {
         set((state) => {
           state.repoCoreState.selectedRepo.repo!.issues[id - 1].status = 'COMPLETED'
+        })
+
+        trackGoogleAnalyticsEvent('Repository', 'Close an issue', 'Close issue', {
+          repo_name: repo.name,
+          repo_id: repo.id,
+          issue_id: id,
+          result: 'SUCCESS'
+        })
+      }
+
+      if (error) {
+        trackGoogleAnalyticsEvent('Repository', 'Close an issue', 'Close issue', {
+          repo_name: repo.name,
+          repo_id: repo.id,
+          issue_id: id,
+          result: 'FAILED'
         })
       }
     },
@@ -123,6 +172,22 @@ const createPullRequestSlice: StateCreator<CombinedSlices, [['zustand/immer', ne
         set((state) => {
           state.repoCoreState.selectedRepo.repo!.issues[id - 1].assignees.push(...assignees)
         })
+
+        trackGoogleAnalyticsEvent('Repository', 'Add or update assignee to issue', 'Modify issue assignee', {
+          repo_name: repo.name,
+          repo_id: repo.id,
+          issue_id: id,
+          result: 'SUCCESS'
+        })
+      }
+
+      if (error) {
+        trackGoogleAnalyticsEvent('Repository', 'Add or update assignee to issue', 'Modify issue assignee', {
+          repo_name: repo.name,
+          repo_id: repo.id,
+          issue_id: id,
+          result: 'FAILED'
+        })
       }
     },
     addComment: async (id, comment) => {
@@ -143,6 +208,22 @@ const createPullRequestSlice: StateCreator<CombinedSlices, [['zustand/immer', ne
 
         set((state) => {
           state.repoCoreState.selectedRepo.repo!.issues[id - 1].comments = comments
+        })
+
+        trackGoogleAnalyticsEvent('Repository', 'Add comment to issue', 'Comment on issue', {
+          repo_name: repo.name,
+          repo_id: repo.id,
+          issue_id: id,
+          result: 'SUCCESS'
+        })
+      }
+
+      if (error) {
+        trackGoogleAnalyticsEvent('Repository', 'Add comment to issue', 'Comment on issue', {
+          repo_name: repo.name,
+          repo_id: repo.id,
+          issue_id: id,
+          result: 'FAILED'
         })
       }
     },
@@ -165,6 +246,24 @@ const createPullRequestSlice: StateCreator<CombinedSlices, [['zustand/immer', ne
         set((state) => {
           state.repoCoreState.selectedRepo.repo!.issues[id - 1].bounties = bounties
         })
+
+        trackGoogleAnalyticsEvent('Repository', 'Add bounty to issue', 'Add issue bounty', {
+          repo_name: repo.name,
+          repo_id: repo.id,
+          issue_id: id,
+          bounty_amount: amount,
+          result: 'SUCCESS'
+        })
+      }
+
+      if (error) {
+        trackGoogleAnalyticsEvent('Repository', 'Add bounty to issue', 'Add issue bounty', {
+          repo_name: repo.name,
+          repo_id: repo.id,
+          issue_id: id,
+          bounty_amount: amount,
+          result: 'FAILED'
+        })
       }
     },
     closeBounty: async (issueId, bountyId) => {
@@ -186,6 +285,14 @@ const createPullRequestSlice: StateCreator<CombinedSlices, [['zustand/immer', ne
         set((state) => {
           state.repoCoreState.selectedRepo.repo!.issues[issueId - 1].bounties = bounties
         })
+
+        trackGoogleAnalyticsEvent('Repository', 'Close bounty on issue', 'Close issue bounty', {
+          repo_name: repo.name,
+          repo_id: repo.id,
+          issue_id: issueId,
+          bounty_id: bountyId,
+          result: 'SUCCESS'
+        })
       }
     },
     completeBounty: async (issueId, bountyId, paymentTxId) => {
@@ -206,6 +313,15 @@ const createPullRequestSlice: StateCreator<CombinedSlices, [['zustand/immer', ne
 
         set((state) => {
           state.repoCoreState.selectedRepo.repo!.issues[issueId - 1].bounties = bounties
+        })
+
+        trackGoogleAnalyticsEvent('Repository', 'Claim bounty on issue', 'Claim issue bounty', {
+          repo_name: repo.name,
+          repo_id: repo.id,
+          issue_id: issueId,
+          bounty_id: bountyId,
+          payment_tx: paymentTxId,
+          result: 'SUCCESS'
         })
       }
     }

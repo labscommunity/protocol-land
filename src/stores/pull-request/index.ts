@@ -1,5 +1,6 @@
 import { StateCreator } from 'zustand'
 
+import { trackGoogleAnalyticsEvent } from '@/helpers/google-analytics'
 import { withAsync } from '@/helpers/withAsync'
 import { addReviewersToPR, approvePR, closePullRequest } from '@/lib/git/pull-request'
 
@@ -166,6 +167,22 @@ const createPullRequestSlice: StateCreator<CombinedSlices, [['zustand/immer', ne
         set((state) => {
           state.repoCoreState.selectedRepo.repo!.pullRequests[id - 1].status = 'MERGED'
         })
+
+        trackGoogleAnalyticsEvent('Repository', 'Merge a PR', 'Merge PR', {
+          repo_name: repo.name,
+          repo_id: repo.id,
+          pr_id: id,
+          result: 'SUCCESS'
+        })
+      }
+
+      if (error) {
+        trackGoogleAnalyticsEvent('Repository', 'Merge a PR', 'Merge PR', {
+          repo_name: repo.name,
+          repo_id: repo.id,
+          pr_id: id,
+          result: 'FAILED'
+        })
       }
     },
     closePullRequest: async (id) => {
@@ -182,6 +199,22 @@ const createPullRequestSlice: StateCreator<CombinedSlices, [['zustand/immer', ne
       if (!error) {
         set((state) => {
           state.repoCoreState.selectedRepo.repo!.pullRequests[id - 1].status = 'CLOSED'
+        })
+
+        trackGoogleAnalyticsEvent('Repository', 'Close a PR', 'Close PR', {
+          repo_name: repo.name,
+          repo_id: repo.id,
+          pr_id: id,
+          result: 'SUCCESS'
+        })
+      }
+
+      if (error) {
+        trackGoogleAnalyticsEvent('Repository', 'Close a PR', 'Close PR', {
+          repo_name: repo.name,
+          repo_id: repo.id,
+          pr_id: id,
+          result: 'FAILED'
         })
       }
     },
@@ -224,6 +257,22 @@ const createPullRequestSlice: StateCreator<CombinedSlices, [['zustand/immer', ne
 
           state.repoCoreState.selectedRepo.repo!.pullRequests[id - 1].reviewers.push(...reviewersMap)
         })
+
+        trackGoogleAnalyticsEvent('Repository', 'Add or update PR reviewers', 'Modify PR reviewers', {
+          repo_name: repo.name,
+          repo_id: repo.id,
+          pr_id: id,
+          result: 'SUCCESS'
+        })
+      }
+
+      if (error) {
+        trackGoogleAnalyticsEvent('Repository', 'Add or update PR reviewers', 'Modify reviewers', {
+          repo_name: repo.name,
+          repo_id: repo.id,
+          pr_id: id,
+          result: 'FAILED'
+        })
       }
     },
     approvePR: async (id) => {
@@ -245,6 +294,22 @@ const createPullRequestSlice: StateCreator<CombinedSlices, [['zustand/immer', ne
 
         set((state) => {
           state.repoCoreState.selectedRepo.repo!.pullRequests[id - 1].reviewers[reviewerIdx].approved = true
+        })
+
+        trackGoogleAnalyticsEvent('Repository', 'Approve a PR', 'Approve PR', {
+          repo_name: repo.name,
+          repo_id: repo.id,
+          pr_id: id,
+          result: 'SUCCESS'
+        })
+      }
+
+      if (error) {
+        trackGoogleAnalyticsEvent('Repository', 'Approve a PR', 'Approve PR', {
+          repo_name: repo.name,
+          repo_id: repo.id,
+          pr_id: id,
+          result: 'FAILED'
         })
       }
     }

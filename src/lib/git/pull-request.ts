@@ -3,6 +3,7 @@ import { InjectedArweaveSigner } from 'warp-contracts-plugin-signature'
 
 import { CONTRACT_TX_ID } from '@/helpers/constants'
 import getWarpContract from '@/helpers/getWrapContract'
+import { trackGoogleAnalyticsEvent } from '@/helpers/google-analytics'
 import { waitFor } from '@/helpers/waitFor'
 import { withAsync } from '@/helpers/withAsync'
 import { useGlobalStore } from '@/stores/globalStore'
@@ -73,6 +74,13 @@ export async function postNewPullRequest({
   if (address) {
     await postPRStatDataTxToArweave(address, repoName, PR)
   }
+
+  trackGoogleAnalyticsEvent('Repository', 'Successfully create a new PR', 'Create PR', {
+    repo_name: repoName,
+    repo_id: repoId,
+    pr_id: PR.id,
+    pr_title: PR.title
+  })
 
   return PR
 }
