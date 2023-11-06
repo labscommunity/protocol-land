@@ -15,7 +15,7 @@ jobs:
       - name: 'Checkout all branches'
         run: |
           default_branch=$(git branch | grep '*' | sed 's/\* //')
-          for abranch in $(git branch -a | grep -v HEAD | grep remotes | sed "s/remotes/origin/g"); do git checkout $abranch ; done
+          for abranch in $(git branch -a | grep -v HEAD | grep remotes | sed "s/remotes\/origin\//origin\//g"); do git checkout $abranch ; done
           git checkout $default_branch
           git branch -a
       - name: 'Setup node 18'
