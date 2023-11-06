@@ -13,11 +13,12 @@ export default function OverviewTab() {
   const [isSubmittingMerge, setIsSubmittingMerge] = useState(false)
   const [isSubmittingClose, setIsSubmittingClose] = useState(false)
   const { pullId } = useParams()
-  const [isLoggedIn, selectedRepo, mergePR, closePR] = useGlobalStore((state) => [
+  const [isLoggedIn, selectedRepo, mergePR, closePR, isContributor] = useGlobalStore((state) => [
     state.authState.isLoggedIn,
     state.repoCoreState.selectedRepo.repo,
     state.pullRequestActions.mergePullRequest,
-    state.pullRequestActions.closePullRequest
+    state.pullRequestActions.closePullRequest,
+    state.repoCoreActions.isContributor
   ])
 
   const PR = selectedRepo && selectedRepo.pullRequests[+pullId! - 1]
@@ -40,6 +41,8 @@ export default function OverviewTab() {
     }
   }
 
+  const contributor = isContributor()
+
   return (
     <div className="flex gap-6">
       <div className="flex flex-col w-full gap-4">
@@ -49,7 +52,7 @@ export default function OverviewTab() {
           </div>
           <div className="text-gray-900 p-2 h-32 bg-white">{PR && PR.description}</div>
         </div>
-        {isLoggedIn && PR && PR.status === 'OPEN' && (
+        {isLoggedIn && contributor && PR && PR.status === 'OPEN' && (
           <div className="flex w-full py-4 justify-center gap-4">
             <Button
               onClick={handleMergePullRequest}
