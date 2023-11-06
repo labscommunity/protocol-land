@@ -44,6 +44,14 @@ export default function Home() {
     trackGoogleAnalyticsEvent('Repository', 'Import Repository button click', 'Import new repo')
   }
 
+  async function handleInstallButtonClick() {
+    const NPM_URL = 'https://www.npmjs.com/package/@7i7o/git-remote-proland'
+
+    trackGoogleAnalyticsEvent('CLI', 'Install Git remote CLI button click', 'Git CLI')
+
+    window.open(NPM_URL, '_blank')
+  }
+
   return (
     <div className="h-full flex flex-1">
       <Sidebar repos={userRepos} isLoading={fetchUserReposStatus === 'PENDING'} />
@@ -102,7 +110,9 @@ export default function Home() {
                 regular git workflow!
               </p>
             </div>
-            <Button variant="primary-solid">Install</Button>
+            <Button variant="primary-solid" onClick={handleInstallButtonClick}>
+              Install
+            </Button>
           </div>
         </div>
       </MainContent>
