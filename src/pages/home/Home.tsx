@@ -1,5 +1,6 @@
 import { useConnection } from '@arweave-wallet-kit-beta/react'
 import React from 'react'
+import toast from 'react-hot-toast'
 
 import { Button } from '@/components/common/buttons'
 import CreateProfileModal from '@/components/CreateProfileModal/CreateProfileModal'
@@ -36,6 +37,11 @@ export default function Home() {
     }
 
     trackGoogleAnalyticsEvent('Repository', 'Create Repository button click', 'Create new repo')
+  }
+
+  async function handleImportButton() {
+    toast.success('This feature is coming soon.')
+    trackGoogleAnalyticsEvent('Repository', 'Import Repository button click', 'Import new repo')
   }
 
   return (
@@ -83,7 +89,9 @@ export default function Home() {
                   Bring your existing repository from Github, Gitlab etc. and continue where you left off.
                 </p>
               </div>
-              <Button variant="primary-solid">Import Repository</Button>
+              <Button onClick={handleImportButton} variant="primary-solid">
+                Import Repository
+              </Button>
             </div>
           </div>
           <div className="flex w-full bg-primary-100 p-6  flex-col items-center gap-4 justify-center rounded-xl">
