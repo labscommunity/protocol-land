@@ -11,11 +11,12 @@ import ReviewerAdd from './ReviewerAdd'
 export default function Sidebar() {
   const [isApproving, setIsApproving] = useState(false)
   const { pullId } = useParams()
-  const [repo, address, isLoggedIn, approvePR] = useGlobalStore((state) => [
+  const [repo, address, isLoggedIn, approvePR, isContributor] = useGlobalStore((state) => [
     state.repoCoreState.selectedRepo.repo,
     state.authState.address,
     state.authState.isLoggedIn,
-    state.pullRequestActions.approvePR
+    state.pullRequestActions.approvePR,
+    state.repoCoreActions.isContributor
   ])
 
   const PR = repo && repo.pullRequests[+pullId! - 1]
@@ -28,6 +29,8 @@ export default function Sidebar() {
     await approvePR(+pullId!)
     setIsApproving(false)
   }
+
+  const contributor = isContributor()
 
   return (
     <div className="flex flex-col w-[20%]">
@@ -45,7 +48,7 @@ export default function Sidebar() {
         )}
         <div className="flex justify-between items-center border-b-[1px] border-gray-200 pb-1 text-gray-900">
           <h1 className="text-lg font-medium">Reviewers</h1>
-          {isLoggedIn && <ReviewerAdd />}
+          {isLoggedIn && contributor && <ReviewerAdd />}
         </div>
         {PR && PR.reviewers.length === 0 && (
           <div>
