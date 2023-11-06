@@ -96,10 +96,10 @@ export default function Home() {
           </div>
           <div className="flex w-full bg-primary-100 p-6  flex-col items-center gap-4 justify-center rounded-xl">
             <div className="flex flex-col text-center text-[whitesmoke] gap-2">
-              <h1 className="text-2xl font-bold tracking-wide text-primary-600">Git remote helper</h1>
+              <h1 className="text-2xl font-bold tracking-wide text-primary-600">Keep your current git workflow</h1>
               <p className="text-base font-medium text-primary-500">
-                Install Protocol.Land git remote helper to communicate with remote repositories on Protocol.Land using
-                CLI
+                Install the Protocol.Land git remote helper, add your Protocol.Land repo as a remote and keep your
+                regular git workflow!
               </p>
             </div>
             <Button variant="primary-solid">Install</Button>
