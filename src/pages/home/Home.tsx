@@ -1,4 +1,4 @@
-import { useConnection } from 'arweave-wallet-kit'
+import { useConnection } from '@arweave-wallet-kit-beta/react'
 import React from 'react'
 
 import { Button } from '@/components/common/buttons'

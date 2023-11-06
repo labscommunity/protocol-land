@@ -13,6 +13,10 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@arweave-wallet-kit-beta/arconnect-strategy": "^0.0.1-beta.5",
+    "@arweave-wallet-kit-beta/browser-wallet-strategy": "^0.0.1-beta.4",
+    "@arweave-wallet-kit-beta/core": "^0.0.1-beta.4",
+    "@arweave-wallet-kit-beta/react": "^0.0.1-beta.4",
     "@headlessui/react": "^1.7.16",
     "@hookform/resolvers": "^3.2.0",
     "@isomorphic-git/lightning-fs": "^4.6.0",
@@ -21,7 +25,6 @@
     "@uiw/react-codemirror": "^4.21.11",
     "@uiw/react-md-editor": "^3.23.5",
     "arweave": "^1.14.4",
-    "arweave-wallet-kit": "^1.0.1",
     "clsx": "^2.0.0",
     "date-fns": "^2.30.0",
     "dexie": "^3.2.4",
