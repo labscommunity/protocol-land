@@ -1,5 +1,6 @@
 import { useConnection } from '@arweave-wallet-kit-beta/react'
 import React from 'react'
+import toast from 'react-hot-toast'
 
 import { Button } from '@/components/common/buttons'
 import CreateProfileModal from '@/components/CreateProfileModal/CreateProfileModal'
@@ -36,6 +37,19 @@ export default function Home() {
     }
 
     trackGoogleAnalyticsEvent('Repository', 'Create Repository button click', 'Create new repo')
+  }
+
+  async function handleImportButton() {
+    toast.success('This feature is coming soon.')
+    trackGoogleAnalyticsEvent('Repository', 'Import Repository button click', 'Import new repo')
+  }
+
+  async function handleInstallButtonClick() {
+    const NPM_URL = 'https://www.npmjs.com/package/@7i7o/git-remote-proland'
+
+    trackGoogleAnalyticsEvent('CLI', 'Install Git remote CLI button click', 'Git CLI')
+
+    window.open(NPM_URL, '_blank')
   }
 
   return (
@@ -83,8 +97,22 @@ export default function Home() {
                   Bring your existing repository from Github, Gitlab etc. and continue where you left off.
                 </p>
               </div>
-              <Button variant="primary-solid">Import Repository</Button>
+              <Button onClick={handleImportButton} variant="primary-solid">
+                Import Repository
+              </Button>
             </div>
+          </div>
+          <div className="flex w-full bg-primary-100 p-6  flex-col items-center gap-4 justify-center rounded-xl">
+            <div className="flex flex-col text-center text-[whitesmoke] gap-2">
+              <h1 className="text-2xl font-bold tracking-wide text-primary-600">Keep your current git workflow</h1>
+              <p className="text-base font-medium text-primary-500">
+                Install the Protocol.Land git remote helper, add your Protocol.Land repo as a remote and keep your
+                regular git workflow!
+              </p>
+            </div>
+            <Button variant="primary-solid" onClick={handleInstallButtonClick}>
+              Install
+            </Button>
           </div>
         </div>
       </MainContent>
