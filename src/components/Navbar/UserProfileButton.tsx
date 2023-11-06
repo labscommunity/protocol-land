@@ -1,5 +1,5 @@
+import { useActiveAddress, useConnection, useStrategy } from '@arweave-wallet-kit-beta/react'
 import { Menu, Transition } from '@headlessui/react'
-import { useActiveAddress, useConnection, useStrategy } from 'arweave-wallet-kit'
 import { Fragment, useEffect, useRef } from 'react'
 import { AiOutlineProfile } from 'react-icons/ai'
 import { BiLogOutCircle } from 'react-icons/bi'
