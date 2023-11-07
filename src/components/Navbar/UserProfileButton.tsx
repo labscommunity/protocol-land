@@ -1,6 +1,7 @@
 import { useActiveAddress, useConnection, useStrategy } from '@arweave-wallet-kit-beta/react'
 import { Menu, Transition } from '@headlessui/react'
 import { Fragment, useEffect, useRef } from 'react'
+import React from 'react'
 import { AiOutlineProfile } from 'react-icons/ai'
 import { BiLogOutCircle } from 'react-icons/bi'
 import { FaUser } from 'react-icons/fa'
@@ -12,9 +13,16 @@ import { trackGoogleAnalyticsEvent } from '@/helpers/google-analytics'
 import { shortenAddress } from '@/helpers/shortenAddress'
 import { useGlobalStore } from '@/stores/globalStore'
 
+import WhitelistModal from './WhitelistModal'
+
 export default function UserProfileButton() {
+  const [whitelistModalOpen, setWhitelistModalOpen] = React.useState(false)
   const navigate = useNavigate()
-  const [login, logout] = useGlobalStore((state) => [state.authActions.login, state.authActions.logout])
+  const [authState, login, logout] = useGlobalStore((state) => [
+    state.authState,
+    state.authActions.login,
+    state.authActions.logout
+  ])
   const { connected, connect, disconnect } = useConnection()
   const address = useActiveAddress()
   const strategy = useStrategy()
@@ -23,27 +31,12 @@ export default function UserProfileButton() {
 
   useEffect(() => {
     if (connected && address && strategy) {
-      login({
-        isLoggedIn: true,
-        address,
-        method: strategy
-      })
-
-      connectedRef.current = true
-
-      trackGoogleAnalyticsEvent('Auth', 'Post connect button click', 'Login')
-    }
-
-    if (connectedRef.current === true && connected === false) {
-      trackGoogleAnalyticsEvent('Auth', 'Post logout button click', 'Logout')
-
-      logout()
-      connectedRef.current = false
+      handleLogin(address, strategy)
     }
   }, [connected, address, strategy])
 
   function openProfileModal() {
-    navigate(`/user/${address}`)
+    navigate(`/user/${authState.address}`)
   }
 
   async function handleConnectBtnClick() {
@@ -52,21 +45,50 @@ export default function UserProfileButton() {
     trackGoogleAnalyticsEvent('Auth', 'Connect button click', 'Connect Button')
   }
 
+  async function handleLogin(address: string, strategy: string) {
+    const loggedIn = await login({
+      isLoggedIn: true,
+      address,
+      method: strategy
+    })
+
+    if (!loggedIn) {
+      await disconnect()
+
+      setWhitelistModalOpen(true)
+
+      trackGoogleAnalyticsEvent('Auth', 'Post connect button click', 'Not whitelisted')
+    }
+
+    connectedRef.current = true
+
+    trackGoogleAnalyticsEvent('Auth', 'Post connect button click', 'Login')
+  }
+
   async function handleLogoutBtnClick() {
     trackGoogleAnalyticsEvent('Auth', 'Logout button click', 'Logout Button')
 
-    disconnect()
+    await disconnect()
+
+    trackGoogleAnalyticsEvent('Auth', 'Post logout button click', 'Logout')
+
+    logout()
+
+    connectedRef.current = false
   }
 
-  if (!connected || !address)
+  if (!authState.isLoggedIn || !authState.address)
     return (
-      <Button
-        className="rounded-[20px] font-medium !px-4 py-[10px]"
-        variant="primary-solid"
-        onClick={handleConnectBtnClick}
-      >
-        Connect
-      </Button>
+      <>
+        <Button
+          className="rounded-[20px] font-medium !px-4 py-[10px]"
+          variant="primary-solid"
+          onClick={handleConnectBtnClick}
+        >
+          Connect
+        </Button>
+        <WhitelistModal isOpen={whitelistModalOpen} setIsOpen={setWhitelistModalOpen} />
+      </>
     )
 
   return (
@@ -80,7 +102,7 @@ export default function UserProfileButton() {
               } tracking-wide text-primary-700  font-medium focus:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-opacity-75`}
             >
               <FaUser className="h-4 w-4" />
-              <span className="ml-2">{shortenAddress(address!, 4)}</span>
+              <span className="ml-2">{shortenAddress(authState.address!, 4)}</span>
               {open && <FiChevronDown className="ml-2 -mr-1 h-5 w-5 rotate-180" aria-hidden="true" />}
               {!open && <FiChevronDown className="ml-2 -mr-1 h-5 w-5" aria-hidden="true" />}
             </Menu.Button>
