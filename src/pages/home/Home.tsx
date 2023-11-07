@@ -1,9 +1,11 @@
 import { useConnection } from '@arweave-wallet-kit-beta/react'
 import React from 'react'
 import toast from 'react-hot-toast'
+import { useNavigate } from 'react-router-dom'
 
 import { Button } from '@/components/common/buttons'
 import CreateProfileModal from '@/components/CreateProfileModal/CreateProfileModal'
+import { PL_REPO_ID } from '@/helpers/constants'
 import { trackGoogleAnalyticsEvent, trackGoogleAnalyticsPageView } from '@/helpers/google-analytics'
 import { useGlobalStore } from '@/stores/globalStore'
 
@@ -18,6 +20,7 @@ export default function Home() {
   const [isOpen, setIsOpen] = React.useState(false)
   const [isCreateProfileModalOpen, setIsCreateProfileModalOpen] = React.useState(false)
   const { connect } = useConnection()
+  const navigate = useNavigate()
 
   React.useEffect(() => {
     trackGoogleAnalyticsPageView('pageview', '/', 'Home Page Visit')
@@ -52,6 +55,10 @@ export default function Home() {
     window.open(NPM_URL, '_blank')
   }
 
+  function handleExploreClick() {
+    navigate(`/repository/${PL_REPO_ID}`)
+  }
+
   return (
     <div className="h-full flex flex-1">
       <Sidebar repos={userRepos} isLoading={fetchUserReposStatus === 'PENDING'} />
@@ -66,7 +73,7 @@ export default function Home() {
               Game changing decentralized <br />
               code collaboration
             </h1>
-            <Button className="font-medium" variant="primary-solid">
+            <Button onClick={handleExploreClick} className="font-medium" variant="primary-solid">
               Explore
             </Button>
           </div>
