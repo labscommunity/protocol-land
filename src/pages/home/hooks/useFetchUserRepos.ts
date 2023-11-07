@@ -1,10 +1,11 @@
 import { useState } from 'react'
 import { InjectedArweaveSigner } from 'warp-contracts-plugin-signature'
 
-import { CONTRACT_TX_ID } from '@/helpers/constants'
+import { CONTRACT_TX_ID, PL_REPO_ID } from '@/helpers/constants'
 import getWarpContract from '@/helpers/getWrapContract'
 import { withAsync } from '@/helpers/withAsync'
 import { useGlobalStore } from '@/stores/globalStore'
+import { getRepositoryMetaFromContract } from '@/stores/repository-core/actions'
 
 export function useFetchUserRepos() {
   const [address, userRepos, setUserRepos] = useGlobalStore((state) => [
@@ -30,6 +31,8 @@ export function useFetchUserRepos() {
       })
     )
 
+    const { response: PLRepoResponse } = await withAsync(() => getRepositoryMetaFromContract(PL_REPO_ID))
+
     const { response: collabResponse, error: collabError } = await withAsync(() =>
       contract.viewState({
         function: 'getRepositoriesByContributor',
@@ -42,7 +45,9 @@ export function useFetchUserRepos() {
     if (ownerReposError || collabError) {
       setFetchUserReposStatus('ERROR')
     } else if (ownerReposResponse && collabResponse) {
-      setUserRepos([...ownerReposResponse.result, ...collabResponse.result])
+      const PLRepo = PLRepoResponse ? [PLRepoResponse.result] : []
+
+      setUserRepos([...PLRepo, ...ownerReposResponse.result, ...collabResponse.result])
       setFetchUserReposStatus('SUCCESS')
     }
   }
