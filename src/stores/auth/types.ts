@@ -10,6 +10,6 @@ export type AuthState = {
 }
 
 export type AuthActions = {
-  login: (value: AuthState) => Promise<void>
+  login: (value: AuthState) => Promise<boolean | void>
   logout: () => void
 }

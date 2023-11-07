@@ -1,23 +1,36 @@
 import { StateCreator } from 'zustand'
 
+import { CHECK_WHITELIST_URL, WHITELIST_API_KEY } from '@/helpers/constants'
+
 import { CombinedSlices } from '../types'
 import { AuthSlice, AuthState } from './types'
 
 const initialAuthState = {
   isLoggedIn: false,
   address: null,
-  method: null
+  method: null,
 }
 
 const createAuthSlice: StateCreator<CombinedSlices, [['zustand/immer', never], never], [], AuthSlice> = (set, get) => ({
   authState: initialAuthState,
   authActions: {
     login: async (value: AuthState) => {
-      await get().userActions.setUserDetails()
-
-      set((state) => {
-        state.authState = value
+      const whitelistResponse = await fetch(`${CHECK_WHITELIST_URL}${value.address}`, {
+        headers: {
+          apikey: WHITELIST_API_KEY
+        }
       })
+      const whiteListedUser = await whitelistResponse.json()
+
+      if (whiteListedUser && whiteListedUser.length > 0 && whiteListedUser[0].address === value.address) {
+        await get().userActions.setUserDetails()
+
+        set((state) => {
+          state.authState = value
+        })
+
+        return true
+      }
     },
     logout: () =>
       set((state) => {
