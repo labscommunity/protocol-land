@@ -12,7 +12,7 @@ import { postNewPullRequest } from '@/lib/git/pull-request'
 const prSchema = yup
   .object({
     title: yup.string().required('Title is required'),
-    description: yup.string()
+    description: yup.string().required('Description is required')
   })
   .required()
 
@@ -77,7 +77,7 @@ export default function NewPRForm({ baseBranch, compareBranch, repoName }: Props
         </div>
         <div className="w-full">
           <label htmlFor="title" className="block mb-1 text-sm font-medium text-gray-600">
-            Description <span className="font-normal italic">(optional)</span>
+            Description
           </label>
           <div className="flex flex-col items-start gap-4">
             <textarea
