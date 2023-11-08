@@ -1,4 +1,5 @@
 import React from 'react'
+import toast from 'react-hot-toast'
 import SVG from 'react-inlinesvg'
 import { useLocation } from 'react-router-dom'
 
@@ -36,6 +37,10 @@ export default function RepoHeader({ repo, isLoading }: Props) {
 
   if (isLoading) {
     return <RepoHeaderLoading />
+  }
+
+  function handleComingSoon() {
+    toast.success('This feature is coming soon.')
   }
 
   return (
@@ -77,11 +82,11 @@ export default function RepoHeader({ repo, isLoading }: Props) {
         </div>
         <div className="flex flex-col">
           <div className="flex mb-4 items-center justify-start gap-4">
-            <Button className="rounded-[20px] flex gap-2 items-center" variant="secondary">
+            <Button className="rounded-[20px] flex gap-2 items-center" variant="secondary" onClick={handleComingSoon}>
               <SVG className="w-5 h-5" src={IconStarOutline} />
               <span className="text-gray-900 font-medium">10</span>
             </Button>
-            <Button className="rounded-[20px] flex gap-2 items-center" variant="secondary">
+            <Button className="rounded-[20px] flex gap-2 items-center" variant="secondary" onClick={handleComingSoon}>
               <SVG src={IconForkOutline} />
               <span className="text-gray-900 font-medium">Fork</span>
             </Button>
