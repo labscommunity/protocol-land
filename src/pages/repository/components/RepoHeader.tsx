@@ -1,5 +1,7 @@
 import React from 'react'
 import toast from 'react-hot-toast'
+import { FaRegFileZipper } from 'react-icons/fa6'
+import { PiCaretDownBold } from 'react-icons/pi'
 import SVG from 'react-inlinesvg'
 import { useLocation } from 'react-router-dom'
 
@@ -23,6 +25,8 @@ type Props = {
 }
 
 export default function RepoHeader({ repo, isLoading }: Props) {
+  const [showCloneDropdown, setShowCloneDropdown] = React.useState(false)
+  const cloneRef = React.useRef<HTMLDivElement | null>(null)
   const location = useLocation()
   const { downloadRepository } = useRepository(repo?.name)
 
@@ -41,6 +45,25 @@ export default function RepoHeader({ repo, isLoading }: Props) {
 
   function handleComingSoon() {
     toast.success('This feature is coming soon.')
+  }
+
+  function handleCopyClone() {
+    if (cloneRef.current) {
+      const divContent = cloneRef.current.innerText
+
+      navigator.clipboard
+        .writeText(divContent)
+        .then(() => {
+          toast.success('Successfully copied to clipboard.')
+        })
+        .catch(() => {
+          toast.error('Copy to clipboard failed.')
+        })
+    }
+  }
+
+  function handleClickCloneDropdown() {
+    setShowCloneDropdown(!showCloneDropdown)
   }
 
   return (
@@ -90,10 +113,38 @@ export default function RepoHeader({ repo, isLoading }: Props) {
               <SVG src={IconForkOutline} />
               <span className="text-gray-900 font-medium">Fork</span>
             </Button>
-            <Button onClick={downloadRepository} className="rounded-[20px] flex gap-2 items-center" variant="secondary">
-              <SVG src={IconCloneOutline} />
-              <span className="text-gray-900 font-medium">Clone</span>
-            </Button>
+            <div className="relative">
+              <Button
+                onClick={handleClickCloneDropdown}
+                className="rounded-[20px] flex gap-2 items-center"
+                variant="secondary"
+              >
+                <SVG src={IconCloneOutline} />
+                <span className="text-gray-900 font-medium">Clone</span>
+                <PiCaretDownBold />
+              </Button>
+              {showCloneDropdown && (
+                <div className="px-4 py-2 z-10 divide-y divide-gray-200 divide-opacity-60 rounded-lg absolute w-96 bg-white right-0 origin-top-right border-[1px] mt-2 border-gray-300 shadow-[0px_2px_4px_0px_rgba(0,0,0,0.10)]">
+                  <div className="flex flex-col w-full gap-1 py-2">
+                    <h3 className="font-medium text-gray-900">Clone</h3>
+                    <div className="flex w-full px-2 py-1 gap-1 justify-start items-center border-[0.5px] border-gray-300 bg-gray-200 rounded-md overflow-hidden">
+                      <div className="pr-2 overflow-scroll [&::-webkit-scrollbar]:hidden whitespace-nowrap">
+                        <div ref={cloneRef} className="text-gray-900 w-full flex">
+                          git clone proland://{repo.id} {repo.name}
+                        </div>
+                      </div>
+                      <div onClick={handleCopyClone} className="text-gray-900 bg-gray-200 h-full px-1 cursor-pointer">
+                        <SVG src={IconCloneOutline} />
+                      </div>
+                    </div>
+                  </div>
+                  <div onClick={downloadRepository} className="flex px-1 py-2 items-center gap-2 cursor-pointer">
+                    <FaRegFileZipper className="w-5 h-5 text-primary-600" />
+                    <span className="text-primary-600 font-medium">Download ZIP</span>
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
           <div className="flex relative flex-1 w-full z-999">
             <div className="h-full w-full">
