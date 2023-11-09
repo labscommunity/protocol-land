@@ -62,7 +62,7 @@ export default function UserProfileButton() {
 
     connectedRef.current = true
 
-    trackGoogleAnalyticsEvent('Auth', 'Post connect button click', 'Login')
+    trackGoogleAnalyticsEvent('Auth', 'Post connect button click', 'Login', { address, strategy })
   }
 
   async function handleLogoutBtnClick() {
