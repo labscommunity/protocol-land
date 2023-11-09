@@ -13,6 +13,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@amplitude/analytics-browser": "^2.3.3",
     "@arweave-wallet-kit-beta/arconnect-strategy": "^0.0.1-beta.5",
     "@arweave-wallet-kit-beta/browser-wallet-strategy": "^0.0.1-beta.4",
     "@arweave-wallet-kit-beta/core": "^0.0.1-beta.4",
