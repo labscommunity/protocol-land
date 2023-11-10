@@ -26,6 +26,7 @@ export type RepoCoreState = {
     parentsOidList: string[]
     fileObjects: FileObject[]
     commits: CommitResult[]
+    commitSourceBranch: string
   }
 }
 
