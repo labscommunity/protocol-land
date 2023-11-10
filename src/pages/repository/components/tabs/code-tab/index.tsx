@@ -22,11 +22,12 @@ type Props = {
 }
 
 export default function CodeTab({ repoName = '', id = '' }: Props) {
-  const [git, loadFilesFromRepo, gitActions, isContributor] = useGlobalStore((state) => [
+  const [git, loadFilesFromRepo, gitActions, isContributor, currentBranch] = useGlobalStore((state) => [
     state.repoCoreState.git,
     state.repoCoreActions.loadFilesFromRepo,
     state.repoCoreActions.git,
-    state.repoCoreActions.isContributor
+    state.repoCoreActions.isContributor,
+    state.branchState.currentBranch
   ])
   const [fileContent, setFileContent] = React.useState('')
   const [filename, setFilename] = React.useState('')
@@ -40,10 +41,10 @@ export default function CodeTab({ repoName = '', id = '' }: Props) {
   }, [])
 
   React.useEffect(() => {
-    if (repoCommitsG.length > 0) return
+    if (repoCommitsG.length > 0 && currentBranch === git.commitSourceBranch) return
 
     fetchFirstCommit(repoName)
-  }, [])
+  }, [currentBranch])
 
   // React.useEffect(() => {
   //   if (git.currentOid) {

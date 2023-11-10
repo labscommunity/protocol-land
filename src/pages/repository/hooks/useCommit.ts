@@ -102,6 +102,8 @@ export default function useCommit() {
       }
     }
 
+    await fetchFirstCommit(name)
+
     return response
   }
 

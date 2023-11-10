@@ -33,7 +33,8 @@ const initialRepoCoreState: RepoCoreState = {
     currentOid: '',
     fileObjects: [],
     parentsOidList: [],
-    commits: []
+    commits: [],
+    commitSourceBranch: ''
   }
 }
 
@@ -217,6 +218,7 @@ const createRepoCoreSlice: StateCreator<CombinedSlices, [['zustand/immer', never
       setCommits: (commits) => {
         set((state) => {
           state.repoCoreState.git.commits = commits
+          state.repoCoreState.git.commitSourceBranch = state.branchState.currentBranch
         })
       },
       setCurrentOid: (oid) => {
