@@ -1,7 +1,7 @@
 import { Tab } from '@headlessui/react'
 import React from 'react'
 import Lottie from 'react-lottie'
-import { useParams } from 'react-router-dom'
+import { useNavigate, useParams } from 'react-router-dom'
 
 import repoLoadingAnimation from '@/assets/repo-loading.json'
 import { trackGoogleAnalyticsEvent } from '@/helpers/google-analytics'
@@ -13,13 +13,15 @@ import { rootTabConfig } from './config/rootTabConfig'
 const activeClasses = 'border-b-[2px] border-primary-600 text-gray-900 font-medium'
 
 export default function Repository() {
-  const { id } = useParams()
+  const { id, tabName } = useParams()
+  const navigate = useNavigate()
   const [authState, selectedRepo, fetchAndLoadRepository, reset] = useGlobalStore((state) => [
     state.authState,
     state.repoCoreState.selectedRepo,
     state.repoCoreActions.fetchAndLoadRepository,
     state.repoCoreActions.reset
   ])
+  const selectedIndex = React.useMemo(() => getActiveTab(), [tabName])
 
   React.useEffect(() => {
     fetchAndLoadRepository(id!)
@@ -27,9 +29,26 @@ export default function Repository() {
     return () => reset()
   }, [id])
 
+  function getActiveTab() {
+    if (!tabName) return 0
+    const tabNames = rootTabConfig.map((tab) => tab.title.toLocaleLowerCase())
+    const index = tabNames.indexOf(tabName === 'pulls' ? 'pull requests' : tabName)
+    return index > -1 ? index : 0
+  }
+
   function handleTabChangeEventTracking(idx: number) {
     const tab = rootTabConfig[idx]
     const repo = selectedRepo.repo
+
+    const targetPath =
+      tab.title !== 'Code'
+        ? tab.title === 'Pull Requests'
+          ? `/repository/${id}/pulls`
+          : `/repository/${id}/${tab.title.toLowerCase()}`
+        : `/repository/${id}`
+
+    // window.history.pushState(null, '', `/#${targetPath}`)
+    navigate(targetPath)
 
     if (tab && repo) {
       trackGoogleAnalyticsEvent('Repository', 'Tab click to change active tab', 'Change tab', {
@@ -63,7 +82,7 @@ export default function Repository() {
       )}
       {isReady && (
         <div className="flex flex-col flex-1">
-          <Tab.Group onChange={handleTabChangeEventTracking}>
+          <Tab.Group onChange={handleTabChangeEventTracking} selectedIndex={selectedIndex}>
             <Tab.List className="flex text-gray-500 text-lg gap-10 border-b-[1px] border-gray-200">
               {rootTabConfig
                 .filter((tab) => {
@@ -71,8 +90,8 @@ export default function Repository() {
 
                   return tab.title !== 'Settings'
                 })
-                .map((tab) => (
-                  <Tab className="focus-visible:outline-none">
+                .map((tab, index) => (
+                  <Tab className="focus-visible:outline-none" key={index}>
                     {({ selected }) => (
                       <div
                         className={`flex items-center gap-2 py-[10px] px-4 justify-center ${
