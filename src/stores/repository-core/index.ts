@@ -26,7 +26,7 @@ const initialRepoCoreState: RepoCoreState = {
       issues: []
     }
   },
-  forkedRepo: {
+  parentRepo: {
     status: 'IDLE',
     error: null,
     repo: null
@@ -169,6 +169,10 @@ const createRepoCoreSlice: StateCreator<CombinedSlices, [['zustand/immer', never
           loadRepository(metaResponse.result.name, metaResponse.result.dataTxId)
         )
 
+        if (metaResponse.result.fork) {
+          await get().repoCoreActions.fetchAndLoadParentRepository(metaResponse.result.parent!)
+        }
+
         if (repoFetchError) {
           set((state) => {
             state.repoCoreState.selectedRepo.error = repoFetchError
@@ -180,6 +184,40 @@ const createRepoCoreSlice: StateCreator<CombinedSlices, [['zustand/immer', never
           set((state) => {
             state.repoCoreState.selectedRepo.repo = metaResponse.result
             state.repoCoreState.selectedRepo.status = 'SUCCESS'
+          })
+        }
+      }
+    },
+    fetchAndLoadParentRepository: async (id: string) => {
+      set((state) => {
+        state.repoCoreState.parentRepo.status = 'PENDING'
+      })
+
+      const { error: metaError, response: metaResponse } = await withAsync(() => getRepositoryMetaFromContract(id))
+
+      if (metaError) {
+        set((state) => {
+          state.repoCoreState.parentRepo.error = metaError
+          state.repoCoreState.parentRepo.status = 'ERROR'
+        })
+      }
+
+      if (metaResponse) {
+        const { error: repoFetchError, response: repoFetchResponse } = await withAsync(() =>
+          loadRepository(metaResponse.result.name, metaResponse.result.dataTxId)
+        )
+
+        if (repoFetchError) {
+          set((state) => {
+            state.repoCoreState.parentRepo.error = repoFetchError
+            state.repoCoreState.parentRepo.status = 'ERROR'
+          })
+        }
+
+        if (repoFetchResponse) {
+          set((state) => {
+            state.repoCoreState.parentRepo.repo = metaResponse.result
+            state.repoCoreState.parentRepo.status = 'SUCCESS'
           })
         }
       }

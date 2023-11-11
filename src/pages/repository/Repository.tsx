@@ -15,9 +15,10 @@ const activeClasses = 'border-b-[2px] border-primary-600 text-gray-900 font-medi
 export default function Repository() {
   const { id, tabName } = useParams()
   const navigate = useNavigate()
-  const [authState, selectedRepo, fetchAndLoadRepository, reset] = useGlobalStore((state) => [
+  const [authState, selectedRepo, parentRepo, fetchAndLoadRepository, reset] = useGlobalStore((state) => [
     state.authState,
     state.repoCoreState.selectedRepo,
+    state.repoCoreState.parentRepo,
     state.repoCoreActions.fetchAndLoadRepository,
     state.repoCoreActions.reset
   ])
@@ -57,7 +58,7 @@ export default function Repository() {
 
   return (
     <div className="h-full flex-1 flex flex-col max-w-[1280px] mx-auto w-full mt-6 gap-2">
-      <RepoHeader owner={authState.address} isLoading={!isReady} repo={selectedRepo.repo!} />
+      <RepoHeader owner={authState.address} isLoading={!isReady} repo={selectedRepo.repo!} parentRepo={parentRepo.repo} />
       {!isReady && (
         <div className="flex h-[70%] items-center">
           <Lottie

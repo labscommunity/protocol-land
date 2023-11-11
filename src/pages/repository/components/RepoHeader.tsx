@@ -3,7 +3,7 @@ import toast from 'react-hot-toast'
 import { FaRegFileZipper } from 'react-icons/fa6'
 import { PiCaretDownBold } from 'react-icons/pi'
 import SVG from 'react-inlinesvg'
-import { useLocation } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router-dom'
 
 import IconCloneOutline from '@/assets/icons/clone-outline.svg'
 import IconCommitOutline from '@/assets/icons/commit-outline.svg'
@@ -23,15 +23,17 @@ import RepoHeaderLoading from './RepoHeaderLoading'
 
 type Props = {
   repo: Repo | Record<PropertyKey, never>
+  parentRepo: Repo | Record<PropertyKey, never> | null
   isLoading: boolean
   owner: string | null
 }
 
-export default function RepoHeader({ repo, isLoading, owner }: Props) {
+export default function RepoHeader({ repo, isLoading, owner, parentRepo }: Props) {
   const [isForkModalOpen, setIsForkModalOpen] = React.useState(false)
   const [showCloneDropdown, setShowCloneDropdown] = React.useState(false)
   const cloneRef = React.useRef<HTMLDivElement | null>(null)
   const location = useLocation()
+  const navigate = useNavigate()
   const { downloadRepository } = useRepository(repo?.name)
 
   React.useEffect(() => {
@@ -78,6 +80,12 @@ export default function RepoHeader({ repo, isLoading, owner }: Props) {
     }
   }
 
+  function handleParentRepoClick() {
+    if (!parentRepo) return
+
+    navigate(`/repository/${parentRepo.id}`)
+  }
+
   return (
     <div className="flex flex-col">
       <div className="flex justify-between">
@@ -89,19 +97,23 @@ export default function RepoHeader({ repo, isLoading, owner }: Props) {
             <div>
               <div className="flex items-center gap-4">
                 <h1 className="text-xl font-bold text-gray-900">{repo.name}</h1>
-                <span className={`border-[1px] border-primary-600 text-primary-600 rounded-full px-2 text-sm`}>
-                  Forked
-                </span>
+                {parentRepo && (
+                  <span className={`border-[1px] border-primary-600 text-primary-600 rounded-full px-2 text-sm`}>
+                    Forked
+                  </span>
+                )}
               </div>
               <p className="text-gray-900 text-base">
                 <span className="text-gray-600">Transaction ID:</span> {repo.dataTxId}
               </p>
-              <p className="text-gray-900 text-base">
-                <span className="text-gray-600">Forked from:</span>{' '}
-                <span className="text-primary-600 hover:underline cursor-pointer">
-                  {shortenAddress(repo.owner, 7)}/{repo.id}
-                </span>
-              </p>
+              {parentRepo && (
+                <p className="text-gray-900 text-base">
+                  <span className="text-gray-600">Forked from:</span>{' '}
+                  <span onClick={handleParentRepoClick} className="text-primary-600 hover:underline cursor-pointer">
+                    {shortenAddress(parentRepo.id, 7)}/{parentRepo.name}
+                  </span>
+                </p>
+              )}
             </div>
           </div>
           <div className="flex gap-3 items-center text-gray-900">
