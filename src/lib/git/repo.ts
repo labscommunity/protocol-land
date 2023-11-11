@@ -9,6 +9,7 @@ import getWarpContract from '@/helpers/getWrapContract'
 import { toArrayBuffer } from '@/helpers/toArrayBuffer'
 import { waitFor } from '@/helpers/waitFor'
 import { withAsync } from '@/helpers/withAsync'
+import { ForkRepositoryOptions } from '@/stores/repository-core/types'
 
 import { checkoutBranch, getCurrentBranch } from './branch'
 import { FSType } from './helpers/fsWithName'
@@ -63,6 +64,27 @@ export async function postNewRepo({ title, description, file, owner }: any) {
   })
 
   return { txResponse: dataTxResponse, id: uuid }
+}
+
+export async function createNewFork(data: ForkRepositoryOptions) {
+  const userSigner = new InjectedArweaveSigner(window.arweaveWallet)
+  await userSigner.setPublicKey()
+
+  const contract = getWarpContract(CONTRACT_TX_ID, userSigner)
+
+  const uuid = uuidv4()
+  await contract.writeInteraction({
+    function: 'forkRepository',
+    payload: {
+      id: uuid,
+      name: data.name,
+      description: data.description,
+      dataTxId: data.dataTxId,
+      parent: data.parent
+    }
+  })
+
+  return uuid
 }
 
 export async function postUpdatedRepo({ fs, dir, owner, id }: PostUpdatedRepoOptions) {

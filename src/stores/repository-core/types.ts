@@ -18,6 +18,11 @@ export type RepoCoreState = {
       issues: UserPROrIssue[]
     }
   }
+  forkedRepo: {
+    status: ApiStatus
+    error: unknown | null
+    repo: Repo | null
+  }
   git: {
     status: ApiStatus
     error: unknown | null
@@ -59,4 +64,11 @@ export type FileObject = {
   path: string
   type: string
   parent: string
+}
+
+export type ForkRepositoryOptions = {
+  name: string
+  description: string
+  parent: string
+  dataTxId: string
 }

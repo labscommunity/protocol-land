@@ -10,6 +10,9 @@ export type Repo = {
   pullRequests: PullRequest[]
   issues: Issue[]
   contributors: string[]
+  forks: string[]
+  fork: boolean
+  parent: string | null
 }
 
 export type PullRequest = {

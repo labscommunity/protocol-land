@@ -21,8 +21,49 @@ export async function initializeNewRepository(
     contributors: [],
     pullRequests: [],
     issues: [],
-    timestamp: Date.now()
+    timestamp: Date.now(),
+    fork: false,
+    forks: [],
+    parent: null
   }
+
+  state.repos[repo.id] = repo
+
+  return { state }
+}
+
+export async function forkRepository(
+  state: ContractState,
+  { caller, input: { payload } }: RepositoryAction
+): Promise<ContractResult<ContractState>> {
+  // validate payload
+  if (!payload.name || !payload.description || !payload.dataTxId || !payload.id || !payload.parent) {
+    throw new ContractError('Invalid inputs supplied.')
+  }
+
+  const repo: Repo = {
+    id: payload.id,
+    name: payload.name,
+    description: payload.description,
+    defaultBranch: 'master',
+    dataTxId: payload.dataTxId,
+    owner: caller,
+    contributors: [],
+    pullRequests: [],
+    issues: [],
+    timestamp: Date.now(),
+    fork: true,
+    forks: [],
+    parent: payload.parent
+  }
+
+  const parentRepo: Repo = state.repos[payload.parent]
+
+  if (!parentRepo) {
+    throw new ContractError('Fork failed. Parent not found.')
+  }
+
+  parentRepo.forks.push(payload.id)
 
   state.repos[repo.id] = repo
 

@@ -10,6 +10,7 @@ import {
 import { addReviewersToPR, approvePR, createNewPullRequest, updatePullRequestStatus } from './actions/pull-requests'
 import {
   addContributor,
+  forkRepository,
   getAllRepositoriesByContributor,
   getAllRepositoriesByOwner,
   getRepository,
@@ -28,6 +29,8 @@ export async function handle(state: ContractState, action: RepositoryAction | Ev
   switch (input.function) {
     case 'initialize':
       return await initializeNewRepository(state, action as RepositoryAction)
+    case 'forkRepository':
+      return await forkRepository(state, action as RepositoryAction)
     case 'getRepository':
       return await getRepository(state, action as RepositoryAction)
     case 'getRepositoriesByOwner':

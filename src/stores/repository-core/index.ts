@@ -26,6 +26,11 @@ const initialRepoCoreState: RepoCoreState = {
       issues: []
     }
   },
+  forkedRepo: {
+    status: 'IDLE',
+    error: null,
+    repo: null
+  },
   git: {
     status: 'IDLE',
     error: null,
