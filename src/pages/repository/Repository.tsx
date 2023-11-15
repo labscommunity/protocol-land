@@ -40,14 +40,8 @@ export default function Repository() {
     const tab = rootTabConfig[idx]
     const repo = selectedRepo.repo
 
-    const targetPath =
-      tab.title !== 'Code'
-        ? tab.title === 'Pull Requests'
-          ? `/repository/${id}/pulls`
-          : `/repository/${id}/${tab.title.toLowerCase()}`
-        : `/repository/${id}`
+    const targetPath = tab.getPath(id!)
 
-    // window.history.pushState(null, '', `/#${targetPath}`)
     navigate(targetPath)
 
     if (tab && repo) {
