@@ -30,7 +30,7 @@ export default function PullRequestHeader({ PR }: { PR: PullRequest }) {
   const navigate = useNavigate()
 
   function goBack() {
-    navigate(-1)
+    navigate(`/repository/${PR.repoId}/pulls`)
   }
 
   return (

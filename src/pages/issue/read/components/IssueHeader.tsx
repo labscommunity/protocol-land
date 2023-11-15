@@ -33,7 +33,7 @@ export default function IssueHeader({ issue }: { issue: Issue }) {
   const StatusComponent = statusMap[issue.status]
 
   function goBack() {
-    navigate(-1)
+    navigate(`/repository/${issue.repoId}/issues`)
   }
 
   return (

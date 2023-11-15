@@ -25,6 +25,7 @@ export default function Contributors() {
   const {
     register,
     handleSubmit,
+    resetField,
     formState: { errors }
   } = useForm({
     resolver: yupResolver(addressSchema)
@@ -39,6 +40,7 @@ export default function Contributors() {
         toast.error('You already have permissions to this repo')
       } else {
         await addContributor(data.address)
+        resetField('address')
         toast.success('Successfully added a contributor')
       }
     }

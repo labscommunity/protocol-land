@@ -12,26 +12,31 @@ export const rootTabConfig = [
   {
     title: 'Code',
     Component: CodeTab,
-    Icon: BiCodeAlt
+    Icon: BiCodeAlt,
+    getPath: (id: string) => `/repository/${id}`
   },
   {
     title: 'Issues',
     Component: IssuesTab,
-    Icon: VscIssues
+    Icon: VscIssues,
+    getPath: (id: string) => `/repository/${id}/issues`
   },
   {
     title: 'Commits',
     Component: CommitsTab,
-    Icon: FiGitCommit
+    Icon: FiGitCommit,
+    getPath: (id: string) => `/repository/${id}/commits`
   },
   {
     title: 'Pull Requests',
     Component: PullRequestsTab,
-    Icon: FiGitPullRequest
+    Icon: FiGitPullRequest,
+    getPath: (id: string) => `/repository/${id}/pulls`
   },
   {
     title: 'Settings',
     Component: SettingsTab,
-    Icon: FiSettings
+    Icon: FiSettings,
+    getPath: (id: string) => `/repository/${id}/settings`
   }
 ]
