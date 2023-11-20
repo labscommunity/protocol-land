@@ -144,7 +144,15 @@ export async function addReviewersToPR(
     throw new ContractError('Pull Request not found.')
   }
 
-  const reviewers: Reviewer[] = payload.reviewers.map((reviewer: string) => ({
+  const newReviewers = payload.reviewers.filter(
+    (reviewer: string) => !PR.reviewers.some((existingReviewer) => existingReviewer.address === reviewer)
+  )
+
+  if (newReviewers.length === 0) {
+    throw new ContractError('No new reviewers to add.')
+  }
+
+  const reviewers: Reviewer[] = newReviewers.map((reviewer: string) => ({
     address: reviewer,
     approved: false
   }))
