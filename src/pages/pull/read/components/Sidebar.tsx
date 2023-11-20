@@ -35,7 +35,7 @@ export default function Sidebar() {
   return (
     <div className="flex flex-col w-[20%]">
       <div className="flex flex-col gap-4 ">
-        {isLoggedIn && isReviewer && !isReviewer.approved && (
+        {isLoggedIn && isReviewer && !isReviewer.approved && PR?.status === 'OPEN' && (
           <Button
             onClick={handlePRApproval}
             isLoading={isApproving}
