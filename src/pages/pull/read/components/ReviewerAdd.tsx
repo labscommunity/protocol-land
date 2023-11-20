@@ -24,6 +24,7 @@ export default function ReviewerAdd() {
       setIsLoading(true)
 
       await addReviewers(+pullId, reviewers)
+      setReviewers([])
       toast.success('Successfully added reviewers')
 
       setIsLoading(false)

@@ -24,6 +24,7 @@ export default function AssigneeAdd() {
       setIsLoading(true)
 
       await addAssignee(+issueId, assignees)
+      setAssignees([])
       toast.success('Successfully added assignees')
 
       setIsLoading(false)
