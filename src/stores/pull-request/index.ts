@@ -183,6 +183,7 @@ const createPullRequestSlice: StateCreator<CombinedSlices, [['zustand/immer', ne
           pr_id: id,
           result: 'FAILED'
         })
+        throw error
       }
     },
     closePullRequest: async (id) => {
@@ -216,6 +217,7 @@ const createPullRequestSlice: StateCreator<CombinedSlices, [['zustand/immer', ne
           pr_id: id,
           result: 'FAILED'
         })
+        throw error
       }
     },
     getReviewersList: (prId: number) => {

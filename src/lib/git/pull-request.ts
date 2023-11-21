@@ -168,6 +168,8 @@ export async function mergePullRequest({
         status: 'MERGED'
       }
     })
+  } else {
+    throw error
   }
 }
 
