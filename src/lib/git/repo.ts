@@ -122,11 +122,21 @@ export async function postUpdatedRepo({ fs, dir, owner, id }: PostUpdatedRepoOpt
   return dataTxResponse
 }
 
+export async function deleteRepoFromIndexedDB(title: string): Promise<void> {
+  return new Promise<void>((resolve, reject) => {
+    const deleteRequest = indexedDB.deleteDatabase(title)
+    deleteRequest.onerror = () => reject('Error deleting repo')
+    deleteRequest.onsuccess = () => resolve()
+  })
+}
+
 export async function createNewRepo(title: string, fs: FSType, owner: string) {
   const dir = `/${title}`
   const filePath = `${dir}/README.md`
 
   try {
+    await deleteRepoFromIndexedDB(title)
+
     await git.init({ fs, dir })
 
     await fs.promises.writeFile(filePath, `# ${title}`)
