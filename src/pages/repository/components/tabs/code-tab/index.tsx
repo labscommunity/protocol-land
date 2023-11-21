@@ -43,14 +43,8 @@ export default function CodeTab({ repoName = '', id = '' }: Props) {
   React.useEffect(() => {
     if (repoCommitsG.length > 0 && currentBranch === git.commitSourceBranch) return
 
-    fetchFirstCommit(repoName)
+    fetchFirstCommit(id, repoName)
   }, [currentBranch])
-
-  // React.useEffect(() => {
-  //   if (git.currentOid) {
-  //     gitActions.readFilesFromOid(git.currentOid)
-  //   }
-  // }, [git.currentOid])
 
   function handleFolderClick(fileObject: any) {
     if (fileObject.oid !== git.currentOid) {

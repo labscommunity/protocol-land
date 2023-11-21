@@ -6,7 +6,7 @@ import { fsWithName } from '@/lib/git/helpers/fsWithName'
 import { getOidFromRef, readFileFromOid, readFilesFromOid } from '@/lib/git/helpers/oid'
 import { packGitRepo } from '@/lib/git/helpers/zipUtils'
 
-export default function useRepository(name: string) {
+export default function useRepository(id: string, name: string) {
   const [currentOid, setCurrentOid] = React.useState('')
   const [fileObjects, setFileObjects] = React.useState<any>([])
   const [loadRepoStatus, setLoadRepoStatus] = React.useState<ApiStatus>('IDLE')
@@ -21,12 +21,12 @@ export default function useRepository(name: string) {
   }, [currentOid])
 
   async function initRepoLoading() {
-    const fs = fsWithName(name)
+    const fs = fsWithName(id)
     const dir = `/${name}`
 
     setLoadRepoStatus('PENDING')
 
-    const { error, response } = await withAsync(() => getOidFromRef({ ref: 'HEAD', dir, fs }))
+    const { error, response } = await withAsync(() => getOidFromRef({ ref: 'master', dir, fs }))
 
     if (error) {
       setLoadRepoStatus('ERROR')
@@ -37,7 +37,7 @@ export default function useRepository(name: string) {
   }
 
   async function fetchFilesFromOid(oid: string) {
-    const fs = fsWithName(name)
+    const fs = fsWithName(id)
     const dir = `/${name}`
 
     if (loadRepoStatus !== 'PENDING') setLoadRepoStatus('PENDING')
@@ -54,7 +54,7 @@ export default function useRepository(name: string) {
   }
 
   async function fetchFileContentFromOid(oid: string) {
-    const fs = fsWithName(name)
+    const fs = fsWithName(id)
     const dir = `/${name}`
 
     if (loadRepoStatus !== 'PENDING') setLoadRepoStatus('PENDING')
@@ -87,7 +87,7 @@ export default function useRepository(name: string) {
   }
 
   async function downloadRepository() {
-    const fs = fsWithName(name)
+    const fs = fsWithName(id)
     const dir = `/${name}`
 
     const blob = await packGitRepo({ fs, dir })

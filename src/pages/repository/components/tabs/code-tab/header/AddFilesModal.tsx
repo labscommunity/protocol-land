@@ -59,7 +59,7 @@ export default function AddFilesModal({ setIsOpen, isOpen }: NewBranchModal) {
     if (files.length > 0 && userRepo) {
       setIsSubmitting(true)
 
-      const result = await addFiles({
+      await addFiles({
         files,
         id: id!,
         message: data.commit,
@@ -67,7 +67,6 @@ export default function AddFilesModal({ setIsOpen, isOpen }: NewBranchModal) {
         owner: address!,
         defaultBranch: userRepo.defaultBranch || 'master'
       })
-      console.log({ result })
 
       await loadFilesFromRepo()
 

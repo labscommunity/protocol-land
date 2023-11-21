@@ -14,9 +14,10 @@ type Props = {
   base: string
   compare: string
   repoName: string
+  repoId: string
 }
 
-export default function FileCompareComponent({ fileStatus, base, compare, repoName }: Props) {
+export default function FileCompareComponent({ fileStatus, base, compare, repoName, repoId }: Props) {
   const [baseValue, setBaseValue] = useState('')
   const [compareValue, setCompareValue] = useState('')
 
@@ -25,7 +26,7 @@ export default function FileCompareComponent({ fileStatus, base, compare, repoNa
   }, [])
 
   async function initReadFromFilesToCompare() {
-    const fs = fsWithName(repoName)
+    const fs = fsWithName(repoId)
     const dir = `/${repoName}`
 
     const { error: compareErr, response: compareResponse } = await withAsync(() =>

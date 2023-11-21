@@ -4,29 +4,29 @@ import { fsWithName } from '@/lib/git/helpers/fsWithName'
 import { getOidFromRef, readFileFromOid, readFilesFromOid } from '@/lib/git/helpers/oid'
 import { packGitRepo } from '@/lib/git/helpers/zipUtils'
 
-export async function getOidOfHeadRef(name: string) {
-  const fs = fsWithName(name)
+export async function getOidOfHeadRef(id: string, name: string) {
+  const fs = fsWithName(id)
   const dir = `/${name}`
 
   return getOidFromRef({ ref: 'HEAD', dir, fs })
 }
 
-export async function getFilesFromOid(oid: string, name: string) {
-  const fs = fsWithName(name)
+export async function getFilesFromOid(id: string, oid: string, name: string) {
+  const fs = fsWithName(id)
   const dir = `/${name}`
 
   return readFilesFromOid({ dir, oid, prefix: '', fs })
 }
 
-export async function getFileContentFromOid(oid: string, name: string) {
-  const fs = fsWithName(name)
+export async function getFileContentFromOid(id: string, oid: string, name: string) {
+  const fs = fsWithName(id)
   const dir = `/${name}`
 
   return readFileFromOid({ dir, oid, fs })
 }
 
-export async function saveRepository(name: string) {
-  const fs = fsWithName(name)
+export async function saveRepository(id: string, name: string) {
+  const fs = fsWithName(id)
   const dir = `/${name}`
 
   const blob = await packGitRepo({ fs, dir })
@@ -47,13 +47,13 @@ export async function saveRepository(name: string) {
   document.body.removeChild(downloadLink)
 }
 
-export async function loadRepository(name: string, dataTxId: string) {
-  await unmountRepository(name)
+export async function loadRepository(id: string, name: string, dataTxId: string) {
+  await unmountRepository(id)
 
   const response = await fetch(`https://arweave.net/${dataTxId}`)
   const repoArrayBuf = await response.arrayBuffer()
 
-  const fs = fsWithName(name)
+  const fs = fsWithName(id)
   const dir = `/${name}`
 
   const success = await importRepoFromBlob(fs, dir, new Blob([repoArrayBuf]))
@@ -63,6 +63,6 @@ export async function loadRepository(name: string, dataTxId: string) {
   return success
 }
 
-export async function unmountRepository(name: string) {
-  return unmountRepoFromBrowser(name)
+export async function unmountRepository(id: string) {
+  return unmountRepoFromBrowser(id)
 }

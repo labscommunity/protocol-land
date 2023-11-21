@@ -34,8 +34,8 @@ export default function useCommit() {
   ])
   const [commitsList, setCommitsList] = React.useState<CommitResult[]>([])
 
-  async function fetchAllCommits(name: string) {
-    const fs = fsWithName(name)
+  async function fetchAllCommits(id: string, name: string) {
+    const fs = fsWithName(id)
     const dir = `/${name}`
     const commits = await getAllCommits({ fs, dir })
 
@@ -45,8 +45,8 @@ export default function useCommit() {
     }
   }
 
-  async function fetchFirstCommit(name: string) {
-    const fs = fsWithName(name)
+  async function fetchFirstCommit(id:string, name: string) {
+    const fs = fsWithName(id)
     const dir = `/${name}`
     const commits = await getFirstCommit({ fs, dir })
 
@@ -57,7 +57,7 @@ export default function useCommit() {
   }
 
   async function addFiles({ files, id, message, name, owner, defaultBranch }: AddFilesOptions) {
-    const fs = fsWithName(name)
+    const fs = fsWithName(id)
     const dir = `/${name}`
 
     const { error: addFilesToFsError } = await withAsync(() => addFilesForCommit({ fs, dir, files }))

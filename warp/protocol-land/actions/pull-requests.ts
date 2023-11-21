@@ -13,7 +13,9 @@ export async function createNewPullRequest(
     !payload.description ||
     !payload.baseBranch ||
     !payload.compareBranch ||
-    !payload.baseBranchOid
+    !payload.baseBranchOid ||
+    !payload.baseRepo ||
+    !payload.compareRepo
   ) {
     throw new ContractError('Invalid inputs supplied.')
   }
@@ -35,7 +37,9 @@ export async function createNewPullRequest(
     author: caller,
     status: 'OPEN',
     reviewers: [],
-    timestamp: Date.now()
+    timestamp: Date.now(),
+    baseRepo: payload.baseRepo,
+    compareRepo: payload.compareRepo
   }
 
   const pullRequestsCount = repo.pullRequests.length

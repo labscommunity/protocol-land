@@ -34,7 +34,7 @@ export default function RepoHeader({ repo, isLoading, owner, parentRepo }: Props
   const cloneRef = React.useRef<HTMLDivElement | null>(null)
   const location = useLocation()
   const navigate = useNavigate()
-  const { downloadRepository } = useRepository(repo?.name)
+  const { downloadRepository } = useRepository(repo?.id, repo?.id)
 
   React.useEffect(() => {
     if (repo && repo?.name) {
@@ -145,12 +145,15 @@ export default function RepoHeader({ repo, isLoading, owner, parentRepo }: Props
               <span className="text-gray-900 font-medium">10</span>
             </Button>
             <Button
-              className="rounded-[20px] flex gap-2 items-center"
+              className="rounded-[20px] flex px-0 items-center"
               variant="secondary"
               onClick={handleForkButtonClick}
             >
-              <SVG src={IconForkOutline} />
-              <span className="text-gray-900 font-medium">Fork</span>
+              <div className="flex items-center gap-2 px-4">
+                <SVG src={IconForkOutline} />
+                <span className="text-gray-900 font-medium">Fork</span>
+              </div>
+              <span className="text-gray-900 font-medium border-l-[1px] border-gray-300 px-4">{repo.forks.length}</span>
             </Button>
             <div className="relative">
               <Button

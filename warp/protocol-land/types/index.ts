@@ -59,6 +59,13 @@ export type PullRequest = {
   status: PullRequestStatus
   reviewers: Reviewer[]
   timestamp: number
+  baseRepo: PRSide
+  compareRepo: PRSide
+}
+
+export type PRSide = {
+  repoId: string
+  repoName: string
 }
 
 export type Issue = {
