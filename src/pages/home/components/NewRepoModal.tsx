@@ -5,6 +5,7 @@ import React, { Fragment } from 'react'
 import { useForm } from 'react-hook-form'
 import SVG from 'react-inlinesvg'
 import { useNavigate } from 'react-router-dom'
+import { v4 as uuidv4 } from 'uuid'
 import * as yup from 'yup'
 
 import CloseCrossIcon from '@/assets/icons/close-cross.svg'
@@ -48,25 +49,26 @@ export default function NewRepoModal({ setIsOpen, isOpen }: NewRepoModalProps) {
   async function handleCreateBtnClick(data: yup.InferType<typeof schema>) {
     setIsSubmitting(true)
 
+    const id = uuidv4()
     const { title, description } = data
     const owner = authState.address || 'Protocol.Land user'
 
     try {
-      const fs = fsWithName(title)
+      const fs = fsWithName(id)
       const createdRepo = await createNewRepo(title, fs, owner)
 
       if (createdRepo && createdRepo.commit && createdRepo.repoBlob) {
         const { repoBlob } = createdRepo
 
-        const result = await postNewRepo({ title, description, file: repoBlob, owner: authState.address })
+        const result = await postNewRepo({ id ,title, description, file: repoBlob, owner: authState.address })
 
-        if (result.id) {
+        if (result.txResponse) {
           trackGoogleAnalyticsEvent('Repository', 'Successfully created a repo', 'Create new repo', {
-            repo_id: result.id,
+            repo_id: id,
             repo_name: title
           })
 
-          navigate(`/repository/${result.id}`)
+          navigate(`/repository/${id}`)
         }
       }
     } catch (error) {

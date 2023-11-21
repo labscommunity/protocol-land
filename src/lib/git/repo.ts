@@ -21,7 +21,7 @@ const arweave = new Arweave({
   protocol: 'https'
 })
 
-export async function postNewRepo({ title, description, file, owner }: any) {
+export async function postNewRepo({ id, title, description, file, owner }: any) {
   const userSigner = new InjectedArweaveSigner(window.arweaveWallet)
   await userSigner.setPublicKey()
 
@@ -52,18 +52,17 @@ export async function postNewRepo({ title, description, file, owner }: any) {
 
   const contract = getWarpContract(CONTRACT_TX_ID, userSigner)
 
-  const uuid = uuidv4()
   await contract.writeInteraction({
     function: 'initialize',
     payload: {
-      id: uuid,
+      id,
       name: title,
       description,
       dataTxId: dataTxResponse.id
     }
   })
 
-  return { txResponse: dataTxResponse, id: uuid }
+  return { txResponse: dataTxResponse }
 }
 
 export async function createNewFork(data: ForkRepositoryOptions) {
