@@ -45,7 +45,7 @@ export default function useCommit() {
     }
   }
 
-  async function fetchFirstCommit(id:string, name: string) {
+  async function fetchFirstCommit(id: string, name: string) {
     const fs = fsWithName(id)
     const dir = `/${name}`
     const commits = await getFirstCommit({ fs, dir })
@@ -102,7 +102,7 @@ export default function useCommit() {
       }
     }
 
-    await fetchFirstCommit(name)
+    await fetchFirstCommit(id, name)
 
     return response
   }
