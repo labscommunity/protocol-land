@@ -34,7 +34,7 @@ export default function RepoHeader({ repo, isLoading, owner, parentRepo }: Props
   const cloneRef = React.useRef<HTMLDivElement | null>(null)
   const location = useLocation()
   const navigate = useNavigate()
-  const { downloadRepository } = useRepository(repo?.id, repo?.id)
+  const { downloadRepository } = useRepository(repo?.id, repo?.name)
 
   React.useEffect(() => {
     if (repo && repo?.name) {
