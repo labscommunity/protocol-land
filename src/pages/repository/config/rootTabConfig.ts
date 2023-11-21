@@ -37,7 +37,8 @@ export const rootTabConfig = [
   {
     title: 'Forks',
     Component: ForksTab,
-    Icon: FiGitBranch
+    Icon: FiGitBranch,
+    getPath: (id: string) => `/repository/${id}/forks`
   },
   {
     title: 'Settings',
