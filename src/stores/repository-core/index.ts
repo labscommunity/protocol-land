@@ -11,6 +11,7 @@ import {
   getOidOfHeadRef,
   getRepositoryMetaFromContract,
   loadRepository,
+  renameRepoDir,
   saveRepository
 } from './actions'
 import { ForksMetaData, RepoCoreSlice, RepoCoreState } from './types'
@@ -187,75 +188,82 @@ const createRepoCoreSlice: StateCreator<CombinedSlices, [['zustand/immer', never
       }
     },
     fetchAndLoadRepository: async (id: string) => {
-      set((state) => {
-        state.repoCoreState.selectedRepo.status = 'PENDING'
-      })
-
-      const { error: metaError, response: metaResponse } = await withAsync(() => getRepositoryMetaFromContract(id))
-
-      if (metaError) {
+      try {
         set((state) => {
-          state.repoCoreState.selectedRepo.error = metaError
+          state.repoCoreState.selectedRepo.status = 'PENDING'
+        })
+
+        const { error: metaError, response: metaResponse } = await withAsync(() => getRepositoryMetaFromContract(id))
+
+        if (metaError || !metaResponse) {
+          throw new Error('Error fetching repository meta.')
+        }
+
+        const { id: repoId, name, dataTxId, fork, parent } = metaResponse.result
+        let parentRepoName = null
+
+        if (fork) {
+          const { error: parentMetaError, response: parentMetaResponse } = await withAsync(() =>
+            getRepositoryMetaFromContract(parent!)
+          )
+
+          if (parentMetaError || !parentMetaResponse) {
+            throw new Error('Error fetching repository meta.')
+          }
+
+          if (name !== parentMetaResponse.result.name) {
+            parentRepoName = parentMetaResponse.result.name
+          }
+
+          await get().repoCoreActions.fetchAndLoadParentRepository(parentMetaResponse.result)
+        }
+
+        const { error: repoFetchError, response: repoFetchResponse } = await withAsync(() =>
+          loadRepository(repoId, name, dataTxId)
+        )
+
+        if (fork && parentRepoName && name !== parentRepoName) {
+          const renamed = await renameRepoDir(repoId, parentRepoName, name)
+
+          if (!renamed) throw new Error('Error loading the repository.')
+        }
+
+        if (repoFetchError || !repoFetchResponse) {
+          throw new Error('Error loading the repository.')
+        }
+
+        set((state) => {
+          state.repoCoreState.selectedRepo.repo = metaResponse.result
+          state.repoCoreState.selectedRepo.status = 'SUCCESS'
+        })
+      } catch (error: any) {
+        set((state) => {
+          state.repoCoreState.selectedRepo.error = error.message
           state.repoCoreState.selectedRepo.status = 'ERROR'
         })
       }
-
-      if (metaResponse) {
-        const { error: repoFetchError, response: repoFetchResponse } = await withAsync(() =>
-          loadRepository(metaResponse.result.id, metaResponse.result.name, metaResponse.result.dataTxId)
-        )
-
-        if (metaResponse.result.fork) {
-          await get().repoCoreActions.fetchAndLoadParentRepository(metaResponse.result.parent!)
-        }
-
-        if (repoFetchError) {
-          set((state) => {
-            state.repoCoreState.selectedRepo.error = repoFetchError
-            state.repoCoreState.selectedRepo.status = 'ERROR'
-          })
-        }
-
-        if (repoFetchResponse) {
-          set((state) => {
-            state.repoCoreState.selectedRepo.repo = metaResponse.result
-            state.repoCoreState.selectedRepo.status = 'SUCCESS'
-          })
-        }
-      }
     },
-    fetchAndLoadParentRepository: async (id: string) => {
+    fetchAndLoadParentRepository: async (repo) => {
       set((state) => {
         state.repoCoreState.parentRepo.status = 'PENDING'
       })
 
-      const { error: metaError, response: metaResponse } = await withAsync(() => getRepositoryMetaFromContract(id))
+      const { error: repoFetchError, response: repoFetchResponse } = await withAsync(() =>
+        loadRepository(repo.id, repo.name, repo.dataTxId)
+      )
 
-      if (metaError) {
+      if (repoFetchError) {
         set((state) => {
-          state.repoCoreState.parentRepo.error = metaError
+          state.repoCoreState.parentRepo.error = repoFetchError
           state.repoCoreState.parentRepo.status = 'ERROR'
         })
       }
 
-      if (metaResponse) {
-        const { error: repoFetchError, response: repoFetchResponse } = await withAsync(() =>
-          loadRepository(metaResponse.result.id, metaResponse.result.name, metaResponse.result.dataTxId)
-        )
-
-        if (repoFetchError) {
-          set((state) => {
-            state.repoCoreState.parentRepo.error = repoFetchError
-            state.repoCoreState.parentRepo.status = 'ERROR'
-          })
-        }
-
-        if (repoFetchResponse) {
-          set((state) => {
-            state.repoCoreState.parentRepo.repo = metaResponse.result
-            state.repoCoreState.parentRepo.status = 'SUCCESS'
-          })
-        }
+      if (repoFetchResponse) {
+        set((state) => {
+          state.repoCoreState.parentRepo.repo = repo
+          state.repoCoreState.parentRepo.status = 'SUCCESS'
+        })
       }
     },
     fetchAndLoadForkRepository: async (id: string) => {

@@ -66,8 +66,11 @@ export default function ForkModal({ setIsOpen, isOpen, repo }: NewRepoModalProps
     }
 
     if (response) {
+      setIsOpen(false)
       navigate(`/repository/${response}`)
     }
+
+    setIsSubmitting(false)
   }
 
   return (

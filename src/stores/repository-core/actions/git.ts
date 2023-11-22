@@ -1,4 +1,5 @@
 import { waitFor } from '@/helpers/waitFor'
+import { withAsync } from '@/helpers/withAsync'
 import { importRepoFromBlob, unmountRepoFromBrowser } from '@/lib/git'
 import { fsWithName } from '@/lib/git/helpers/fsWithName'
 import { getOidFromRef, readFileFromOid, readFilesFromOid } from '@/lib/git/helpers/oid'
@@ -61,6 +62,20 @@ export async function loadRepository(id: string, name: string, dataTxId: string)
   await waitFor(1000)
 
   return success
+}
+
+export async function renameRepoDir(id: string, currentName: string, newName: string) {
+  if(currentName === newName) return 
+  
+  const fs = fsWithName(id)
+  const currentDir = `/${currentName}`
+  const newDir = `/${newName}`
+
+  const { error } = await withAsync(() => fs.promises.rename(currentDir, newDir))
+
+  if (error) return false
+
+  return true
 }
 
 export async function unmountRepository(id: string) {
