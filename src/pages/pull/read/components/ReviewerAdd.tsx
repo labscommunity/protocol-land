@@ -24,6 +24,7 @@ export default function ReviewerAdd() {
       setIsLoading(true)
 
       await addReviewers(+pullId, reviewers)
+      setReviewers([])
       toast.success('Successfully added reviewers')
 
       setIsLoading(false)
@@ -70,7 +71,7 @@ export default function ReviewerAdd() {
                     }}
                   </Listbox.Option>
                 ))}
-              {reviewers.length > 0 && (
+              {contributors && contributors.length > 0 && reviewers.length > 0 && (
                 <div className="p-2 mt-1 flex">
                   <Button
                     onClick={handleReviwersSubmit}

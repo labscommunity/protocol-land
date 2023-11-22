@@ -135,7 +135,13 @@ export async function addAssigneeToIssue(
     throw new ContractError('Issue not found.')
   }
 
-  issue.assignees.push(...payload.assignees)
+  const newAssignees = payload.assignees.filter((assignee: string) => !issue.assignees.includes(assignee))
+
+  if (newAssignees.length === 0) {
+    throw new ContractError('No new assignees to add.')
+  }
+
+  issue.assignees.push(...newAssignees)
 
   return { state }
 }

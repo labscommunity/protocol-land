@@ -4,10 +4,12 @@ import toast from 'react-hot-toast'
 import { FiCheck, FiPlus } from 'react-icons/fi'
 import { useParams } from 'react-router-dom'
 
+import { Button } from '@/components/common/buttons'
 import { useGlobalStore } from '@/stores/globalStore'
 
 export default function AssigneeAdd() {
   const { issueId } = useParams()
+  const [isLoading, setIsLoading] = React.useState(false)
   const [assignees, setAssignees] = React.useState<string[]>([])
   const [addAssignee, getAssigneesList] = useGlobalStore((state) => [
     state.issuesActions.addAssignee,
@@ -19,8 +21,13 @@ export default function AssigneeAdd() {
   async function handleReviwersSubmit() {
     //
     if (assignees.length > 0 && issueId) {
+      setIsLoading(true)
+
       await addAssignee(+issueId, assignees)
+      setAssignees([])
       toast.success('Successfully added assignees')
+
+      setIsLoading(false)
     }
   }
 
@@ -64,14 +71,17 @@ export default function AssigneeAdd() {
                     }}
                   </Listbox.Option>
                 ))}
-              {assignees.length > 0 && (
+              {contributors && contributors.length > 0 && assignees.length > 0 && (
                 <div className="p-2 mt-1 flex">
-                  <span
+                  <Button
                     onClick={handleReviwersSubmit}
-                    className="cursor-pointer w-full text-center font-medium text-white rounded-full bg-[#4388f6] py-[6px] px-2"
+                    className="w-full justify-center font-medium !py-[6px]"
+                    variant="primary-solid"
+                    isLoading={isLoading}
+                    disabled={isLoading}
                   >
-                    Submit
-                  </span>
+                    {isLoading ? 'Processing' : 'Submit'}
+                  </Button>
                 </div>
               )}
               {contributors && contributors.length === 0 && (
