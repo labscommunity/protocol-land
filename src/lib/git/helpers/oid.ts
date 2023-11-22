@@ -40,12 +40,15 @@ export async function readFilesFromCommit({ fs, dir, oid, prefix }: ReadFilesFro
     parent: string
     type: string
   }[] = []
+  const oids: string[] = []
 
   async function traverseTree(tree: TreeEntry[], currentPrefix: string) {
     for (const entry of tree) {
       const updatedPrefix = join(currentPrefix, entry.path)
       const _oid = entry.oid
       const path = entry.path
+
+      oids.push(_oid)
 
       if (entry.type === 'tree') {
         // If it's a tree, recurse and list its contents
@@ -71,6 +74,7 @@ export async function readFilesFromCommit({ fs, dir, oid, prefix }: ReadFilesFro
 
   return {
     objects,
+    oids,
     parent: oid
   }
 }

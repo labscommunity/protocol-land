@@ -149,7 +149,7 @@ export async function mergePullRequest({
       dir,
       ours: base,
       theirs: compare,
-      abortOnConflict: false,
+      abortOnConflict: true,
       dryRun,
       author: {
         email: author,

@@ -39,7 +39,7 @@ export async function getChangedFiles(id: string, name: string, branchA: string,
 export async function traverseAndCopyForkObjects(
   id: string,
   name: string,
-  commitObj: CommitResult,
+  commits: CommitResult[],
   targetId: string,
   targetName: string
 ) {
@@ -47,14 +47,27 @@ export async function traverseAndCopyForkObjects(
   const targetFs = fsWithName(targetId)
   const dir = `/${name}`
   const targetDir = `/${targetName}`
+  const extractedOids = []
 
-  const objects = await readFilesFromCommit({ fs, dir, oid: commitObj.commit.tree, prefix: '' })
+  for (const commit of commits) {
+    const objects = await readFilesFromCommit({ fs, dir, oid: commit.commit.tree, prefix: '' })
 
-  const oids = objects.objects.map((object) => object.oid)
-  oids.push(objects.parent)
-  oids.push(commitObj.oid)
+    extractedOids.push(...objects.oids)
+    extractedOids.push(objects.parent)
+    extractedOids.push(commit.oid)
+  }
 
-  const packResult = await createPackFile({ fs, dir, oids })
+  const uniqueOidsMap = new Set<string>()
+  const oidsToPack: string[] = []
+
+  for (const oid of extractedOids) {
+    if (!uniqueOidsMap.has(oid)) {
+      uniqueOidsMap.add(oid)
+      oidsToPack.push(oid)
+    }
+  }
+
+  const packResult = await createPackFile({ fs, dir, oids: oidsToPack })
 
   await createNewBranch({ fs: targetFs, dir: targetDir, name: `tmp-stage` })
   await checkoutBranch({ fs: targetFs, dir: targetDir, name: `tmp-stage` })
@@ -96,7 +109,7 @@ export async function traverseAndCopyForkObjects(
     fs: targetFs,
     dir: targetDir,
     ref: `refs/heads/tmp-stage`,
-    value: commitObj.oid,
+    value: commits[0].oid,
     force: true
   })
 
@@ -108,7 +121,7 @@ export async function traverseAndCopyForkObjects(
     force: true
   })
 
-  await checkoutBranch({ fs: targetFs, dir: targetDir, name: objects.parent })
+  // await checkoutBranch({ fs: targetFs, dir: targetDir, name: objects.parent })
 
   return {
     status: true,

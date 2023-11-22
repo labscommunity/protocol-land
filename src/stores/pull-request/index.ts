@@ -53,7 +53,7 @@ const createPullRequestSlice: StateCreator<CombinedSlices, [['zustand/immer', ne
         traverseAndCopyForkObjects(
           PR.compareRepo.repoId,
           PR.compareRepo.repoName,
-          commits[0],
+          commits,
           parentRepo.id,
           parentRepo.name
         )
