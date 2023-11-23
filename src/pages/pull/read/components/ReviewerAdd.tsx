@@ -6,6 +6,7 @@ import { useParams } from 'react-router-dom'
 
 import { Button } from '@/components/common/buttons'
 import { useGlobalStore } from '@/stores/globalStore'
+import { shortenAddress } from '@/helpers/shortenAddress'
 
 export default function ReviewerAdd() {
   const [isLoading, setIsLoading] = React.useState(false)
@@ -64,7 +65,7 @@ export default function ReviewerAdd() {
                                 reviewers.indexOf(address) > -1 ? 'opacity-100' : 'opacity-0'
                               }`}
                             />
-                            {address}
+                            {shortenAddress(address, 6)}
                           </span>
                         </>
                       )
