@@ -65,17 +65,21 @@ export async function loadRepository(id: string, name: string, dataTxId: string)
 }
 
 export async function renameRepoDir(id: string, currentName: string, newName: string) {
-  if(currentName === newName) return 
-  
+  if (currentName === newName) return true
+
   const fs = fsWithName(id)
   const currentDir = `/${currentName}`
   const newDir = `/${newName}`
 
+  const { error: readError } = await withAsync(() => fs.promises.readdir(newDir))
+
+  if (!readError) return true
+
   const { error } = await withAsync(() => fs.promises.rename(currentDir, newDir))
 
-  if (error) return false
+  if (!error) return true
 
-  return true
+  return false
 }
 
 export async function unmountRepository(id: string) {
