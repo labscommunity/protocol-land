@@ -20,7 +20,10 @@ const schema = yup
   .object({
     name: yup
       .string()
-      .matches(/^(\d|\w|\/|-(?!.*-$))+$/g, 'Invalid branch name')
+      .matches(
+        /^\w(?:[\w\/-]*\w)?$/g,
+        'Invalid branch name. Please use only letters, numbers, hyphens, underscores and slashes. It must start and end with a letter or number.'
+      )
       .required('Branch name is required')
   })
   .required()
@@ -30,6 +33,7 @@ export default function NewBranchModal({ setIsOpen, isOpen, addNewBranch }: NewB
   const {
     register,
     handleSubmit,
+    resetField,
     formState: { errors }
   } = useForm({
     resolver: yupResolver(schema)
@@ -46,9 +50,10 @@ export default function NewBranchModal({ setIsOpen, isOpen, addNewBranch }: NewB
     const { error } = await withAsync(() => addNewBranch(name))
 
     if (!error) {
-      setIsSubmitting(false)
       setIsOpen(false)
+      resetField('name')
     }
+    setIsSubmitting(false)
     // const owner = userAddress || 'Protocol.Land user'
 
     //   if (result.id) {
