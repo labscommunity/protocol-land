@@ -61,6 +61,7 @@
   },
   "devDependencies": {
     "@esbuild-plugins/node-globals-polyfill": "^0.2.3",
+    "@types/clean-git-ref": "^2.0.2",
     "@types/node": "^20.4.6",
     "@types/react": "^18.2.15",
     "@types/react-calendar-heatmap": "^1.6.4",

@@ -2891,6 +2891,11 @@
     "@types/node" "*"
     "@types/responselike" "^1.0.0"
 
+"@types/clean-git-ref@^2.0.2":
+  version "2.0.2"
+  resolved "https://registry.yarnpkg.com/@types/clean-git-ref/-/clean-git-ref-2.0.2.tgz#cf81d3ec8228a46d1a7e3a7aa744b3a616419e2f"
+  integrity sha512-2z9rK9ayJHatZt9oDLCGE0FsArvjG1xWGuSufh6FTbbPdbpGj7cpzhfcKbVnyrwatTQ5KyxhurmGBM2xDa8Jgw==
+
 "@types/cli-color@*":
   version "2.0.2"
   resolved "https://registry.yarnpkg.com/@types/cli-color/-/cli-color-2.0.2.tgz#01bd593722a12c26ec84c170ab251fe2d35856c5"

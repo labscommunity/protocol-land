@@ -4,7 +4,9 @@ import clsx from 'clsx'
 import React, { Fragment } from 'react'
 import { useForm } from 'react-hook-form'
 import SVG from 'react-inlinesvg'
+import toast from 'react-hot-toast'
 import * as yup from 'yup'
+import cleanGitRef from 'clean-git-ref'
 
 import CloseCrossIcon from '@/assets/icons/close-cross.svg'
 import { Button } from '@/components/common/buttons'
@@ -20,9 +22,16 @@ const schema = yup
   .object({
     name: yup
       .string()
-      .matches(
-        /^\w(?:[\w\/-]*\w)?$/g,
-        'Invalid branch name. Please use only letters, numbers, hyphens, underscores and slashes. It must start and end with a letter or number.'
+      .transform(
+        (currentValue) =>
+          // https://github.com/renovatebot/renovate/blob/159acb04c72e27d167084b5a0d00b3b5f49672fe/lib/workers/repository/updates/branch-name.ts#L21
+          cleanGitRef
+            .clean(currentValue)
+            .replace(/^\.|\.$/, '') // leading or trailing dot
+            .replace(/\/\./g, '/') // leading dot after slash
+            .replace(/\s/g, '') // whitespace
+            .replace(/[[?:\\^~]/g, '') // massage out all these characters: : ? [ \ ^ ~
+            .replace(/^-+|-+$/g, '') // replace starting or ending '-+' sequences
       )
       .required('Branch name is required')
   })
@@ -52,6 +61,8 @@ export default function NewBranchModal({ setIsOpen, isOpen, addNewBranch }: NewB
     if (!error) {
       setIsOpen(false)
       resetField('name')
+    } else {
+      toast.error((error as Error)?.message || 'Failed to create new branch.')
     }
     setIsSubmitting(false)
     // const owner = userAddress || 'Protocol.Land user'
