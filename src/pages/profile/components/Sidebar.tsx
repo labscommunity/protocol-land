@@ -36,7 +36,10 @@ const schema = yup.object().shape(
         then: (rule) =>
           rule
             .min(4, 'Username must be more than 3 characters.')
-            .matches(/^[a-z\d](?:[a-z\d]|-(?=[a-z\d])){0,38}$/, 'Invalid username format')
+            .matches(
+              /^[a-z\d](?:[a-z\d]|-(?=[a-z\d])){0,38}$/,
+              'Invalid username format. Use only lowercase letters, numbers, and hyphens. It must start with a letter or number and be at most 39 characters.'
+            )
       }),
     location: yup.string().trim(),
     // timezone: yup.object({

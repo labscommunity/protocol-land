@@ -103,7 +103,7 @@ export const fetchUserRepos = async (address: string) => {
   }
 
   if (collabResponse) {
-    repos = [...repos, collabResponse]
+    repos = [...repos, ...collabResponse.result]
   }
 
   return repos
