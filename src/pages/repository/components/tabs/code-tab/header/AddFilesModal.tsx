@@ -4,6 +4,7 @@ import clsx from 'clsx'
 import React, { Fragment } from 'react'
 import { FileWithPath, useDropzone } from 'react-dropzone'
 import { useForm } from 'react-hook-form'
+import toast from 'react-hot-toast'
 import SVG from 'react-inlinesvg'
 import { useParams } from 'react-router-dom'
 import * as yup from 'yup'
@@ -11,6 +12,9 @@ import * as yup from 'yup'
 import CloseCrossIcon from '@/assets/icons/close-cross.svg'
 import FolderBrowseIcon from '@/assets/icons/folder-browse.svg'
 import { Button } from '@/components/common/buttons'
+import CostEstimatesToolTip from '@/components/CostEstimatesToolTip'
+import { fsWithName } from '@/lib/git/helpers/fsWithName'
+import { packGitRepo } from '@/lib/git/helpers/zipUtils'
 import useCommit from '@/pages/repository/hooks/useCommit'
 import { useGlobalStore } from '@/stores/globalStore'
 
@@ -43,9 +47,18 @@ export default function AddFilesModal({ setIsOpen, isOpen }: NewBranchModal) {
   ])
 
   const [files, setFiles] = React.useState<FileWithPath[]>([])
+  const [fileSizes, setFileSizes] = React.useState<number[]>([])
+  const [repoBlobSize, setRepoBlobSize] = React.useState<number>(0)
   const [isSubmitting, setIsSubmitting] = React.useState(false)
 
   const { getRootProps, getInputProps, isDragActive, inputRef } = useDropzone({ onDrop })
+
+  React.useEffect(() => {
+    if (files.length > 0) {
+      files.forEach((file) => setFileSizes((prev) => [...prev, file.size]))
+      if (!repoBlobSize) captureRepoBlobSize()
+    }
+  }, [files])
 
   function closeModal() {
     setIsOpen(false)
@@ -72,6 +85,20 @@ export default function AddFilesModal({ setIsOpen, isOpen }: NewBranchModal) {
 
       setIsSubmitting(false)
       closeModal()
+    } else {
+      toast.error('Please select atleast one file.')
+    }
+  }
+
+  async function captureRepoBlobSize() {
+    if (!userRepo) return
+    const fs = fsWithName(id!)
+    const dir = `/${userRepo.name}`
+
+    const blob = await packGitRepo({ fs, dir })
+
+    if (blob && blob.size) {
+      setRepoBlobSize(blob.size)
     }
   }
 
@@ -101,7 +128,7 @@ export default function AddFilesModal({ setIsOpen, isOpen }: NewBranchModal) {
               leaveFrom="opacity-100 scale-100"
               leaveTo="opacity-0 scale-95"
             >
-              <Dialog.Panel className="w-full max-w-[368px] transform overflow-hidden rounded-2xl bg-white p-6 text-left align-middle shadow-xl transition-all">
+              <Dialog.Panel className="w-full max-w-[368px] transform rounded-2xl bg-white p-6 text-left align-middle shadow-xl transition-all">
                 <div className="w-full flex justify-between align-middle">
                   <Dialog.Title as="h3" className="text-xl font-medium text-gray-900">
                     Upload new Files/Folders
@@ -164,7 +191,9 @@ export default function AddFilesModal({ setIsOpen, isOpen }: NewBranchModal) {
                     {errors.commit && <p className="text-red-500 text-sm italic mt-2">{errors.commit?.message}</p>}
                   </div>
                 </div>
-
+                <div className="mt-3">
+                  <CostEstimatesToolTip fileSizes={[...fileSizes, repoBlobSize]} />
+                </div>
                 <div className="mt-6">
                   <Button
                     disabled={Object.keys(errors).length > 0 || isSubmitting}

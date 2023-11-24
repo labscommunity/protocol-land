@@ -10,6 +10,7 @@ import * as yup from 'yup'
 
 import CloseCrossIcon from '@/assets/icons/close-cross.svg'
 import { Button } from '@/components/common/buttons'
+import CostEstimatesToolTip from '@/components/CostEstimatesToolTip'
 import { trackGoogleAnalyticsEvent } from '@/helpers/google-analytics'
 import { createNewRepo, postNewRepo } from '@/lib/git'
 import { fsWithName } from '@/lib/git/helpers/fsWithName'
@@ -60,7 +61,7 @@ export default function NewRepoModal({ setIsOpen, isOpen }: NewRepoModalProps) {
       if (createdRepo && createdRepo.commit && createdRepo.repoBlob) {
         const { repoBlob } = createdRepo
 
-        const result = await postNewRepo({ id ,title, description, file: repoBlob, owner: authState.address })
+        const result = await postNewRepo({ id, title, description, file: repoBlob, owner: authState.address })
 
         if (result.txResponse) {
           trackGoogleAnalyticsEvent('Repository', 'Successfully created a repo', 'Create new repo', {
@@ -102,7 +103,7 @@ export default function NewRepoModal({ setIsOpen, isOpen }: NewRepoModalProps) {
               leaveFrom="opacity-100 scale-100"
               leaveTo="opacity-0 scale-95"
             >
-              <Dialog.Panel className="w-full max-w-[368px] transform overflow-hidden rounded-2xl bg-white p-6 text-left align-middle shadow-xl transition-all">
+              <Dialog.Panel className="w-full max-w-[368px] transform rounded-2xl bg-white p-6 text-left align-middle shadow-xl transition-all">
                 <div className="w-full flex justify-between align-middle">
                   <Dialog.Title as="h3" className="text-xl font-medium text-gray-900">
                     Create a new Repository
@@ -141,6 +142,9 @@ export default function NewRepoModal({ setIsOpen, isOpen }: NewRepoModalProps) {
                     {errors.description && (
                       <p className="text-red-500 text-sm italic mt-2">{errors.description?.message}</p>
                     )}
+                  </div>
+                  <div className="py-1">
+                    <CostEstimatesToolTip fileSizes={[2740]} />
                   </div>
                 </div>
 
