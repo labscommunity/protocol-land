@@ -87,17 +87,22 @@ export async function createNewFork(data: ForkRepositoryOptions) {
 }
 
 export async function postUpdatedRepo({ fs, dir, owner, id }: PostUpdatedRepoOptions) {
-  await checkoutBranch({ fs, dir, name: 'master' })
+  const { error: initialError, result: initialBranch } = await getCurrentBranch({ fs, dir })
 
-  const { error, result } = await getCurrentBranch({ fs, dir })
-
-  if (error || result !== 'master') {
-    throw new Error('failed to update repo.')
+  if (initialError || (initialBranch && initialBranch !== 'master')) {
+    await checkoutBranch({ fs, dir, name: 'master' })
   }
 
   await waitFor(500)
 
   const repoBlob = await packGitRepo({ fs, dir })
+
+  const { result: currentBranch } = await getCurrentBranch({ fs, dir })
+
+  // Checkout back to the initial branch if a different branch was checked out
+  if (!initialError && initialBranch && currentBranch && currentBranch !== initialBranch) {
+    await checkoutBranch({ fs, dir, name: initialBranch })
+  }
 
   const userSigner = new InjectedArweaveSigner(window.arweaveWallet)
   await userSigner.setPublicKey()
