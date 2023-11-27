@@ -9,6 +9,7 @@ import getWarpContract from '@/helpers/getWrapContract'
 import { toArrayBuffer } from '@/helpers/toArrayBuffer'
 import { waitFor } from '@/helpers/waitFor'
 import { withAsync } from '@/helpers/withAsync'
+import { ForkRepositoryOptions } from '@/stores/repository-core/types'
 
 import { checkoutBranch, getCurrentBranch } from './branch'
 import { FSType } from './helpers/fsWithName'
@@ -20,7 +21,7 @@ const arweave = new Arweave({
   protocol: 'https'
 })
 
-export async function postNewRepo({ title, description, file, owner }: any) {
+export async function postNewRepo({ id, title, description, file, owner }: any) {
   const userSigner = new InjectedArweaveSigner(window.arweaveWallet)
   await userSigner.setPublicKey()
 
@@ -51,24 +52,44 @@ export async function postNewRepo({ title, description, file, owner }: any) {
 
   const contract = getWarpContract(CONTRACT_TX_ID, userSigner)
 
-  const uuid = uuidv4()
   await contract.writeInteraction({
     function: 'initialize',
     payload: {
-      id: uuid,
+      id,
       name: title,
       description,
       dataTxId: dataTxResponse.id
     }
   })
 
-  return { txResponse: dataTxResponse, id: uuid }
+  return { txResponse: dataTxResponse }
+}
+
+export async function createNewFork(data: ForkRepositoryOptions) {
+  const userSigner = new InjectedArweaveSigner(window.arweaveWallet)
+  await userSigner.setPublicKey()
+
+  const contract = getWarpContract(CONTRACT_TX_ID, userSigner)
+
+  const uuid = uuidv4()
+  await contract.writeInteraction({
+    function: 'forkRepository',
+    payload: {
+      id: uuid,
+      name: data.name,
+      description: data.description,
+      dataTxId: data.dataTxId,
+      parent: data.parent
+    }
+  })
+
+  return uuid
 }
 
 export async function postUpdatedRepo({ fs, dir, owner, id }: PostUpdatedRepoOptions) {
   const { error: initialError, result: initialBranch } = await getCurrentBranch({ fs, dir })
 
-  if (!initialError && initialBranch && initialBranch !== 'master') {
+  if (initialError || (initialBranch && initialBranch !== 'master')) {
     await checkoutBranch({ fs, dir, name: 'master' })
   }
 
@@ -76,10 +97,10 @@ export async function postUpdatedRepo({ fs, dir, owner, id }: PostUpdatedRepoOpt
 
   const repoBlob = await packGitRepo({ fs, dir })
 
-  const { error: currentError, result: currentBranch } = await getCurrentBranch({ fs, dir })
+  const { result: currentBranch } = await getCurrentBranch({ fs, dir })
 
   // Checkout back to the initial branch if a different branch was checked out
-  if (!initialError && !currentError && initialBranch && currentBranch && currentBranch !== initialBranch) {
+  if (!initialError && initialBranch && currentBranch && currentBranch !== initialBranch) {
     await checkoutBranch({ fs, dir, name: initialBranch })
   }
 
@@ -149,8 +170,6 @@ export async function createNewRepo(title: string, fs: FSType, owner: string) {
 
     return { repoBlob, commit: sha }
   } catch (error) {
-    //
-    console.log({ error })
     console.error('failed to create repo')
   }
 }

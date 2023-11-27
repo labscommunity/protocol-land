@@ -10,6 +10,10 @@ export type Repo = {
   pullRequests: PullRequest[]
   issues: Issue[]
   contributors: string[]
+  forks: string[]
+  fork: boolean
+  parent: string | null
+  timestamp: number
 }
 
 export type PullRequest = {
@@ -24,6 +28,14 @@ export type PullRequest = {
   status: PullRequestStatus
   reviewers: Reviewer[]
   timestamp: number
+  baseRepo: {
+    repoName: string
+    repoId: string
+  }
+  compareRepo: {
+    repoName: string
+    repoId: string
+  }
 }
 
 export type Issue = {

@@ -2,12 +2,12 @@ import { yupResolver } from '@hookform/resolvers/yup'
 import clsx from 'clsx'
 import { useState } from 'react'
 import { useForm } from 'react-hook-form'
-import { useParams } from 'react-router-dom'
 import { useNavigate } from 'react-router-dom'
 import * as yup from 'yup'
 
 import { Button } from '@/components/common/buttons'
 import { postNewPullRequest } from '@/lib/git/pull-request'
+import { Repo } from '@/types/repository'
 
 const prSchema = yup
   .object({
@@ -19,14 +19,15 @@ const prSchema = yup
 type Props = {
   baseBranch: string
   compareBranch: string
-  repoName: string
+  baseRepo: Repo | null
+  compareRepo: Repo | null
+  repoId: string
 }
 
-export default function NewPRForm({ baseBranch, compareBranch, repoName }: Props) {
+export default function NewPRForm({ baseBranch, compareBranch, baseRepo, compareRepo, repoId }: Props) {
   const [isSubmitting, setIsSubmitting] = useState(false)
 
   const navigate = useNavigate()
-  const { id } = useParams()
   const {
     register: register,
     handleSubmit: handlePRSubmit,
@@ -40,17 +41,30 @@ export default function NewPRForm({ baseBranch, compareBranch, repoName }: Props
 
     setIsSubmitting(true)
 
+    if (!baseRepo || !compareRepo) {
+      setIsSubmitting(false)
+
+      return
+    }
+
     const PR = await postNewPullRequest({
-      repoName,
+      baseRepo: {
+        repoName: baseRepo.name,
+        repoId: baseRepo.id,
+      },
+      compareRepo: {
+        repoName: compareRepo.name,
+        repoId: compareRepo.id
+      },
       title,
       description: description || '',
       baseBranch,
       compareBranch,
-      repoId: id!
+      repoId
     })
 
     if (PR) {
-      navigate(`/repository/${id}/pull/${PR.id}`)
+      navigate(`/repository/${repoId}/pull/${PR.id}`)
     }
   }
 

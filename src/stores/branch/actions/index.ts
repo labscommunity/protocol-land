@@ -1,22 +1,22 @@
 import { checkoutBranch, createNewBranch, getAllBranches, getCurrentBranch } from '@/lib/git/branch'
 import { fsWithName } from '@/lib/git/helpers/fsWithName'
 
-export async function getBranchList(name: string) {
-  const fs = fsWithName(name)
+export async function getBranchList(id: string, name: string) {
+  const fs = fsWithName(id)
   const dir = `/${name}`
 
   return getAllBranches({ fs, dir })
 }
 
-export async function getCurrentActiveBranch(name: string) {
-  const fs = fsWithName(name)
+export async function getCurrentActiveBranch(id: string, name: string) {
+  const fs = fsWithName(id)
   const dir = `/${name}`
 
   return getCurrentBranch({ fs, dir })
 }
 
-export async function addNewBranch(repoName: string, branchName: string) {
-  const fs = fsWithName(repoName)
+export async function addNewBranch(id: string, repoName: string, branchName: string) {
+  const fs = fsWithName(id)
   const dir = `/${repoName}`
 
   return createNewBranch({
@@ -26,8 +26,8 @@ export async function addNewBranch(repoName: string, branchName: string) {
   })
 }
 
-export async function changeBranch(repoName: string, branchName: string) {
-  const fs = fsWithName(repoName)
+export async function changeBranch(id: string, repoName: string, branchName: string) {
+  const fs = fsWithName(id)
   const dir = `/${repoName}`
 
   return checkoutBranch({ fs, dir, name: branchName })

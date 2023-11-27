@@ -24,22 +24,22 @@ export default function useBranch() {
   async function listBranches() {
     if (!userRepo) return
 
-    const { name } = userRepo
+    const { name, id } = userRepo
 
-    const fs = fsWithName(name)
+    const fs = fsWithName(id)
     const dir = `/${name}`
 
     const branchList = await getAllBranches({ fs, dir })
-    console.log({ branchList })
+
     setBranches([...branchList])
   }
 
   async function fetchCurrentBranch() {
     if (!userRepo) return
 
-    const { name } = userRepo
+    const { name, id } = userRepo
 
-    const fs = fsWithName(name)
+    const fs = fsWithName(id)
     const dir = `/${name}`
 
     const { result, error } = await getCurrentBranch({ fs, dir })
@@ -52,8 +52,8 @@ export default function useBranch() {
   async function addNewBranch(branchName: string) {
     if (!userRepo) return
 
-    const { name } = userRepo
-    const fs = fsWithName(name)
+    const { name, id } = userRepo
+    const fs = fsWithName(id)
     const dir = `/${name}`
 
     const result = await createNewBranch({
@@ -71,8 +71,8 @@ export default function useBranch() {
   async function switchBranch(branch: string) {
     if (!userRepo) return
 
-    const { name } = userRepo
-    const fs = fsWithName(name)
+    const { name, id } = userRepo
+    const fs = fsWithName(id)
     const dir = `/${name}`
 
     const { error } = await checkoutBranch({ fs, dir, name: branch })

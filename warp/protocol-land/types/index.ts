@@ -42,6 +42,9 @@ export type Repo = {
   issues: Issue[]
   contributors: string[]
   timestamp: number
+  forks: string[]
+  fork: boolean
+  parent: string | null
 }
 
 export type PullRequest = {
@@ -56,6 +59,13 @@ export type PullRequest = {
   status: PullRequestStatus
   reviewers: Reviewer[]
   timestamp: number
+  baseRepo: PRSide
+  compareRepo: PRSide
+}
+
+export type PRSide = {
+  repoId: string
+  repoName: string
 }
 
 export type Issue = {
@@ -119,6 +129,7 @@ export type EvolveInput = {
 
 const repoFnList = [
   'initialize',
+  'forkRepository',
   'getRepository',
   'getRepositoriesByOwner',
   'getRepositoriesByContributor',

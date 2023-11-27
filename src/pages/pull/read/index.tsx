@@ -15,11 +15,15 @@ const activeClasses = 'border-b-[2px] border-primary-600 text-gray-900 font-medi
 export default function ReadPullRequest() {
   const location = useLocation()
   const { id, pullId } = useParams()
-  const [selectedRepo, fetchAndLoadRepository, pullRequestActions] = useGlobalStore((state) => [
-    state.repoCoreState.selectedRepo,
-    state.repoCoreActions.fetchAndLoadRepository,
-    state.pullRequestActions
-  ])
+  const [selectedRepo, forkRepo, commits, fetchAndLoadRepository, fetchAndLoadForkRepository, pullRequestActions] =
+    useGlobalStore((state) => [
+      state.repoCoreState.selectedRepo,
+      state.repoCoreState.forkRepo,
+      state.pullRequestState.commits,
+      state.repoCoreActions.fetchAndLoadRepository,
+      state.repoCoreActions.fetchAndLoadForkRepository,
+      state.pullRequestActions
+    ])
 
   useEffect(() => {
     if (id) {
@@ -33,11 +37,34 @@ export default function ReadPullRequest() {
 
       if (!PR) return
 
-      pullRequestActions.compareBranches(PR.baseBranchOid, PR.compareBranch)
-      pullRequestActions.getFileStatuses(PR.baseBranchOid, PR.compareBranch)
+      const compareIsFork = selectedRepo.repo.forks.indexOf(PR.compareRepo.repoId) > -1
+
+      if (PR.baseRepo.repoId !== PR.compareRepo.repoId && compareIsFork) {
+        fetchAndLoadForkRepository(PR.compareRepo.repoId)
+        //
+      }
+
+      const params = {
+        base: {
+          repoName: PR.baseRepo.repoName,
+          branch: PR.baseBranch,
+          id: PR.baseRepo.repoId
+        },
+        compare: {
+          repoName: PR.compareRepo.repoName,
+          branch: PR.compareBranch,
+          id: PR.compareRepo.repoId
+        }
+      }
+
+      pullRequestActions.compareBranches(params)
+
+      if (!compareIsFork) {
+        pullRequestActions.getFileStatuses(PR.baseBranchOid, PR.compareBranch)
+        pullRequestActions.setCompareBranch(PR.compareBranch)
+      }
 
       pullRequestActions.setBaseBranch(PR.baseBranch)
-      pullRequestActions.setCompareBranch(PR.compareBranch)
       pullRequestActions.setBaseBranchOid(PR.baseBranchOid)
 
       trackGoogleAnalyticsPageView('pageview', location.pathname, 'Read Pull Request Page Visit', {
@@ -50,6 +77,14 @@ export default function ReadPullRequest() {
       })
     }
   }, [selectedRepo.repo])
+
+  useEffect(() => {
+    if (commits.length > 0 && forkRepo.repo && selectedRepo.repo) {
+      const PR = selectedRepo.repo.pullRequests[+pullId! - 1]
+
+      pullRequestActions.prepareAndCopyForkCommits(PR)
+    }
+  }, [commits, forkRepo])
 
   const isLoading = selectedRepo.status === 'IDLE' || selectedRepo.status === 'PENDING'
 

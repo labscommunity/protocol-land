@@ -15,6 +15,7 @@ export default function FilesTab() {
       {fileStatuses.map((fileStatus) => (
         <FileCompareComponent
           repoName={repo!.name || ''}
+          repoId={repo!.id}
           fileStatus={fileStatus}
           base={baseBranchOid}
           compare={compareBranch}

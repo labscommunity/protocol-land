@@ -11,9 +11,10 @@ import {
   getOidOfHeadRef,
   getRepositoryMetaFromContract,
   loadRepository,
+  renameRepoDir,
   saveRepository
 } from './actions'
-import { RepoCoreSlice, RepoCoreState } from './types'
+import { ForksMetaData, RepoCoreSlice, RepoCoreState } from './types'
 
 const initialRepoCoreState: RepoCoreState = {
   selectedRepo: {
@@ -24,7 +25,18 @@ const initialRepoCoreState: RepoCoreState = {
       commits: [],
       pullRequests: [],
       issues: []
-    }
+    },
+    forksMetaData: []
+  },
+  parentRepo: {
+    status: 'IDLE',
+    error: null,
+    repo: null
+  },
+  forkRepo: {
+    status: 'IDLE',
+    error: null,
+    repo: null
   },
   git: {
     status: 'IDLE',
@@ -121,6 +133,36 @@ const createRepoCoreSlice: StateCreator<CombinedSlices, [['zustand/immer', never
         state.repoCoreState.selectedRepo.statistics = data
       })
     },
+    fetchForkMetaData: async () => {
+      const repo = get().repoCoreState.selectedRepo.repo
+
+      if (!repo) {
+        set((state) => (state.repoCoreState.git.status = 'ERROR'))
+
+        return
+      }
+
+      const metaData: ForksMetaData[] = []
+
+      for (const forkRepoId of repo.forks) {
+        const { response: metaResponse } = await withAsync(() => getRepositoryMetaFromContract(forkRepoId))
+
+        if (metaResponse && metaResponse.result) {
+          const { id, name, owner, timestamp } = metaResponse.result
+
+          metaData.push({
+            id,
+            name,
+            owner,
+            createdAt: timestamp
+          })
+        }
+      }
+
+      set((state) => {
+        state.repoCoreState.selectedRepo.forksMetaData = metaData
+      })
+    },
     addContributor: async (address: string) => {
       const repo = get().repoCoreState.selectedRepo.repo
 
@@ -146,35 +188,114 @@ const createRepoCoreSlice: StateCreator<CombinedSlices, [['zustand/immer', never
       }
     },
     fetchAndLoadRepository: async (id: string) => {
+      try {
+        set((state) => {
+          state.repoCoreState.selectedRepo.status = 'PENDING'
+        })
+
+        const { error: metaError, response: metaResponse } = await withAsync(() => getRepositoryMetaFromContract(id))
+
+        if (metaError || !metaResponse) {
+          throw new Error('Error fetching repository meta.')
+        }
+
+        const { id: repoId, name, dataTxId, fork, parent } = metaResponse.result
+        let parentRepoName = null
+
+        if (fork) {
+          const { error: parentMetaError, response: parentMetaResponse } = await withAsync(() =>
+            getRepositoryMetaFromContract(parent!)
+          )
+
+          if (parentMetaError || !parentMetaResponse) {
+            throw new Error('Error fetching repository meta.')
+          }
+
+          if (name !== parentMetaResponse.result.name) {
+            parentRepoName = parentMetaResponse.result.name
+          }
+
+          await get().repoCoreActions.fetchAndLoadParentRepository(parentMetaResponse.result)
+        }
+
+        const { error: repoFetchError, response: repoFetchResponse } = await withAsync(() =>
+          loadRepository(repoId, name, dataTxId)
+        )
+
+        if (fork && parentRepoName && name !== parentRepoName) {
+          const renamed = await renameRepoDir(repoId, parentRepoName, name)
+
+          if (!renamed) throw new Error('Error loading the repository.')
+        }
+
+        if (repoFetchError || !repoFetchResponse) {
+          throw new Error('Error loading the repository.')
+        }
+
+        set((state) => {
+          state.repoCoreState.selectedRepo.repo = metaResponse.result
+          state.repoCoreState.selectedRepo.status = 'SUCCESS'
+        })
+      } catch (error: any) {
+        set((state) => {
+          state.repoCoreState.selectedRepo.error = error.message
+          state.repoCoreState.selectedRepo.status = 'ERROR'
+        })
+      }
+    },
+    fetchAndLoadParentRepository: async (repo) => {
       set((state) => {
-        state.repoCoreState.selectedRepo.status = 'PENDING'
+        state.repoCoreState.parentRepo.status = 'PENDING'
+      })
+
+      const { error: repoFetchError, response: repoFetchResponse } = await withAsync(() =>
+        loadRepository(repo.id, repo.name, repo.dataTxId)
+      )
+
+      if (repoFetchError) {
+        set((state) => {
+          state.repoCoreState.parentRepo.error = repoFetchError
+          state.repoCoreState.parentRepo.status = 'ERROR'
+        })
+      }
+
+      if (repoFetchResponse) {
+        set((state) => {
+          state.repoCoreState.parentRepo.repo = repo
+          state.repoCoreState.parentRepo.status = 'SUCCESS'
+        })
+      }
+    },
+    fetchAndLoadForkRepository: async (id: string) => {
+      set((state) => {
+        state.repoCoreState.forkRepo.status = 'PENDING'
       })
 
       const { error: metaError, response: metaResponse } = await withAsync(() => getRepositoryMetaFromContract(id))
 
       if (metaError) {
         set((state) => {
-          state.repoCoreState.selectedRepo.error = metaError
-          state.repoCoreState.selectedRepo.status = 'ERROR'
+          state.repoCoreState.forkRepo.error = metaError
+          state.repoCoreState.forkRepo.status = 'ERROR'
         })
       }
 
       if (metaResponse) {
         const { error: repoFetchError, response: repoFetchResponse } = await withAsync(() =>
-          loadRepository(metaResponse.result.name, metaResponse.result.dataTxId)
+          loadRepository(metaResponse.result.id, metaResponse.result.name, metaResponse.result.dataTxId)
         )
 
         if (repoFetchError) {
           set((state) => {
-            state.repoCoreState.selectedRepo.error = repoFetchError
-            state.repoCoreState.selectedRepo.status = 'ERROR'
+            state.repoCoreState.forkRepo.error = repoFetchError
+            state.repoCoreState.forkRepo.status = 'ERROR'
           })
         }
 
         if (repoFetchResponse) {
           set((state) => {
-            state.repoCoreState.selectedRepo.repo = metaResponse.result
-            state.repoCoreState.selectedRepo.status = 'SUCCESS'
+            state.repoCoreState.forkRepo.repo = metaResponse.result
+            state.repoCoreState.forkRepo.status = 'SUCCESS'
           })
         }
       }
@@ -193,7 +314,7 @@ const createRepoCoreSlice: StateCreator<CombinedSlices, [['zustand/immer', never
       }
 
       const repoName = repo.name
-      const { error, response } = await withAsync(() => getOidOfHeadRef(repoName))
+      const { error, response } = await withAsync(() => getOidOfHeadRef(repo.id, repoName))
 
       if (error) {
         set((state) => {
@@ -248,7 +369,7 @@ const createRepoCoreSlice: StateCreator<CombinedSlices, [['zustand/immer', never
         }
 
         const repoName = repo.name
-        const { error, response } = await withAsync(() => getFilesFromOid(oid, repoName))
+        const { error, response } = await withAsync(() => getFilesFromOid(repo.id, oid, repoName))
 
         if (error) {
           set((state) => {
@@ -278,7 +399,7 @@ const createRepoCoreSlice: StateCreator<CombinedSlices, [['zustand/immer', never
         }
 
         const repoName = repo.name
-        const { error, response } = await withAsync(() => getFileContentFromOid(oid, repoName))
+        const { error, response } = await withAsync(() => getFileContentFromOid(repo.id, oid, repoName))
 
         if (error) {
           set((state) => {
@@ -302,7 +423,7 @@ const createRepoCoreSlice: StateCreator<CombinedSlices, [['zustand/immer', never
 
         const repoName = repo.name
 
-        const { error } = await withAsync(() => saveRepository(repoName))
+        const { error } = await withAsync(() => saveRepository(repo.id, repoName))
 
         if (error) {
           set((state) => {
