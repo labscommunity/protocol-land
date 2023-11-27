@@ -19,6 +19,8 @@ export default function ForksTab() {
   React.useEffect(() => {
     if (userRepo && forksMetaData.length === 0) {
       getForkReposMetaInfo()
+    }else{
+      setIsLoading(false)
     }
   }, [userRepo])
 
