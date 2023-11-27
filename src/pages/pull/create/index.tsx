@@ -40,7 +40,8 @@ export default function CreatePullRequest() {
     setCompareBranch,
     setBaseRepo,
     setCompareRepo,
-    compareBranches
+    compareBranches,
+    reset
   ] = useGlobalStore((state) => [
     state.repoCoreState.selectedRepo,
     state.repoCoreState.parentRepo,
@@ -57,12 +58,17 @@ export default function CreatePullRequest() {
     state.pullRequestActions.setCompareBranch,
     state.pullRequestActions.setBaseRepo,
     state.pullRequestActions.setCompareRepo,
-    state.pullRequestActions.compareBranches
+    state.pullRequestActions.compareBranches,
+    state.repoCoreActions.reset
   ])
 
   useEffect(() => {
     if (id) {
       fetchAndLoadRepository(id)
+    }
+
+    return () => {
+      reset()
     }
   }, [id])
 
