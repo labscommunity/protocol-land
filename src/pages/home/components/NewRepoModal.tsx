@@ -25,7 +25,10 @@ const schema = yup
   .object({
     title: yup
       .string()
-      .matches(/^[a-z]+(-[a-z]+)*$/, 'Invalid title format')
+      .matches(
+        /^[a-z0-9._-]+$/,
+        'The repository name can only contain lowercase ASCII letters, digits, and the characters ., -, and _.'
+      )
       .required('Title is required'),
     description: yup.string().required('Description is required')
   })
