@@ -26,7 +26,12 @@ export default function Repository() {
   const selectedIndex = React.useMemo(() => getActiveTab(), [tabName])
 
   React.useEffect(() => {
-    fetchAndLoadRepository(id!, branchName)
+    // Determine the branch to load:
+    // If branchName is provided, use it.
+    // Otherwise, if tabName is present, load the current branch from branchState.
+    // If neither branchName nor tabName is available, default to the master branch.
+    const loadBranch = branchName || (tabName ? branchState.currentBranch : 'master')
+    fetchAndLoadRepository(id!, loadBranch)
 
     return () => reset()
   }, [id])
