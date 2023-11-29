@@ -149,6 +149,7 @@ const createBranchSlice: StateCreator<CombinedSlices, [['zustand/immer', never],
           repo_id: repo.id,
           result: 'FAILED'
         })
+        throw error
       }
 
       if (!error) {

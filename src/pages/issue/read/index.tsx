@@ -16,17 +16,20 @@ export default function ReadIssuePage() {
   const { id, issueId } = useParams()
   const location = useLocation()
 
-  const [status, repo, selectedIssue, fetchAndLoadRepository, setSelectedIssue] = useGlobalStore((state) => [
-    state.repoCoreState.selectedRepo.status,
-    state.repoCoreState.selectedRepo.repo,
-    state.issuesState.selectedIssue,
-    state.repoCoreActions.fetchAndLoadRepository,
-    state.issuesActions.setSelectedIssue
-  ])
+  const [status, repo, selectedIssue, fetchAndLoadRepository, setSelectedIssue, branchState] = useGlobalStore(
+    (state) => [
+      state.repoCoreState.selectedRepo.status,
+      state.repoCoreState.selectedRepo.repo,
+      state.issuesState.selectedIssue,
+      state.repoCoreActions.fetchAndLoadRepository,
+      state.issuesActions.setSelectedIssue,
+      state.branchState
+    ]
+  )
 
   React.useEffect(() => {
     if (id) {
-      fetchAndLoadRepository(id)
+      fetchAndLoadRepository(id, branchState.currentBranch)
     }
   }, [id])
 

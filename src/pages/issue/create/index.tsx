@@ -20,10 +20,11 @@ const issuesSchema = yup
 
 export default function CreateIssuePage() {
   const [isSubmitting, setIsSubmitting] = React.useState(false)
-  const [selectedRepo, createIssue, fetchAndLoadRepository] = useGlobalStore((state) => [
+  const [selectedRepo, createIssue, fetchAndLoadRepository, branchState] = useGlobalStore((state) => [
     state.repoCoreState.selectedRepo,
     state.issuesActions.createIssue,
-    state.repoCoreActions.fetchAndLoadRepository
+    state.repoCoreActions.fetchAndLoadRepository,
+    state.branchState
   ])
   const { id } = useParams()
   const location = useLocation()
@@ -41,7 +42,7 @@ export default function CreateIssuePage() {
 
   React.useEffect(() => {
     if (id) {
-      fetchAndLoadRepository(id)
+      fetchAndLoadRepository(id!, branchState.currentBranch)
     }
   }, [id])
 

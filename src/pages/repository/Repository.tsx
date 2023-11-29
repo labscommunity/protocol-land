@@ -13,19 +13,20 @@ import { rootTabConfig } from './config/rootTabConfig'
 const activeClasses = 'border-b-[2px] border-primary-600 text-gray-900 font-medium'
 
 export default function Repository() {
-  const { id, tabName } = useParams()
+  const { id, tabName, '*': branchName } = useParams()
   const navigate = useNavigate()
-  const [authState, selectedRepo, parentRepo, fetchAndLoadRepository, reset] = useGlobalStore((state) => [
+  const [authState, selectedRepo, parentRepo, fetchAndLoadRepository, reset, branchState] = useGlobalStore((state) => [
     state.authState,
     state.repoCoreState.selectedRepo,
     state.repoCoreState.parentRepo,
     state.repoCoreActions.fetchAndLoadRepository,
-    state.repoCoreActions.reset
+    state.repoCoreActions.reset,
+    state.branchState
   ])
   const selectedIndex = React.useMemo(() => getActiveTab(), [tabName])
 
   React.useEffect(() => {
-    fetchAndLoadRepository(id!)
+    fetchAndLoadRepository(id!, branchName)
 
     return () => reset()
   }, [id])
@@ -41,7 +42,7 @@ export default function Repository() {
     const tab = rootTabConfig[idx]
     const repo = selectedRepo.repo
 
-    const targetPath = tab.getPath(id!)
+    const targetPath = tab.getPath(id!, branchName || branchState.currentBranch)
 
     navigate(targetPath)
 
@@ -58,7 +59,12 @@ export default function Repository() {
 
   return (
     <div className="h-full flex-1 flex flex-col max-w-[1280px] mx-auto w-full mt-6 gap-2">
-      <RepoHeader owner={authState.address} isLoading={!isReady} repo={selectedRepo.repo!} parentRepo={parentRepo.repo} />
+      <RepoHeader
+        owner={authState.address}
+        isLoading={!isReady}
+        repo={selectedRepo.repo!}
+        parentRepo={parentRepo.repo}
+      />
       {!isReady && (
         <div className="flex h-[70%] items-center">
           <Lottie

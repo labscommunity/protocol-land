@@ -6,6 +6,7 @@ import React, { Fragment } from 'react'
 import { useForm } from 'react-hook-form'
 import toast from 'react-hot-toast'
 import SVG from 'react-inlinesvg'
+import { useNavigate, useParams } from 'react-router-dom'
 import * as yup from 'yup'
 
 import CloseCrossIcon from '@/assets/icons/close-cross.svg'
@@ -38,6 +39,8 @@ const schema = yup
   .required()
 
 export default function NewBranchModal({ setIsOpen, isOpen, addNewBranch }: NewBranchModal) {
+  const { id, tabName } = useParams()
+  const navigate = useNavigate()
   const [isSubmitting, setIsSubmitting] = React.useState(false)
   const {
     register,
@@ -61,6 +64,7 @@ export default function NewBranchModal({ setIsOpen, isOpen, addNewBranch }: NewB
     if (!error) {
       setIsOpen(false)
       resetField('name')
+      navigate(`/repository/${id}/${tabName}/${name}`)
       toast.custom(
         (t) => (
           <div

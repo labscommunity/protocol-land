@@ -4,6 +4,7 @@ import { trackGoogleAnalyticsEvent } from '@/helpers/google-analytics'
 import { withAsync } from '@/helpers/withAsync'
 import { addContributor, updateRepoDescription, updateRepoName } from '@/lib/git'
 
+import { changeBranch, getCurrentActiveBranch } from '../branch/actions'
 import { CombinedSlices } from '../types'
 import {
   getFileContentFromOid,
@@ -187,7 +188,8 @@ const createRepoCoreSlice: StateCreator<CombinedSlices, [['zustand/immer', never
         })
       }
     },
-    fetchAndLoadRepository: async (id: string) => {
+    fetchAndLoadRepository: async (id: string, branchName?: string) => {
+      branchName = branchName || 'master'
       try {
         set((state) => {
           state.repoCoreState.selectedRepo.status = 'PENDING'
@@ -221,6 +223,14 @@ const createRepoCoreSlice: StateCreator<CombinedSlices, [['zustand/immer', never
         const { error: repoFetchError, response: repoFetchResponse } = await withAsync(() =>
           loadRepository(repoId, name, dataTxId)
         )
+
+        // Always checkout default master branch if available
+        if (!repoFetchError && repoFetchResponse) {
+          const { error: branchError, result: currentBranch } = await getCurrentActiveBranch(repoId, name)
+          if (!branchError && currentBranch && currentBranch !== branchName) {
+            await changeBranch(repoId, name, branchName)
+          }
+        }
 
         if (fork && parentRepoName && name !== parentRepoName) {
           const renamed = await renameRepoDir(repoId, parentRepoName, name)
