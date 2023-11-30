@@ -20,18 +20,20 @@ export default function ReadPullRequest() {
     selectedRepo,
     forkRepo,
     commits,
+    branchState,
+    fileStatuses,
     fetchAndLoadRepository,
     fetchAndLoadForkRepository,
-    pullRequestActions,
-    branchState
+    pullRequestActions
   ] = useGlobalStore((state) => [
     state.repoCoreState.selectedRepo,
     state.repoCoreState.forkRepo,
     state.pullRequestState.commits,
+    state.branchState,
+    state.pullRequestState.fileStatuses,
     state.repoCoreActions.fetchAndLoadRepository,
     state.repoCoreActions.fetchAndLoadForkRepository,
-    state.pullRequestActions,
-    state.branchState
+    state.pullRequestActions
   ])
 
   useEffect(() => {
@@ -101,7 +103,7 @@ export default function ReadPullRequest() {
     return <PageNotFound />
   }
 
-  if (isLoading) {
+  if (isLoading || fileStatuses.length === 0) {
     return (
       <div className="h-full flex-1 flex flex-col max-w-[1280px] mx-auto w-full mt-6 gap-8 justify-center items-center">
         <Lottie
