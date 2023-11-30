@@ -12,6 +12,7 @@ import * as yup from 'yup'
 import CloseCrossIcon from '@/assets/icons/close-cross.svg'
 import { Button } from '@/components/common/buttons'
 import { withAsync } from '@/helpers/withAsync'
+import { rootTabConfig } from '@/pages/repository/config/rootTabConfig'
 
 type NewBranchModal = {
   setIsOpen: (val: boolean) => void
@@ -39,7 +40,7 @@ const schema = yup
   .required()
 
 export default function NewBranchModal({ setIsOpen, isOpen, addNewBranch }: NewBranchModal) {
-  const { id, tabName } = useParams()
+  const { id } = useParams()
   const navigate = useNavigate()
   const [isSubmitting, setIsSubmitting] = React.useState(false)
   const {
@@ -64,7 +65,7 @@ export default function NewBranchModal({ setIsOpen, isOpen, addNewBranch }: NewB
     if (!error) {
       setIsOpen(false)
       resetField('name')
-      navigate(`/repository/${id}/${tabName}/${name}`)
+      navigate(rootTabConfig[0].getPath(id!, name))
       toast.custom(
         (t) => (
           <div
