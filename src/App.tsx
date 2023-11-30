@@ -7,6 +7,15 @@ import { CreateIssuePage, ReadIssuePage } from './pages/issue'
 import Profile from './pages/profile/Profile'
 import { NewPullRequest, ReadPullRequest } from './pages/pull'
 import Repository from './pages/repository/Repository'
+import RepositoryWrapper from './pages/repository/RepositoryWrapper'
+
+const repositoryRoutes = [
+  { path: '/repository/:id/:tabName?/*?', element: <Repository /> },
+  { path: '/repository/:id/pull/new', element: <NewPullRequest /> },
+  { path: '/repository/:id/pull/:pullId', element: <ReadPullRequest /> },
+  { path: '/repository/:id/issue/new', element: <CreateIssuePage /> },
+  { path: '/repository/:id/issue/:issueId', element: <ReadIssuePage /> }
+]
 
 function App() {
   return (
@@ -15,11 +24,9 @@ function App() {
         <Routes>
           <Route index path="/" element={<Home />} />
           <Route index path="/user/:id" element={<Profile />} />
-          <Route path="/repository/:id/:tabName?/*?" element={<Repository />} />
-          <Route path="/repository/:id/pull/new" element={<NewPullRequest />} />
-          <Route path="/repository/:id/pull/:pullId" element={<ReadPullRequest />} />
-          <Route path="/repository/:id/issue/new" element={<CreateIssuePage />} />
-          <Route path="/repository/:id/issue/:issueId" element={<ReadIssuePage />} />
+          {repositoryRoutes.map(({ path, element }, index) => (
+            <Route key={index} path={path} element={<RepositoryWrapper element={element} />} />
+          ))}
         </Routes>
       </AppLayout>
       <Toaster position="bottom-center" />

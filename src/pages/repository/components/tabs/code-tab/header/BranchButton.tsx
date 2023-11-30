@@ -7,6 +7,7 @@ import { useNavigate } from 'react-router-dom'
 
 import { Button } from '@/components/common/buttons'
 import { withAsync } from '@/helpers/withAsync'
+import { rootTabConfig } from '@/pages/repository/config/rootTabConfig'
 import { useGlobalStore } from '@/stores/globalStore'
 
 import NewBranchModal from './NewBranchModal'
@@ -31,8 +32,8 @@ export default function BranchButton() {
 
   async function onChange(value: string) {
     const { error } = await withAsync(() => branchActions.switchBranch(value))
-    if (!error) {
-      navigate(`/repository/${selectedRepo.repo?.id}${value !== 'master' ? `/tree/${value}` : ''}`)
+    if (!error && selectedRepo.repo?.id) {
+      navigate(rootTabConfig[0].getPath(selectedRepo.repo?.id, value))
     }
   }
 

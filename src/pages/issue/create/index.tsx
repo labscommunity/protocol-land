@@ -9,6 +9,7 @@ import { useLocation, useNavigate, useParams } from 'react-router-dom'
 import * as yup from 'yup'
 
 import { Button } from '@/components/common/buttons'
+import PageNotFound from '@/components/PageNotFound'
 import { trackGoogleAnalyticsPageView } from '@/helpers/google-analytics'
 import { useGlobalStore } from '@/stores/globalStore'
 
@@ -75,6 +76,10 @@ export default function CreateIssuePage() {
 
   function goBack() {
     navigate(-1)
+  }
+
+  if (selectedRepo.status === 'ERROR') {
+    return <PageNotFound />
   }
 
   return (

@@ -4,6 +4,7 @@ import Lottie from 'react-lottie'
 import { useLocation, useParams } from 'react-router-dom'
 
 import loadingFilesAnimation from '@/assets/load-files.json'
+import PageNotFound from '@/components/PageNotFound'
 import { trackGoogleAnalyticsPageView } from '@/helpers/google-analytics'
 import { useGlobalStore } from '@/stores/globalStore'
 
@@ -53,6 +54,10 @@ export default function ReadIssuePage() {
   }, [repo])
 
   const isLoading = status === 'IDLE' || status === 'PENDING'
+
+  if (status === 'ERROR') {
+    return <PageNotFound />
+  }
 
   if (isLoading || !repo || !selectedIssue) {
     return (

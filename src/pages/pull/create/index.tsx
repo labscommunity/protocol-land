@@ -4,6 +4,7 @@ import { FaArrowLeft } from 'react-icons/fa'
 import { useLocation, useNavigate, useParams } from 'react-router-dom'
 
 import { Button } from '@/components/common/buttons'
+import PageNotFound from '@/components/PageNotFound'
 import { trackGoogleAnalyticsPageView } from '@/helpers/google-analytics'
 import { useGlobalStore } from '@/stores/globalStore'
 import { Repo } from '@/types/repository'
@@ -131,6 +132,10 @@ export default function CreatePullRequest() {
 
   const isDiffReady = status === 'SUCCESS' && selectedRepo.status === 'SUCCESS'
   const isBranchReady = baseBranch && compareBranch
+
+  if (selectedRepo.status === 'ERROR') {
+    return <PageNotFound />
+  }
 
   return (
     <div className="h-full flex-1 flex flex-col max-w-[1200px] mx-auto w-full mt-6 gap-8">
