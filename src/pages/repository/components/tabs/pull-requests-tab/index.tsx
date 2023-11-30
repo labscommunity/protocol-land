@@ -9,31 +9,34 @@ import TableHeader from './TableHeader'
 
 export default function PullRequestsTab() {
   const [view, setView] = useState<'OPEN' | 'CLOSED'>('OPEN')
-  const [PRList, setPRList] = useState<PullRequest[]>([])
+  const [openPRList, setOpenPRList] = useState<PullRequest[]>([])
+  const [closedPRList, setClosedPRList] = useState<PullRequest[]>([])
   const [repo] = useGlobalStore((state) => [state.repoCoreState.selectedRepo.repo])
 
   useEffect(() => {
     if (repo) {
-      let filteredPRs: PullRequest[] = []
+      const openPRs: PullRequest[] = []
+      const closedPRs: PullRequest[] = []
 
-      if (view === 'OPEN') {
-        filteredPRs = repo.pullRequests.filter((pr) => pr.status === 'OPEN')
-      }
+      repo.pullRequests.forEach((PR) => {
+        if (PR.status === 'OPEN') {
+          openPRs.push(PR)
+        } else {
+          closedPRs.push(PR)
+        }
+      })
 
-      if (view === 'CLOSED') {
-        filteredPRs = repo.pullRequests.filter((pr) => pr.status === 'CLOSED' || pr.status === 'MERGED')
-      }
-
-      setPRList(filteredPRs)
+      setOpenPRList(openPRs)
+      setClosedPRList(closedPRs)
     }
   }, [repo, view])
 
-  const hasPRs = PRList.length > 0
+  const hasPRs = openPRList.length > 0 || closedPRList.length > 0
 
   return (
     <div className="w-full pb-6 flex gap-8">
       <div className="flex flex-col w-full border-gray-300 border-[1px] rounded-lg bg-white overflow-hidden">
-        <TableHeader view={view} setView={setView} />
+        <TableHeader openCount={openPRList.length} closedCount={closedPRList.length} view={view} setView={setView} />
         <div className="rounded-b-lg w-full bg-white text-liberty-dark-100 overflow-hidden">
           {!hasPRs && (
             <div className="flex flex-col gap-2 h-32 w-full items-center justify-center">
@@ -41,15 +44,26 @@ export default function PullRequestsTab() {
               <h1 className="text-lg font-medium">Get started by creating a new pull request</h1>
             </div>
           )}
-          {PRList.map((pr) => (
-            <PullRequestRow
-              id={pr.id}
-              author={pr.author}
-              title={pr.title}
-              status={pr.status}
-              timestamp={pr.timestamp}
-            />
-          ))}
+          {view === 'OPEN' &&
+            openPRList.map((pr) => (
+              <PullRequestRow
+                id={pr.id}
+                author={pr.author}
+                title={pr.title}
+                status={pr.status}
+                timestamp={pr.timestamp}
+              />
+            ))}
+          {view === 'CLOSED' &&
+            closedPRList.map((pr) => (
+              <PullRequestRow
+                id={pr.id}
+                author={pr.author}
+                title={pr.title}
+                status={pr.status}
+                timestamp={pr.timestamp}
+              />
+            ))}
           {/* <PullRequestRow status="OPEN" />
           <PullRequestRow status="CLOSED" />
           <PullRequestRow status="MERGED" /> */}

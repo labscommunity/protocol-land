@@ -6,9 +6,11 @@ import { useGlobalStore } from '@/stores/globalStore'
 type Props = {
   view: 'OPEN' | 'CLOSED'
   setView: (view: 'OPEN' | 'CLOSED') => void
+  openCount: number
+  closedCount: number
 }
 
-export default function TableHeader({ view, setView }: Props) {
+export default function TableHeader({ view, setView, openCount, closedCount }: Props) {
   const [isContributor] = useGlobalStore((state) => [state.repoCoreActions.isContributor])
   const navigate = useNavigate()
   const { id } = useParams()
@@ -26,11 +28,11 @@ export default function TableHeader({ view, setView }: Props) {
       <div className="flex items-center gap-1">
         <span
           onClick={() => setView('OPEN')}
-          className={`font-medium hover:text-white px-4 py-1 text-gray-900 rounded-lg hover:bg-primary-600 cursor-pointer ${
+          className={`flex items-center gap-2 font-medium hover:text-white px-4 py-1 text-gray-900 rounded-lg hover:bg-primary-600 cursor-pointer ${
             view === 'OPEN' ? 'bg-primary-700 text-white shadow-[0px_2px_4px_0px_rgba(0,0,0,0.05)]' : ''
           }`}
         >
-          Open
+          {openCount} Open
         </span>
         <span
           className={`font-medium px-4 py-1 rounded-lg hover:text-white text-gray-900 hover:bg-primary-600 cursor-pointer ${
@@ -38,7 +40,7 @@ export default function TableHeader({ view, setView }: Props) {
           }`}
           onClick={() => setView('CLOSED')}
         >
-          Closed
+         {closedCount} Closed
         </span>
       </div>
       {contributor && (
