@@ -78,8 +78,8 @@ export default function NewBranchModal({ setIsOpen, isOpen, addNewBranch }: NewB
                 <p className="text-md font-medium text-gray-900">Branch created successfully.</p>
                 <SVG src={CloseCrossIcon} onClick={() => toast.remove(t.id)} className="w-6 h-6 cursor-pointer" />
               </div>
-              <p className="mt-1 text-md text-gray-700">
-                Now, you need to add some new files to make the branch permanent on-chain.
+              <p className="mt-1 text-[15px] text-gray-700">
+                Please add at least one file to upload the changes on-chain.
               </p>
             </div>
           </div>
