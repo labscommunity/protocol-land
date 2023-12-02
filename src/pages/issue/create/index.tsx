@@ -9,6 +9,7 @@ import { useLocation, useNavigate, useParams } from 'react-router-dom'
 import * as yup from 'yup'
 
 import { Button } from '@/components/common/buttons'
+import PageNotFound from '@/components/PageNotFound'
 import { trackGoogleAnalyticsPageView } from '@/helpers/google-analytics'
 import { useGlobalStore } from '@/stores/globalStore'
 
@@ -20,10 +21,11 @@ const issuesSchema = yup
 
 export default function CreateIssuePage() {
   const [isSubmitting, setIsSubmitting] = React.useState(false)
-  const [selectedRepo, createIssue, fetchAndLoadRepository] = useGlobalStore((state) => [
+  const [selectedRepo, createIssue, fetchAndLoadRepository, branchState] = useGlobalStore((state) => [
     state.repoCoreState.selectedRepo,
     state.issuesActions.createIssue,
-    state.repoCoreActions.fetchAndLoadRepository
+    state.repoCoreActions.fetchAndLoadRepository,
+    state.branchState
   ])
   const { id } = useParams()
   const location = useLocation()
@@ -41,7 +43,7 @@ export default function CreateIssuePage() {
 
   React.useEffect(() => {
     if (id) {
-      fetchAndLoadRepository(id)
+      fetchAndLoadRepository(id!, branchState.currentBranch)
     }
   }, [id])
 
@@ -74,6 +76,10 @@ export default function CreateIssuePage() {
 
   function goBack() {
     navigate(-1)
+  }
+
+  if (selectedRepo.status === 'ERROR') {
+    return <PageNotFound />
   }
 
   return (

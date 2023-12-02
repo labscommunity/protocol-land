@@ -4,6 +4,7 @@ import { trackGoogleAnalyticsEvent } from '@/helpers/google-analytics'
 import { withAsync } from '@/helpers/withAsync'
 import { addContributor, updateRepoDescription, updateRepoName } from '@/lib/git'
 
+import { changeBranch, getCurrentActiveBranch } from '../branch/actions'
 import { CombinedSlices } from '../types'
 import {
   getFileContentFromOid,
@@ -187,7 +188,9 @@ const createRepoCoreSlice: StateCreator<CombinedSlices, [['zustand/immer', never
         })
       }
     },
-    fetchAndLoadRepository: async (id: string) => {
+    fetchAndLoadRepository: async (id: string, branchName?: string) => {
+      branchName = branchName || 'master'
+      let checkedOutBranch = ''
       try {
         set((state) => {
           state.repoCoreState.selectedRepo.status = 'PENDING'
@@ -222,6 +225,17 @@ const createRepoCoreSlice: StateCreator<CombinedSlices, [['zustand/immer', never
           loadRepository(repoId, name, dataTxId)
         )
 
+        // Always checkout default master branch if available
+        if (!repoFetchError && repoFetchResponse) {
+          const { error: branchError, result: currentBranch } = await getCurrentActiveBranch(repoId, name)
+          if (!branchError && currentBranch && branchName && currentBranch !== branchName) {
+            const { error: changeError } = await changeBranch(repoId, name, branchName)
+            checkedOutBranch = changeError ? currentBranch : (branchName as string)
+          } else if (!branchError && currentBranch) {
+            checkedOutBranch = currentBranch
+          }
+        }
+
         if (fork && parentRepoName && name !== parentRepoName) {
           const renamed = await renameRepoDir(repoId, parentRepoName, name)
 
@@ -242,6 +256,7 @@ const createRepoCoreSlice: StateCreator<CombinedSlices, [['zustand/immer', never
           state.repoCoreState.selectedRepo.status = 'ERROR'
         })
       }
+      return checkedOutBranch
     },
     fetchAndLoadParentRepository: async (repo) => {
       set((state) => {

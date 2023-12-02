@@ -3,13 +3,17 @@ import React from 'react'
 import { AiOutlineCheck } from 'react-icons/ai'
 import { FiChevronDown } from 'react-icons/fi'
 import { LuGitBranchPlus } from 'react-icons/lu'
+import { useNavigate } from 'react-router-dom'
 
 import { Button } from '@/components/common/buttons'
+import { withAsync } from '@/helpers/withAsync'
+import { rootTabConfig } from '@/pages/repository/config/rootTabConfig'
 import { useGlobalStore } from '@/stores/globalStore'
 
 import NewBranchModal from './NewBranchModal'
 
 export default function BranchButton() {
+  const navigate = useNavigate()
   const [branchState, branchActions, selectedRepo, isContributor] = useGlobalStore((state) => [
     state.branchState,
     state.branchActions,
@@ -26,9 +30,16 @@ export default function BranchButton() {
 
   const contributor = isContributor()
 
+  async function onChange(value: string) {
+    const { error } = await withAsync(() => branchActions.switchBranch(value))
+    if (!error && selectedRepo.repo?.id) {
+      navigate(rootTabConfig[0].getPath(selectedRepo.repo?.id, value))
+    }
+  }
+
   return (
     <div className="flex items-center gap-4">
-      <Listbox value={branchState.currentBranch} onChange={branchActions.switchBranch}>
+      <Listbox value={branchState.currentBranch} onChange={onChange}>
         <div className="relative">
           <Listbox.Button className="relative w-[320px] flex justify-between items-center cursor-default rounded-lg bg-white hover:bg-primary-50 hover:shadow-[0px_2px_4px_0px_rgba(0,0,0,0.10)] text-gray-500 border-[1px] border-gray-300 py-[10px] px-3 text-left focus:outline-none text-md font-medium">
             {({ open }) => (
@@ -91,7 +102,11 @@ export default function BranchButton() {
         </div>
       </Listbox>
       {contributor && (
-        <Button onClick={() => setIsNewBranchModalOpen(true)} variant="primary-solid" className="rounded-md !px-4 py-[11px]">
+        <Button
+          onClick={() => setIsNewBranchModalOpen(true)}
+          variant="primary-solid"
+          className="rounded-md !px-4 py-[11px]"
+        >
           <LuGitBranchPlus className="w-5 h-5" />
         </Button>
       )}

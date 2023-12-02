@@ -4,6 +4,7 @@ import Lottie from 'react-lottie'
 import { useLocation, useParams } from 'react-router-dom'
 
 import loadingFilesAnimation from '@/assets/searching-files.json'
+import PageNotFound from '@/components/PageNotFound'
 import { trackGoogleAnalyticsPageView } from '@/helpers/google-analytics'
 import { useGlobalStore } from '@/stores/globalStore'
 
@@ -15,19 +16,27 @@ const activeClasses = 'border-b-[2px] border-primary-600 text-gray-900 font-medi
 export default function ReadPullRequest() {
   const location = useLocation()
   const { id, pullId } = useParams()
-  const [selectedRepo, forkRepo, commits, fetchAndLoadRepository, fetchAndLoadForkRepository, pullRequestActions] =
-    useGlobalStore((state) => [
-      state.repoCoreState.selectedRepo,
-      state.repoCoreState.forkRepo,
-      state.pullRequestState.commits,
-      state.repoCoreActions.fetchAndLoadRepository,
-      state.repoCoreActions.fetchAndLoadForkRepository,
-      state.pullRequestActions
-    ])
+  const [
+    selectedRepo,
+    forkRepo,
+    commits,
+    fetchAndLoadRepository,
+    fetchAndLoadForkRepository,
+    pullRequestActions,
+    branchState
+  ] = useGlobalStore((state) => [
+    state.repoCoreState.selectedRepo,
+    state.repoCoreState.forkRepo,
+    state.pullRequestState.commits,
+    state.repoCoreActions.fetchAndLoadRepository,
+    state.repoCoreActions.fetchAndLoadForkRepository,
+    state.pullRequestActions,
+    state.branchState
+  ])
 
   useEffect(() => {
     if (id) {
-      fetchAndLoadRepository(id)
+      fetchAndLoadRepository(id, branchState.currentBranch)
     }
   }, [id])
 
@@ -87,6 +96,10 @@ export default function ReadPullRequest() {
   }, [commits, forkRepo])
 
   const isLoading = selectedRepo.status === 'IDLE' || selectedRepo.status === 'PENDING'
+
+  if (selectedRepo.status === 'ERROR') {
+    return <PageNotFound />
+  }
 
   if (isLoading) {
     return (

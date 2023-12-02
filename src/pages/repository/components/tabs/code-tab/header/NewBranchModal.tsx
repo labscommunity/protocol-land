@@ -1,16 +1,18 @@
 import { Dialog, Transition } from '@headlessui/react'
 import { yupResolver } from '@hookform/resolvers/yup'
+import cleanGitRef from 'clean-git-ref'
 import clsx from 'clsx'
 import React, { Fragment } from 'react'
 import { useForm } from 'react-hook-form'
-import SVG from 'react-inlinesvg'
 import toast from 'react-hot-toast'
+import SVG from 'react-inlinesvg'
+import { useNavigate, useParams } from 'react-router-dom'
 import * as yup from 'yup'
-import cleanGitRef from 'clean-git-ref'
 
 import CloseCrossIcon from '@/assets/icons/close-cross.svg'
 import { Button } from '@/components/common/buttons'
 import { withAsync } from '@/helpers/withAsync'
+import { rootTabConfig } from '@/pages/repository/config/rootTabConfig'
 
 type NewBranchModal = {
   setIsOpen: (val: boolean) => void
@@ -38,6 +40,8 @@ const schema = yup
   .required()
 
 export default function NewBranchModal({ setIsOpen, isOpen, addNewBranch }: NewBranchModal) {
+  const { id } = useParams()
+  const navigate = useNavigate()
   const [isSubmitting, setIsSubmitting] = React.useState(false)
   const {
     register,
@@ -61,6 +65,27 @@ export default function NewBranchModal({ setIsOpen, isOpen, addNewBranch }: NewB
     if (!error) {
       setIsOpen(false)
       resetField('name')
+      navigate(rootTabConfig[0].getPath(id!, name))
+      toast.custom(
+        (t) => (
+          <div
+            className={`${
+              t.visible ? 'animate-enter' : 'animate-leave'
+            } max-w-md w-full shadow-lg rounded-lg pointer-events-auto flex ring-1 ring-black ring-opacity-5 p-4 bg-white`}
+          >
+            <div className="flex-1 w-0">
+              <div className="flex justify-between align-middle">
+                <p className="text-md font-medium text-gray-900">Branch created successfully.</p>
+                <SVG src={CloseCrossIcon} onClick={() => toast.remove(t.id)} className="w-6 h-6 cursor-pointer" />
+              </div>
+              <p className="mt-1 text-[15px] text-gray-700">
+                Please add at least one file to upload the changes on-chain.
+              </p>
+            </div>
+          </div>
+        ),
+        { duration: 5000 }
+      )
     } else {
       toast.error((error as Error)?.message || 'Failed to create new branch.')
     }

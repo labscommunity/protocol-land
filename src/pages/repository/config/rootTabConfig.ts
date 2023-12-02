@@ -14,36 +14,37 @@ export const rootTabConfig = [
     title: 'Code',
     Component: CodeTab,
     Icon: BiCodeAlt,
-    getPath: (id: string) => `/repository/${id}`
+    getPath: (id: string, branchName?: string) =>
+      `/repository/${id}${branchName && branchName !== 'master' ? `/tree/${branchName}` : ''}`
   },
   {
     title: 'Issues',
     Component: IssuesTab,
     Icon: VscIssues,
-    getPath: (id: string) => `/repository/${id}/issues`
+    getPath: (id: string, _?: string) => `/repository/${id}/issues`
   },
   {
     title: 'Commits',
     Component: CommitsTab,
     Icon: FiGitCommit,
-    getPath: (id: string) => `/repository/${id}/commits`
+    getPath: (id: string, branchName?: string) => `/repository/${id}/commits${branchName ? `/${branchName}` : ''}`
   },
   {
     title: 'Pull Requests',
     Component: PullRequestsTab,
     Icon: FiGitPullRequest,
-    getPath: (id: string) => `/repository/${id}/pulls`
+    getPath: (id: string, _?: string) => `/repository/${id}/pulls`
   },
   {
     title: 'Forks',
     Component: ForksTab,
     Icon: FiGitBranch,
-    getPath: (id: string) => `/repository/${id}/forks`
+    getPath: (id: string, _?: string) => `/repository/${id}/forks`
   },
   {
     title: 'Settings',
     Component: SettingsTab,
     Icon: FiSettings,
-    getPath: (id: string) => `/repository/${id}/settings`
+    getPath: (id: string, _?: string) => `/repository/${id}/settings`
   }
 ]
