@@ -11,6 +11,7 @@ export type Repo = {
   issues: Issue[]
   contributors: string[]
   forks: string[]
+  forkedOwners: Record<string, boolean>
   fork: boolean
   parent: string | null
   timestamp: number

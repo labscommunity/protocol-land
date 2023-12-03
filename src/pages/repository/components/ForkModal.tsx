@@ -12,6 +12,8 @@ import CloseCrossIcon from '@/assets/icons/close-cross.svg'
 import { Button } from '@/components/common/buttons'
 import { withAsync } from '@/helpers/withAsync'
 import { createNewFork } from '@/lib/git'
+import { useGlobalStore } from '@/stores/globalStore'
+import { getRepositoryMetaFromContract } from '@/stores/repository-core/actions/repoMeta'
 import { Repo } from '@/types/repository'
 
 type NewRepoModalProps = {
@@ -35,6 +37,7 @@ const schema = yup
 
 export default function ForkModal({ setIsOpen, isOpen, repo }: NewRepoModalProps) {
   const [isSubmitting, setIsSubmitting] = React.useState(false)
+  const connectedAddress = useGlobalStore((state) => state.authState.address)
   const navigate = useNavigate()
   const {
     register,
@@ -52,6 +55,13 @@ export default function ForkModal({ setIsOpen, isOpen, repo }: NewRepoModalProps
     setIsOpen(false)
   }
 
+  async function isRepositoryAlreadyForked(repoId: string) {
+    if (repo?.forkedOwners?.[connectedAddress!]) return true
+
+    const { response: fetchedRepo } = await withAsync(() => getRepositoryMetaFromContract(repoId))
+    return fetchedRepo && fetchedRepo.result && fetchedRepo.result?.forkedOwners?.[connectedAddress!]
+  }
+
   async function handleCreateFork(data: yup.InferType<typeof schema>) {
     setIsSubmitting(true)
 
@@ -62,15 +72,22 @@ export default function ForkModal({ setIsOpen, isOpen, repo }: NewRepoModalProps
       dataTxId: repo.dataTxId
     }
 
-    const { response, error } = await withAsync(() => createNewFork(payload))
+    const alreadyForked = await isRepositoryAlreadyForked(repo.id)
 
-    if (error) {
-      toast.error('Failed to fork this repo.')
-    }
-
-    if (response) {
+    if (alreadyForked) {
+      toast.error("You've already forked this repository.")
       setIsOpen(false)
-      navigate(`/repository/${response}`)
+    } else {
+      const { response, error } = await withAsync(() => createNewFork(payload))
+
+      if (error) {
+        toast.error('Failed to fork this repo.')
+      }
+
+      if (response) {
+        setIsOpen(false)
+        navigate(`/repository/${response}`)
+      }
     }
 
     setIsSubmitting(false)

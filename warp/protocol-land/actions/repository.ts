@@ -24,6 +24,7 @@ export async function initializeNewRepository(
     timestamp: Date.now(),
     fork: false,
     forks: [],
+    forkedOwners: {},
     parent: null
   }
 
@@ -54,6 +55,7 @@ export async function forkRepository(
     timestamp: Date.now(),
     fork: true,
     forks: [],
+    forkedOwners: {},
     parent: payload.parent
   }
 
@@ -63,7 +65,16 @@ export async function forkRepository(
     throw new ContractError('Fork failed. Parent not found.')
   }
 
+  if (!parentRepo.forkedOwners) {
+    parentRepo.forkedOwners = {}
+  }
+
+  if (parentRepo.forkedOwners[caller]) {
+    throw new ContractError('Fork failed. Already forked by the owner.')
+  }
+
   parentRepo.forks.push(payload.id)
+  parentRepo.forkedOwners[caller] = true
 
   state.repos[repo.id] = repo
 
