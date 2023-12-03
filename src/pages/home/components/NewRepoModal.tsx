@@ -3,6 +3,7 @@ import { yupResolver } from '@hookform/resolvers/yup'
 import clsx from 'clsx'
 import React, { Fragment } from 'react'
 import { useForm } from 'react-hook-form'
+import toast from 'react-hot-toast'
 import SVG from 'react-inlinesvg'
 import { useNavigate } from 'react-router-dom'
 import { v4 as uuidv4 } from 'uuid'
@@ -12,9 +13,11 @@ import CloseCrossIcon from '@/assets/icons/close-cross.svg'
 import { Button } from '@/components/common/buttons'
 import CostEstimatesToolTip from '@/components/CostEstimatesToolTip'
 import { trackGoogleAnalyticsEvent } from '@/helpers/google-analytics'
+import { withAsync } from '@/helpers/withAsync'
 import { createNewRepo, postNewRepo } from '@/lib/git'
 import { fsWithName } from '@/lib/git/helpers/fsWithName'
 import { useGlobalStore } from '@/stores/globalStore'
+import { isRepositoryNameAvailable } from '@/stores/repository-core/actions/repoMeta'
 
 type NewRepoModalProps = {
   setIsOpen: (val: boolean) => void
@@ -56,6 +59,14 @@ export default function NewRepoModal({ setIsOpen, isOpen }: NewRepoModalProps) {
     const id = uuidv4()
     const { title, description } = data
     const owner = authState.address || 'Protocol.Land user'
+
+    const { response: isAvailable, error } = await withAsync(() => isRepositoryNameAvailable(title))
+
+    if (!error && isAvailable === false) {
+      toast.error(`The repository ${title} already exists.`)
+      setIsSubmitting(false)
+      return
+    }
 
     try {
       const fs = fsWithName(id)

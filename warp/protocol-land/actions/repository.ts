@@ -11,6 +11,24 @@ export async function initializeNewRepository(
     throw new ContractError('Invalid inputs supplied.')
   }
 
+  const repoNameRegex = /^[a-zA-Z0-9._-]+$/
+  if (!repoNameRegex.test(payload.name)) {
+    throw new ContractError(
+      'The repository name can only contain ASCII letters, digits, and the characters ., -, and _.'
+    )
+  }
+
+  if (!state.userRepoIdMap) {
+    state.userRepoIdMap = {}
+  }
+
+  const lowercasedRepoName = payload.name.toLowerCase()
+  const callerRepos = state.userRepoIdMap[caller] || {}
+
+  if (callerRepos[lowercasedRepoName]) {
+    throw new ContractError('Repository with the same name already exists.')
+  }
+
   const repo: Repo = {
     id: payload.id,
     name: payload.name,
@@ -29,6 +47,8 @@ export async function initializeNewRepository(
   }
 
   state.repos[repo.id] = repo
+  callerRepos[lowercasedRepoName] = repo.id
+  state.userRepoIdMap[caller] = callerRepos
 
   return { state }
 }
@@ -215,4 +235,20 @@ export async function addContributor(
   repo.contributors.push(payload.contributor)
 
   return { state }
+}
+
+export async function isRepositoryNameAvailable(
+  state: ContractState,
+  { caller, input: { payload } }: RepositoryAction
+): Promise<ContractResult<boolean>> {
+  if (!payload.name) {
+    throw new ContractError('Repository name not supplied.')
+  }
+
+  const userRepos = state.userRepoIdMap[caller] ?? {}
+  const repoName = payload.name.trim().toLowerCase()
+
+  const isAvailable = !userRepos[repoName]
+
+  return { result: isAvailable }
 }

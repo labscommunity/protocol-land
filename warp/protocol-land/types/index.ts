@@ -1,6 +1,7 @@
 export type ContractState = {
   users: Record<Address, User>
   repos: Repositories
+  userRepoIdMap: Record<Address, Record<string, string>>
   canEvolve: boolean
   evolve: null | any
   owner: Address
@@ -43,7 +44,7 @@ export type Repo = {
   contributors: string[]
   timestamp: number
   forks: string[]
-  forkedOwners: Record<string, boolean>
+  forkedOwners: Record<Address, boolean>
   fork: boolean
   parent: string | null
 }
@@ -135,6 +136,7 @@ const repoFnList = [
   'getRepositoriesByOwner',
   'getRepositoriesByContributor',
   'updateRepositoryTxId',
+  'isRepositoryNameAvailable',
   'createPullRequest',
   'updatePullRequestStatus',
   'updateRepositoryDetails',
