@@ -1,5 +1,3 @@
-import { InjectedArweaveSigner } from 'warp-contracts-plugin-signature'
-
 import { CONTRACT_TX_ID } from '@/helpers/constants'
 import getWarpContract from '@/helpers/getWrapContract'
 import { Repo, WarpReadState } from '@/types/repository'
@@ -16,17 +14,18 @@ export const getRepositoryMetaFromContract = async (id: string): Promise<{ resul
   })
 }
 
-export const isRepositoryNameAvailable = async (name: string): Promise<boolean> => {
-  const userSigner = new InjectedArweaveSigner(window.arweaveWallet)
-  await userSigner.setPublicKey()
-  userSigner.getAddress = () => userSigner.signer.getActiveAddress()
+export const isRepositoryNameAvailable = async (name: string, caller: string): Promise<boolean> => {
+  const contract = getWarpContract(CONTRACT_TX_ID)
 
-  const contract = getWarpContract(CONTRACT_TX_ID, userSigner)
-
-  const { result: isAvailable } = await contract.viewState({
-    function: 'isRepositoryNameAvailable',
-    payload: { name }
-  })
+  const { result: isAvailable } = await contract.viewState(
+    {
+      function: 'isRepositoryNameAvailable',
+      payload: { name }
+    },
+    undefined,
+    undefined,
+    caller
+  )
 
   return isAvailable
 }
