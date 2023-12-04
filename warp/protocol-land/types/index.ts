@@ -43,11 +43,12 @@ export type Repo = {
   issues: Issue[]
   contributors: string[]
   timestamp: number
-  forks: string[]
-  forkedOwners: Record<Address, boolean>
+  forks: Forks
   fork: boolean
   parent: string | null
 }
+
+export type Forks = Record<Address, Pick<Repo, 'id' | 'name' | 'owner' | 'timestamp'>>
 
 export type PullRequest = {
   id: number

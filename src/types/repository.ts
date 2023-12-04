@@ -10,12 +10,15 @@ export type Repo = {
   pullRequests: PullRequest[]
   issues: Issue[]
   contributors: string[]
-  forks: string[]
-  forkedOwners: Record<string, boolean>
+  forks: Forks
   fork: boolean
   parent: string | null
   timestamp: number
 }
+
+export type ForkMetaData = Pick<Repo, 'id' | 'name' | 'owner' | 'timestamp'>
+
+export type Forks = Record<string, ForkMetaData>
 
 export type PullRequest = {
   id: number

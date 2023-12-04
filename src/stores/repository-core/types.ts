@@ -17,7 +17,6 @@ export type RepoCoreState = {
       pullRequests: UserPROrIssue[]
       issues: UserPROrIssue[]
     }
-    forksMetaData: ForksMetaData[]
   }
   parentRepo: {
     status: ApiStatus
@@ -80,11 +79,4 @@ export type ForkRepositoryOptions = {
   description: string
   parent: string
   dataTxId: string
-}
-
-export type ForksMetaData = {
-  name: string
-  id: string
-  owner: string
-  createdAt: number
 }

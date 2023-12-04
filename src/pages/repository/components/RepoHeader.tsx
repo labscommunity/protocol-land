@@ -153,7 +153,9 @@ export default function RepoHeader({ repo, isLoading, owner, parentRepo }: Props
                 <SVG src={IconForkOutline} />
                 <span className="text-gray-900 font-medium">Fork</span>
               </div>
-              <span className="text-gray-900 font-medium border-l-[1px] border-gray-300 px-4">{repo.forks.length}</span>
+              <span className="text-gray-900 font-medium border-l-[1px] border-gray-300 px-4">
+                {Object.keys(repo.forks).length}
+              </span>
             </Button>
             <div className="relative">
               <Button

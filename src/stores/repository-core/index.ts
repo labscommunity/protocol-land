@@ -15,7 +15,7 @@ import {
   renameRepoDir,
   saveRepository
 } from './actions'
-import { ForksMetaData, RepoCoreSlice, RepoCoreState } from './types'
+import { RepoCoreSlice, RepoCoreState } from './types'
 
 const initialRepoCoreState: RepoCoreState = {
   selectedRepo: {
@@ -26,8 +26,7 @@ const initialRepoCoreState: RepoCoreState = {
       commits: [],
       pullRequests: [],
       issues: []
-    },
-    forksMetaData: []
+    }
   },
   parentRepo: {
     status: 'IDLE',
@@ -132,36 +131,6 @@ const createRepoCoreSlice: StateCreator<CombinedSlices, [['zustand/immer', never
     setRepoContributionStats: (data) => {
       set((state) => {
         state.repoCoreState.selectedRepo.statistics = data
-      })
-    },
-    fetchForkMetaData: async () => {
-      const repo = get().repoCoreState.selectedRepo.repo
-
-      if (!repo) {
-        set((state) => (state.repoCoreState.git.status = 'ERROR'))
-
-        return
-      }
-
-      const metaData: ForksMetaData[] = []
-
-      for (const forkRepoId of repo.forks) {
-        const { response: metaResponse } = await withAsync(() => getRepositoryMetaFromContract(forkRepoId))
-
-        if (metaResponse && metaResponse.result) {
-          const { id, name, owner, timestamp } = metaResponse.result
-
-          metaData.push({
-            id,
-            name,
-            owner,
-            createdAt: timestamp
-          })
-        }
-      }
-
-      set((state) => {
-        state.repoCoreState.selectedRepo.forksMetaData = metaData
       })
     },
     addContributor: async (address: string) => {

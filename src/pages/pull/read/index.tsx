@@ -46,7 +46,8 @@ export default function ReadPullRequest() {
 
       if (!PR) return
 
-      const compareIsFork = selectedRepo.repo.forks.indexOf(PR.compareRepo.repoId) > -1
+      const compareIsFork =
+        Object.values(selectedRepo.repo.forks).findIndex((fork) => fork.id === PR.compareRepo.repoId) > -1
 
       if (PR.baseRepo.repoId !== PR.compareRepo.repoId && compareIsFork) {
         fetchAndLoadForkRepository(PR.compareRepo.repoId)

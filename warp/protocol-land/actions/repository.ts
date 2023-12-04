@@ -7,7 +7,7 @@ export async function initializeNewRepository(
   { caller, input: { payload } }: RepositoryAction
 ): Promise<ContractResult<ContractState>> {
   // validate payload
-  if (!payload.name || !payload.description || !payload.dataTxId || !payload.id) {
+  if (!payload.name || !payload.dataTxId || !payload.id) {
     throw new ContractError('Invalid inputs supplied.')
   }
 
@@ -23,7 +23,7 @@ export async function initializeNewRepository(
   }
 
   const lowercasedRepoName = payload.name.toLowerCase()
-  const callerRepos = state.userRepoIdMap[caller] || {}
+  const callerRepos = state.userRepoIdMap[caller] ?? {}
 
   if (callerRepos[lowercasedRepoName]) {
     throw new ContractError('Repository with the same name already exists.')
@@ -32,7 +32,7 @@ export async function initializeNewRepository(
   const repo: Repo = {
     id: payload.id,
     name: payload.name,
-    description: payload.description,
+    description: payload.description ?? '',
     defaultBranch: 'master',
     dataTxId: payload.dataTxId,
     owner: caller,
@@ -41,8 +41,7 @@ export async function initializeNewRepository(
     issues: [],
     timestamp: Date.now(),
     fork: false,
-    forks: [],
-    forkedOwners: {},
+    forks: {},
     parent: null
   }
 
@@ -58,14 +57,21 @@ export async function forkRepository(
   { caller, input: { payload } }: RepositoryAction
 ): Promise<ContractResult<ContractState>> {
   // validate payload
-  if (!payload.name || !payload.description || !payload.dataTxId || !payload.id || !payload.parent) {
+  if (!payload.name || !payload.dataTxId || !payload.id || !payload.parent) {
     throw new ContractError('Invalid inputs supplied.')
+  }
+
+  const repoNameRegex = /^[a-zA-Z0-9._-]+$/
+  if (!repoNameRegex.test(payload.name)) {
+    throw new ContractError(
+      'The repository name can only contain ASCII letters, digits, and the characters ., -, and _.'
+    )
   }
 
   const repo: Repo = {
     id: payload.id,
     name: payload.name,
-    description: payload.description,
+    description: payload.description ?? '',
     defaultBranch: 'master',
     dataTxId: payload.dataTxId,
     owner: caller,
@@ -74,8 +80,7 @@ export async function forkRepository(
     issues: [],
     timestamp: Date.now(),
     fork: true,
-    forks: [],
-    forkedOwners: {},
+    forks: {},
     parent: payload.parent
   }
 
@@ -85,17 +90,11 @@ export async function forkRepository(
     throw new ContractError('Fork failed. Parent not found.')
   }
 
-  if (!parentRepo.forkedOwners) {
-    parentRepo.forkedOwners = {}
+  if (parentRepo.forks[caller]) {
+    throw new ContractError('Fork failed. Already forked by the caller.')
   }
 
-  if (parentRepo.forkedOwners[caller]) {
-    throw new ContractError('Fork failed. Already forked by the owner.')
-  }
-
-  parentRepo.forks.push(payload.id)
-  parentRepo.forkedOwners[caller] = true
-
+  parentRepo.forks[caller] = { id: repo.id, name: repo.name, owner: repo.owner, timestamp: repo.timestamp }
   state.repos[repo.id] = repo
 
   return { state }

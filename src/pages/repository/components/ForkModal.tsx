@@ -56,10 +56,10 @@ export default function ForkModal({ setIsOpen, isOpen, repo }: NewRepoModalProps
   }
 
   async function isRepositoryAlreadyForked(repoId: string) {
-    if (repo?.forkedOwners?.[connectedAddress!]) return true
+    if (repo.forks[connectedAddress!]) return true
 
     const { response: fetchedRepo } = await withAsync(() => getRepositoryMetaFromContract(repoId))
-    return fetchedRepo && fetchedRepo.result && fetchedRepo.result?.forkedOwners?.[connectedAddress!]
+    return fetchedRepo && fetchedRepo.result && fetchedRepo.result.forks[connectedAddress!]
   }
 
   async function handleCreateFork(data: yup.InferType<typeof schema>) {
