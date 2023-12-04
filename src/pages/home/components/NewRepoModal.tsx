@@ -33,7 +33,7 @@ const schema = yup
         'The repository title can only contain ASCII letters, digits, and the characters ., -, and _.'
       )
       .required('Title is required'),
-    description: yup.string().required('Description is required')
+    description: yup.string()
   })
   .required()
 
@@ -127,7 +127,7 @@ export default function NewRepoModal({ setIsOpen, isOpen }: NewRepoModalProps) {
                 <div className="mt-6 flex flex-col gap-2.5">
                   <div>
                     <label htmlFor="title" className="block mb-1 text-sm font-medium text-gray-600">
-                      Title
+                      Title *
                     </label>
                     <input
                       type="text"
@@ -142,7 +142,7 @@ export default function NewRepoModal({ setIsOpen, isOpen }: NewRepoModalProps) {
                   </div>
                   <div>
                     <label htmlFor="description" className="block mb-1 text-sm font-medium text-gray-600">
-                      Description
+                      Description <span className="text-gray-400 text-xs">(optional)</span>
                     </label>
                     <input
                       type="text"
