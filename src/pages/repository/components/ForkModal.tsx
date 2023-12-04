@@ -67,7 +67,7 @@ export default function ForkModal({ setIsOpen, isOpen, repo }: NewRepoModalProps
 
     const payload = {
       name: data.title,
-      description: data.description,
+      description: data.description ?? '',
       parent: repo.id,
       dataTxId: repo.dataTxId
     }
