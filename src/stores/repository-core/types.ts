@@ -17,7 +17,6 @@ export type RepoCoreState = {
       pullRequests: UserPROrIssue[]
       issues: UserPROrIssue[]
     }
-    forksMetaData: ForksMetaData[]
   }
   parentRepo: {
     status: ApiStatus
@@ -50,7 +49,6 @@ export type RepoCoreActions = {
   fetchAndLoadForkRepository: (id: string) => Promise<void>
   loadFilesFromRepo: () => Promise<void>
   setRepoContributionStats: (data: UserContributionData) => void
-  fetchForkMetaData: () => Promise<void>
   isRepoOwner: () => boolean
   isContributor: () => boolean
   reset: () => void
@@ -80,11 +78,4 @@ export type ForkRepositoryOptions = {
   description: string
   parent: string
   dataTxId: string
-}
-
-export type ForksMetaData = {
-  name: string
-  id: string
-  owner: string
-  createdAt: number
 }

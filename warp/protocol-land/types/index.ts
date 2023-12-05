@@ -1,6 +1,7 @@
 export type ContractState = {
   users: Record<Address, User>
   repos: Repositories
+  userRepoIdMap: Record<Address, Record<string, string>>
   canEvolve: boolean
   evolve: null | any
   owner: Address
@@ -42,10 +43,12 @@ export type Repo = {
   issues: Issue[]
   contributors: string[]
   timestamp: number
-  forks: string[]
+  forks: Forks
   fork: boolean
   parent: string | null
 }
+
+export type Forks = Record<Address, Pick<Repo, 'id' | 'name' | 'owner' | 'timestamp'>>
 
 export type PullRequest = {
   id: number
@@ -134,6 +137,7 @@ const repoFnList = [
   'getRepositoriesByOwner',
   'getRepositoriesByContributor',
   'updateRepositoryTxId',
+  'isRepositoryNameAvailable',
   'createPullRequest',
   'updatePullRequestStatus',
   'updateRepositoryDetails',

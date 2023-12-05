@@ -15,6 +15,7 @@ import {
   getAllRepositoriesByOwner,
   getRepository,
   initializeNewRepository,
+  isRepositoryNameAvailable,
   updateRepositoryDetails,
   updateRepositoryTxId
 } from './actions/repository'
@@ -41,6 +42,8 @@ export async function handle(state: ContractState, action: RepositoryAction | Ev
       return await updateRepositoryTxId(state, action as RepositoryAction)
     case 'updateRepositoryDetails':
       return await updateRepositoryDetails(state, action as RepositoryAction)
+    case 'isRepositoryNameAvailable':
+      return await isRepositoryNameAvailable(state, action as RepositoryAction)
     case 'addContributor':
       return await addContributor(state, action as RepositoryAction)
     case 'createPullRequest':
