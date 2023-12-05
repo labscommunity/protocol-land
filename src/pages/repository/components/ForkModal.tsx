@@ -13,7 +13,7 @@ import { Button } from '@/components/common/buttons'
 import { withAsync } from '@/helpers/withAsync'
 import { createNewFork } from '@/lib/git'
 import { useGlobalStore } from '@/stores/globalStore'
-import { getRepositoryMetaFromContract } from '@/stores/repository-core/actions/repoMeta'
+import { getRepositoryMetaFromContract, isRepositoryNameAvailable } from '@/stores/repository-core/actions/repoMeta'
 import { Repo } from '@/types/repository'
 
 type NewRepoModalProps = {
@@ -78,6 +78,16 @@ export default function ForkModal({ setIsOpen, isOpen, repo }: NewRepoModalProps
       toast.error("You've already forked this repository.")
       setIsOpen(false)
     } else {
+      const { response: isAvailable, error: checkError } = await withAsync(() =>
+        isRepositoryNameAvailable(payload.name, connectedAddress as string)
+      )
+
+      if (!checkError && isAvailable === false) {
+        toast.error(`The repository ${payload.name} already exists.`)
+        setIsSubmitting(false)
+        return
+      }
+
       const { response, error } = await withAsync(() => createNewFork(payload))
 
       if (error) {

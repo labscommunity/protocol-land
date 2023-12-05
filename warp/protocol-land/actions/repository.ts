@@ -18,10 +18,6 @@ export async function initializeNewRepository(
     )
   }
 
-  if (!state.userRepoIdMap) {
-    state.userRepoIdMap = {}
-  }
-
   const lowercasedRepoName = payload.name.toLowerCase()
   const callerRepos = state.userRepoIdMap[caller] ?? {}
 
@@ -66,6 +62,13 @@ export async function forkRepository(
     throw new ContractError(
       'The repository name can only contain ASCII letters, digits, and the characters ., -, and _.'
     )
+  }
+
+  const lowercasedRepoName = payload.name.toLowerCase()
+  const callerRepos = state.userRepoIdMap[caller] ?? {}
+
+  if (callerRepos[lowercasedRepoName]) {
+    throw new ContractError('Repository with the same name already exists.')
   }
 
   const repo: Repo = {
