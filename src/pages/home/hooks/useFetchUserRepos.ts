@@ -45,7 +45,7 @@ export function useFetchUserRepos() {
     if (ownerReposError || collabError) {
       setFetchUserReposStatus('ERROR')
     } else if (ownerReposResponse && collabResponse) {
-      const PLRepo = PLRepoResponse ? [PLRepoResponse.result] : []
+      const PLRepo = PLRepoResponse?.result ? [PLRepoResponse.result] : []
 
       setUserRepos([...PLRepo, ...ownerReposResponse.result, ...collabResponse.result])
       setFetchUserReposStatus('SUCCESS')

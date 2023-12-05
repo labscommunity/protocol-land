@@ -8,17 +8,17 @@ import { fsWithName } from '@/lib/git/helpers/fsWithName'
 export default function useFetchRepository() {
   const [fetchRepoStatus, setFetchRepoStatus] = React.useState<ApiStatus>('IDLE')
 
-  const initFetchRepo = async (name: string, dataTxId: string) => {
+  const initFetchRepo = async (id: string, name: string, dataTxId: string) => {
     if (fetchRepoStatus !== 'PENDING') setFetchRepoStatus('PENDING')
 
-    await unmountRepo(name)
+    await unmountRepo(id)
 
     const { response, error } = await withAsync(() => fetch(`https://arweave.net/${dataTxId}`))
 
     if (error) {
       setFetchRepoStatus('ERROR')
     } else if (response) {
-      const fs = fsWithName(name)
+      const fs = fsWithName(id)
       const dir = `/${name}`
 
       const repoArrayBuf = await response.arrayBuffer()

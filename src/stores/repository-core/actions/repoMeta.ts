@@ -14,6 +14,22 @@ export const getRepositoryMetaFromContract = async (id: string): Promise<{ resul
   })
 }
 
+export const isRepositoryNameAvailable = async (name: string, caller: string): Promise<boolean> => {
+  const contract = getWarpContract(CONTRACT_TX_ID)
+
+  const { result: isAvailable } = await contract.viewState(
+    {
+      function: 'isRepositoryNameAvailable',
+      payload: { name }
+    },
+    undefined,
+    undefined,
+    caller
+  )
+
+  return isAvailable
+}
+
 export const searchRepositories = async (query: string): Promise<{ result: Repo[] }> => {
   const contract = getWarpContract(CONTRACT_TX_ID)
 

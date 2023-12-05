@@ -10,10 +10,12 @@ import {
 import { addReviewersToPR, approvePR, createNewPullRequest, updatePullRequestStatus } from './actions/pull-requests'
 import {
   addContributor,
+  forkRepository,
   getAllRepositoriesByContributor,
   getAllRepositoriesByOwner,
   getRepository,
   initializeNewRepository,
+  isRepositoryNameAvailable,
   updateRepositoryDetails,
   updateRepositoryTxId
 } from './actions/repository'
@@ -28,6 +30,8 @@ export async function handle(state: ContractState, action: RepositoryAction | Ev
   switch (input.function) {
     case 'initialize':
       return await initializeNewRepository(state, action as RepositoryAction)
+    case 'forkRepository':
+      return await forkRepository(state, action as RepositoryAction)
     case 'getRepository':
       return await getRepository(state, action as RepositoryAction)
     case 'getRepositoriesByOwner':
@@ -38,6 +42,8 @@ export async function handle(state: ContractState, action: RepositoryAction | Ev
       return await updateRepositoryTxId(state, action as RepositoryAction)
     case 'updateRepositoryDetails':
       return await updateRepositoryDetails(state, action as RepositoryAction)
+    case 'isRepositoryNameAvailable':
+      return await isRepositoryNameAvailable(state, action as RepositoryAction)
     case 'addContributor':
       return await addContributor(state, action as RepositoryAction)
     case 'createPullRequest':

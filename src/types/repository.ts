@@ -10,7 +10,15 @@ export type Repo = {
   pullRequests: PullRequest[]
   issues: Issue[]
   contributors: string[]
+  forks: Forks
+  fork: boolean
+  parent: string | null
+  timestamp: number
 }
+
+export type ForkMetaData = Pick<Repo, 'id' | 'name' | 'owner' | 'timestamp'>
+
+export type Forks = Record<string, ForkMetaData>
 
 export type PullRequest = {
   id: number
@@ -24,6 +32,14 @@ export type PullRequest = {
   status: PullRequestStatus
   reviewers: Reviewer[]
   timestamp: number
+  baseRepo: {
+    repoName: string
+    repoId: string
+  }
+  compareRepo: {
+    repoName: string
+    repoId: string
+  }
 }
 
 export type Issue = {

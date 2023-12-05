@@ -1,9 +1,10 @@
 import { Tab } from '@headlessui/react'
-import React from 'react'
+import React, { useState } from 'react'
 import Lottie from 'react-lottie'
 import { useNavigate, useParams } from 'react-router-dom'
 
 import repoLoadingAnimation from '@/assets/repo-loading.json'
+import PageNotFound from '@/components/PageNotFound'
 import { trackGoogleAnalyticsEvent } from '@/helpers/google-analytics'
 import { useGlobalStore } from '@/stores/globalStore'
 
@@ -13,34 +14,47 @@ import { rootTabConfig } from './config/rootTabConfig'
 const activeClasses = 'border-b-[2px] border-primary-600 text-gray-900 font-medium'
 
 export default function Repository() {
-  const { id, tabName } = useParams()
+  const { id, tabName, '*': branchName } = useParams()
   const navigate = useNavigate()
-  const [authState, selectedRepo, fetchAndLoadRepository, reset] = useGlobalStore((state) => [
+  const [branchAbscent, setBranchAbscent] = useState(false)
+  const [authState, selectedRepo, parentRepo, fetchAndLoadRepository, reset, branchState] = useGlobalStore((state) => [
     state.authState,
     state.repoCoreState.selectedRepo,
+    state.repoCoreState.parentRepo,
     state.repoCoreActions.fetchAndLoadRepository,
-    state.repoCoreActions.reset
+    state.repoCoreActions.reset,
+    state.branchState
   ])
-  const selectedIndex = React.useMemo(() => getActiveTab(), [tabName])
+  const selectedIndex = React.useMemo(() => {
+    if (!tabName) return 0
+    const tabNames = rootTabConfig.map((tab) => tab.title.toLocaleLowerCase())
+    const name = tabName === 'pulls' ? 'pull requests' : tabName === 'tree' ? 'code' : tabName
+    return tabNames.indexOf(name)
+  }, [tabName])
+
+  const invalidTabName = selectedIndex === -1
 
   React.useEffect(() => {
-    fetchAndLoadRepository(id!)
+    // Determine the branch to load:
+    // If branchName is provided, use it.
+    // Otherwise, if tabName is present, load the current branch from branchState.
+    // If neither branchName nor tabName is available, default to the master branch.
+    if (isPageNotFound) return
+    const loadBranch = branchName || (tabName ? branchState.currentBranch : 'master')
+    fetchAndLoadRepository(id!, loadBranch).then((currentBranch) => {
+      if (branchName && currentBranch && currentBranch !== branchName) {
+        setBranchAbscent(true)
+      }
+    })
 
     return () => reset()
   }, [id])
-
-  function getActiveTab() {
-    if (!tabName) return 0
-    const tabNames = rootTabConfig.map((tab) => tab.title.toLocaleLowerCase())
-    const index = tabNames.indexOf(tabName === 'pulls' ? 'pull requests' : tabName)
-    return index > -1 ? index : 0
-  }
 
   function handleTabChangeEventTracking(idx: number) {
     const tab = rootTabConfig[idx]
     const repo = selectedRepo.repo
 
-    const targetPath = tab.getPath(id!)
+    const targetPath = tab.getPath(id!, branchName || branchState.currentBranch)
 
     navigate(targetPath)
 
@@ -53,11 +67,24 @@ export default function Repository() {
     }
   }
 
+  const isPageNotFound =
+    selectedRepo.status === 'ERROR' ||
+    (tabName && invalidTabName) ||
+    (tabName === 'tree' && !branchName) ||
+    branchAbscent
+
   const isReady = selectedRepo.status === 'SUCCESS'
+
+  if (isPageNotFound) return <PageNotFound />
 
   return (
     <div className="h-full flex-1 flex flex-col max-w-[1280px] mx-auto w-full mt-6 gap-2">
-      <RepoHeader isLoading={!isReady} repo={selectedRepo.repo!} />
+      <RepoHeader
+        owner={authState.address}
+        isLoading={!isReady}
+        repo={selectedRepo.repo!}
+        parentRepo={parentRepo.repo}
+      />
       {!isReady && (
         <div className="flex h-[70%] items-center">
           <Lottie

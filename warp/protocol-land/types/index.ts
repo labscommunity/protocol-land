@@ -1,6 +1,7 @@
 export type ContractState = {
   users: Record<Address, User>
   repos: Repositories
+  userRepoIdMap: Record<Address, Record<string, string>>
   canEvolve: boolean
   evolve: null | any
   owner: Address
@@ -42,7 +43,12 @@ export type Repo = {
   issues: Issue[]
   contributors: string[]
   timestamp: number
+  forks: Forks
+  fork: boolean
+  parent: string | null
 }
+
+export type Forks = Record<Address, Pick<Repo, 'id' | 'name' | 'owner' | 'timestamp'>>
 
 export type PullRequest = {
   id: number
@@ -56,6 +62,13 @@ export type PullRequest = {
   status: PullRequestStatus
   reviewers: Reviewer[]
   timestamp: number
+  baseRepo: PRSide
+  compareRepo: PRSide
+}
+
+export type PRSide = {
+  repoId: string
+  repoName: string
 }
 
 export type Issue = {
@@ -119,10 +132,12 @@ export type EvolveInput = {
 
 const repoFnList = [
   'initialize',
+  'forkRepository',
   'getRepository',
   'getRepositoriesByOwner',
   'getRepositoriesByContributor',
   'updateRepositoryTxId',
+  'isRepositoryNameAvailable',
   'createPullRequest',
   'updatePullRequestStatus',
   'updateRepositoryDetails',

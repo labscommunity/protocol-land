@@ -3,7 +3,7 @@ import toast from 'react-hot-toast'
 import { FaRegFileZipper } from 'react-icons/fa6'
 import { PiCaretDownBold } from 'react-icons/pi'
 import SVG from 'react-inlinesvg'
-import { useLocation } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router-dom'
 
 import IconCloneOutline from '@/assets/icons/clone-outline.svg'
 import IconCommitOutline from '@/assets/icons/commit-outline.svg'
@@ -13,22 +13,28 @@ import IconStarOutline from '@/assets/icons/star-outline.svg'
 import IconTagOutline from '@/assets/icons/tag-outline.svg'
 import { Button } from '@/components/common/buttons'
 import { trackGoogleAnalyticsPageView } from '@/helpers/google-analytics'
+import { shortenAddress } from '@/helpers/shortenAddress'
 import { Repo } from '@/types/repository'
 
 import useRepository from '../hooks/useRepository'
 import ActivityGraph from './ActivityGraph'
+import ForkModal from './ForkModal'
 import RepoHeaderLoading from './RepoHeaderLoading'
 
 type Props = {
   repo: Repo | Record<PropertyKey, never>
+  parentRepo: Repo | Record<PropertyKey, never> | null
   isLoading: boolean
+  owner: string | null
 }
 
-export default function RepoHeader({ repo, isLoading }: Props) {
+export default function RepoHeader({ repo, isLoading, owner, parentRepo }: Props) {
+  const [isForkModalOpen, setIsForkModalOpen] = React.useState(false)
   const [showCloneDropdown, setShowCloneDropdown] = React.useState(false)
   const cloneRef = React.useRef<HTMLDivElement | null>(null)
   const location = useLocation()
-  const { downloadRepository } = useRepository(repo?.name)
+  const navigate = useNavigate()
+  const { downloadRepository } = useRepository(repo?.id, repo?.name)
 
   React.useEffect(() => {
     if (repo && repo?.name) {
@@ -66,6 +72,20 @@ export default function RepoHeader({ repo, isLoading }: Props) {
     setShowCloneDropdown(!showCloneDropdown)
   }
 
+  function handleForkButtonClick() {
+    if (owner && owner === repo.owner) {
+      toast.error('Cannot fork your own repo')
+    } else {
+      setIsForkModalOpen(true)
+    }
+  }
+
+  function handleParentRepoClick() {
+    if (!parentRepo) return
+
+    navigate(`/repository/${parentRepo.id}`)
+  }
+
   return (
     <div className="flex flex-col">
       <div className="flex justify-between">
@@ -75,10 +95,25 @@ export default function RepoHeader({ repo, isLoading }: Props) {
               <h4 className="text-2xl font-bold tracking-wide text-gray-900">SK</h4>
             </div>
             <div>
-              <h1 className="text-xl font-bold text-gray-900">{repo.name}</h1>
+              <div className="flex items-center gap-4">
+                <h1 className="text-xl font-bold text-gray-900">{repo.name}</h1>
+                {parentRepo && (
+                  <span className={`border-[1px] border-primary-600 text-primary-600 rounded-full px-2 text-sm`}>
+                    Forked
+                  </span>
+                )}
+              </div>
               <p className="text-gray-900 text-base">
                 <span className="text-gray-600">Transaction ID:</span> {repo.dataTxId}
               </p>
+              {parentRepo && (
+                <p className="text-gray-900 text-base">
+                  <span className="text-gray-600">Forked from:</span>{' '}
+                  <span onClick={handleParentRepoClick} className="text-primary-600 hover:underline cursor-pointer">
+                    {shortenAddress(parentRepo.id, 7)}/{parentRepo.name}
+                  </span>
+                </p>
+              )}
             </div>
           </div>
           <div className="flex gap-3 items-center text-gray-900">
@@ -109,9 +144,18 @@ export default function RepoHeader({ repo, isLoading }: Props) {
               <SVG className="w-5 h-5" src={IconStarOutline} />
               <span className="text-gray-900 font-medium">10</span>
             </Button>
-            <Button className="rounded-[20px] flex gap-2 items-center" variant="secondary" onClick={handleComingSoon}>
-              <SVG src={IconForkOutline} />
-              <span className="text-gray-900 font-medium">Fork</span>
+            <Button
+              className="rounded-[20px] flex px-0 items-center"
+              variant="secondary"
+              onClick={handleForkButtonClick}
+            >
+              <div className="flex items-center gap-2 px-4">
+                <SVG src={IconForkOutline} />
+                <span className="text-gray-900 font-medium">Fork</span>
+              </div>
+              <span className="text-gray-900 font-medium border-l-[1px] border-gray-300 px-4">
+                {Object.keys(repo.forks).length}
+              </span>
             </Button>
             <div className="relative">
               <Button
@@ -153,6 +197,7 @@ export default function RepoHeader({ repo, isLoading }: Props) {
           </div>
         </div>
       </div>
+      <ForkModal isOpen={isForkModalOpen} setIsOpen={setIsForkModalOpen} repo={repo} />
     </div>
   )
 }

@@ -18,6 +18,16 @@ export type RepoCoreState = {
       issues: UserPROrIssue[]
     }
   }
+  parentRepo: {
+    status: ApiStatus
+    error: unknown | null
+    repo: Repo | null
+  }
+  forkRepo: {
+    status: ApiStatus
+    error: unknown | null
+    repo: Repo | null
+  }
   git: {
     status: ApiStatus
     error: unknown | null
@@ -34,7 +44,9 @@ export type RepoCoreActions = {
   updateRepoName: (name: string) => Promise<void>
   updateRepoDescription: (description: string) => Promise<void>
   addContributor: (address: string) => Promise<void>
-  fetchAndLoadRepository: (id: string) => Promise<void>
+  fetchAndLoadRepository: (id: string, branchName?: string) => Promise<string>
+  fetchAndLoadParentRepository: (repo: Repo) => Promise<void>
+  fetchAndLoadForkRepository: (id: string) => Promise<void>
   loadFilesFromRepo: () => Promise<void>
   setRepoContributionStats: (data: UserContributionData) => void
   isRepoOwner: () => boolean
@@ -59,4 +71,11 @@ export type FileObject = {
   path: string
   type: string
   parent: string
+}
+
+export type ForkRepositoryOptions = {
+  name: string
+  description: string
+  parent: string
+  dataTxId: string
 }

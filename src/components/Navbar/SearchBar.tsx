@@ -96,8 +96,6 @@ export default function SearchBar() {
     handleResultBoxAnimationComplete()
   }
 
-  console.log({ results, isLoading, showResultsBox })
-
   return (
     <motion.div
       ref={searchBoxRef}

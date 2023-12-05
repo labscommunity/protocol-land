@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import toast from 'react-hot-toast'
 import { AiFillCloseCircle } from 'react-icons/ai'
 import { FiGitMerge } from 'react-icons/fi'
 import { useParams } from 'react-router-dom'
@@ -28,6 +29,11 @@ export default function OverviewTab() {
       setIsSubmittingMerge(true)
       const { error } = await withAsync(() => mergePR(PR.id))
       console.log({ submitted: !error })
+      if (error) {
+        toast.error('Failed to merge Pull Request.')
+      } else {
+        toast.success('Pull Request successfully merged.')
+      }
       setIsSubmittingMerge(false)
     }
   }
@@ -37,6 +43,11 @@ export default function OverviewTab() {
       setIsSubmittingClose(true)
       const { error } = await withAsync(() => closePR(PR.id))
       console.log({ submitted: !error })
+      if (error) {
+        toast.error('Failed to close Pull Request.')
+      } else {
+        toast.success('Pull Request successfully closed.')
+      }
       setIsSubmittingClose(false)
     }
   }

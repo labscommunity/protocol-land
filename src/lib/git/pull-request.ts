@@ -1,4 +1,4 @@
-import git from 'isomorphic-git'
+import git, { Errors } from 'isomorphic-git'
 import { InjectedArweaveSigner } from 'warp-contracts-plugin-signature'
 
 import { CONTRACT_TX_ID } from '@/helpers/constants'
@@ -10,12 +10,19 @@ import { useGlobalStore } from '@/stores/globalStore'
 
 import { postPRStatDataTxToArweave } from '../user'
 import { postUpdatedRepo } from '.'
-import { checkoutBranch } from './branch'
+import { checkoutBranch, deleteBranch } from './branch'
 import { FSType, fsWithName } from './helpers/fsWithName'
 
-export async function compareBranches({ fs, dir, base, compare }: CompareBranchesOptions) {
-  const baseCommits = await git.log({ fs, dir, ref: base })
-  const compareCommits = await git.log({ fs, dir, ref: compare })
+export async function compareBranches({
+  baseFS,
+  compareFS,
+  baseDir,
+  compareDir,
+  baseBranch,
+  compareBranch
+}: CompareBranchesOptions) {
+  const baseCommits = await git.log({ fs: baseFS, dir: baseDir, ref: baseBranch })
+  const compareCommits = await git.log({ fs: compareFS, dir: compareDir, ref: compareBranch })
 
   const filteredCommits = compareCommits.filter((compareCommit) => {
     return !baseCommits.some((baseCommit) => baseCommit.oid === compareCommit.oid)
@@ -25,19 +32,20 @@ export async function compareBranches({ fs, dir, base, compare }: CompareBranche
 }
 
 export async function postNewPullRequest({
-  repoName,
   title,
   description,
   baseBranch,
   compareBranch,
-  repoId
+  repoId,
+  baseRepo,
+  compareRepo
 }: PostNewPROptions) {
   const address = useGlobalStore.getState().authState.address
 
-  const fs = fsWithName(repoName)
-  const dir = `/${repoName}`
+  const baseFS = fsWithName(baseRepo.repoId)
+  const baseDir = `/${baseRepo.repoName}`
 
-  const oid = await git.resolveRef({ fs, dir, ref: baseBranch })
+  const oid = await git.resolveRef({ fs: baseFS, dir: baseDir, ref: baseBranch })
 
   const userSigner = new InjectedArweaveSigner(window.arweaveWallet)
   await userSigner.setPublicKey()
@@ -52,7 +60,9 @@ export async function postNewPullRequest({
       repoId,
       baseBranch,
       compareBranch,
-      baseBranchOid: oid
+      baseBranchOid: oid,
+      baseRepo,
+      compareRepo
     }
   })
 
@@ -72,11 +82,11 @@ export async function postNewPullRequest({
   if (!PR || !PR.id) return
 
   if (address) {
-    await postPRStatDataTxToArweave(address, repoName, PR)
+    await postPRStatDataTxToArweave(address, baseRepo.repoName, PR)
   }
 
   trackGoogleAnalyticsEvent('Repository', 'Successfully create a new PR', 'Create PR', {
-    repo_name: repoName,
+    repo_name: baseRepo.repoName,
     repo_id: repoId,
     pr_id: PR.id,
     pr_title: PR.title
@@ -85,7 +95,7 @@ export async function postNewPullRequest({
   return PR
 }
 
-export async function getStatusMatrixOfTwoBranches({ base, compare, fs, dir }: CompareBranchesOptions) {
+export async function getStatusMatrixOfTwoBranches({ base, compare, fs, dir }: GetStatusMatrixOfTwoBranchesOptions) {
   const currentBranch = await git.currentBranch({ fs, dir, fullname: false })
 
   if (currentBranch !== compare) {
@@ -130,7 +140,8 @@ export async function mergePullRequest({
   author,
   dryRun,
   repoId,
-  prId
+  prId,
+  fork
 }: MergePullRequestOptions) {
   const { error } = await withAsync(() =>
     git.merge({
@@ -139,7 +150,6 @@ export async function mergePullRequest({
       ours: base,
       theirs: compare,
       abortOnConflict: true,
-      fastForward: false,
       dryRun,
       author: {
         email: author,
@@ -150,7 +160,19 @@ export async function mergePullRequest({
 
   await waitFor(500)
 
+  if (error instanceof Errors.MergeNotSupportedError) {
+    //
+    console.log(
+      'Automatic merge failed for the following files: ' +
+        `${error.data}. ` +
+        'Resolve these conflicts and then commit your changes.'
+    )
+  }
+
   if (!error) {
+    if (fork) {
+      await deleteBranch({ fs, dir, name: compare })
+    }
     await postUpdatedRepo({ fs, dir, owner: author, id: repoId })
 
     await waitFor(1000)
@@ -168,6 +190,8 @@ export async function mergePullRequest({
         status: 'MERGED'
       }
     })
+  } else {
+    throw error
   }
 }
 
@@ -230,7 +254,8 @@ type AddReviewersToPROptions = {
 }
 
 type PostNewPROptions = {
-  repoName: string
+  baseRepo: PRSide
+  compareRepo: PRSide
   title: string
   description: string
   baseBranch: string
@@ -238,11 +263,18 @@ type PostNewPROptions = {
   repoId: string
 }
 
+type PRSide = {
+  repoName: string
+  repoId: string
+}
+
 type CompareBranchesOptions = {
-  fs: FSType
-  dir: string
-  base: string
-  compare: string
+  baseFS: FSType
+  compareFS: FSType
+  baseDir: string
+  compareDir: string
+  baseBranch: string
+  compareBranch: string
 }
 
 type ReadFileFromRefOptions = {
@@ -261,4 +293,12 @@ type MergePullRequestOptions = {
   dryRun?: boolean
   repoId: string
   prId: number
+  fork: boolean
+}
+
+type GetStatusMatrixOfTwoBranchesOptions = {
+  fs: FSType
+  dir: string
+  base: string
+  compare: string
 }

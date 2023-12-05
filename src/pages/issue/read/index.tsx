@@ -4,6 +4,7 @@ import Lottie from 'react-lottie'
 import { useLocation, useParams } from 'react-router-dom'
 
 import loadingFilesAnimation from '@/assets/load-files.json'
+import PageNotFound from '@/components/PageNotFound'
 import { trackGoogleAnalyticsPageView } from '@/helpers/google-analytics'
 import { useGlobalStore } from '@/stores/globalStore'
 
@@ -16,17 +17,20 @@ export default function ReadIssuePage() {
   const { id, issueId } = useParams()
   const location = useLocation()
 
-  const [status, repo, selectedIssue, fetchAndLoadRepository, setSelectedIssue] = useGlobalStore((state) => [
-    state.repoCoreState.selectedRepo.status,
-    state.repoCoreState.selectedRepo.repo,
-    state.issuesState.selectedIssue,
-    state.repoCoreActions.fetchAndLoadRepository,
-    state.issuesActions.setSelectedIssue
-  ])
+  const [status, repo, selectedIssue, fetchAndLoadRepository, setSelectedIssue, branchState] = useGlobalStore(
+    (state) => [
+      state.repoCoreState.selectedRepo.status,
+      state.repoCoreState.selectedRepo.repo,
+      state.issuesState.selectedIssue,
+      state.repoCoreActions.fetchAndLoadRepository,
+      state.issuesActions.setSelectedIssue,
+      state.branchState
+    ]
+  )
 
   React.useEffect(() => {
     if (id) {
-      fetchAndLoadRepository(id)
+      fetchAndLoadRepository(id, branchState.currentBranch)
     }
   }, [id])
 
@@ -50,6 +54,10 @@ export default function ReadIssuePage() {
   }, [repo])
 
   const isLoading = status === 'IDLE' || status === 'PENDING'
+
+  if (status === 'ERROR') {
+    return <PageNotFound />
+  }
 
   if (isLoading || !repo || !selectedIssue) {
     return (

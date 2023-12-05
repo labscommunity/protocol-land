@@ -6,22 +6,20 @@ import { useForm } from 'react-hook-form'
 import toast from 'react-hot-toast'
 import SVG from 'react-inlinesvg'
 import { useNavigate } from 'react-router-dom'
-import { v4 as uuidv4 } from 'uuid'
 import * as yup from 'yup'
 
 import CloseCrossIcon from '@/assets/icons/close-cross.svg'
 import { Button } from '@/components/common/buttons'
-import CostEstimatesToolTip from '@/components/CostEstimatesToolTip'
-import { trackGoogleAnalyticsEvent } from '@/helpers/google-analytics'
 import { withAsync } from '@/helpers/withAsync'
-import { createNewRepo, postNewRepo } from '@/lib/git'
-import { fsWithName } from '@/lib/git/helpers/fsWithName'
+import { createNewFork } from '@/lib/git'
 import { useGlobalStore } from '@/stores/globalStore'
-import { isRepositoryNameAvailable } from '@/stores/repository-core/actions/repoMeta'
+import { getRepositoryMetaFromContract, isRepositoryNameAvailable } from '@/stores/repository-core/actions/repoMeta'
+import { Repo } from '@/types/repository'
 
 type NewRepoModalProps = {
   setIsOpen: (val: boolean) => void
   isOpen: boolean
+  repo: Repo | Record<PropertyKey, never>
 }
 
 const schema = yup
@@ -37,15 +35,19 @@ const schema = yup
   })
   .required()
 
-export default function NewRepoModal({ setIsOpen, isOpen }: NewRepoModalProps) {
+export default function ForkModal({ setIsOpen, isOpen, repo }: NewRepoModalProps) {
   const [isSubmitting, setIsSubmitting] = React.useState(false)
+  const connectedAddress = useGlobalStore((state) => state.authState.address)
   const navigate = useNavigate()
-  const [authState] = useGlobalStore((state) => [state.authState])
   const {
     register,
     handleSubmit,
     formState: { errors }
   } = useForm({
+    values: {
+      title: repo.name,
+      description: repo.description
+    },
     resolver: yupResolver(schema)
   })
 
@@ -53,42 +55,52 @@ export default function NewRepoModal({ setIsOpen, isOpen }: NewRepoModalProps) {
     setIsOpen(false)
   }
 
-  async function handleCreateBtnClick(data: yup.InferType<typeof schema>) {
+  async function isRepositoryAlreadyForked(repoId: string) {
+    if (repo.forks[connectedAddress!]) return true
+
+    const { response: fetchedRepo } = await withAsync(() => getRepositoryMetaFromContract(repoId))
+    return fetchedRepo && fetchedRepo.result && fetchedRepo.result.forks[connectedAddress!]
+  }
+
+  async function handleCreateFork(data: yup.InferType<typeof schema>) {
     setIsSubmitting(true)
 
-    const id = uuidv4()
-    const { title, description } = data
-    const owner = authState.address || 'Protocol.Land user'
-
-    const { response: isAvailable, error } = await withAsync(() => isRepositoryNameAvailable(title, authState.address!))
-
-    if (!error && isAvailable === false) {
-      toast.error(`The repository ${title} already exists.`)
-      setIsSubmitting(false)
-      return
+    const payload = {
+      name: data.title,
+      description: data.description ?? '',
+      parent: repo.id,
+      dataTxId: repo.dataTxId
     }
 
-    try {
-      const fs = fsWithName(id)
-      const createdRepo = await createNewRepo(title, fs, owner)
+    const alreadyForked = await isRepositoryAlreadyForked(repo.id)
 
-      if (createdRepo && createdRepo.commit && createdRepo.repoBlob) {
-        const { repoBlob } = createdRepo
+    if (alreadyForked) {
+      toast.error("You've already forked this repository.")
+      setIsOpen(false)
+    } else {
+      const { response: isAvailable, error: checkError } = await withAsync(() =>
+        isRepositoryNameAvailable(payload.name, connectedAddress as string)
+      )
 
-        const result = await postNewRepo({ id, title, description, file: repoBlob, owner: authState.address })
-
-        if (result.txResponse) {
-          trackGoogleAnalyticsEvent('Repository', 'Successfully created a repo', 'Create new repo', {
-            repo_id: id,
-            repo_name: title
-          })
-
-          navigate(`/repository/${id}`)
-        }
+      if (!checkError && isAvailable === false) {
+        toast.error(`The repository ${payload.name} already exists.`)
+        setIsSubmitting(false)
+        return
       }
-    } catch (error) {
-      trackGoogleAnalyticsEvent('Repository', 'Failed to create a new repo', 'Create new repo')
+
+      const { response, error } = await withAsync(() => createNewFork(payload))
+
+      if (error) {
+        toast.error('Failed to fork this repo.')
+      }
+
+      if (response) {
+        setIsOpen(false)
+        navigate(`/repository/${response}`)
+      }
     }
+
+    setIsSubmitting(false)
   }
 
   return (
@@ -117,10 +129,10 @@ export default function NewRepoModal({ setIsOpen, isOpen }: NewRepoModalProps) {
               leaveFrom="opacity-100 scale-100"
               leaveTo="opacity-0 scale-95"
             >
-              <Dialog.Panel className="w-full max-w-[368px] transform rounded-2xl bg-white p-6 text-left align-middle shadow-xl transition-all">
+              <Dialog.Panel className="w-full max-w-[368px] transform overflow-hidden rounded-2xl bg-white p-6 text-left align-middle shadow-xl transition-all">
                 <div className="w-full flex justify-between align-middle">
                   <Dialog.Title as="h3" className="text-xl font-medium text-gray-900">
-                    Create a new Repository
+                    Create a new Fork
                   </Dialog.Title>
                   <SVG onClick={closeModal} src={CloseCrossIcon} className="w-6 h-6 cursor-pointer" />
                 </div>
@@ -157,9 +169,6 @@ export default function NewRepoModal({ setIsOpen, isOpen }: NewRepoModalProps) {
                       <p className="text-red-500 text-sm italic mt-2">{errors.description?.message}</p>
                     )}
                   </div>
-                  <div className="py-1">
-                    <CostEstimatesToolTip fileSizes={[2740]} />
-                  </div>
                 </div>
 
                 <div className="mt-6">
@@ -167,7 +176,7 @@ export default function NewRepoModal({ setIsOpen, isOpen }: NewRepoModalProps) {
                     isLoading={isSubmitting}
                     disabled={Object.keys(errors).length > 0 || isSubmitting}
                     className="w-full justify-center font-medium"
-                    onClick={handleSubmit(handleCreateBtnClick)}
+                    onClick={handleSubmit(handleCreateFork)}
                     variant="primary-solid"
                   >
                     Create

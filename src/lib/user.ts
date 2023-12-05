@@ -116,7 +116,7 @@ export async function computeContributionsFromRepo(
 
       if (error || !response) continue
 
-      const fs = fsWithName(name)
+      const fs = fsWithName(id)
       const dir = `/${name}`
 
       const repoArrayBuf = await response.arrayBuffer()

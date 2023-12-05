@@ -13,7 +13,9 @@ export async function createNewPullRequest(
     !payload.description ||
     !payload.baseBranch ||
     !payload.compareBranch ||
-    !payload.baseBranchOid
+    !payload.baseBranchOid ||
+    !payload.baseRepo ||
+    !payload.compareRepo
   ) {
     throw new ContractError('Invalid inputs supplied.')
   }
@@ -35,7 +37,9 @@ export async function createNewPullRequest(
     author: caller,
     status: 'OPEN',
     reviewers: [],
-    timestamp: Date.now()
+    timestamp: Date.now(),
+    baseRepo: payload.baseRepo,
+    compareRepo: payload.compareRepo
   }
 
   const pullRequestsCount = repo.pullRequests.length
@@ -144,7 +148,15 @@ export async function addReviewersToPR(
     throw new ContractError('Pull Request not found.')
   }
 
-  const reviewers: Reviewer[] = payload.reviewers.map((reviewer: string) => ({
+  const newReviewers = payload.reviewers.filter(
+    (reviewer: string) => !PR.reviewers.some((existingReviewer) => existingReviewer.address === reviewer)
+  )
+
+  if (newReviewers.length === 0) {
+    throw new ContractError('No new reviewers to add.')
+  }
+
+  const reviewers: Reviewer[] = newReviewers.map((reviewer: string) => ({
     address: reviewer,
     approved: false
   }))

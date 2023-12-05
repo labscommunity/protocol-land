@@ -6,12 +6,16 @@ import { useGlobalStore } from '@/stores/globalStore'
 import { AMPLITUDE_TRACKING_ID, VITE_GA_TRACKING_ID } from '../constants'
 
 const initializeGoogleAnalytics = () => {
+  if (import.meta.env.MODE === 'development') return
+
   amplitude.init(AMPLITUDE_TRACKING_ID)
 
   ReactGA4.initialize(VITE_GA_TRACKING_ID)
 }
 
 export const trackGoogleAnalyticsEvent = (category: string, action: string, label: string, data?: Record<any, any>) => {
+  if (import.meta.env.MODE === 'development') return
+
   const user = useGlobalStore.getState().authState
   const auth = {
     user_address: user.address,
@@ -39,6 +43,8 @@ export const trackGoogleAnalyticsEvent = (category: string, action: string, labe
 }
 
 export const trackGoogleAnalyticsPageView = (hitType: string, page: string, title: string, data?: Record<any, any>) => {
+  if (import.meta.env.MODE === 'development') return
+
   const user = useGlobalStore.getState().authState
   const auth = {
     user_address: user.address,

@@ -6,6 +6,7 @@ import { useParams } from 'react-router-dom'
 
 import { Button } from '@/components/common/buttons'
 import { useGlobalStore } from '@/stores/globalStore'
+import { shortenAddress } from '@/helpers/shortenAddress'
 
 export default function ReviewerAdd() {
   const [isLoading, setIsLoading] = React.useState(false)
@@ -24,6 +25,7 @@ export default function ReviewerAdd() {
       setIsLoading(true)
 
       await addReviewers(+pullId, reviewers)
+      setReviewers([])
       toast.success('Successfully added reviewers')
 
       setIsLoading(false)
@@ -63,14 +65,14 @@ export default function ReviewerAdd() {
                                 reviewers.indexOf(address) > -1 ? 'opacity-100' : 'opacity-0'
                               }`}
                             />
-                            {address}
+                            {shortenAddress(address, 6)}
                           </span>
                         </>
                       )
                     }}
                   </Listbox.Option>
                 ))}
-              {reviewers.length > 0 && (
+              {contributors && contributors.length > 0 && reviewers.length > 0 && (
                 <div className="p-2 mt-1 flex">
                   <Button
                     onClick={handleReviwersSubmit}

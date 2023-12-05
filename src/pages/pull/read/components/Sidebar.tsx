@@ -5,6 +5,7 @@ import { useParams } from 'react-router-dom'
 
 import { Button } from '@/components/common/buttons'
 import { useGlobalStore } from '@/stores/globalStore'
+import { shortenAddress } from '@/helpers/shortenAddress'
 
 import ReviewerAdd from './ReviewerAdd'
 
@@ -35,7 +36,7 @@ export default function Sidebar() {
   return (
     <div className="flex flex-col w-[20%]">
       <div className="flex flex-col gap-4 ">
-        {isLoggedIn && isReviewer && !isReviewer.approved && (
+        {isLoggedIn && isReviewer && !isReviewer.approved && PR?.status === 'OPEN' && (
           <Button
             onClick={handlePRApproval}
             isLoading={isApproving}
@@ -63,7 +64,7 @@ export default function Sidebar() {
               ) : (
                 <PiDotDuotone className="min-w-[24px] h-6 !text-yellow-500" />
               )}
-              <span className="truncate">{reviewer.address}</span>
+              <span className="truncate">{shortenAddress(reviewer.address, 6)}</span>
             </div>
           ))}
       </div>

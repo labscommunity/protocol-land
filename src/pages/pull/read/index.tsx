@@ -4,6 +4,7 @@ import Lottie from 'react-lottie'
 import { useLocation, useParams } from 'react-router-dom'
 
 import loadingFilesAnimation from '@/assets/searching-files.json'
+import PageNotFound from '@/components/PageNotFound'
 import { trackGoogleAnalyticsPageView } from '@/helpers/google-analytics'
 import { useGlobalStore } from '@/stores/globalStore'
 
@@ -15,15 +16,29 @@ const activeClasses = 'border-b-[2px] border-primary-600 text-gray-900 font-medi
 export default function ReadPullRequest() {
   const location = useLocation()
   const { id, pullId } = useParams()
-  const [selectedRepo, fetchAndLoadRepository, pullRequestActions] = useGlobalStore((state) => [
+  const [
+    selectedRepo,
+    forkRepo,
+    commits,
+    branchState,
+    fileStatuses,
+    fetchAndLoadRepository,
+    fetchAndLoadForkRepository,
+    pullRequestActions
+  ] = useGlobalStore((state) => [
     state.repoCoreState.selectedRepo,
+    state.repoCoreState.forkRepo,
+    state.pullRequestState.commits,
+    state.branchState,
+    state.pullRequestState.fileStatuses,
     state.repoCoreActions.fetchAndLoadRepository,
+    state.repoCoreActions.fetchAndLoadForkRepository,
     state.pullRequestActions
   ])
 
   useEffect(() => {
     if (id) {
-      fetchAndLoadRepository(id)
+      fetchAndLoadRepository(id, branchState.currentBranch)
     }
   }, [id])
 
@@ -33,11 +48,35 @@ export default function ReadPullRequest() {
 
       if (!PR) return
 
-      pullRequestActions.compareBranches(PR.baseBranchOid, PR.compareBranch)
-      pullRequestActions.getFileStatuses(PR.baseBranchOid, PR.compareBranch)
+      const compareIsFork =
+        Object.values(selectedRepo.repo.forks).findIndex((fork) => fork.id === PR.compareRepo.repoId) > -1
+
+      if (PR.baseRepo.repoId !== PR.compareRepo.repoId && compareIsFork) {
+        fetchAndLoadForkRepository(PR.compareRepo.repoId)
+        //
+      }
+
+      const params = {
+        base: {
+          repoName: PR.baseRepo.repoName,
+          branch: PR.baseBranch,
+          id: PR.baseRepo.repoId
+        },
+        compare: {
+          repoName: PR.compareRepo.repoName,
+          branch: PR.compareBranch,
+          id: PR.compareRepo.repoId
+        }
+      }
+
+      pullRequestActions.compareBranches(params)
+
+      if (!compareIsFork) {
+        pullRequestActions.getFileStatuses(PR.baseBranchOid, PR.compareBranch)
+        pullRequestActions.setCompareBranch(PR.compareBranch)
+      }
 
       pullRequestActions.setBaseBranch(PR.baseBranch)
-      pullRequestActions.setCompareBranch(PR.compareBranch)
       pullRequestActions.setBaseBranchOid(PR.baseBranchOid)
 
       trackGoogleAnalyticsPageView('pageview', location.pathname, 'Read Pull Request Page Visit', {
@@ -51,9 +90,21 @@ export default function ReadPullRequest() {
     }
   }, [selectedRepo.repo])
 
+  useEffect(() => {
+    if (commits.length > 0 && forkRepo.repo && selectedRepo.repo) {
+      const PR = selectedRepo.repo.pullRequests[+pullId! - 1]
+
+      pullRequestActions.prepareAndCopyForkCommits(PR)
+    }
+  }, [commits, forkRepo])
+
   const isLoading = selectedRepo.status === 'IDLE' || selectedRepo.status === 'PENDING'
 
-  if (isLoading) {
+  if (selectedRepo.status === 'ERROR') {
+    return <PageNotFound />
+  }
+
+  if (isLoading || fileStatuses.length === 0) {
     return (
       <div className="h-full flex-1 flex flex-col max-w-[1280px] mx-auto w-full mt-6 gap-8 justify-center items-center">
         <Lottie

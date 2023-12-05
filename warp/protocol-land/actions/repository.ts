@@ -7,23 +7,97 @@ export async function initializeNewRepository(
   { caller, input: { payload } }: RepositoryAction
 ): Promise<ContractResult<ContractState>> {
   // validate payload
-  if (!payload.name || !payload.description || !payload.dataTxId || !payload.id) {
+  if (!payload.name || !payload.dataTxId || !payload.id) {
     throw new ContractError('Invalid inputs supplied.')
+  }
+
+  const repoNameRegex = /^[a-zA-Z0-9._-]+$/
+  if (!repoNameRegex.test(payload.name)) {
+    throw new ContractError(
+      'The repository name can only contain ASCII letters, digits, and the characters ., -, and _.'
+    )
+  }
+
+  const lowercasedRepoName = payload.name.toLowerCase()
+  const callerRepos = state.userRepoIdMap[caller] ?? {}
+
+  if (callerRepos[lowercasedRepoName]) {
+    throw new ContractError('Repository with the same name already exists.')
   }
 
   const repo: Repo = {
     id: payload.id,
     name: payload.name,
-    description: payload.description,
+    description: payload.description ?? '',
     defaultBranch: 'master',
     dataTxId: payload.dataTxId,
     owner: caller,
     contributors: [],
     pullRequests: [],
     issues: [],
-    timestamp: Date.now()
+    timestamp: Date.now(),
+    fork: false,
+    forks: {},
+    parent: null
   }
 
+  state.repos[repo.id] = repo
+  callerRepos[lowercasedRepoName] = repo.id
+  state.userRepoIdMap[caller] = callerRepos
+
+  return { state }
+}
+
+export async function forkRepository(
+  state: ContractState,
+  { caller, input: { payload } }: RepositoryAction
+): Promise<ContractResult<ContractState>> {
+  // validate payload
+  if (!payload.name || !payload.dataTxId || !payload.id || !payload.parent) {
+    throw new ContractError('Invalid inputs supplied.')
+  }
+
+  const repoNameRegex = /^[a-zA-Z0-9._-]+$/
+  if (!repoNameRegex.test(payload.name)) {
+    throw new ContractError(
+      'The repository name can only contain ASCII letters, digits, and the characters ., -, and _.'
+    )
+  }
+
+  const lowercasedRepoName = payload.name.toLowerCase()
+  const callerRepos = state.userRepoIdMap[caller] ?? {}
+
+  if (callerRepos[lowercasedRepoName]) {
+    throw new ContractError('Repository with the same name already exists.')
+  }
+
+  const repo: Repo = {
+    id: payload.id,
+    name: payload.name,
+    description: payload.description ?? '',
+    defaultBranch: 'master',
+    dataTxId: payload.dataTxId,
+    owner: caller,
+    contributors: [],
+    pullRequests: [],
+    issues: [],
+    timestamp: Date.now(),
+    fork: true,
+    forks: {},
+    parent: payload.parent
+  }
+
+  const parentRepo: Repo = state.repos[payload.parent]
+
+  if (!parentRepo) {
+    throw new ContractError('Fork failed. Parent not found.')
+  }
+
+  if (parentRepo.forks[caller]) {
+    throw new ContractError('Fork failed. Already forked by the caller.')
+  }
+
+  parentRepo.forks[caller] = { id: repo.id, name: repo.name, owner: repo.owner, timestamp: repo.timestamp }
   state.repos[repo.id] = repo
 
   return { state }
@@ -163,4 +237,20 @@ export async function addContributor(
   repo.contributors.push(payload.contributor)
 
   return { state }
+}
+
+export async function isRepositoryNameAvailable(
+  state: ContractState,
+  { caller, input: { payload } }: RepositoryAction
+): Promise<ContractResult<boolean>> {
+  if (!payload.name) {
+    throw new ContractError('Repository name not supplied.')
+  }
+
+  const userRepos = state.userRepoIdMap[caller] ?? {}
+  const repoName = payload.name.trim().toLowerCase()
+
+  const isAvailable = !userRepos[repoName]
+
+  return { result: isAvailable }
 }

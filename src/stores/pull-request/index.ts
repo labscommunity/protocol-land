@@ -5,7 +5,7 @@ import { withAsync } from '@/helpers/withAsync'
 import { addReviewersToPR, approvePR, closePullRequest } from '@/lib/git/pull-request'
 
 import { CombinedSlices } from '../types'
-import { compareTwoBranches, getChangedFiles, mergePR } from './actions'
+import { compareTwoBranches, getChangedFiles, mergePR, traverseAndCopyForkObjects } from './actions'
 import { PullRequestSlice, PullRequestState } from './types'
 
 const initialPullRequestState: PullRequestState = {
@@ -14,6 +14,8 @@ const initialPullRequestState: PullRequestState = {
   baseBranch: '',
   baseBranchOid: '',
   compareBranch: '',
+  baseRepo: null,
+  compareRepo: null,
   commits: [],
   fileStatuses: [],
   reviewers: []
@@ -29,6 +31,42 @@ const createPullRequestSlice: StateCreator<CombinedSlices, [['zustand/immer', ne
       set((state) => {
         state.pullRequestState = initialPullRequestState
       })
+    },
+    prepareAndCopyForkCommits: async (PR) => {
+      const parentRepo = get().repoCoreState.selectedRepo.repo
+      const forkedRepo = get().repoCoreState.forkRepo.repo
+
+      if (!parentRepo || !forkedRepo) {
+        set((state) => (state.pullRequestState.status = 'ERROR'))
+
+        return
+      }
+
+      if (forkedRepo.id !== PR.compareRepo.repoId) {
+        set((state) => (state.pullRequestState.status = 'ERROR'))
+
+        return
+      }
+
+      const commits = get().pullRequestState.commits
+      const { response, error } = await withAsync(() =>
+        traverseAndCopyForkObjects(
+          PR.compareRepo.repoId,
+          PR.compareRepo.repoName,
+          commits,
+          parentRepo.id,
+          parentRepo.name
+        )
+      )
+
+      if (error || !response) {
+        set((state) => (state.pullRequestState.status = 'ERROR'))
+
+        return
+      }
+
+      get().pullRequestActions.setCompareBranch(response.compareBranch)
+      await get().pullRequestActions.getFileStatuses(PR.baseBranchOid, response.compareBranch)
     },
     setDefaultBranches: async () => {
       set((state) => {
@@ -58,12 +96,14 @@ const createPullRequestSlice: StateCreator<CombinedSlices, [['zustand/immer', ne
       if (status === 'SUCCESS') {
         set((state) => {
           state.pullRequestState.baseBranch = currentBranch
+          state.pullRequestState.baseRepo = repo
+          state.pullRequestState.compareRepo = repo
           state.pullRequestState.compareBranch = currentBranch
           state.pullRequestState.status = 'SUCCESS'
         })
       }
     },
-    compareBranches: async (branchA, branchB) => {
+    compareBranches: async (prSideOptions) => {
       const status = get().pullRequestState.status
 
       if (status !== 'PENDING') {
@@ -80,7 +120,13 @@ const createPullRequestSlice: StateCreator<CombinedSlices, [['zustand/immer', ne
         return
       }
 
-      const { error, response } = await withAsync(() => compareTwoBranches(repo.name, branchA, branchB))
+      if (repo.fork && !get().repoCoreState.parentRepo.repo) {
+        set((state) => (state.pullRequestState.status = 'ERROR'))
+
+        return
+      }
+
+      const { error, response } = await withAsync(() => compareTwoBranches(prSideOptions))
 
       if (error) {
         set((state) => {
@@ -113,7 +159,7 @@ const createPullRequestSlice: StateCreator<CombinedSlices, [['zustand/immer', ne
         return
       }
 
-      const { error, response } = await withAsync(() => getChangedFiles(repo.name, branchA, branchB))
+      const { error, response } = await withAsync(() => getChangedFiles(repo.id, repo.name, branchA, branchB))
 
       if (error) {
         set((state) => {
@@ -128,6 +174,16 @@ const createPullRequestSlice: StateCreator<CombinedSlices, [['zustand/immer', ne
           state.pullRequestState.status = 'SUCCESS'
         })
       }
+    },
+    setBaseRepo: (repo) => {
+      set((state) => {
+        state.pullRequestState.baseRepo = repo
+      })
+    },
+    setCompareRepo: (repo) => {
+      set((state) => {
+        state.pullRequestState.compareRepo = repo
+      })
     },
     setBaseBranch: (branch) => {
       set((state) => {
@@ -154,6 +210,8 @@ const createPullRequestSlice: StateCreator<CombinedSlices, [['zustand/immer', ne
       const baseBranch = get().pullRequestState.baseBranch
       const compareBranch = get().pullRequestState.compareBranch
       const author = get().authState.address
+      const forkedRepo = get().repoCoreState.forkRepo.repo
+      const isFork = forkedRepo ? true : false
 
       if (!repo) {
         set((state) => (state.pullRequestState.status = 'ERROR'))
@@ -161,7 +219,9 @@ const createPullRequestSlice: StateCreator<CombinedSlices, [['zustand/immer', ne
         return
       }
 
-      const { error } = await withAsync(() => mergePR(repo.id, id, repo.name, baseBranch, compareBranch, author!))
+      const { error } = await withAsync(() =>
+        mergePR(repo.id, id, repo.name, baseBranch, compareBranch, author!, isFork)
+      )
 
       if (!error) {
         set((state) => {
@@ -183,6 +243,7 @@ const createPullRequestSlice: StateCreator<CombinedSlices, [['zustand/immer', ne
           pr_id: id,
           result: 'FAILED'
         })
+        throw error
       }
     },
     closePullRequest: async (id) => {
@@ -216,6 +277,7 @@ const createPullRequestSlice: StateCreator<CombinedSlices, [['zustand/immer', ne
           pr_id: id,
           result: 'FAILED'
         })
+        throw error
       }
     },
     getReviewersList: (prId: number) => {

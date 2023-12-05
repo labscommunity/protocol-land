@@ -1,5 +1,4 @@
 import git from 'isomorphic-git'
-import { InjectedArweaveSigner } from 'warp-contracts-plugin-signature'
 
 import { withAsync } from '@/helpers/withAsync'
 
@@ -10,12 +9,16 @@ export async function getAllBranches({ fs, dir }: CommonBranchOptions) {
 }
 
 export async function createNewBranch({ fs, dir, name }: CreateBranchOptions) {
-  const userSigner = new InjectedArweaveSigner(window.arweaveWallet)
-  await userSigner.setPublicKey()
-
   const { error: gitBranchError } = await withAsync(() => git.branch({ fs, dir, ref: name, checkout: true }))
 
-  if (gitBranchError) throw new Error('Failed to create new branch.')
+  if (gitBranchError) {
+    if (gitBranchError instanceof git.Errors.InvalidRefNameError) {
+      throw new Error('Invalid branch name.')
+    } else if (gitBranchError instanceof git.Errors.AlreadyExistsError) {
+      throw gitBranchError
+    }
+    throw new Error('Failed to create new branch.')
+  }
 
   return {
     result: true
@@ -43,7 +46,18 @@ export async function checkoutBranch({ fs, dir, name }: CommonBranchOptions & { 
       fs,
       dir,
       ref: name,
+      force: true,
       track: false
+    })
+  )
+}
+
+export async function deleteBranch({ fs, dir, name }: CommonBranchOptions & { name: string }) {
+  return await withAsync(() =>
+    git.deleteBranch({
+      fs,
+      dir,
+      ref: name
     })
   )
 }
