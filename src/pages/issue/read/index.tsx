@@ -5,6 +5,7 @@ import { useLocation, useParams } from 'react-router-dom'
 
 import loadingFilesAnimation from '@/assets/load-files.json'
 import PageNotFound from '@/components/PageNotFound'
+import ScrollToTop from '@/components/ScrollToTop'
 import { trackGoogleAnalyticsPageView } from '@/helpers/google-analytics'
 import { useGlobalStore } from '@/stores/globalStore'
 
@@ -104,6 +105,7 @@ export default function ReadIssuePage() {
           </Tab.Panels>
         </Tab.Group>
       </div>
+      <ScrollToTop />
     </div>
   )
 }

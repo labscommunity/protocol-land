@@ -14,7 +14,7 @@ const issuesSchema = yup
   })
   .required()
 
-export default function Title({ issueOrPr }: { issueOrPr: Issue | PullRequest }) {
+export default function Title({ issueOrPr, showEdit = true }: { issueOrPr: Issue | PullRequest; showEdit?: boolean }) {
   const [isEditing, setIsEditing] = React.useState(false)
   const [isSubmitting, setIsSubmitting] = React.useState(false)
   const [updateIssueDetails, updatePullRequestDetails] = useGlobalStore((state) => [
@@ -73,30 +73,31 @@ export default function Title({ issueOrPr }: { issueOrPr: Issue | PullRequest })
             />
           </div>
         ) : (
-          <h1 className="text-3xl text-gray-900">
+          <h1 className={`${showEdit ? 'text-3xl' : 'text-xl'} text-gray-900`}>
             {issueOrPr?.title} <span className="text-primary-600 ml-2">#{issueOrPr?.id}</span>
           </h1>
         )}
-        {isEditing ? (
-          <div className="flex gap-2">
-            <Button
-              className="h-8"
-              variant="primary-outline"
-              onClick={handleSubmit(updateTitle)}
-              isLoading={isSubmitting}
-              disabled={isSubmitting}
-            >
-              Save
+        {showEdit &&
+          (isEditing ? (
+            <div className="flex gap-2">
+              <Button
+                className="h-8"
+                variant="primary-outline"
+                onClick={handleSubmit(updateTitle)}
+                isLoading={isSubmitting}
+                disabled={isSubmitting}
+              >
+                Save
+              </Button>
+              <Button className="h-8" variant="secondary" onClick={onCancel}>
+                Cancel
+              </Button>
+            </div>
+          ) : (
+            <Button className="h-8" variant="primary-outline" onClick={() => setIsEditing(true)}>
+              Edit
             </Button>
-            <Button className="h-8" variant="secondary" onClick={onCancel}>
-              Cancel
-            </Button>
-          </div>
-        ) : (
-          <Button className="h-8" variant="primary-outline" onClick={() => setIsEditing(true)}>
-            Edit
-          </Button>
-        )}
+          ))}
       </div>
       {errors.title && <p className="text-red-500 text-sm italic">{errors.title?.message}</p>}
     </>

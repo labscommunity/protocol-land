@@ -105,7 +105,7 @@ export default function OverviewTab() {
             {!isOpen && (
               <div className="flex w-full justify-center gap-4 py-4">
                 <Button isLoading={isSubmittingClose} onClick={handleReopen} variant="primary-solid">
-                  Re-Open
+                  Reopen
                 </Button>
               </div>
             )}

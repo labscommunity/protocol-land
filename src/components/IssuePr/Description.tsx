@@ -62,7 +62,7 @@ export default function Description({ issueOrPr }: { issueOrPr: Issue | PullRequ
         ) : (
           <div className="font-medium">Description</div>
         )}
-        <Menu as="div" className="relative inline-block text-left z-10">
+        <Menu as="div" className="relative inline-block text-left">
           <Menu.Button className="inline-flex gap-[2px] w-full justify-center items-center rounded-md px-4 py-2 text-sm font-black">
             <span>.</span>
             <span>.</span>
