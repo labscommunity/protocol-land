@@ -7,6 +7,7 @@ import { trackGoogleAnalyticsEvent } from '@/helpers/google-analytics'
 import { waitFor } from '@/helpers/waitFor'
 import { withAsync } from '@/helpers/withAsync'
 import { useGlobalStore } from '@/stores/globalStore'
+import { PullRequest } from '@/types/repository'
 
 import { postPRStatDataTxToArweave } from '../user'
 import { postUpdatedRepo } from '.'
@@ -208,6 +209,30 @@ export async function closePullRequest({ repoId, prId }: { repoId: string; prId:
       prId,
       status: 'CLOSED'
     }
+  })
+}
+
+export async function updatePullRequestDetails(repoId: string, prId: number, pullRequest: Partial<PullRequest>) {
+  const userSigner = new InjectedArweaveSigner(window.arweaveWallet)
+  await userSigner.setPublicKey()
+
+  const contract = getWarpContract(CONTRACT_TX_ID, userSigner)
+  let payload = {
+    repoId,
+    prId
+  } as any
+
+  if (pullRequest.title) {
+    payload = { ...payload, title: pullRequest.title }
+  }
+
+  if (pullRequest.description) {
+    payload = { ...payload, description: pullRequest.description }
+  }
+
+  await contract.writeInteraction({
+    function: 'updatePullRequestDetails',
+    payload: payload
   })
 }
 

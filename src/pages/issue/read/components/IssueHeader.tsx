@@ -6,6 +6,7 @@ import { VscIssues } from 'react-icons/vsc'
 import { useNavigate } from 'react-router-dom'
 
 import { Button } from '@/components/common/buttons'
+import IssueTitle from '@/components/IssuePr/Title'
 import { shortenAddress } from '@/helpers/shortenAddress'
 import { Issue, IssueStatus } from '@/types/repository'
 
@@ -43,9 +44,7 @@ export default function IssueHeader({ issue }: { issue: Issue }) {
           <FaArrowLeft className="h-4 w-4 text-white" />
         </Button>
       </div>
-      <h1 className="text-3xl text-gray-900">
-        {issue?.title} <span className="text-primary-600 ml-2">#{issue?.id}</span>
-      </h1>
+      <IssueTitle issueOrPr={issue} />
       <div className="flex items-center gap-4">
         {issue && <StatusComponent status={issue!.status} />}
         <div className="text-gray-600">

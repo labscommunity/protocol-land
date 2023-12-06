@@ -12,7 +12,8 @@ import {
   closeBounty,
   closeIssue,
   createNewIssue,
-  reopenIssue
+  reopenIssue,
+  updateIssueDetails
 } from './actions'
 import { IssuesSlice, IssuesState } from './types'
 
@@ -135,6 +136,41 @@ const createPullRequestSlice: StateCreator<CombinedSlices, [['zustand/immer', ne
           issue_id: id,
           result: 'FAILED'
         })
+      }
+    },
+    updateIssueDetails: async (id, updateData: Partial<Issue>) => {
+      const repo = get().repoCoreState.selectedRepo.repo
+
+      if (!repo) {
+        set((state) => (state.issuesState.status = 'ERROR'))
+
+        return
+      }
+
+      const { error } = await withAsync(() => updateIssueDetails(repo.id, id, updateData))
+
+      if (!error) {
+        set((state) => {
+          const issue = state.repoCoreState.selectedRepo.repo!.issues[id - 1]
+          state.repoCoreState.selectedRepo.repo!.issues[id - 1] = { ...issue, ...updateData }
+        })
+
+        trackGoogleAnalyticsEvent('Repository', 'Update an issue', 'Update issue', {
+          repo_name: repo.name,
+          repo_id: repo.id,
+          issue_id: id,
+          result: 'SUCCESS'
+        })
+      }
+
+      if (error) {
+        trackGoogleAnalyticsEvent('Repository', 'Update an issue', 'Update issue', {
+          repo_name: repo.name,
+          repo_id: repo.id,
+          issue_id: id,
+          result: 'FAILED'
+        })
+        throw error
       }
     },
     getAssigneesList: (issueId: number) => {

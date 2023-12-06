@@ -10,7 +10,6 @@ export async function createNewPullRequest(
   if (
     !payload.repoId ||
     !payload.title ||
-    !payload.description ||
     !payload.baseBranch ||
     !payload.compareBranch ||
     !payload.baseBranchOid ||
@@ -30,7 +29,7 @@ export async function createNewPullRequest(
     id: 1,
     repoId: payload.repoId,
     title: payload.title,
-    description: payload.description,
+    description: payload.description ?? '',
     baseBranch: payload.baseBranch,
     compareBranch: payload.compareBranch,
     baseBranchOid: payload.baseBranchOid,
@@ -118,6 +117,47 @@ export async function updatePullRequestStatus(
   }
 
   PR.status = payload.status
+
+  return { state }
+}
+
+export async function updatePullRequestDetails(
+  state: ContractState,
+  { caller, input: { payload } }: RepositoryAction
+): Promise<ContractResult<ContractState>> {
+  if (!payload.repoId || !payload.prId) {
+    throw new ContractError('repoId and prId are required.')
+  }
+
+  if (!payload.title && !payload.description) {
+    throw new ContractError('Either title or description should be present.')
+  }
+
+  const repo = state.repos[payload.repoId]
+
+  if (!repo) {
+    throw new ContractError('Repository not found.')
+  }
+
+  const hasPermissions = caller === repo.owner || repo.contributors.indexOf(caller) > -1
+
+  if (!hasPermissions) {
+    throw new ContractError('Error: You dont have permissions for this operation.')
+  }
+
+  const PR = repo.pullRequests[+payload.prId - 1]
+
+  if (!PR) {
+    throw new ContractError('Pull Request not found.')
+  }
+
+  if (payload.title) {
+    PR.title = payload.title
+  }
+
+  if (payload.description) {
+    PR.description = payload.description
+  }
 
   return { state }
 }

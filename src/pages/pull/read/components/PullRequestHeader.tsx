@@ -4,6 +4,7 @@ import { RiGitClosePullRequestLine } from 'react-icons/ri'
 import { useNavigate } from 'react-router-dom'
 
 import { Button } from '@/components/common/buttons'
+import PrTitle from '@/components/IssuePr/Title'
 import { shortenAddress } from '@/helpers/shortenAddress'
 import { PullRequest, PullRequestStatus } from '@/types/repository'
 
@@ -40,9 +41,7 @@ export default function PullRequestHeader({ PR }: { PR: PullRequest }) {
           <FaArrowLeft className="h-4 w-4 text-white" />
         </Button>
       </div>
-      <h1 className="text-3xl text-gray-900">
-        {PR?.title} <span className="text-primary-600 ml-2">#{PR?.id}</span>
-      </h1>
+      <PrTitle issueOrPr={PR} />
       <div className="flex items-center gap-4">
         {PR && <StatusComponent status={PR!.status} />}
         <div className="text-gray-900 text-lg">

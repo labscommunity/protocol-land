@@ -3,6 +3,7 @@ import { formatDistanceToNow } from 'date-fns'
 import React from 'react'
 
 import { Button } from '@/components/common/buttons'
+import IssueDescription from '@/components/IssuePr/Description'
 import { shortenAddress } from '@/helpers/shortenAddress'
 import { useGlobalStore } from '@/stores/globalStore'
 
@@ -59,15 +60,8 @@ export default function OverviewTab() {
     <div className="flex gap-6">
       <div className="flex flex-col w-full gap-14">
         <div className="flex flex-col gap-8">
-          <div className="flex flex-col border-gray-300 border-[1px] w-full rounded-lg bg-white overflow-hidden">
-            <div className="flex justify-between bg-gray-200 text-gray-900 px-4 py-2 border-b-[1px] border-gray-300">
-              <span>{shortenAddress(selectedIssue.author)}</span>
-              <span> {formatDistanceToNow(new Date(selectedIssue.timestamp), { addSuffix: true })}</span>
-            </div>
-            <div className="text-gray-900 p-2 bg-white overflow-auto max-h-[50vh] h-full">
-              <MDEditor.Markdown source={selectedIssue.description} />
-            </div>
-          </div>
+          <IssueDescription issueOrPr={selectedIssue} />
+
           {selectedIssue.comments &&
             selectedIssue.comments.map((comment) => (
               <div className="flex flex-col border-[1px] border-gray-300 rounded-lg overflow-hidden">
