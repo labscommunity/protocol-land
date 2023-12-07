@@ -7,7 +7,7 @@ import { Button } from '@/components/common/buttons'
 import PageNotFound from '@/components/PageNotFound'
 import { trackGoogleAnalyticsPageView } from '@/helpers/google-analytics'
 import { useGlobalStore } from '@/stores/globalStore'
-import { Repo } from '@/types/repository'
+import { PullRequest, Repo } from '@/types/repository'
 
 import BranchDropdown from './components/BranchDropdown'
 import BranchLoading from './components/BranchLoading'
@@ -15,12 +15,14 @@ import CommitsDiff from './components/CommitsDiff'
 import CommitsDiffLoading from './components/CommitsDiffLoading'
 import NewPRForm from './components/NewPRForm'
 import RepoDropdown from './components/RepoDropdown'
+import ShowSimilarPr from './components/ShowSimilarPr'
 
 export default function CreatePullRequest() {
   const [repoList, setRepoList] = useState<{
     base: Repo[]
     compare: Repo[]
   }>({ base: [], compare: [] })
+  const [openPR, setOpenPR] = useState<PullRequest | undefined>(undefined)
   const { id } = useParams()
   const navigate = useNavigate()
   const location = useLocation()
@@ -101,6 +103,18 @@ export default function CreatePullRequest() {
           branch: compareBranch,
           id: compareRepo.id
         }
+      }
+
+      if (selectedRepo.repo) {
+        const openPR = selectedRepo.repo.pullRequests.find(
+          (pr) =>
+            pr.baseBranch === baseBranch &&
+            pr.compareBranch === compareBranch &&
+            pr.baseRepo.repoId === baseRepo?.id &&
+            pr.compareRepo.repoId === compareRepo?.id &&
+            pr.status === 'OPEN'
+        )
+        setOpenPR(openPR)
       }
 
       compareBranches(params)
@@ -185,7 +199,8 @@ export default function CreatePullRequest() {
         )}
       </div>
       {!isDiffReady && <CommitsDiffLoading />}
-      {isDiffReady && commits.length > 0 && (
+      {isDiffReady && openPR && <ShowSimilarPr PR={openPR} />}
+      {isDiffReady && commits.length > 0 && !openPR && (
         <NewPRForm
           baseRepo={baseRepo}
           compareRepo={compareRepo}
