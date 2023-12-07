@@ -72,10 +72,15 @@ export default function Title({ issueOrPr, showEdit = true }: { issueOrPr: Issue
               placeholder="Add new feature"
             />
           </div>
-        ) : (
-          <h1 className={`${showEdit ? 'text-3xl' : 'text-xl'} text-gray-900`}>
+        ) : showEdit ? (
+          <h1 className="text-3xl text-gray-900">
             {issueOrPr?.title} <span className="text-primary-600 ml-2">#{issueOrPr?.id}</span>
           </h1>
+        ) : (
+          <div className="flex text-xl text-gray-900 truncate gap-1">
+            <span className="truncate">{issueOrPr?.title}</span>
+            <span className="text-primary-600">#{issueOrPr?.id}</span>
+          </div>
         )}
         {showEdit &&
           (isEditing ? (

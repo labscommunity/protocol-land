@@ -55,7 +55,7 @@ export default function IssueHeader({ issue }: { issue: Issue }) {
           isSticky ? 'pt-4 border-gray-300' : 'border-gray-200'
         )}
       >
-        <div className="flex flex-col gap-2 w-full">
+        <div className={clsx('flex flex-col gap-2 w-full', isSticky && 'w-[90%]')}>
           {!isSticky && (
             <>
               <div>
@@ -76,7 +76,7 @@ export default function IssueHeader({ issue }: { issue: Issue }) {
               </div>
             )}
             {issue && <StatusComponent status={issue!.status} />}
-            <div className="text-gray-600">
+            <div className={clsx('text-gray-600', isSticky && 'truncate')}>
               {isSticky && <IssueTitle issueOrPr={issue} showEdit={false} />}
               {shortenAddress(issue.author)} has opened this issue{' '}
               {formatDistanceToNow(new Date(issue.timestamp), { addSuffix: true })}
