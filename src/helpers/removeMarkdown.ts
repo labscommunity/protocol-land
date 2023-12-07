@@ -31,7 +31,7 @@ export const removeMarkdown = (markdown: string) => {
       .replace(/\[\^.+?\](\: .*?$)?/g, '')
       .replace(/\s{0,2}\[.*?\]: .*?$/g, '')
       // Remove images
-      .replace(/\!\[(.*?)\][\[\(].*?[\]\)]/g, '')
+      .replace(/\!\[.*\]\((https?:\/\/[^\s]+)\)/g, '')
       // Remove inline links
       .replace(/\[(.*?)\][\[\(].*?[\]\)]/g, '$1')
       // Remove blockquotes

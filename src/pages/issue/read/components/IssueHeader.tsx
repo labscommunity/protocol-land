@@ -37,8 +37,7 @@ const statusMap = {
 export default function IssueHeader({ issue }: { issue: Issue }) {
   const navigate = useNavigate()
   const [isSticky, setIsSticky] = React.useState(false)
-  const isContributor = useGlobalStore((state) => state.repoCoreActions.isContributor)
-  const contributor = isContributor()
+  const isContributor = useGlobalStore((state) => state.repoCoreActions.isContributor)()
 
   const StatusComponent = statusMap[issue.status]
 
@@ -51,14 +50,14 @@ export default function IssueHeader({ issue }: { issue: Issue }) {
   }
 
   return (
-    <Sticky top={0} className="z-10" onStateChange={handleStateChange}>
+    <Sticky top={0} innerActiveClass="z-10 left-0" onStateChange={handleStateChange}>
       <div
         className={clsx(
-          'flex justify-between gap-2 border-b-[1px] pb-4 bg-gray-50',
-          isSticky ? 'pt-4 border-gray-300' : 'border-gray-200'
+          'flex justify-between gap-2 border-b-[1px] bg-gray-50',
+          isSticky ? 'pt-2 pb-2 border-gray-300 w-screen px-10 md:px-20 2xl:px-64 shadow' : 'pb-4 border-gray-200'
         )}
       >
-        <div className={clsx('flex flex-col gap-2 w-full', isSticky && contributor && 'w-[90%]')}>
+        <div className={clsx('flex flex-col gap-2', isSticky && isContributor ? 'w-[90%]' : 'w-full')}>
           {!isSticky && (
             <>
               <div>
@@ -81,14 +80,16 @@ export default function IssueHeader({ issue }: { issue: Issue }) {
             {issue && <StatusComponent status={issue!.status} />}
             <div className={clsx('text-gray-600', isSticky && 'truncate')}>
               {isSticky && <IssueTitle issueOrPr={issue} showEdit={false} />}
-              {shortenAddress(issue.author)} has opened this issue{' '}
-              {formatDistanceToNow(new Date(issue.timestamp), { addSuffix: true })}
+              <span className={clsx(isSticky && 'text-sm')}>
+                {shortenAddress(issue.author)} has opened this issue{' '}
+                {formatDistanceToNow(new Date(issue.timestamp), { addSuffix: true })}
+              </span>
             </div>
           </div>
         </div>
-        {isSticky && (
+        {isSticky && isContributor && (
           <div className="flex items-center">
-            <ActionButton isContributor={contributor} />
+            <ActionButton isContributor={isContributor} />
           </div>
         )}
       </div>

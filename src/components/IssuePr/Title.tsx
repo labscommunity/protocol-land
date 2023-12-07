@@ -79,8 +79,8 @@ export default function Title({ issueOrPr, showEdit = true }: { issueOrPr: Issue
             {issueOrPr?.title} <span className="text-primary-600 ml-2">#{issueOrPr?.id}</span>
           </h1>
         ) : (
-          <div className="flex text-xl text-gray-900 truncate gap-1">
-            <span className="truncate">{issueOrPr?.title}</span>
+          <div className="flex text-gray-900 truncate gap-1">
+            <span className="truncate font-medium">{issueOrPr?.title}</span>
             <span className="text-primary-600">#{issueOrPr?.id}</span>
           </div>
         )}
