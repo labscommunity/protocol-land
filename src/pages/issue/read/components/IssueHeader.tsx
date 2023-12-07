@@ -11,6 +11,7 @@ import Sticky from 'react-stickynode'
 import { Button } from '@/components/common/buttons'
 import IssueTitle from '@/components/IssuePr/Title'
 import { shortenAddress } from '@/helpers/shortenAddress'
+import { useGlobalStore } from '@/stores/globalStore'
 import { Issue, IssueStatus } from '@/types/repository'
 
 import ActionButton from './ActionButton'
@@ -36,6 +37,8 @@ const statusMap = {
 export default function IssueHeader({ issue }: { issue: Issue }) {
   const navigate = useNavigate()
   const [isSticky, setIsSticky] = React.useState(false)
+  const isContributor = useGlobalStore((state) => state.repoCoreActions.isContributor)
+  const contributor = isContributor()
 
   const StatusComponent = statusMap[issue.status]
 
@@ -55,7 +58,7 @@ export default function IssueHeader({ issue }: { issue: Issue }) {
           isSticky ? 'pt-4 border-gray-300' : 'border-gray-200'
         )}
       >
-        <div className={clsx('flex flex-col gap-2 w-full', isSticky && 'w-[90%]')}>
+        <div className={clsx('flex flex-col gap-2 w-full', isSticky && contributor && 'w-[90%]')}>
           {!isSticky && (
             <>
               <div>
@@ -85,7 +88,7 @@ export default function IssueHeader({ issue }: { issue: Issue }) {
         </div>
         {isSticky && (
           <div className="flex items-center">
-            <ActionButton />
+            <ActionButton isContributor={contributor} />
           </div>
         )}
       </div>

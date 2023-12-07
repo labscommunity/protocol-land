@@ -13,13 +13,14 @@ export default function OverviewTab() {
   const [isSubmittingClose, setIsSubmittingClose] = React.useState(false)
   const [isSubmittingComment, setIsSubmittingComment] = React.useState(false)
   const [commentVal, setCommentVal] = React.useState('')
-  const [isLoggedIn, selectedIssue, closeIssue, reopenIssue, addComment] = useGlobalStore((state) => [
-    state.authState.isLoggedIn,
+  const [isContributor, selectedIssue, closeIssue, reopenIssue, addComment] = useGlobalStore((state) => [
+    state.repoCoreActions.isContributor,
     state.issuesState.selectedIssue,
     state.issuesActions.closeIssue,
     state.issuesActions.reopenIssue,
     state.issuesActions.addComment
   ])
+  const contributor = isContributor()
 
   async function handleCloseButtonClick() {
     if (selectedIssue) {
@@ -76,7 +77,7 @@ export default function OverviewTab() {
             ))}
         </div>
 
-        {isLoggedIn && (
+        {contributor && (
           <div className="flex flex-col border-t-[1px] border-gray-200 pt-4">
             {isOpen && (
               <MDEditor height={180} preview="edit" value={commentVal} onChange={(val) => setCommentVal(val!)} />

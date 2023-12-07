@@ -3,10 +3,9 @@ import React from 'react'
 import { Button } from '@/components/common/buttons'
 import { useGlobalStore } from '@/stores/globalStore'
 
-export default function ActionButton() {
+export default function ActionButton({ isContributor }: { isContributor: boolean }) {
   const [isSubmittingClose, setIsSubmittingClose] = React.useState(false)
-  const [isLoggedIn, selectedIssue, closeIssue, reopenIssue] = useGlobalStore((state) => [
-    state.authState.isLoggedIn,
+  const [selectedIssue, closeIssue, reopenIssue] = useGlobalStore((state) => [
     state.issuesState.selectedIssue,
     state.issuesActions.closeIssue,
     state.issuesActions.reopenIssue
@@ -38,7 +37,7 @@ export default function ActionButton() {
 
   return (
     <div className="flex">
-      {isLoggedIn && (
+      {isContributor && (
         <div className="flex w-full border-gray-200 justify-center h-10">
           {isOpen ? (
             <Button
