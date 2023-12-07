@@ -25,6 +25,20 @@ export async function createNewPullRequest(
     throw new ContractError('Repository not found.')
   }
 
+  const isSimilarPrOpen =
+    repo.pullRequests.findIndex(
+      (pr) =>
+        pr.baseBranch === payload.baseBranch &&
+        pr.compareBranch === payload.compareBranch &&
+        pr.baseRepo.repoId === payload.baseRepo.repoId &&
+        pr.compareRepo.repoId === payload.compareRepo.repoId &&
+        pr.status === 'OPEN'
+    ) > -1
+
+  if (isSimilarPrOpen) {
+    throw new ContractError('A similar open PR already exists for the specified branches and repositories.')
+  }
+
   const pullRequest: PullRequest = {
     id: 1,
     repoId: payload.repoId,
