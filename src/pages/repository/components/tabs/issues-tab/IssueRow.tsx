@@ -37,11 +37,13 @@ export default function IssueRow({ status, author, id, title, timestamp }: Props
       onClick={handlePRRowClick}
       className="flex cursor-pointer bg-gray-50 justify-between text-gray-600 hover:text-gray-900 hover:bg-primary-50 items-center gap-2 py-2 px-4 border-b-[1px] border-gray-300 last:border-b-0"
     >
-      <div className="flex items-center gap-2">
-        <Icon />
+      <div className="flex gap-2">
+        <div className="mt-1">
+          <Icon />
+        </div>
         <span className="font-medium text-lg">{title}</span>
       </div>
-      <div className="flex gap-3">
+      <div className="flex gap-3 flex-shrink-0">
         <span className="font-semibold">#{id}</span>
         <span>opened by {shortenAddress(author)}</span>
         {timestamp && <span> {formatDistanceToNow(new Date(timestamp), { addSuffix: true })}</span>}
