@@ -69,7 +69,7 @@ export default function OverviewTab() {
                   <span>{shortenAddress(comment.author)}</span>
                   <span> {formatDistanceToNow(new Date(comment.timestamp), { addSuffix: true })}</span>
                 </div>
-                <div className="text-gray-900 p-2 h-32 bg-white">
+                <div className="text-gray-900 p-4 bg-white">
                   <MDEditor.Markdown source={comment.description} />
                 </div>
               </div>

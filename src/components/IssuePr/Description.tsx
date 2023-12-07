@@ -96,7 +96,7 @@ export default function Description({ issueOrPr }: { issueOrPr: Issue | PullRequ
           </Transition>
         </Menu>
       </div>
-      <div className="text-gray-900 p-2 bg-white overflow-auto max-h-[50vh] h-full">
+      <div className="text-gray-900 p-2 bg-white overflow-auto h-full">
         {isEditing ? (
           <div className="flex flex-col gap-2">
             <MDEditor preview="edit" value={description} onChange={(value) => setDescription(value!)} />
@@ -115,14 +115,8 @@ export default function Description({ issueOrPr }: { issueOrPr: Issue | PullRequ
               </Button>
             </div>
           </div>
-        ) : !isIssue ? (
-          <div className="text-gray-900 h-32 bg-white">
-            <MDEditor.Markdown source={issueOrPr?.description ?? ''} />
-          </div>
         ) : (
-          <div>
-            <MDEditor.Markdown source={issueOrPr.description} />
-          </div>
+          <MDEditor.Markdown className="p-2" source={issueOrPr?.description ?? ''} />
         )}
       </div>
     </div>

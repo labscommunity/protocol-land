@@ -126,7 +126,7 @@ export default function CreateIssuePage() {
             <MDEditor height={400} preview="edit" value={value} onChange={(val) => setValue(val!)} />
           )}
           {preview === 'live' && (
-            <MDEditor.Markdown className="h-[400px] rounded-lg p-2" source={value} style={{ whiteSpace: 'pre-wrap' }} />
+            <MDEditor.Markdown className="h-[400px] rounded-lg p-4" source={value} style={{ whiteSpace: 'pre-wrap' }} />
           )}
         </div>
         <div className="flex justify-center py-4">
