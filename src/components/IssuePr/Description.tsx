@@ -52,9 +52,7 @@ export default function Description({ issueOrPr }: { issueOrPr: Issue | PullRequ
   return (
     <div className="flex flex-col border-gray-300 border-[1px] w-full rounded-lg bg-white overflow-hidden">
       <div
-        className={`flex justify-between items-center gap-3 bg-gray-200 text-gray-900 px-4 ${
-          isIssue ? 'py-2' : 'py-[1.5px]'
-        } border-b-[1px] border-gray-300`}
+        className={`flex justify-between items-center gap-3 bg-gray-200 text-gray-900 px-4 py-2 border-b-[1px] border-gray-300`}
       >
         {isIssue ? (
           <div className="flex flex-auto justify-between">
@@ -66,7 +64,7 @@ export default function Description({ issueOrPr }: { issueOrPr: Issue | PullRequ
         )}
         {contributor && (
           <Menu as="div" className="relative inline-block text-left">
-            <Menu.Button className="inline-flex gap-[2px] w-full justify-center items-center rounded-md px-4 py-2 text-sm font-black">
+            <Menu.Button className="inline-flex gap-[2px] w-full justify-center items-center rounded-md px-4 text-sm font-black">
               <span>.</span>
               <span>.</span>
               <span>.</span>
