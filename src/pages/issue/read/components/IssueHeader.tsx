@@ -50,14 +50,22 @@ export default function IssueHeader({ issue }: { issue: Issue }) {
   }
 
   return (
-    <Sticky top={0} innerActiveClass="z-10 left-0" onStateChange={handleStateChange}>
+    <Sticky top={0} innerActiveClass="z-10 left-0 !w-full" onStateChange={handleStateChange}>
       <div
         className={clsx(
           'flex justify-between gap-2 border-b-[1px] bg-gray-50',
-          isSticky ? 'pt-2 pb-2 border-gray-300 w-screen px-10 md:px-20 2xl:px-64 shadow' : 'pb-4 border-gray-200'
+          isSticky ? 'pt-2 pb-2 border-gray-300 w-screen  shadow' : 'pb-4 border-gray-200'
         )}
       >
-        <div className={clsx('flex flex-col gap-2', isSticky && isContributor ? 'w-[90%]' : 'w-full')}>
+        <div
+          className={clsx(
+            'flex flex-col gap-2',
+            {
+              'max-w-[1280px] mx-auto': isSticky
+            },
+            isSticky && isContributor ? 'w-[90%]' : 'w-full'
+          )}
+        >
           {!isSticky && (
             <>
               <div>
