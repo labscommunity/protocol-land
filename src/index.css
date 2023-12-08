@@ -1,3 +1,12 @@
+.wmde-markdown ol,
+.wmde-markdown ul,
+.wmde-markdown menu,
+.mde-preview ol,
+.mde-preview ul,
+.mde-preview menu {
+  list-style: revert;
+}
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;

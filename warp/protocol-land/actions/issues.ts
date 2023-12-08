@@ -6,7 +6,7 @@ export async function createNewIssue(
   state: ContractState,
   { caller, input: { payload } }: RepositoryAction
 ): Promise<ContractResult<ContractState>> {
-  if (!payload.repoId || !payload.title || !payload.description) {
+  if (!payload.repoId || !payload.title) {
     throw new ContractError('Invalid inputs supplied.')
   }
 
@@ -20,7 +20,7 @@ export async function createNewIssue(
     id: 1,
     repoId: payload.repoId,
     title: payload.title,
-    description: payload.description,
+    description: payload.description ?? '',
     author: caller,
     status: 'OPEN',
     assignees: [],
@@ -105,6 +105,47 @@ export async function updateIssueStatus(
   }
 
   issue.status = payload.status
+
+  return { state }
+}
+
+export async function updateIssueDetails(
+  state: ContractState,
+  { caller, input: { payload } }: RepositoryAction
+): Promise<ContractResult<ContractState>> {
+  if (!payload.repoId || !payload.issueId) {
+    throw new ContractError('repoId and issueId are required.')
+  }
+
+  if (!payload.title && !payload.description) {
+    throw new ContractError('Either title or description should be present.')
+  }
+
+  const repo = state.repos[payload.repoId]
+
+  if (!repo) {
+    throw new ContractError('Repository not found.')
+  }
+
+  const hasPermissions = caller === repo.owner || repo.contributors.indexOf(caller) > -1
+
+  if (!hasPermissions) {
+    throw new ContractError('Error: You dont have permissions for this operation.')
+  }
+
+  const issue = repo.issues[+payload.issueId - 1]
+
+  if (!issue) {
+    throw new ContractError('Issue not found.')
+  }
+
+  if (payload.title) {
+    issue.title = payload.title
+  }
+
+  if (payload.description) {
+    issue.description = payload.description
+  }
 
   return { state }
 }

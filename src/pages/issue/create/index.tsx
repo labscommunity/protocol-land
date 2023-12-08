@@ -32,7 +32,6 @@ export default function CreateIssuePage() {
   const navigate = useNavigate()
 
   const [value, setValue] = useState('**Hello world!!!**')
-  const [preview, setPreview] = useState('edit')
   const {
     register: register,
     handleSubmit,
@@ -55,14 +54,6 @@ export default function CreateIssuePage() {
       })
     }
   }, [selectedRepo])
-
-  function handlePreviewToggle() {
-    if (preview === 'edit') {
-      setPreview('live')
-    } else {
-      setPreview('edit')
-    }
-  }
 
   async function createNewIssue(data: yup.InferType<typeof issuesSchema>) {
     setIsSubmitting(true)
@@ -111,23 +102,13 @@ export default function CreateIssuePage() {
           </div>
           {errors.title && <p className="text-red-500 text-sm italic mt-2">{errors.title?.message}</p>}
         </div>
-        <div className="flex flex-col gap-4">
+        <div className="flex flex-col gap-1">
           <div className="flex justify-between items-end">
-            <label htmlFor="title" className="block mb-1 text-sm font-medium text-gray-600">
+            <label htmlFor="title" className="block text-sm font-medium text-gray-600">
               Description
             </label>
-            <div>
-              <Button onClick={handlePreviewToggle} variant="primary-solid">
-                {preview === 'edit' ? 'Preview' : 'Edit'}
-              </Button>
-            </div>
           </div>
-          {preview === 'edit' && (
-            <MDEditor height={400} preview="edit" value={value} onChange={(val) => setValue(val!)} />
-          )}
-          {preview === 'live' && (
-            <MDEditor.Markdown className="h-[400px] rounded-lg p-2" source={value} style={{ whiteSpace: 'pre-wrap' }} />
-          )}
+          <MDEditor height={400} preview="edit" value={value} onChange={(val) => setValue(val!)} />
         </div>
         <div className="flex justify-center py-4">
           <Button

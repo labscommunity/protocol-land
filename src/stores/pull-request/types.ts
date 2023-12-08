@@ -35,6 +35,7 @@ export type PullRequestActions = {
   setDefaultBranches: () => Promise<void>
   mergePullRequest: (id: number) => Promise<void>
   closePullRequest: (id: number) => Promise<void>
+  updatePullRequestDetails: (id: number, updateData: Partial<PullRequest>) => Promise<void>
   getReviewersList: (id: number) => string[]
   addReviewers: (id: number, reviewers: string[]) => Promise<void>
   approvePR: (id: number) => Promise<void>

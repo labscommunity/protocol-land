@@ -1,4 +1,7 @@
+import '@uiw/react-md-editor/markdown-editor.css'
+
 import { yupResolver } from '@hookform/resolvers/yup'
+import MDEditor from '@uiw/react-md-editor'
 import clsx from 'clsx'
 import { useState } from 'react'
 import { useForm } from 'react-hook-form'
@@ -11,8 +14,7 @@ import { Repo } from '@/types/repository'
 
 const prSchema = yup
   .object({
-    title: yup.string().required('Title is required'),
-    description: yup.string().required('Description is required')
+    title: yup.string().required('Title is required')
   })
   .required()
 
@@ -26,6 +28,7 @@ type Props = {
 
 export default function NewPRForm({ baseBranch, compareBranch, baseRepo, compareRepo, repoId }: Props) {
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [description, setDescription] = useState('')
 
   const navigate = useNavigate()
   const {
@@ -37,7 +40,7 @@ export default function NewPRForm({ baseBranch, compareBranch, baseRepo, compare
   })
 
   async function handleCreateButtonClick(data: yup.InferType<typeof prSchema>) {
-    const { title, description } = data
+    const { title } = data
 
     setIsSubmitting(true)
 
@@ -50,7 +53,7 @@ export default function NewPRForm({ baseBranch, compareBranch, baseRepo, compare
     const PR = await postNewPullRequest({
       baseRepo: {
         repoName: baseRepo.name,
-        repoId: baseRepo.id,
+        repoId: baseRepo.id
       },
       compareRepo: {
         repoName: compareRepo.name,
@@ -93,18 +96,9 @@ export default function NewPRForm({ baseBranch, compareBranch, baseRepo, compare
           <label htmlFor="title" className="block mb-1 text-sm font-medium text-gray-600">
             Description
           </label>
-          <div className="flex flex-col items-start gap-4">
-            <textarea
-              rows={6}
-              {...register('description')}
-              className={clsx(
-                'bg-white border-[1px] text-gray-900 text-base rounded-lg hover:shadow-[0px_2px_4px_0px_rgba(0,0,0,0.10)] focus:border-primary-500 focus:border-[1.5px] block w-full px-3 py-[10px] outline-none',
-                errors.description ? 'border-red-500' : 'border-gray-300'
-              )}
-              placeholder="Feature description"
-            />
+          <div>
+            <MDEditor height={300} preview="edit" value={description} onChange={(val) => setDescription(val!)} />
           </div>
-          {errors.description && <p className="text-red-500 text-sm italic mt-2">{errors.description?.message}</p>}
         </div>
         <div className="mt-6 w-full flex justify-center">
           <Button
