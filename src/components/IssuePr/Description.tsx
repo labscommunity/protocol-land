@@ -118,7 +118,10 @@ export default function Description({ issueOrPr }: { issueOrPr: Issue | PullRequ
             </div>
           </div>
         ) : (
-          <MDEditor.Markdown className="p-2" source={issueOrPr?.description ?? ''} />
+          <MDEditor.Markdown
+            className="p-2"
+            source={issueOrPr?.description || '<i style="color: #656D76;">No description provided.</i>'}
+          />
         )}
       </div>
     </div>
