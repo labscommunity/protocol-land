@@ -117,8 +117,8 @@ export default function CodeTab({ repoName = '', id = '' }: Props) {
               {filename}
             </div>
             {isImage(filename) ? (
-              <div className="min-h-[100%] w-full overflow-hidden bg-white flex items-center justify-center">
-                <img src={fileContent} alt="Image" />
+              <div className="h-full w-full bg-white flex items-center justify-center p-8">
+                <img src={fileContent} alt="Image" className="border border-gray-300 border-solid bg-[url('bg.gif')]" />
               </div>
             ) : (
               <CodeMirror
