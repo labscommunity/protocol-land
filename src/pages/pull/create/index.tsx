@@ -105,8 +105,8 @@ export default function CreatePullRequest() {
         }
       }
 
-      if (selectedRepo.repo) {
-        const openPR = selectedRepo.repo.pullRequests.find(
+      if (baseRepo) {
+        const openPR = baseRepo.pullRequests.find(
           (pr) =>
             pr.baseBranch === baseBranch &&
             pr.compareBranch === compareBranch &&
