@@ -29,7 +29,7 @@ export default function PullRequestsTab() {
       setOpenPRList(openPRs)
       setClosedPRList(closedPRs)
     }
-  }, [repo, view])
+  }, [repo])
 
   const hasPRs = openPRList.length > 0 || closedPRList.length > 0
 
@@ -44,26 +44,15 @@ export default function PullRequestsTab() {
               <h1 className="text-lg font-medium">Get started by creating a new pull request</h1>
             </div>
           )}
-          {view === 'OPEN' &&
-            openPRList.map((pr) => (
-              <PullRequestRow
-                id={pr.id}
-                author={pr.author}
-                title={pr.title}
-                status={pr.status}
-                timestamp={pr.timestamp}
-              />
-            ))}
-          {view === 'CLOSED' &&
-            closedPRList.map((pr) => (
-              <PullRequestRow
-                id={pr.id}
-                author={pr.author}
-                title={pr.title}
-                status={pr.status}
-                timestamp={pr.timestamp}
-              />
-            ))}
+          {(view === 'OPEN' ? openPRList : closedPRList).map((pr) => (
+            <PullRequestRow
+              id={pr.id}
+              author={pr.author}
+              title={pr.title}
+              status={pr.status}
+              timestamp={pr.timestamp}
+            />
+          ))}
           {/* <PullRequestRow status="OPEN" />
           <PullRequestRow status="CLOSED" />
           <PullRequestRow status="MERGED" /> */}
