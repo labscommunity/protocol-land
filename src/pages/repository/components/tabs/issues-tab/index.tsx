@@ -42,11 +42,12 @@ export default function IssuesTab() {
           setView={setView}
         />
         <div className="rounded-b-lg w-full bg-white text-gray-900 overflow-hidden">
-          {!hasIssues && (
-            <div className="flex flex-col gap-2 h-32 w-full items-center justify-center">
-              <VscIssues className="h-7 w-7" />
-              <h1 className="text-lg font-medium">Get started by creating a new issue</h1>
-            </div>
+          {!hasIssues && <EmptyStateMessage message="Get started by creating a new issue." />}
+          {hasIssues && view === 'OPEN' && openIssuesList.length === 0 && (
+            <EmptyStateMessage message="There aren’t any open issues." />
+          )}
+          {hasIssues && view === 'CLOSED' && closedIssuesList.length === 0 && (
+            <EmptyStateMessage message="There aren’t any closed issues." />
           )}
           {(view === 'OPEN' ? openIssuesList : closedIssuesList).map((issue) => (
             <IssueRow
@@ -62,3 +63,10 @@ export default function IssuesTab() {
     </div>
   )
 }
+
+const EmptyStateMessage = ({ message }: { message: string }) => (
+  <div className="flex flex-col gap-2 h-32 w-full items-center justify-center">
+    <VscIssues className="h-7 w-7" />
+    <h1 className="text-lg font-medium">{message}</h1>
+  </div>
+)
