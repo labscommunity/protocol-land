@@ -25,6 +25,10 @@ export async function initializeNewRepository(
     throw new ContractError('Repository with the same name already exists.')
   }
 
+  if (state.repos[payload.id]) {
+    throw new ContractError('Repository already exists.')
+  }
+
   const repo: Repo = {
     id: payload.id,
     name: payload.name,
@@ -69,6 +73,10 @@ export async function forkRepository(
 
   if (callerRepos[lowercasedRepoName]) {
     throw new ContractError('Repository with the same name already exists.')
+  }
+
+  if (state.repos[payload.id]) {
+    throw new ContractError('Repository already exists.')
   }
 
   const repo: Repo = {
