@@ -56,6 +56,7 @@ export default function IssuesTab() {
               title={issue.title}
               status={issue.status}
               timestamp={issue.timestamp}
+              completedTimestamp={issue.completedTimestamp}
             />
           ))}
         </div>
