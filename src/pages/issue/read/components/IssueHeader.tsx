@@ -1,7 +1,6 @@
 import clsx from 'clsx'
 import { formatDistanceToNow } from 'date-fns'
 import React from 'react'
-import { AiOutlineIssuesClose } from 'react-icons/ai'
 import { FaArrowLeft } from 'react-icons/fa'
 import { GoIssueClosed } from 'react-icons/go'
 import { VscIssues } from 'react-icons/vsc'
@@ -22,14 +21,9 @@ const statusMap = {
       <VscIssues className="w-5 h-5" /> {status.toLowerCase()}
     </span>
   ),
-  CLOSED: ({ status }: { status: IssueStatus }) => (
-    <span className="flex gap-2 items-center capitalize bg-red-700 text-white px-4 py-2 rounded-full font-medium">
-      <AiOutlineIssuesClose className="w-5 h-5" /> {status.toLowerCase()}
-    </span>
-  ),
-  COMPLETED: ({ status }: { status: IssueStatus }) => (
+  COMPLETED: () => (
     <span className="flex gap-2 items-center capitalize bg-purple-700 text-white px-4 py-2 rounded-full font-medium">
-      <GoIssueClosed className="w-5 h-5" /> {status.toLowerCase()}
+      <GoIssueClosed className="w-5 h-5" /> Closed
     </span>
   )
 }

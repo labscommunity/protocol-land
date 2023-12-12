@@ -42,9 +42,10 @@ export default function ActionButton({ isContributor }: { isContributor: boolean
           {isOpen ? (
             <Button
               isLoading={isSubmittingClose}
+              disabled={isSubmittingClose}
               onClick={handleCloseButtonClick}
               variant="secondary"
-              className="w-28 justify-center"
+              className="justify-center"
             >
               Close
             </Button>
@@ -52,6 +53,7 @@ export default function ActionButton({ isContributor }: { isContributor: boolean
             <Button
               className="break-keep hyphens-auto"
               isLoading={isSubmittingClose}
+              disabled={isSubmittingClose}
               onClick={handleReopen}
               variant="primary-solid"
             >

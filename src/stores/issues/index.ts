@@ -81,11 +81,17 @@ const createPullRequestSlice: StateCreator<CombinedSlices, [['zustand/immer', ne
         return
       }
 
-      const { error } = await withAsync(() => reopenIssue(repo.id, id))
+      const { error, response } = await withAsync(() => reopenIssue(repo.id, id))
 
-      if (!error) {
+      if (!error && response) {
+        const activities = response?.activities
+
+        if (!activities || !Array.isArray(activities)) return
+
         set((state) => {
-          state.repoCoreState.selectedRepo.repo!.issues[id - 1].status = 'OPEN'
+          const issue = state.repoCoreState.selectedRepo.repo!.issues[id - 1]
+          issue.activities = activities
+          issue.status = 'OPEN'
         })
 
         trackGoogleAnalyticsEvent('Repository', 'Reopen a issue', 'Reopen issue', {
@@ -114,11 +120,18 @@ const createPullRequestSlice: StateCreator<CombinedSlices, [['zustand/immer', ne
         return
       }
 
-      const { error } = await withAsync(() => closeIssue(repo.id, id))
+      const { error, response } = await withAsync(() => closeIssue(repo.id, id))
 
-      if (!error) {
+      if (!error && response) {
+        const activities = response?.activities
+
+        if (!activities || !Array.isArray(activities)) return
+
         set((state) => {
-          state.repoCoreState.selectedRepo.repo!.issues[id - 1].status = 'COMPLETED'
+          const issue = state.repoCoreState.selectedRepo.repo!.issues[id - 1]
+          issue.activities = activities
+          issue.completedTimestamp = response.completedTimestamp
+          issue.status = 'COMPLETED'
         })
 
         trackGoogleAnalyticsEvent('Repository', 'Close an issue', 'Close issue', {
@@ -238,12 +251,12 @@ const createPullRequestSlice: StateCreator<CombinedSlices, [['zustand/immer', ne
       const { error, response } = await withAsync(() => addCommentToIssue(repo.id, id, comment))
 
       if (!error && response) {
-        const comments = response?.comments
+        const activities = response?.activities
 
-        if (!comments || !Array.isArray(comments)) return
+        if (!activities || !Array.isArray(activities)) return
 
         set((state) => {
-          state.repoCoreState.selectedRepo.repo!.issues[id - 1].comments = comments
+          state.repoCoreState.selectedRepo.repo!.issues[id - 1].activities = activities
         })
 
         trackGoogleAnalyticsEvent('Repository', 'Add comment to issue', 'Comment on issue', {

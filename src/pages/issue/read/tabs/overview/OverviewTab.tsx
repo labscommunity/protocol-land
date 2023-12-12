@@ -1,11 +1,16 @@
 import MDEditor from '@uiw/react-md-editor'
+import clsx from 'clsx'
 import { formatDistanceToNow } from 'date-fns'
 import React from 'react'
+import { GoIssueClosed } from 'react-icons/go'
+import { VscIssueReopened } from 'react-icons/vsc'
+import { useNavigate } from 'react-router-dom'
 
 import { Button } from '@/components/common/buttons'
 import IssueDescription from '@/components/IssuePr/Description'
 import { shortenAddress } from '@/helpers/shortenAddress'
 import { useGlobalStore } from '@/stores/globalStore'
+import { IssueActivityComment, IssueActivityStatus } from '@/types/repository'
 
 import Sidebar from '../../components/Sidebar'
 
@@ -20,6 +25,7 @@ export default function OverviewTab() {
     state.issuesActions.reopenIssue,
     state.issuesActions.addComment
   ])
+  const navigate = useNavigate()
   const contributor = isContributor()
 
   async function handleCloseButtonClick() {
@@ -59,22 +65,69 @@ export default function OverviewTab() {
 
   return (
     <div className="flex gap-6">
-      <div className="flex flex-col w-full gap-14">
+      <div className="flex flex-col w-full">
         <div className="flex flex-col gap-8">
-          <IssueDescription issueOrPr={selectedIssue} />
-
-          {selectedIssue.comments &&
-            selectedIssue.comments.map((comment) => (
-              <div className="flex flex-col border-[1px] border-gray-300 rounded-lg overflow-hidden">
-                <div className="flex justify-between bg-gray-200 border-b-[1px] border-gray-300 text-gray-900 px-4 py-2">
-                  <span>{shortenAddress(comment.author)}</span>
-                  <span> {formatDistanceToNow(new Date(comment.timestamp), { addSuffix: true })}</span>
-                </div>
-                <div className="text-gray-900 p-4 bg-white">
-                  <MDEditor.Markdown source={comment.description} />
-                </div>
-              </div>
-            ))}
+          <ol className="relative border-s-2 border-gray-300 ms-5">
+            <li className="mb-10 -ms-5">
+              <IssueDescription issueOrPr={selectedIssue} />
+            </li>
+            {selectedIssue.activities &&
+              selectedIssue.activities.map((activity) => {
+                const commentActivity = activity as IssueActivityComment
+                if (activity.type === 'COMMENT') {
+                  return (
+                    <li className="mb-10 -ms-5">
+                      <div className="flex flex-col border-[1px] border-gray-300 rounded-lg overflow-hidden">
+                        <div className="flex justify-between bg-gray-200 border-b-[1px] border-gray-300 text-gray-900 px-4 py-2">
+                          <span
+                            className="hover:underline hover:text-primary-700 cursor-pointer font-medium"
+                            onClick={() => navigate(`/user/${commentActivity.author}`)}
+                          >
+                            {shortenAddress(commentActivity.author)}
+                          </span>
+                          <span> {formatDistanceToNow(new Date(commentActivity.timestamp), { addSuffix: true })}</span>
+                        </div>
+                        <div className="text-gray-900 p-4 bg-white">
+                          <MDEditor.Markdown source={commentActivity.description} />
+                        </div>
+                      </div>
+                    </li>
+                  )
+                } else {
+                  const statusActivity = activity as IssueActivityStatus
+                  return (
+                    <li className="mb-10 ms-6">
+                      <span className="absolute flex items-center justify-center rounded-full -start-4">
+                        <div
+                          className={clsx(
+                            'rounded-full p-1',
+                            statusActivity.status === 'REOPEN' ? 'bg-[#38a457]' : 'bg-purple-700'
+                          )}
+                        >
+                          {statusActivity.status === 'REOPEN' ? (
+                            <VscIssueReopened className="h-5 w-5 text-white" />
+                          ) : (
+                            <GoIssueClosed className="h-5 w-5 text-white" />
+                          )}
+                        </div>
+                      </span>
+                      <div className="flex gap-1">
+                        <span
+                          className="font-medium hover:underline cursor-pointer hover:text-primary-700"
+                          onClick={() => navigate(`/user/${statusActivity.author}`)}
+                        >
+                          {shortenAddress(statusActivity.author)}
+                        </span>
+                        <span className="text-gray-500">
+                          {statusActivity.status === 'COMPLETED' ? 'closed this as completed' : 'reopened this'}{' '}
+                          {formatDistanceToNow(new Date(statusActivity.timestamp), { addSuffix: true })}
+                        </span>
+                      </div>
+                    </li>
+                  )
+                }
+              })}
+          </ol>
         </div>
 
         {contributor && (
@@ -86,9 +139,10 @@ export default function OverviewTab() {
               <div className="flex w-full justify-center gap-4 py-4">
                 <Button
                   isLoading={isSubmittingClose}
+                  disabled={isSubmittingClose}
                   onClick={handleCloseButtonClick}
                   variant="secondary"
-                  className="w-28 justify-center"
+                  className="justify-center"
                 >
                   Close
                 </Button>
@@ -97,7 +151,7 @@ export default function OverviewTab() {
                   isLoading={isSubmittingComment}
                   disabled={commentVal.length === 0 || isSubmittingComment}
                   variant="primary-solid"
-                  className="w-28 justify-center"
+                  className="justify-center"
                 >
                   Comment
                 </Button>
@@ -105,7 +159,12 @@ export default function OverviewTab() {
             )}
             {!isOpen && (
               <div className="flex w-full justify-center gap-4 py-4">
-                <Button isLoading={isSubmittingClose} onClick={handleReopen} variant="primary-solid">
+                <Button
+                  isLoading={isSubmittingClose}
+                  disabled={isSubmittingClose}
+                  onClick={handleReopen}
+                  variant="primary-solid"
+                >
                   Reopen
                 </Button>
               </div>
