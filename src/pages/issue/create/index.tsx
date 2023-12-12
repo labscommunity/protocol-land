@@ -113,7 +113,7 @@ export default function CreateIssuePage() {
         <div className="flex justify-center py-4">
           <Button
             isLoading={isSubmitting}
-            disabled={isSubmitting || value.length === 0}
+            disabled={isSubmitting}
             onClick={handleSubmit(createNewIssue)}
             variant="primary-solid"
           >
