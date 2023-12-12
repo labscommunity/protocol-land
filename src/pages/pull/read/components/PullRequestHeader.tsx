@@ -69,8 +69,8 @@ export default function PullRequestHeader({
             className="font-medium cursor-pointer hover:underline hover:text-primary-700"
             onClick={() => gotoUser(PR?.author)}
           >
-            {PR?.author && shortenAddress(PR?.author)}{' '}
-          </span>
+            {PR?.author && shortenAddress(PR?.author)}
+          </span>{' '}
           wants to merge{' '}
           <span
             className="text-primary-600 bg-primary-200 px-1 cursor-pointer"
