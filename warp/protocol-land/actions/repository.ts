@@ -11,6 +11,10 @@ export async function initializeNewRepository(
     throw new ContractError('Invalid inputs supplied.')
   }
 
+  if (state.repos[payload.id]) {
+    throw new ContractError('Repository already exists.')
+  }
+
   const repoNameRegex = /^[a-zA-Z0-9._-]+$/
   if (!repoNameRegex.test(payload.name)) {
     throw new ContractError(
@@ -23,10 +27,6 @@ export async function initializeNewRepository(
 
   if (callerRepos[lowercasedRepoName]) {
     throw new ContractError('Repository with the same name already exists.')
-  }
-
-  if (state.repos[payload.id]) {
-    throw new ContractError('Repository already exists.')
   }
 
   const repo: Repo = {
@@ -61,6 +61,10 @@ export async function forkRepository(
     throw new ContractError('Invalid inputs supplied.')
   }
 
+  if (state.repos[payload.id]) {
+    throw new ContractError('Repository already exists.')
+  }
+
   const repoNameRegex = /^[a-zA-Z0-9._-]+$/
   if (!repoNameRegex.test(payload.name)) {
     throw new ContractError(
@@ -73,10 +77,6 @@ export async function forkRepository(
 
   if (callerRepos[lowercasedRepoName]) {
     throw new ContractError('Repository with the same name already exists.')
-  }
-
-  if (state.repos[payload.id]) {
-    throw new ContractError('Repository already exists.')
   }
 
   const repo: Repo = {
