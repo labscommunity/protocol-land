@@ -1,5 +1,5 @@
 import { Tab } from '@headlessui/react'
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import Lottie from 'react-lottie'
 import { useLocation, useParams } from 'react-router-dom'
 
@@ -16,6 +16,7 @@ const activeClasses = 'border-b-[2px] border-primary-600 text-gray-900 font-medi
 export default function ReadPullRequest() {
   const location = useLocation()
   const { id, pullId } = useParams()
+  const [compareRepoOwner, setCompareRepoOwner] = useState('')
   const [
     selectedRepo,
     forkRepo,
@@ -48,12 +49,18 @@ export default function ReadPullRequest() {
 
       if (!PR) return
 
-      const compareIsFork =
-        Object.values(selectedRepo.repo.forks).findIndex((fork) => fork.id === PR.compareRepo.repoId) > -1
+      let compareIsFork = false
 
-      if (PR.baseRepo.repoId !== PR.compareRepo.repoId && compareIsFork) {
-        fetchAndLoadForkRepository(PR.compareRepo.repoId)
-        //
+      if (PR.baseRepo.repoId !== PR.compareRepo.repoId) {
+        const forks = Object.values(selectedRepo.repo.forks)
+        const forkRepoIndex = forks.findIndex((fork) => fork.id === PR.compareRepo.repoId)
+        compareIsFork = forkRepoIndex > -1
+
+        if (compareIsFork) {
+          setCompareRepoOwner(forks[forkRepoIndex].owner)
+          fetchAndLoadForkRepository(PR.compareRepo.repoId)
+          //
+        }
       }
 
       const params = {
@@ -128,7 +135,7 @@ export default function ReadPullRequest() {
   return (
     <div className="h-full flex-1 flex flex-col max-w-[1280px] mx-auto w-full mt-6 gap-8">
       {/* PR Meta Details open */}
-      {PR && <PullRequestHeader PR={PR} repo={selectedRepo.repo!} forkRepo={forkRepo.repo} />}
+      {PR && <PullRequestHeader PR={PR} repo={selectedRepo.repo!} compareRepoOwner={compareRepoOwner} />}
       {/* PR Meta Details close */}
       <div className="flex flex-col flex-1">
         <Tab.Group>

@@ -30,11 +30,11 @@ const statusMap = {
 export default function PullRequestHeader({
   PR,
   repo,
-  forkRepo
+  compareRepoOwner
 }: {
   PR: PullRequest
   repo: Repo
-  forkRepo: Repo | null
+  compareRepoOwner: string
 }) {
   const StatusComponent = statusMap[PR.status]
   const navigate = useNavigate()
@@ -76,7 +76,7 @@ export default function PullRequestHeader({
             className="text-primary-600 bg-primary-200 px-1 cursor-pointer"
             onClick={() => gotoBranch(PR.compareRepo.repoId, PR?.compareBranch)}
           >
-            {isMergeInSameRepo ? PR?.compareBranch : `${shortenAddress(forkRepo?.owner ?? '')}:${PR?.compareBranch}`}
+            {isMergeInSameRepo ? PR?.compareBranch : `${shortenAddress(compareRepoOwner)}:${PR?.compareBranch}`}
           </span>{' '}
           into{' '}
           <span
