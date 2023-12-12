@@ -52,7 +52,6 @@ export type Issue = {
   timestamp: number
   completedTimestamp?: number
   assignees: string[]
-  comments: Comment[]
   activities: IssueActivity[]
   bounties: Bounty[]
 }
