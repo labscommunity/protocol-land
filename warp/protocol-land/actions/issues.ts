@@ -104,6 +104,19 @@ export async function updateIssueStatus(
     throw new ContractError('Issue not found.')
   }
 
+  const validStatusValues = ['COMPLETED', 'REOPEN']
+  if (!validStatusValues.includes(payload.status)) {
+    throw new ContractError('Invalid issue status specified. Must be one of: ' + validStatusValues.join(', '))
+  }
+
+  if (issue.status === payload.status) {
+    throw new ContractError('Issue status is already set to the specified status.')
+  }
+
+  if (issue.status === 'OPEN' && payload.status === 'REOPEN') {
+    throw new ContractError('Issue status is already set to OPEN')
+  }
+
   const activity: IssueActivity = {
     type: 'STATUS',
     author: caller,
