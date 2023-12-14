@@ -40,12 +40,13 @@ export default function DragonDeploy() {
         return
       }
       const response = await uploadFiles(files, commit, selectedRepo)
-      setDeployedTxId(response.id)
-      await addDeployment({
+      const deployment = await addDeployment({
         txId: response.id,
         commitMessage: commit.message,
         commitOid: commit.oid
       })
+      setCurrentDeployment(deployment)
+      setDeployedTxId(response.id)
       toast.success('Deployed successfully')
       setIsDeploying(false)
     }
@@ -114,9 +115,9 @@ export default function DragonDeploy() {
                   <Dialog.Description className="mt-4">
                     <div className="flex flex-col text-md gap-2">
                       <div>
-                        {currentDeployment
-                          ? `The latest commit from deployment branch (${selectedRepo?.deploymentBranch}) is already deployed.`
-                          : `The latest commit from deployment branch (${selectedRepo?.deploymentBranch}) is not deployed yet.`}
+                        {`The latest commit from deployment branch (${selectedRepo?.deploymentBranch}) is ${
+                          currentDeployment ? 'deployed' : 'not deployed yet'
+                        }.`}
                       </div>
                       {deployedTxId && (
                         <div className="flex gap-1">

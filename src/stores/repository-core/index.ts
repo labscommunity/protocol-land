@@ -210,6 +210,7 @@ const createRepoCoreSlice: StateCreator<CombinedSlices, [['zustand/immer', never
           deployment,
           result: 'SUCCESS'
         })
+        return response
       }
     },
     fetchAndLoadRepository: async (id: string, branchName?: string) => {

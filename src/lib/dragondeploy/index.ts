@@ -1,3 +1,4 @@
+import ArDB from 'ardb'
 import Arweave from 'arweave'
 import git, { WORKDIR } from 'isomorphic-git'
 import mime from 'mime'
@@ -15,6 +16,7 @@ export interface File {
   type: 'blob'
   path: string
   size: number // bytes
+  hash?: string
   getContent: () => Promise<Uint8Array>
 }
 
@@ -28,6 +30,39 @@ export interface Manifest {
   version: string
   index: { path: string }
   paths: { [key: string]: { [id: string]: string } }
+}
+
+export const arweave = new Arweave({
+  host: 'ar-io.net',
+  port: 443,
+  protocol: 'https'
+})
+
+const ardb = new ArDB(arweave)
+
+function getValueFromTags(tags: Array<{ name: string; value: string }>, name: string) {
+  const tag = tags.find((tag) => tag.name === name)
+  return tag?.value ?? ''
+}
+
+export async function getHashToTxId(files: File[]) {
+  const hashToTxId: { [key: string]: string } = {}
+  try {
+    const hashes = files.map((file) => file.hash) as string[]
+    const txs = await ardb
+      .appName(APP_NAME)
+      .search('transactions')
+      .only(['id', 'tags'])
+      .tags([{ name: 'File-Hash', values: hashes }])
+      .findAll()
+    txs.forEach((tx) => {
+      const hash = getValueFromTags((tx as any)._tags, 'File-Hash')
+      hashToTxId[hash] = tx.id
+    })
+  } catch (error) {
+    //
+  }
+  return hashToTxId
 }
 
 export async function getDeploymentBranchFiles(repo: Repo, currentBranch: string) {
@@ -77,26 +112,40 @@ export async function uploadFiles(files: File[], commit: Commit, repo: Repo) {
     paths: {}
   }
 
+  files = await Promise.all(
+    files.map(async (file) => {
+      const hash = await toHash(await file.getContent())
+      file.hash = hash
+      return file
+    })
+  )
+
   const isNextApp = hasNextAppFiles(files)
+  const hashToTxId = await getHashToTxId(files)
 
   await Promise.all(
     files.map(async (file: File) => {
       const filePath = file.path
       const updatedFilePath =
         isNextApp && filePath.endsWith('.html') && filePath !== 'index.html' ? filePath.replace('.html', '') : filePath
-      const buffer = await file.getContent()
-      const hash = await toHash(buffer)
-      const transaction = await arweave.createTransaction({ data: buffer })
+      const data = await file.getContent()
+      const hash = file.hash!
+      const txId = hashToTxId[hash]
+      if (txId) {
+        manifest.paths[updatedFilePath] = { id: txId }
+      } else {
+        const transaction = await arweave.createTransaction({ data })
 
-      const mimeType = mime.getType(filePath) || 'application/octet-stream'
+        const mimeType = mime.getType(filePath) || 'application/octet-stream'
 
-      transaction.addTag('Content-Type', mimeType)
-      transaction.addTag('App-Name', APP_NAME)
-      transaction.addTag('App-Version', APP_VERSION)
-      transaction.addTag('File-Hash', hash)
+        transaction.addTag('Content-Type', mimeType)
+        transaction.addTag('App-Name', APP_NAME)
+        transaction.addTag('App-Version', APP_VERSION)
+        transaction.addTag('File-Hash', hash)
 
-      const response = await window.arweaveWallet.dispatch(transaction)
-      manifest.paths[updatedFilePath] = { id: response.id }
+        const response = await window.arweaveWallet.dispatch(transaction)
+        manifest.paths[updatedFilePath] = { id: response.id }
+      }
     })
   )
 
@@ -140,9 +189,3 @@ export function getFolderSizeInBytes(files: File[]) {
 export const hasNextAppFiles = (files: File[]) => files.some((file) => /_next[\\/]/.test(file.path))
 
 export const hasIndexFile = (files: File[]) => files.some((file) => file.path === 'index.html')
-
-export const arweave = new Arweave({
-  host: 'ar-io.net',
-  port: 443,
-  protocol: 'https'
-})
