@@ -62,7 +62,7 @@ export default function Deployments() {
           <span className="text-md">
             {selectedRepo?.deploymentBranch === ''
               ? 'Dragon Deploy is currently disabled. Set a default branch to enable dragon deploy for this repository.'
-              : `Your Dragon Deploy site is currently being built from the ${selectedRepo?.deploymentBranch} branch.`}
+              : `Dragon Deploy deployment is currently configured for ${selectedRepo?.deploymentBranch} branch.`}
           </span>
           <div className="w-full">
             <label htmlFor="title" className="block mb-1 text-sm font-medium text-gray-600">

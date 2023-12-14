@@ -7,7 +7,7 @@ import SVG from 'react-inlinesvg'
 import CloseCrossIcon from '@/assets/icons/close-cross.svg'
 import { Button } from '@/components/common/buttons'
 import CostEstimatesToolTip from '@/components/CostEstimatesToolTip'
-import { Commit, type File, getDeploymentBranchFiles, uploadFiles } from '@/lib/dragondeploy'
+import { type Commit, type File, getDeploymentBranchFiles, hasIndexFile, uploadFiles } from '@/lib/dragondeploy'
 import { useGlobalStore } from '@/stores/globalStore'
 import { Deployment } from '@/types/repository'
 
@@ -34,13 +34,11 @@ export default function DragonDeploy() {
   async function deploy() {
     if (selectedRepo && commit && files.length > 0) {
       setIsDeploying(true)
-      if (currentDeployment) {
-        setDeployedTxId(currentDeployment.txId)
-        toast.success('Already deployed')
+      if (!hasIndexFile(files)) {
+        toast.error("No 'index.html' file found.")
         setIsDeploying(false)
         return
       }
-
       const response = await uploadFiles(files, commit, selectedRepo)
       setDeployedTxId(response.id)
       await addDeployment({
@@ -48,6 +46,7 @@ export default function DragonDeploy() {
         commitMessage: commit.message,
         commitOid: commit.oid
       })
+      toast.success('Deployed successfully')
       setIsDeploying(false)
     }
   }
@@ -59,20 +58,19 @@ export default function DragonDeploy() {
   }, [branchState])
 
   useEffect(() => {
-    if (selectedRepo && files.length === 0 && isOpen) {
+    if (selectedRepo && isOpen) {
       ;(async () => {
+        setIsProcessing(true)
         const { files: branchFiles, commit: latestCommit } = await getDeploymentBranchFiles(selectedRepo, currentBranch)
         const deployment = selectedRepo.deployments.find((deployment) => deployment.commitOid === latestCommit.oid)
         setFiles(branchFiles)
         setCommit(latestCommit)
-        if (deployment) {
-          setCurrentDeployment(deployment)
-          setDeployedTxId(deployment.txId)
-        }
+        setCurrentDeployment(deployment)
+        setDeployedTxId(deployment?.txId ?? '')
         setIsProcessing(false)
       })()
     }
-  }, [selectedRepo, isOpen])
+  }, [selectedRepo?.deploymentBranch, isOpen])
 
   if (selectedRepo?.deploymentBranch === '') return <></>
 
@@ -117,8 +115,8 @@ export default function DragonDeploy() {
                     <div className="flex flex-col text-md gap-2">
                       <div>
                         {currentDeployment
-                          ? 'The latest commit is already deployed.'
-                          : 'The latest commit is not deployed.'}
+                          ? `The latest commit from deployment branch (${selectedRepo?.deploymentBranch}) is already deployed.`
+                          : `The latest commit from deployment branch (${selectedRepo?.deploymentBranch}) is not deployed yet.`}
                       </div>
                       {deployedTxId && (
                         <div className="flex gap-1">
@@ -133,11 +131,13 @@ export default function DragonDeploy() {
                         </div>
                       )}
                     </div>
-                    <div className="mt-6 flex flex-col gap-2.5">
-                      <div className="py-1">
-                        <CostEstimatesToolTip fileSizes={files.map((file) => file.size)} />
+                    {!currentDeployment && (
+                      <div className="mt-6 flex flex-col gap-2.5">
+                        <div className="py-1">
+                          <CostEstimatesToolTip fileSizes={files.map((file) => file.size)} />
+                        </div>
                       </div>
-                    </div>
+                    )}
                     <div className="mt-6">
                       <Button
                         isLoading={isDeploying}

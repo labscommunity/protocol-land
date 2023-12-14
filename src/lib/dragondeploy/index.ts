@@ -139,6 +139,8 @@ export function getFolderSizeInBytes(files: File[]) {
 
 export const hasNextAppFiles = (files: File[]) => files.some((file) => /_next[\\/]/.test(file.path))
 
+export const hasIndexFile = (files: File[]) => files.some((file) => file.path === 'index.html')
+
 export const arweave = new Arweave({
   host: 'ar-io.net',
   port: 443,
