@@ -42,6 +42,8 @@ export type Repo = {
   pullRequests: PullRequest[]
   issues: Issue[]
   contributors: string[]
+  deployments: Deployment[]
+  deploymentBranch: string
   timestamp: number
   forks: Forks
   fork: boolean
@@ -49,6 +51,15 @@ export type Repo = {
 }
 
 export type Forks = Record<Address, Pick<Repo, 'id' | 'name' | 'owner' | 'timestamp'>>
+
+export type Deployment = {
+  txId: string
+  branch: string
+  deployedBy: string
+  commitOid: string
+  commitMessage: string
+  timestamp: number
+}
 
 export type PullRequest = {
   id: number
@@ -155,6 +166,7 @@ const repoFnList = [
   'updatePullRequestStatus',
   'updatePullRequestDetails',
   'updateRepositoryDetails',
+  'addDeployment',
   'addContributor',
   'addReviewersToPR',
   'approvePR',

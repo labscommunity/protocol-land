@@ -10,6 +10,7 @@ import { toArrayBuffer } from '@/helpers/toArrayBuffer'
 import { waitFor } from '@/helpers/waitFor'
 import { withAsync } from '@/helpers/withAsync'
 import { ForkRepositoryOptions } from '@/stores/repository-core/types'
+import { Deployment, Repo } from '@/types/repository'
 
 import { checkoutBranch, getCurrentBranch } from './branch'
 import { FSType } from './helpers/fsWithName'
@@ -224,6 +225,53 @@ export async function updateRepoDescription(description: string, repoId: string)
       description
     }
   })
+}
+
+export async function updateRepoDeploymentBranch(deploymentBranch: string, repoId: string) {
+  const userSigner = new InjectedArweaveSigner(window.arweaveWallet)
+  await userSigner.setPublicKey()
+
+  const contract = getWarpContract(CONTRACT_TX_ID, userSigner)
+
+  await contract.writeInteraction({
+    function: 'updateRepositoryDetails',
+    payload: {
+      id: repoId,
+      deploymentBranch
+    }
+  })
+}
+
+export async function addDeployment(deployment: Partial<Deployment>, repoId: string) {
+  const userSigner = new InjectedArweaveSigner(window.arweaveWallet)
+  await userSigner.setPublicKey()
+
+  const contract = getWarpContract(CONTRACT_TX_ID, userSigner)
+
+  await contract.writeInteraction({
+    function: 'addDeployment',
+    payload: {
+      id: repoId,
+      deployment
+    }
+  })
+
+  const {
+    cachedValue: {
+      state: { repos }
+    }
+  } = await contract.readState()
+
+  const repo = repos[repoId] as Repo
+
+  if (!repo) return
+
+  const deployments = repo.deployments
+  const latestDeployment = deployments[deployments.length - 1]
+
+  if (!latestDeployment || !latestDeployment.txId) return
+
+  return latestDeployment
 }
 
 export async function addContributor(address: string, repoId: string) {

@@ -18,7 +18,7 @@ const VARIANTS = {
 }
 
 export default function Button<C extends React.ElementType = 'button'>(props: ButtonProps<C>) {
-  const { children, as, className, variant, ...buttonProps } = props
+  const { children, as, className, variant, loadingText, ...buttonProps } = props
   const Component = as || 'button'
 
   const buttonClasses =
@@ -41,7 +41,7 @@ export default function Button<C extends React.ElementType = 'button'>(props: Bu
               d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
             ></path>
           </svg>
-          Processing
+          {loadingText ?? 'Processing'}
         </>
       )}
       {!props.isLoading && children}

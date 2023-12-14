@@ -2,7 +2,14 @@ import { StateCreator } from 'zustand'
 
 import { trackGoogleAnalyticsEvent } from '@/helpers/google-analytics'
 import { withAsync } from '@/helpers/withAsync'
-import { addContributor, updateRepoDescription, updateRepoName } from '@/lib/git'
+import {
+  addContributor,
+  addDeployment,
+  updateRepoDeploymentBranch,
+  updateRepoDescription,
+  updateRepoName
+} from '@/lib/git'
+import { Deployment } from '@/types/repository'
 
 import { changeBranch, getCurrentActiveBranch } from '../branch/actions'
 import { CombinedSlices } from '../types'
@@ -128,6 +135,30 @@ const createRepoCoreSlice: StateCreator<CombinedSlices, [['zustand/immer', never
         })
       }
     },
+    updateRepoDeploymentBranch: async (deploymentBranch: string) => {
+      const repo = get().repoCoreState.selectedRepo.repo
+
+      if (!repo) {
+        set((state) => (state.repoCoreState.git.status = 'ERROR'))
+
+        return
+      }
+
+      const { error } = await withAsync(() => updateRepoDeploymentBranch(deploymentBranch, repo.id))
+
+      if (!error) {
+        set((state) => {
+          state.repoCoreState.selectedRepo.repo!.deploymentBranch = deploymentBranch
+        })
+
+        trackGoogleAnalyticsEvent('Repository', 'Update default deployment branch', 'Update deployment branch', {
+          repo_name: repo.name,
+          repo_id: repo.id,
+          deploymentBranch,
+          result: 'SUCCESS'
+        })
+      }
+    },
     setRepoContributionStats: (data) => {
       set((state) => {
         state.repoCoreState.selectedRepo.statistics = data
@@ -153,6 +184,30 @@ const createRepoCoreSlice: StateCreator<CombinedSlices, [['zustand/immer', never
           repo_name: repo.name,
           repo_id: repo.id,
           contributor_address: address,
+          result: 'SUCCESS'
+        })
+      }
+    },
+    addDeployment: async (deployment: Omit<Deployment, 'deployedBy' | 'branch' | 'timestamp'>) => {
+      const repo = get().repoCoreState.selectedRepo.repo
+
+      if (!repo) {
+        set((state) => (state.repoCoreState.git.status = 'ERROR'))
+
+        return
+      }
+
+      const { error, response } = await withAsync(() => addDeployment(deployment, repo.id))
+
+      if (!error && response) {
+        set((state) => {
+          state.repoCoreState.selectedRepo.repo!.deployments.push(response)
+        })
+
+        trackGoogleAnalyticsEvent('Repository', 'Add deployment to a repo', 'Add repo deployment', {
+          repo_name: repo.name,
+          repo_id: repo.id,
+          deployment,
           result: 'SUCCESS'
         })
       }

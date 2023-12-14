@@ -17,6 +17,7 @@ import {
 } from './actions/pull-requests'
 import {
   addContributor,
+  addDeployment,
   forkRepository,
   getAllRepositoriesByContributor,
   getAllRepositoriesByOwner,
@@ -51,6 +52,8 @@ export async function handle(state: ContractState, action: RepositoryAction | Ev
       return await updateRepositoryDetails(state, action as RepositoryAction)
     case 'isRepositoryNameAvailable':
       return await isRepositoryNameAvailable(state, action as RepositoryAction)
+    case 'addDeployment':
+      return await addDeployment(state, action as RepositoryAction)
     case 'addContributor':
       return await addContributor(state, action as RepositoryAction)
     case 'createPullRequest':
