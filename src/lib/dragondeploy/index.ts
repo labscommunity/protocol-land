@@ -2,6 +2,7 @@ import ArDB from 'ardb'
 import Arweave from 'arweave'
 import git, { WORKDIR } from 'isomorphic-git'
 import mime from 'mime'
+import type { Dispatch, SetStateAction } from 'react'
 import { InjectedArweaveSigner } from 'warp-contracts-plugin-signature'
 
 import { checkoutBranch } from '@/lib/git/branch'
@@ -99,7 +100,12 @@ export async function getDeploymentBranchFiles(repo: Repo, currentBranch: string
   return { files, commit: { oid, message } }
 }
 
-export async function uploadFiles(files: File[], commit: Commit, repo: Repo) {
+export async function uploadFiles(
+  files: File[],
+  commit: Commit,
+  repo: Repo,
+  setUploadPercent: Dispatch<SetStateAction<number>>
+) {
   const userSigner = new InjectedArweaveSigner(window.arweaveWallet)
   await userSigner.setPublicKey()
 
@@ -122,6 +128,7 @@ export async function uploadFiles(files: File[], commit: Commit, repo: Repo) {
 
   const isNextApp = hasNextAppFiles(files)
   const hashToTxId = await getHashToTxId(files)
+  const incrementValue = 100 / (files.length + 1)
 
   await Promise.all(
     files.map(async (file: File) => {
@@ -145,6 +152,7 @@ export async function uploadFiles(files: File[], commit: Commit, repo: Repo) {
 
         const response = await window.arweaveWallet.dispatch(transaction)
         manifest.paths[updatedFilePath] = { id: response.id }
+        setUploadPercent((uploadPercent: number) => parseFloat((uploadPercent + incrementValue).toFixed(2)))
       }
     })
   )
@@ -166,6 +174,7 @@ export async function uploadFiles(files: File[], commit: Commit, repo: Repo) {
   manifestTransaction.addTag('Commit-Oid', commit.oid)
   manifestTransaction.addTag('Commit-Message', commit.message)
   const response = await window.arweaveWallet.dispatch(manifestTransaction)
+  setUploadPercent(100)
   return response
 }
 

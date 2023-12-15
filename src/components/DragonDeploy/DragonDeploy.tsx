@@ -19,6 +19,7 @@ export default function DragonDeploy() {
   const [commit, setCommit] = useState<Commit>()
   const [deployedTxId, setDeployedTxId] = useState('')
   const [currentDeployment, setCurrentDeployment] = useState<Deployment>()
+  const [uploadPercent, setUploadPercent] = useState(0)
   const [currentBranch, selectedRepo, branchState, branchActions, addDeployment] = useGlobalStore((state) => [
     state.branchState.currentBranch,
     state.repoCoreState.selectedRepo.repo,
@@ -39,15 +40,21 @@ export default function DragonDeploy() {
         setIsDeploying(false)
         return
       }
-      const response = await uploadFiles(files, commit, selectedRepo)
-      const deployment = await addDeployment({
-        txId: response.id,
-        commitMessage: commit.message,
-        commitOid: commit.oid
-      })
-      setCurrentDeployment(deployment)
-      setDeployedTxId(response.id)
-      toast.success('Deployed successfully')
+
+      setUploadPercent(0)
+      try {
+        const response = await uploadFiles(files, commit, selectedRepo, setUploadPercent)
+        const deployment = await addDeployment({
+          txId: response.id,
+          commitMessage: commit.message,
+          commitOid: commit.oid
+        })
+        setCurrentDeployment(deployment)
+        setDeployedTxId(response.id)
+        toast.success('Deployed successfully')
+      } catch (err) {
+        toast.error('Deploy failed')
+      }
       setIsDeploying(false)
     }
   }
@@ -139,7 +146,18 @@ export default function DragonDeploy() {
                         </div>
                       </div>
                     )}
-                    <div className="mt-6">
+                    <div className="flex flex-col gap-3 mt-6">
+                      {isDeploying && (
+                        <div className="w-full bg-gray-200 rounded-full">
+                          <div
+                            className="bg-primary-600 text-xs font-medium text-primary-100 text-center p-0.5 leading-none rounded-full"
+                            style={{ width: `${uploadPercent}%` }}
+                          >
+                            {uploadPercent}%
+                          </div>
+                        </div>
+                      )}
+
                       <Button
                         isLoading={isDeploying}
                         disabled={isDeploying || isProcessing || !!currentDeployment}
