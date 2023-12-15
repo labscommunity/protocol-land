@@ -69,13 +69,20 @@ export default function DragonDeploy() {
     if (selectedRepo && isOpen) {
       ;(async () => {
         setIsProcessing(true)
-        const { files: branchFiles, commit: latestCommit } = await getDeploymentBranchFiles(selectedRepo, currentBranch)
-        const deployment = selectedRepo.deployments.find((deployment) => deployment.commitOid === latestCommit.oid)
-        setFiles(branchFiles)
-        setCommit(latestCommit)
-        setCurrentDeployment(deployment)
-        setDeployedTxId(deployment?.txId ?? '')
-        setIsProcessing(false)
+        try {
+          const { files: branchFiles, commit: latestCommit } = await getDeploymentBranchFiles(
+            selectedRepo,
+            currentBranch
+          )
+          const deployment = selectedRepo.deployments.find((deployment) => deployment.commitOid === latestCommit.oid)
+          setFiles(branchFiles)
+          setCommit(latestCommit)
+          setCurrentDeployment(deployment)
+          setDeployedTxId(deployment?.txId ?? '')
+          setIsProcessing(false)
+        } catch (error) {
+          toast.error((error as any).message)
+        }
       })()
     }
   }, [selectedRepo?.deploymentBranch, isOpen])
