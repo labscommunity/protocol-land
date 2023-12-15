@@ -153,7 +153,7 @@ export default function DragonDeploy() {
                         </div>
                       </div>
                     )}
-                    <div className="flex flex-col gap-3 mt-6">
+                    <div className="flex flex-col gap-3 mt-2">
                       {isDeploying && (
                         <div className="w-full bg-gray-200 rounded-full">
                           <div
