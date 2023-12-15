@@ -177,10 +177,13 @@ export async function uploadFiles(
 
         const mimeType = mime.getType(filePath) || 'application/octet-stream'
 
-        transaction.addTag('Content-Type', mimeType)
-        transaction.addTag('App-Name', APP_NAME)
-        transaction.addTag('App-Version', APP_VERSION)
-        transaction.addTag('File-Hash', hash)
+        const transactionTags = [
+          { name: 'Content-Type', value: mimeType },
+          { name: 'App-Name', value: APP_NAME },
+          { name: 'App-Version', value: APP_VERSION },
+          { name: 'File-Hash', value: hash }
+        ]
+        transactionTags.forEach((tag) => transaction.addTag(tag.name, tag.value))
 
         const response = await window.arweaveWallet.dispatch(transaction)
         manifest.paths[updatedFilePath] = { id: response.id }
@@ -191,20 +194,24 @@ export async function uploadFiles(
 
   const manifestTransaction = await arweave.createTransaction({ data: JSON.stringify(manifest) })
   const unixTimestamp = Math.floor(Date.now() / 1000)
-  // Tags for Dragon Deploy
-  manifestTransaction.addTag('Content-Type', MANIFEST_CONTENT_TYPE)
-  manifestTransaction.addTag('Title', repo.name)
-  manifestTransaction.addTag('App-Name', APP_NAME)
-  manifestTransaction.addTag('App-Version', APP_VERSION)
-  manifestTransaction.addTag('Unix-Time', String(unixTimestamp))
-  manifestTransaction.addTag('Description', repo.description)
-  manifestTransaction.addTag('Type', 'web-page')
-  // Tags for PL
-  manifestTransaction.addTag('Deployed-Through', 'Protocol.Land')
-  manifestTransaction.addTag('Repo-Id', repo.id)
-  manifestTransaction.addTag('Repo-Branch', repo.deploymentBranch)
-  manifestTransaction.addTag('Commit-Oid', commit.oid)
-  manifestTransaction.addTag('Commit-Message', commit.message)
+  const manifestTags = [
+    // Tags for Dragon Deploy
+    { name: 'Content-Type', value: MANIFEST_CONTENT_TYPE },
+    { name: 'Title', value: repo.name },
+    { name: 'App-Name', value: APP_NAME },
+    { name: 'App-Version', value: APP_VERSION },
+    { name: 'Unix-Time', value: String(unixTimestamp) },
+    { name: 'Description', value: repo.description },
+    { name: 'Type', value: 'web-page' },
+    // Tags for PL
+    { name: 'Deployed-Through', value: 'Protocol.Land' },
+    { name: 'Repo-Id', value: repo.id },
+    { name: 'Repo-Branch', value: repo.deploymentBranch },
+    { name: 'Commit-Oid', value: commit.oid },
+    { name: 'Commit-Message', value: commit.message }
+  ]
+  manifestTags.forEach((tag) => manifestTransaction.addTag(tag.name, tag.value))
+
   const response = await window.arweaveWallet.dispatch(manifestTransaction)
   setUploadPercent(100)
   return response
