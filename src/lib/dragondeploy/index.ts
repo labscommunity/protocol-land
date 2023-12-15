@@ -46,6 +46,37 @@ function getValueFromTags(tags: Array<{ name: string; value: string }>, name: st
   return tag?.value ?? ''
 }
 
+export function uint8ArrayToString(data: Uint8Array) {
+  return new TextDecoder('utf-8').decode(data)
+}
+
+export function stringToUint8Array(data: string) {
+  return new TextEncoder().encode(data)
+}
+
+export async function updateFileContent(file: File) {
+  if (!file.path.endsWith('.html')) {
+    return file
+  }
+  try {
+    let content = uint8ArrayToString(await file.getContent())
+    if (
+      /src=["'](?!\/\/)(\/.*?\.[^\/"']*?)["']/g.test(content) ||
+      /href=["'](?!\/\/)(\/.*?\.[^\/"']*?)["']/g.test(content)
+    ) {
+      content = content
+        .replace(/src=["'](?!\/\/)(\/.*?\.[^\/"']*?)["']/g, 'src=".$1"')
+        .replace(/href=["'](?!\/\/)(\/.*?\.[^\/"']*?)["']/g, 'href=".$1"')
+
+      file.getContent = () => Promise.resolve(stringToUint8Array(content))
+      return file
+    }
+  } catch (err) {
+    //
+  }
+  return file
+}
+
 export async function getHashToTxId(files: File[]) {
   const hashToTxId: { [key: string]: string } = {}
   try {
@@ -120,6 +151,7 @@ export async function uploadFiles(
 
   files = await Promise.all(
     files.map(async (file) => {
+      // file = await updateFileContent(file) // TODO: Finalize whether to use this
       const hash = await toHash(await file.getContent())
       file.hash = hash
       return file
