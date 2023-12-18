@@ -28,8 +28,35 @@ export default function DragonDeploy() {
     state.repoCoreActions.addDeployment
   ])
 
+  useEffect(() => {
+    if (branchState.branchList.length === 0) {
+      branchActions.listBranches()
+    }
+  }, [branchState])
+
+  useEffect(() => {
+    loadFilesForDeployment()
+  }, [selectedRepo?.deploymentBranch, isOpen])
+
   function closeModal() {
     setIsOpen(false)
+  }
+
+  async function loadFilesForDeployment() {
+    if (selectedRepo && isOpen) {
+      setIsProcessing(true)
+      try {
+        const { files: branchFiles, commit: latestCommit } = await getDeploymentBranchFiles(selectedRepo, currentBranch)
+        const deployment = selectedRepo.deployments.find((deployment) => deployment.commitOid === latestCommit.oid)
+        setFiles(branchFiles)
+        setCommit(latestCommit)
+        setCurrentDeployment(deployment)
+        setDeployedTxId(deployment?.txId ?? '')
+        setIsProcessing(false)
+      } catch (error) {
+        toast.error((error as any).message)
+      }
+    }
   }
 
   async function deploy() {
@@ -59,35 +86,7 @@ export default function DragonDeploy() {
     }
   }
 
-  useEffect(() => {
-    if (branchState.branchList.length === 0) {
-      branchActions.listBranches()
-    }
-  }, [branchState])
-
-  useEffect(() => {
-    if (selectedRepo && isOpen) {
-      ;(async () => {
-        setIsProcessing(true)
-        try {
-          const { files: branchFiles, commit: latestCommit } = await getDeploymentBranchFiles(
-            selectedRepo,
-            currentBranch
-          )
-          const deployment = selectedRepo.deployments.find((deployment) => deployment.commitOid === latestCommit.oid)
-          setFiles(branchFiles)
-          setCommit(latestCommit)
-          setCurrentDeployment(deployment)
-          setDeployedTxId(deployment?.txId ?? '')
-          setIsProcessing(false)
-        } catch (error) {
-          toast.error((error as any).message)
-        }
-      })()
-    }
-  }, [selectedRepo?.deploymentBranch, isOpen])
-
-  if (selectedRepo?.deploymentBranch === '') return <></>
+  if (selectedRepo?.deploymentBranch === '') return null
 
   return (
     <>
