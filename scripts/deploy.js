@@ -7,8 +7,7 @@ import { WarpFactory } from 'warp-contracts'
 import { ArweaveSigner, DeployPlugin } from 'warp-contracts-plugin-deploy'
 
 // intiating new warp instance for mainnet
-// const warp = WarpFactory.forMainnet().use(new DeployPlugin())
-const warp = WarpFactory.forTestnet().use(new DeployPlugin())
+const warp = WarpFactory.forMainnet().use(new DeployPlugin())
 const evolve = process.argv.indexOf('--evolve') > -1
 
 // read private key file
@@ -21,7 +20,7 @@ const __dirname = path.resolve()
 // read contract source logic from 'handle.js' and encode it
 const state = fs.readFileSync(path.join(__dirname, 'warp/protocol-land/initial-state.json'), 'utf-8')
 const contractSource = fs.readFileSync(path.join(__dirname, 'contracts-dist/repository-contract.js'), 'utf-8')
-const contract = warp.contract('bcutzJJDcVV_z2r10vwUK-luIL-a9j8F8a-Nsq-CCKo').connect(key)
+const contract = warp.contract('w5ZU15Y2cLzZlu3jewauIlnzbKw-OAxbN9G5TbuuiDQ').connect(key)
 
 if (evolve) {
   const newSource = await warp.createSource({ src: contractSource }, new ArweaveSigner(key))
