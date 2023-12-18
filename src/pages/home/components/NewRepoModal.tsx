@@ -1,7 +1,7 @@
 import { Dialog, Transition } from '@headlessui/react'
 import { yupResolver } from '@hookform/resolvers/yup'
 import clsx from 'clsx'
-import React, { Fragment } from 'react'
+import React, { ChangeEvent, Fragment } from 'react'
 import { useForm } from 'react-hook-form'
 import toast from 'react-hot-toast'
 import SVG from 'react-inlinesvg'
@@ -39,6 +39,7 @@ const schema = yup
 
 export default function NewRepoModal({ setIsOpen, isOpen }: NewRepoModalProps) {
   const [isSubmitting, setIsSubmitting] = React.useState(false)
+  const [visibility, setVisibility] = React.useState('public')
   const navigate = useNavigate()
   const [authState] = useGlobalStore((state) => [state.authState])
   const {
@@ -75,7 +76,7 @@ export default function NewRepoModal({ setIsOpen, isOpen }: NewRepoModalProps) {
       if (createdRepo && createdRepo.commit && createdRepo.repoBlob) {
         const { repoBlob } = createdRepo
 
-        const result = await postNewRepo({ id, title, description, file: repoBlob, owner: authState.address })
+        const result = await postNewRepo({ id, title, description, file: repoBlob, owner: authState.address, visibility })
 
         if (result.txResponse) {
           trackGoogleAnalyticsEvent('Repository', 'Successfully created a repo', 'Create new repo', {
@@ -89,6 +90,10 @@ export default function NewRepoModal({ setIsOpen, isOpen }: NewRepoModalProps) {
     } catch (error) {
       trackGoogleAnalyticsEvent('Repository', 'Failed to create a new repo', 'Create new repo')
     }
+  }
+
+  function handleRepositoryVisibilityChange(event: ChangeEvent<HTMLInputElement>) {
+    setVisibility(event.target.value)
   }
 
   return (
@@ -156,6 +161,32 @@ export default function NewRepoModal({ setIsOpen, isOpen }: NewRepoModalProps) {
                     {errors.description && (
                       <p className="text-red-500 text-sm italic mt-2">{errors.description?.message}</p>
                     )}
+                  </div>
+                  <div className="flex flex-col">
+                    <h1 className="mb-1 text-sm font-medium text-gray-600">Repository visibility</h1>
+                    <div className="flex flex-row gap-2">
+                      <label htmlFor="radio-1" className="flex items-center">
+                        <input
+                          type="radio"
+                          name="radio-group"
+                          onChange={handleRepositoryVisibilityChange}
+                          value="public"
+                          defaultChecked
+                          className="mr-2 rounded-full h-4 w-4 checked:accent-primary-700 accent-primary-600 bg-white focus:ring-primary-600  outline-none"
+                        />
+                        Public
+                      </label>
+                      <label htmlFor="radio-2" className="flex items-center">
+                        <input
+                          type="radio"
+                          name="radio-group"
+                          onChange={handleRepositoryVisibilityChange}
+                          value="private"
+                          className="mr-2 rounded-full h-4 w-4 checked:accent-primary-700 accent-primary-600 bg-white focus:ring-primary-600  outline-none"
+                        />
+                        Private
+                      </label>
+                    </div>
                   </div>
                   <div className="py-1">
                     <CostEstimatesToolTip fileSizes={[2740]} />

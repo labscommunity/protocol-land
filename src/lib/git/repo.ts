@@ -22,11 +22,15 @@ const arweave = new Arweave({
   protocol: 'https'
 })
 
-export async function postNewRepo({ id, title, description, file, owner }: any) {
+export async function postNewRepo({ id, title, description, file, owner, visibility }: any) {
   const userSigner = new InjectedArweaveSigner(window.arweaveWallet)
   await userSigner.setPublicKey()
 
   const data = (await toArrayBuffer(file)) as ArrayBuffer
+
+  if (visibility === 'private') {
+    // Enc
+  }
 
   await waitFor(500)
 
