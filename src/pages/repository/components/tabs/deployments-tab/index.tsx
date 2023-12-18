@@ -27,7 +27,7 @@ export default function DeploymentsTab() {
           <div className="rounded-b-lg w-full bg-white text-liberty-dark-100 overflow-hidden">
             <div className="flex flex-col gap-2 h-32 w-full items-center justify-center">
               <GrDeploy className="h-7 w-7" />
-              <h1 className="text-lg font-medium">Looks like this repository hasn't any deployments yet.</h1>
+              <h1 className="text-lg font-medium">Looks like this repository has no previous deployments.</h1>
             </div>
           </div>
         </div>

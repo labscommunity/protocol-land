@@ -1,6 +1,6 @@
 import { BiCodeAlt } from 'react-icons/bi'
+import { BsRocketTakeoff } from "react-icons/bs";
 import { FiGitBranch, FiGitCommit, FiGitPullRequest, FiSettings } from 'react-icons/fi'
-import { GrDeploy } from 'react-icons/gr'
 import { VscIssues } from 'react-icons/vsc'
 
 import CodeTab from '../components/tabs/code-tab'
@@ -46,7 +46,7 @@ export const rootTabConfig = [
   {
     title: 'Deployments',
     Component: DeploymentsTab,
-    Icon: GrDeploy,
+    Icon: BsRocketTakeoff,
     getPath: (id: string, _?: string) => `/repository/${id}/deployments`
   },
   {
