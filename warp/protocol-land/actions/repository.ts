@@ -276,6 +276,10 @@ export async function addDeployment(
     throw new ContractError('Error: You dont have permissions for this operation.')
   }
 
+  if (!repo.deploymentBranch) {
+    throw new ContractError('Deployment branch is not selected')
+  }
+
   const deployment: Deployment = {
     txId: payload.deployment.txId,
     branch: repo.deploymentBranch,
