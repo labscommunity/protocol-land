@@ -2,6 +2,7 @@ import { Menu, Transition } from '@headlessui/react'
 import MDEditor from '@uiw/react-md-editor'
 import { formatDistanceToNow } from 'date-fns'
 import React, { Fragment, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
 
 import { Button } from '@/components/common/buttons'
 import { shortenAddress } from '@/helpers/shortenAddress'
@@ -17,6 +18,7 @@ export default function Description({ issueOrPr }: { issueOrPr: Issue | PullRequ
     state.issuesActions.updateIssueDetails,
     state.pullRequestActions.updatePullRequestDetails
   ])
+  const navigate = useNavigate()
   const contributor = isContributor()
   const isIssue = 'assignees' in issueOrPr
 
@@ -56,7 +58,12 @@ export default function Description({ issueOrPr }: { issueOrPr: Issue | PullRequ
       >
         {isIssue ? (
           <div className="flex flex-auto justify-between">
-            <span>{shortenAddress(issueOrPr.author)}</span>
+            <span
+              className="hover:underline hover:text-primary-700 cursor-pointer font-medium"
+              onClick={() => navigate(`/user/${issueOrPr.author}`)}
+            >
+              {shortenAddress(issueOrPr.author)}
+            </span>
             <span> {formatDistanceToNow(new Date(issueOrPr.timestamp), { addSuffix: true })}</span>
           </div>
         ) : (

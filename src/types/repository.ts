@@ -50,8 +50,9 @@ export type Issue = {
   author: string
   status: IssueStatus
   timestamp: number
+  completedTimestamp?: number
   assignees: string[]
-  comments: Comment[]
+  activities: IssueActivity[]
   bounties: Bounty[]
 }
 
@@ -64,9 +65,19 @@ export type Bounty = {
   timestamp: number
 }
 
-export type Comment = {
+export type IssueActivity = IssueActivityStatus | IssueActivityComment
+
+export type BaseActivity = {
+  type: ActivityType
   author: string
   timestamp: number
+}
+
+export interface IssueActivityStatus extends BaseActivity {
+  status: IssueStatus | 'REOPEN'
+}
+
+export interface IssueActivityComment extends BaseActivity {
   description: string
 }
 
@@ -85,7 +96,9 @@ export type Reviewer = {
 
 export type PullRequestStatus = 'OPEN' | 'CLOSED' | 'MERGED'
 
-export type IssueStatus = 'OPEN' | 'CLOSED' | 'COMPLETED'
+export type ActivityType = 'STATUS' | 'COMMENT'
+
+export type IssueStatus = 'OPEN' | 'COMPLETED'
 
 export type BountyStatus = 'ACTIVE' | 'CLAIMED' | 'EXPIRED' | 'CLOSED'
 

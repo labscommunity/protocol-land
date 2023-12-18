@@ -106,6 +106,22 @@ export async function closeIssue(repoId: string, issueId: number) {
       status: 'COMPLETED'
     }
   })
+
+  const {
+    cachedValue: {
+      state: { repos }
+    }
+  } = await contract.readState()
+
+  const issues = repos[repoId]?.issues
+
+  if (!issues) return
+
+  const issue = issues[issueId - 1]
+
+  if (!issue) return
+
+  return issue
 }
 
 export async function reopenIssue(repoId: string, issueId: number) {
@@ -119,9 +135,25 @@ export async function reopenIssue(repoId: string, issueId: number) {
     payload: {
       repoId,
       issueId,
-      status: 'OPEN'
+      status: 'REOPEN'
     }
   })
+
+  const {
+    cachedValue: {
+      state: { repos }
+    }
+  } = await contract.readState()
+
+  const issues = repos[repoId]?.issues
+
+  if (!issues) return
+
+  const issue = issues[issueId - 1]
+
+  if (!issue) return
+
+  return issue
 }
 
 export async function updateIssueDetails(repoId: string, issueId: number, issue: Partial<Issue>) {

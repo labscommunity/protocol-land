@@ -24,7 +24,7 @@ const ScrollToTop = ({ top = 20, className = '', ...props }) => {
   return (
     <>
       <div
-        className={`fixed flex group flex-col items-center space-y-2 left-4 bottom-4 transition-opacity duration-300 ${
+        className={`fixed flex group flex-col items-center space-y-2 right-4 bottom-4 transition-opacity duration-300 ${
           visible ? 'opacity-100' : 'opacity-0 pointer-events-none'
         }`}
       >

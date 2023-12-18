@@ -8,11 +8,12 @@ import { useNavigate } from 'react-router-dom'
 import { shortenAddress } from '@/helpers/shortenAddress'
 
 type Props = {
-  status: 'OPEN' | 'CLOSED' | 'COMPLETED'
+  status: 'OPEN' | 'COMPLETED'
   title: string
   id: number
   author: string
   timestamp: number
+  completedTimestamp?: number
 }
 
 const STATUS_TO_ICON_MAP = {
@@ -21,11 +22,12 @@ const STATUS_TO_ICON_MAP = {
   COMPLETED: () => <GoIssueClosed className="w-5 h-5 text-purple-700" />
 }
 
-export default function IssueRow({ status, author, id, title, timestamp }: Props) {
+export default function IssueRow({ status, author, id, title, timestamp, completedTimestamp }: Props) {
   const navigate = useNavigate()
   const { id: repoId } = useParams()
 
   const Icon = STATUS_TO_ICON_MAP[status]
+  const isOpen = status === 'OPEN'
 
   function handlePRRowClick() {
     if (repoId) {
@@ -43,10 +45,16 @@ export default function IssueRow({ status, author, id, title, timestamp }: Props
         </div>
         <span className="font-medium text-lg">{title}</span>
       </div>
-      <div className="flex gap-3 flex-shrink-0">
+      <div className="flex gap-1 flex-shrink-0">
+        {/* #1 by pawanpaudel93 was closed 41 minutes ago */}
         <span className="font-semibold">#{id}</span>
-        <span>opened by {shortenAddress(author)}</span>
-        {timestamp && <span> {formatDistanceToNow(new Date(timestamp), { addSuffix: true })}</span>}
+        {isOpen && <span>opened</span>}
+        <span>by {shortenAddress(author)}</span>
+        {!isOpen && <span>was closed</span>}
+        {isOpen && timestamp && <span>{formatDistanceToNow(new Date(timestamp), { addSuffix: true })}</span>}
+        {!isOpen && completedTimestamp && (
+          <span>{formatDistanceToNow(new Date(completedTimestamp), { addSuffix: true })}</span>
+        )}
       </div>
     </div>
   )
