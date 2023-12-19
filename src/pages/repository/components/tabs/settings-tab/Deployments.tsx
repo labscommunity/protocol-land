@@ -127,7 +127,7 @@ export default function Deployments() {
               >
                 Save
               </Button>
-              <DragonDeploy />
+              {repoContributor && <DragonDeploy />}
             </div>
           </div>
         </div>
