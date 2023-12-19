@@ -87,7 +87,7 @@ export async function getHashToTxId(files: File[]) {
       .only(['id', 'tags'])
       .tags([{ name: 'File-Hash', values: hashes }])
       .findAll()
-    txs.forEach((tx) => {
+    txs.forEach((tx: { id: string }) => {
       const hash = getValueFromTags((tx as any)._tags, 'File-Hash')
       hashToTxId[hash] = tx.id
     })
@@ -124,17 +124,14 @@ export async function getDeploymentBranchFiles(repo: Repo, currentBranch: string
     )
   ).filter((entry) => entry.type === 'blob' && !entry.path.startsWith('.git/'))
 
-  if (restoreToPreviousBranch) {
-    await checkoutBranch({ fs, dir, name: currentBranch })
-  }
-
-  return { files, commit: { oid, message } }
+  return { files, commit: { oid, message }, branchToRestore: restoreToPreviousBranch ? currentBranch : '' }
 }
 
 export async function uploadFiles(
   files: File[],
   commit: Commit,
   repo: Repo,
+  branchToRestore: string,
   setUploadPercent: Dispatch<SetStateAction<number>>
 ) {
   const userSigner = new InjectedArweaveSigner(window.arweaveWallet)
@@ -214,6 +211,10 @@ export async function uploadFiles(
 
   const response = await window.arweaveWallet.dispatch(manifestTransaction)
   setUploadPercent(100)
+
+  if (branchToRestore) {
+    await checkoutBranch({ fs: fsWithName(repo.id), dir: `/${repo.name}`, name: branchToRestore })
+  }
   return response
 }
 

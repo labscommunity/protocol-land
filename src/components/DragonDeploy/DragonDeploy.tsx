@@ -20,6 +20,7 @@ export default function DragonDeploy() {
   const [deployedTxId, setDeployedTxId] = useState('')
   const [currentDeployment, setCurrentDeployment] = useState<Deployment>()
   const [uploadPercent, setUploadPercent] = useState(0)
+  const [branchToRestore, setBranchToRestore] = useState('')
   const [currentBranch, selectedRepo, branchState, branchActions, addDeployment] = useGlobalStore((state) => [
     state.branchState.currentBranch,
     state.repoCoreState.selectedRepo.repo,
@@ -45,13 +46,19 @@ export default function DragonDeploy() {
   async function loadFilesForDeployment() {
     if (selectedRepo && isOpen) {
       setIsProcessing(true)
+      setBranchToRestore('')
       try {
-        const { files: branchFiles, commit: latestCommit } = await getDeploymentBranchFiles(selectedRepo, currentBranch)
+        const {
+          files: branchFiles,
+          commit: latestCommit,
+          branchToRestore: branchToRestoreName
+        } = await getDeploymentBranchFiles(selectedRepo, currentBranch)
         const deployment = selectedRepo.deployments.find((deployment) => deployment.commitOid === latestCommit.oid)
         setFiles(branchFiles)
         setCommit(latestCommit)
         setCurrentDeployment(deployment)
         setDeployedTxId(deployment?.txId ?? '')
+        setBranchToRestore(branchToRestoreName)
         setIsProcessing(false)
       } catch (error) {
         toast.error((error as any).message)
@@ -70,7 +77,7 @@ export default function DragonDeploy() {
 
       setUploadPercent(0)
       try {
-        const response = await uploadFiles(files, commit, selectedRepo, setUploadPercent)
+        const response = await uploadFiles(files, commit, selectedRepo, branchToRestore, setUploadPercent)
         const deployment = await addDeployment({
           txId: response.id,
           commitMessage: commit.message,
