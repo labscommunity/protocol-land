@@ -212,10 +212,15 @@ export async function uploadFiles(
   const response = await window.arweaveWallet.dispatch(manifestTransaction)
   setUploadPercent(100)
 
-  if (branchToRestore) {
-    await checkoutBranch({ fs: fsWithName(repo.id), dir: `/${repo.id}`, name: branchToRestore })
-  }
+  await restoreBranch(repo, branchToRestore)
+
   return response
+}
+
+export async function restoreBranch(repo: Repo, branchName: string) {
+  if (repo && branchName) {
+    await checkoutBranch({ fs: fsWithName(repo.id), dir: `/${repo.name}`, name: branchName })
+  }
 }
 
 export async function toHash(data: BufferSource) {
