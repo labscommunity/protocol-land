@@ -1,6 +1,6 @@
 import { UserCommit, UserContributionData, UserPROrIssue } from '@/lib/user'
 import { CommitResult } from '@/types/commit'
-import { Repo } from '@/types/repository'
+import { Deployment, Repo } from '@/types/repository'
 
 export interface RepoCoreSlice {
   repoCoreState: RepoCoreState
@@ -43,7 +43,11 @@ export type RepoCoreState = {
 export type RepoCoreActions = {
   updateRepoName: (name: string) => Promise<void>
   updateRepoDescription: (description: string) => Promise<void>
+  updateRepoDeploymentBranch: (deploymentBranch: string) => Promise<void>
   addContributor: (address: string) => Promise<void>
+  addDeployment: (
+    deployment: Omit<Deployment, 'deployedBy' | 'branch' | 'timestamp'>
+  ) => Promise<Deployment | undefined>
   fetchAndLoadRepository: (id: string, branchName?: string) => Promise<string>
   fetchAndLoadParentRepository: (repo: Repo) => Promise<void>
   fetchAndLoadForkRepository: (id: string) => Promise<void>

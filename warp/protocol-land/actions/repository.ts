@@ -1,6 +1,6 @@
-import { ContractResult, ContractState, Repo, RepositoryAction } from '../types'
+import { ContractResult, ContractState, Deployment, Repo, RepositoryAction } from '../types'
 
-declare const ContractError
+declare const ContractError, SmartWeave
 
 export async function initializeNewRepository(
   state: ContractState,
@@ -38,7 +38,9 @@ export async function initializeNewRepository(
     owner: caller,
     contributors: [],
     pullRequests: [],
+    deployments: [],
     issues: [],
+    deploymentBranch: '',
     timestamp: Date.now(),
     fork: false,
     forks: {},
@@ -89,6 +91,8 @@ export async function forkRepository(
     contributors: [],
     pullRequests: [],
     issues: [],
+    deployments: [],
+    deploymentBranch: '',
     timestamp: Date.now(),
     fork: true,
     forks: {},
@@ -214,6 +218,10 @@ export async function updateRepositoryDetails(
     repo.description = payload.description
   }
 
+  if (typeof payload.deploymentBranch === 'string') {
+    repo.deploymentBranch = payload.deploymentBranch
+  }
+
   return { state }
 }
 
@@ -243,6 +251,45 @@ export async function addContributor(
   }
 
   repo.contributors.push(payload.contributor)
+
+  return { state }
+}
+
+export async function addDeployment(
+  state: ContractState,
+  { input: { payload }, caller }: RepositoryAction
+): Promise<ContractResult<ContractState>> {
+  // validate payload
+  if (!payload.id || !payload.deployment) {
+    throw new ContractError('Invalid inputs supplied.')
+  }
+
+  const repo = state.repos[payload.id]
+
+  if (!repo) {
+    throw new ContractError('Repository not found.')
+  }
+
+  const hasPermissions = caller === repo.owner || repo.contributors.indexOf(caller) > -1
+
+  if (!hasPermissions) {
+    throw new ContractError('Error: You dont have permissions for this operation.')
+  }
+
+  if (!repo.deploymentBranch) {
+    throw new ContractError('Deployment branch is not selected')
+  }
+
+  const deployment: Deployment = {
+    txId: payload.deployment.txId,
+    branch: repo.deploymentBranch,
+    deployedBy: caller,
+    commitOid: payload.deployment.commitOid,
+    commitMessage: payload.deployment.commitMessage,
+    timestamp: SmartWeave.block.timestamp * 1000
+  }
+
+  repo.deployments.push(deployment)
 
   return { state }
 }
