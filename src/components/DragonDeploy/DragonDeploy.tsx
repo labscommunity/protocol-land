@@ -44,11 +44,13 @@ export default function DragonDeploy() {
 
   useEffect(() => {
     loadFilesForDeployment()
+  }, [selectedRepo?.deploymentBranch, isOpen])
 
-    return () => {
+  useEffect(() => {
+    if (!isOpen) {
       restoreBranch(selectedRepo!, branchToRestore)
     }
-  }, [selectedRepo?.deploymentBranch, isOpen])
+  }, [isOpen])
 
   function closeModal() {
     setIsOpen(false)
@@ -96,6 +98,7 @@ export default function DragonDeploy() {
         })
         setCurrentDeployment(deployment)
         setDeployedTxId(response.id)
+        setBranchToRestore('')
         toast.success('Deployed successfully')
       } catch (err) {
         toast.error('Deploy failed')
