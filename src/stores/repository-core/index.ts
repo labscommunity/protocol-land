@@ -3,8 +3,8 @@ import { StateCreator } from 'zustand'
 import { trackGoogleAnalyticsEvent } from '@/helpers/google-analytics'
 import { withAsync } from '@/helpers/withAsync'
 import {
-  addContributor,
   addDeployment,
+  inviteContributor,
   updateRepoDeploymentBranch,
   updateRepoDescription,
   updateRepoName
@@ -164,7 +164,7 @@ const createRepoCoreSlice: StateCreator<CombinedSlices, [['zustand/immer', never
         state.repoCoreState.selectedRepo.statistics = data
       })
     },
-    addContributor: async (address: string) => {
+    inviteContributor: async (address: string) => {
       const repo = get().repoCoreState.selectedRepo.repo
 
       if (!repo) {
@@ -173,7 +173,7 @@ const createRepoCoreSlice: StateCreator<CombinedSlices, [['zustand/immer', never
         return
       }
 
-      const { error } = await withAsync(() => addContributor(address, repo.id))
+      const { error } = await withAsync(() => inviteContributor(address, repo.id))
 
       if (!error) {
         set((state) => {
@@ -322,7 +322,12 @@ const createRepoCoreSlice: StateCreator<CombinedSlices, [['zustand/immer', never
 
       if (metaResponse) {
         const { error: repoFetchError, response: repoFetchResponse } = await withAsync(() =>
-          loadRepository(metaResponse.result.id, metaResponse.result.name, metaResponse.result.dataTxId, metaResponse.result.privateStateTxId)
+          loadRepository(
+            metaResponse.result.id,
+            metaResponse.result.name,
+            metaResponse.result.dataTxId,
+            metaResponse.result.privateStateTxId
+          )
         )
 
         if (repoFetchError) {

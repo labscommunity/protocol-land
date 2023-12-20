@@ -17,9 +17,9 @@ const addressSchema = yup
   .required()
 
 export default function Contributors() {
-  const [repo, addContributor, isRepoOwner] = useGlobalStore((state) => [
+  const [repo, inviteContributor, isRepoOwner] = useGlobalStore((state) => [
     state.repoCoreState.selectedRepo.repo,
-    state.repoCoreActions.addContributor,
+    state.repoCoreActions.inviteContributor,
     state.repoCoreActions.isRepoOwner
   ])
   const {
@@ -39,7 +39,7 @@ export default function Contributors() {
       if (isContributor || isOwner) {
         toast.error('You already have permissions to this repo')
       } else {
-        await addContributor(data.address)
+        await inviteContributor(data.address)
         resetField('address')
         toast.success('Successfully added a contributor')
       }
@@ -57,7 +57,7 @@ export default function Contributors() {
         <div className="flex flex-col">
           <div className="w-[50%]">
             <label htmlFor="title" className="block mb-1 text-sm font-medium text-gray-600">
-              Add new contributor
+              Invite new contributor
             </label>
             <div className="flex items-center gap-4">
               <input
@@ -71,7 +71,7 @@ export default function Contributors() {
                 disabled={!repoOwner}
               />
               <Button disabled={!repoOwner} onClick={handleSubmit(handleAddButtonClick)} variant="primary-solid">
-                Add
+                Invite
               </Button>
             </div>
           </div>

@@ -1,4 +1,4 @@
-import { ContractResult, ContractState, Deployment, Repo, RepositoryAction } from '../types'
+import { ContractResult, ContractState, ContributorInvite, Deployment, Repo, RepositoryAction } from '../types'
 import { getBlockTimeStamp } from '../utils/getBlockTimeStamp'
 
 declare const ContractError, SmartWeave
@@ -46,7 +46,8 @@ export async function initializeNewRepository(
     fork: false,
     forks: {},
     parent: null,
-    private: false
+    private: false,
+    contributorInvites: []
   }
 
   if (payload.visibility === 'private') {
@@ -104,7 +105,8 @@ export async function forkRepository(
     fork: true,
     forks: {},
     parent: payload.parent,
-    private: false
+    private: false,
+    contributorInvites: []
   }
 
   const parentRepo: Repo = state.repos[payload.parent]
@@ -298,6 +300,124 @@ export async function addDeployment(
   }
 
   repo.deployments.push(deployment)
+
+  return { state }
+}
+
+export async function inviteContributor(
+  state: ContractState,
+  { input: { payload }, caller }: RepositoryAction
+): Promise<ContractResult<ContractState>> {
+  // validate payload
+  if (!payload.id || !payload.contributor) {
+    throw new ContractError('Invalid inputs supplied.')
+  }
+
+  const repo = state.repos[payload.id]
+
+  if (!repo) {
+    throw new ContractError('Repository not found.')
+  }
+
+  if (caller !== repo.owner) {
+    throw new ContractError('Error: Only repo owner can update repo details.')
+  }
+
+  const contributorExists = repo.contributors.find((address) => address === payload.contributor)
+
+  if (contributorExists) {
+    throw new ContractError('Contributor already exists.')
+  }
+
+  const invite = repo.contributorInvites.find((invite) => invite.address === payload.contributor)
+
+  if (invite) {
+    throw new ContractError('Error: Invite already exists.')
+  }
+
+  const contributorInvite: ContributorInvite = {
+    address: payload.contributor,
+    timestamp: getBlockTimeStamp(),
+    status: 'INVITED'
+  }
+
+  repo.contributorInvites.push(contributorInvite)
+
+  return { state }
+}
+
+export async function acceptContributorInvite(
+  state: ContractState,
+  { input: { payload }, caller }: RepositoryAction
+): Promise<ContractResult<ContractState>> {
+  // validate payload
+  if (!payload.id) {
+    throw new ContractError('Invalid inputs supplied.')
+  }
+
+  const repo = state.repos[payload.id]
+
+  if (!repo) {
+    throw new ContractError('Repository not found.')
+  }
+
+  const contributorInviteIdx = repo.contributorInvites.findIndex((invite) => invite.address === caller)
+
+  if (contributorInviteIdx < 0) {
+    throw new ContractError('Error: No invite was found to contribute.')
+  }
+
+  const contributorExists = repo.contributors.findIndex((address) => address === caller)
+
+  if (contributorExists) {
+    throw new ContractError('Contributor already exists.')
+  }
+
+  const invite = repo.contributorInvites[contributorInviteIdx]
+
+  if (invite.status !== 'INVITED') {
+    throw new ContractError('Contributor invite has been approved or rejected.')
+  }
+
+  repo.contributorInvites[contributorInviteIdx].status = 'ACCEPTED'
+  repo.contributors.push(invite.address)
+
+  return { state }
+}
+
+export async function rejectContributorInvite(
+  state: ContractState,
+  { input: { payload }, caller }: RepositoryAction
+): Promise<ContractResult<ContractState>> {
+  if (!payload.id) {
+    throw new ContractError('Invalid inputs supplied.')
+  }
+
+  const repo = state.repos[payload.id]
+
+  if (!repo) {
+    throw new ContractError('Repository not found.')
+  }
+
+  const contributorInviteIdx = repo.contributorInvites.findIndex((invite) => invite.address === caller)
+
+  if (contributorInviteIdx < 0) {
+    throw new ContractError('Error: No invite was found to contribute.')
+  }
+
+  const contributorExists = repo.contributors.findIndex((address) => address === caller)
+
+  if (contributorExists) {
+    throw new ContractError('Contributor already exists.')
+  }
+
+  const invite = repo.contributorInvites[contributorInviteIdx]
+
+  if (invite.status !== 'INVITED') {
+    throw new ContractError('Contributor invite has been approved or rejected.')
+  }
+
+  repo.contributorInvites[contributorInviteIdx].status = 'REJECTED'
 
   return { state }
 }

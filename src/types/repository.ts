@@ -24,7 +24,16 @@ export type Repo = {
   timestamp: number
   private: boolean
   privateStateTxId?: string
+  contributorInvites: ContributorInvite[]
 }
+
+export type ContributorInvite = {
+  address: string
+  timestamp: number
+  status: ContributorStatus
+}
+
+export type ContributorStatus = 'INVITED' | 'ACCEPTED' | 'REJECTED'
 
 export type ForkMetaData = Pick<Repo, 'id' | 'name' | 'owner' | 'timestamp'>
 

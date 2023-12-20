@@ -44,7 +44,7 @@ export type RepoCoreActions = {
   updateRepoName: (name: string) => Promise<void>
   updateRepoDescription: (description: string) => Promise<void>
   updateRepoDeploymentBranch: (deploymentBranch: string) => Promise<void>
-  addContributor: (address: string) => Promise<void>
+  inviteContributor: (address: string) => Promise<void>
   addDeployment: (
     deployment: Omit<Deployment, 'deployedBy' | 'branch' | 'timestamp'>
   ) => Promise<Deployment | undefined>

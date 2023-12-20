@@ -315,14 +315,14 @@ export async function addDeployment(deployment: Partial<Deployment>, repoId: str
   return latestDeployment
 }
 
-export async function addContributor(address: string, repoId: string) {
+export async function inviteContributor(address: string, repoId: string) {
   const userSigner = new InjectedArweaveSigner(window.arweaveWallet)
   await userSigner.setPublicKey()
 
   const contract = getWarpContract(CONTRACT_TX_ID, userSigner)
 
   await contract.writeInteraction({
-    function: 'addContributor',
+    function: 'inviteContributor',
     payload: {
       id: repoId,
       contributor: address

@@ -5,6 +5,7 @@ export type ContractState = {
   canEvolve: boolean
   evolve: null | any
   owner: Address
+  stateEvolve1: boolean
 }
 
 export type User = {
@@ -50,7 +51,16 @@ export type Repo = {
   parent: string | null
   private: boolean
   privateStateTxId?: string
+  contributorInvites: ContributorInvite[]
 }
+
+export type ContributorInvite = {
+  address: string
+  timestamp: number
+  status: ContributorStatus
+}
+
+export type ContributorStatus = 'INVITED' | 'ACCEPTED' | 'REJECTED'
 
 export type Forks = Record<Address, Pick<Repo, 'id' | 'name' | 'owner' | 'timestamp'>>
 
@@ -170,6 +180,9 @@ const repoFnList = [
   'updateRepositoryDetails',
   'addDeployment',
   'addContributor',
+  'inviteContributor',
+  'acceptContributorInvite',
+  'rejectContributorInvite',
   'addReviewersToPR',
   'approvePR',
   'createIssue',
@@ -180,7 +193,8 @@ const repoFnList = [
   'createNewBounty',
   'updateBounty',
   'updateProfileDetails',
-  'getUserDetails'
+  'getUserDetails',
+  'postEvolve'
 ] as const
 
 export type RepositoryFunction = (typeof repoFnList)[number] // more types will be added later
