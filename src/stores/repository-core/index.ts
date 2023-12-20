@@ -227,7 +227,7 @@ const createRepoCoreSlice: StateCreator<CombinedSlices, [['zustand/immer', never
           throw new Error('Error fetching repository meta.')
         }
 
-        const { id: repoId, name, dataTxId, fork, parent } = metaResponse.result
+        const { id: repoId, name, dataTxId, fork, parent, privateStateTxId } = metaResponse.result
         let parentRepoName = null
 
         if (fork) {
@@ -247,7 +247,7 @@ const createRepoCoreSlice: StateCreator<CombinedSlices, [['zustand/immer', never
         }
 
         const { error: repoFetchError, response: repoFetchResponse } = await withAsync(() =>
-          loadRepository(repoId, name, dataTxId)
+          loadRepository(repoId, name, dataTxId, privateStateTxId)
         )
 
         // Always checkout default master branch if available
@@ -289,7 +289,7 @@ const createRepoCoreSlice: StateCreator<CombinedSlices, [['zustand/immer', never
       })
 
       const { error: repoFetchError, response: repoFetchResponse } = await withAsync(() =>
-        loadRepository(repo.id, repo.name, repo.dataTxId)
+        loadRepository(repo.id, repo.name, repo.dataTxId, repo.privateStateTxId)
       )
 
       if (repoFetchError) {
@@ -322,7 +322,7 @@ const createRepoCoreSlice: StateCreator<CombinedSlices, [['zustand/immer', never
 
       if (metaResponse) {
         const { error: repoFetchError, response: repoFetchResponse } = await withAsync(() =>
-          loadRepository(metaResponse.result.id, metaResponse.result.name, metaResponse.result.dataTxId)
+          loadRepository(metaResponse.result.id, metaResponse.result.name, metaResponse.result.dataTxId, metaResponse.result.privateStateTxId)
         )
 
         if (repoFetchError) {

@@ -48,6 +48,8 @@ export type Repo = {
   forks: Forks
   fork: boolean
   parent: string | null
+  private: boolean
+  privateStateTxId?: string
 }
 
 export type Forks = Record<Address, Pick<Repo, 'id' | 'name' | 'owner' | 'timestamp'>>

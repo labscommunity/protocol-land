@@ -12,6 +12,8 @@ import { withAsync } from '@/helpers/withAsync'
 import { ForkRepositoryOptions } from '@/stores/repository-core/types'
 import { Deployment, Repo } from '@/types/repository'
 
+import { encryptAesKeyWithPublicKeys, encryptFileWithAesGcm } from '../private-repos/crypto/encrypt'
+import { strToJwkPubKey } from '../private-repos/utils'
 import { checkoutBranch, getCurrentBranch } from './branch'
 import { FSType } from './helpers/fsWithName'
 import { packGitRepo, unpackGitRepo } from './helpers/zipUtils'
@@ -23,16 +25,12 @@ const arweave = new Arweave({
 })
 
 export async function postNewRepo({ id, title, description, file, owner, visibility }: any) {
+  const publicKey = await window.arweaveWallet.getActivePublicKey()
+
   const userSigner = new InjectedArweaveSigner(window.arweaveWallet)
   await userSigner.setPublicKey()
 
-  const data = (await toArrayBuffer(file)) as ArrayBuffer
-
-  if (visibility === 'private') {
-    // Enc
-  }
-
-  await waitFor(500)
+  let data = (await toArrayBuffer(file)) as ArrayBuffer
 
   const inputTags = [
     { name: 'App-Name', value: 'Protocol.Land' },
@@ -40,8 +38,45 @@ export async function postNewRepo({ id, title, description, file, owner, visibil
     { name: 'Creator', value: owner },
     { name: 'Title', value: title },
     { name: 'Description', value: description },
-    { name: 'Type', value: 'repo-create' }
+    { name: 'Type', value: 'repo-create' },
+    { name: 'Visibility', value: visibility }
   ]
+
+  let privateStateTxId = ''
+  if (visibility === 'private') {
+    const pubKeyArray = [strToJwkPubKey(publicKey)]
+    // Encrypt
+    const { aesKey, encryptedFile, iv } = await encryptFileWithAesGcm(data)
+    const encryptedAesKeysArray = await encryptAesKeyWithPublicKeys(aesKey, pubKeyArray)
+    // // Store 'encrypted', 'iv', and 'encryptedKeyArray' securely
+
+    const privateState = {
+      version: '0.1',
+      iv,
+      keys: encryptedAesKeysArray
+    }
+
+    const privateStateTx = await arweave.createTransaction({
+      data: JSON.stringify(privateState)
+    })
+
+    privateStateTx.addTag('Content-Type', 'application/json')
+    privateStateTx.addTag('App-Name', 'Protocol.Land')
+    privateStateTx.addTag('Type', 'private-state')
+    privateStateTx.addTag('ID', id)
+
+    const privateStateTxResponse = await window.arweaveWallet.dispatch(privateStateTx)
+
+    if (!privateStateTxResponse) {
+      throw new Error('Failed to post Private State')
+    }
+
+    privateStateTxId = privateStateTxResponse.id
+
+    data = encryptedFile
+  }
+
+  await waitFor(500)
 
   const transaction = await arweave.createTransaction({
     data
@@ -63,7 +98,9 @@ export async function postNewRepo({ id, title, description, file, owner, visibil
       id,
       name: title,
       description,
-      dataTxId: dataTxResponse.id
+      dataTxId: dataTxResponse.id,
+      visibility,
+      privateStateTxId
     }
   })
 

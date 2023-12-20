@@ -1,4 +1,5 @@
 import { ContractResult, ContractState, Deployment, Repo, RepositoryAction } from '../types'
+import { getBlockTimeStamp } from '../utils/getBlockTimeStamp'
 
 declare const ContractError, SmartWeave
 
@@ -41,10 +42,16 @@ export async function initializeNewRepository(
     deployments: [],
     issues: [],
     deploymentBranch: '',
-    timestamp: Date.now(),
+    timestamp: getBlockTimeStamp(),
     fork: false,
     forks: {},
-    parent: null
+    parent: null,
+    private: false
+  }
+
+  if (payload.visibility === 'private') {
+    repo.private = true
+    repo.privateStateTxId = payload.privateStateTxId
   }
 
   state.repos[repo.id] = repo
@@ -93,10 +100,11 @@ export async function forkRepository(
     issues: [],
     deployments: [],
     deploymentBranch: '',
-    timestamp: Date.now(),
+    timestamp: getBlockTimeStamp(),
     fork: true,
     forks: {},
-    parent: payload.parent
+    parent: payload.parent,
+    private: false
   }
 
   const parentRepo: Repo = state.repos[payload.parent]
