@@ -1,4 +1,4 @@
-import { ContractResult, ContractState, ContributorInvite, Deployment, Repo, RepositoryAction } from '../types'
+import { ContractResult, ContractState, ContributorInvite, Deployment, Domain, Repo, RepositoryAction } from '../types'
 import { getBlockTimeStamp } from '../utils/getBlockTimeStamp'
 
 declare const ContractError, SmartWeave
@@ -40,6 +40,7 @@ export async function initializeNewRepository(
     contributors: [],
     pullRequests: [],
     deployments: [],
+    domains: [],
     issues: [],
     deploymentBranch: '',
     timestamp: getBlockTimeStamp(),
@@ -100,6 +101,7 @@ export async function forkRepository(
     pullRequests: [],
     issues: [],
     deployments: [],
+    domains: [],
     deploymentBranch: '',
     timestamp: getBlockTimeStamp(),
     fork: true,
@@ -316,6 +318,75 @@ export async function addDeployment(
   }
 
   repo.deployments.push(deployment)
+
+  return { state }
+}
+
+export async function addDomain(
+  state: ContractState,
+  { input: { payload }, caller }: RepositoryAction
+): Promise<ContractResult<ContractState>> {
+  // validate payload
+  if (!payload.id || !payload.domain) {
+    throw new ContractError('Invalid inputs supplied.')
+  }
+
+  const repo = state.repos[payload.id]
+
+  if (!repo) {
+    throw new ContractError('Repository not found.')
+  }
+
+  const hasPermissions = caller === repo.owner || repo.contributors.indexOf(caller) > -1
+
+  if (!hasPermissions) {
+    throw new ContractError('Error: You dont have permissions for this operation.')
+  }
+
+  const domain: Domain = {
+    txId: payload.domain.txId,
+    name: payload.domain.name,
+    contractTxId: payload.domain.contractTxId,
+    controller: caller
+  }
+
+  repo.domains.push(domain)
+
+  return { state }
+}
+
+export async function updateDomain(
+  state: ContractState,
+  { input: { payload }, caller }: RepositoryAction
+): Promise<ContractResult<ContractState>> {
+  // validate payload
+  if (!payload.id || !payload.domain) {
+    throw new ContractError('Invalid inputs supplied.')
+  }
+
+  const repo = state.repos[payload.id]
+
+  if (!repo) {
+    throw new ContractError('Repository not found.')
+  }
+
+  const hasPermissions = caller === repo.owner || repo.contributors.indexOf(caller) > -1
+
+  if (!hasPermissions) {
+    throw new ContractError('Error: You dont have permissions for this operation.')
+  }
+
+  const domain = repo.domains.find(
+    (d) => d.name === payload.domain.name || d.contractTxId === payload.domain.contractTxId
+  )
+
+  if (!domain) {
+    throw new ContractError('Error: Domain not found')
+  }
+
+  if (payload.domain.txId) {
+    domain.txId = payload.domain.txId
+  }
 
   return { state }
 }
