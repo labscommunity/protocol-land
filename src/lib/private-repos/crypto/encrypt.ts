@@ -8,6 +8,18 @@ const arweave = Arweave.init({
   protocol: 'https'
 })
 
+export async function encryptDataWithExistingKey(file: ArrayBuffer, aesKey: any, iv: Uint8Array) {
+  let key = aesKey
+
+  if (!(aesKey instanceof CryptoKey)) {
+    key = await window.crypto.subtle.importKey('raw', aesKey, { name: 'AES-GCM', length: 256 }, true, ['encrypt'])
+  }
+
+  const encrypted = await window.crypto.subtle.encrypt({ name: 'AES-GCM', iv: iv }, key, file)
+
+  return encrypted
+}
+
 export async function encryptFileWithAesGcm(file: ArrayBuffer) {
   const aesKey = await window.crypto.subtle.generateKey({ name: 'AES-GCM', length: 256 }, true, ['encrypt', 'decrypt'])
 
@@ -17,8 +29,12 @@ export async function encryptFileWithAesGcm(file: ArrayBuffer) {
   return { encryptedFile, aesKey, iv: arweave.utils.bufferTob64Url(iv) }
 }
 
-export async function encryptAesKeyWithPublicKeys(aesKey: CryptoKey, publicKeyArray: JsonWebKey[]) {
+export async function encryptAesKeyWithPublicKeys(aesKey: CryptoKey | ArrayBuffer, publicKeyArray: JsonWebKey[]) {
   const encryptedKeys: Record<string, string> = Object.create(null)
+
+  if (!(aesKey instanceof CryptoKey)) {
+    aesKey = await window.crypto.subtle.importKey('raw', aesKey, { name: 'AES-GCM', length: 256 }, true, ['encrypt'])
+  }
 
   for (const publicKeyJwk of publicKeyArray) {
     const publicKey = await window.crypto.subtle.importKey(

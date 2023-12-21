@@ -8,6 +8,7 @@ import PageNotFound from '@/components/PageNotFound'
 import { trackGoogleAnalyticsEvent } from '@/helpers/google-analytics'
 import { useGlobalStore } from '@/stores/globalStore'
 
+import AcceptInvite from './components/AcceptInvite'
 import RepoHeader from './components/RepoHeader'
 import { rootTabConfig } from './config/rootTabConfig'
 
@@ -74,6 +75,9 @@ export default function Repository() {
     branchAbscent
 
   const isReady = selectedRepo.status === 'SUCCESS'
+  const redirectToInviteScreen = selectedRepo.isInvitedContributor && selectedRepo.isPrivateRepo
+
+  if (redirectToInviteScreen) return <AcceptInvite repo={selectedRepo.repo} />
 
   if (isPageNotFound) return <PageNotFound />
 

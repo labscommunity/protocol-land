@@ -1,11 +1,14 @@
 import { yupResolver } from '@hookform/resolvers/yup'
 import clsx from 'clsx'
+import React from 'react'
 import { useForm } from 'react-hook-form'
 import toast from 'react-hot-toast'
 import * as yup from 'yup'
 
 import { Button } from '@/components/common/buttons'
+import { rotateKeysAndUpdateRepo } from '@/lib/git'
 import { useGlobalStore } from '@/stores/globalStore'
+import { ContributorInvite } from '@/types/repository'
 
 const addressSchema = yup
   .object({
@@ -17,9 +20,12 @@ const addressSchema = yup
   .required()
 
 export default function Contributors() {
-  const [repo, inviteContributor, isRepoOwner] = useGlobalStore((state) => [
+  const [isLoading, setIsLoading] = React.useState(false)
+  const [isGrantAccessLoading, setIsGrantAccessLoading] = React.useState(false)
+  const [repo, inviteContributor, addContributor, isRepoOwner] = useGlobalStore((state) => [
     state.repoCoreState.selectedRepo.repo,
     state.repoCoreActions.inviteContributor,
+    state.repoCoreActions.addContributor,
     state.repoCoreActions.isRepoOwner
   ])
   const {
@@ -39,10 +45,44 @@ export default function Contributors() {
       if (isContributor || isOwner) {
         toast.error('You already have permissions to this repo')
       } else {
+        setIsLoading(true)
         await inviteContributor(data.address)
         resetField('address')
-        toast.success('Successfully added a contributor')
+        toast.success('Successfully invited a contributor')
+        setIsLoading(false)
       }
+    }
+  }
+
+  function filterContributorInvited(invite: ContributorInvite) {
+    if (!repo) return false
+    if (invite.status === 'INVITED') return true
+
+    const contributorExists = repo.contributors.indexOf(invite.address) > -1
+    if (repo.private && invite.status === 'ACCEPTED' && !contributorExists) {
+      return true
+    }
+
+    return false
+  }
+
+  async function handleGrantAccessClick(invite: ContributorInvite) {
+    if (!repo || !repo.privateStateTxId) return false
+
+    try {
+      setIsGrantAccessLoading(true)
+
+      await rotateKeysAndUpdateRepo({ id: repo.id, currentPrivateStateTxId: repo.privateStateTxId })
+      await addContributor(invite.address)
+
+      toast.success('Successfully grated access to contributor.')
+      setIsGrantAccessLoading(false)
+    } catch (error) {
+      toast.error('Failed to grant access.')
+
+      console.error({ error })
+
+      setIsGrantAccessLoading(false)
     }
   }
 
@@ -70,7 +110,12 @@ export default function Contributors() {
                 placeholder="Arweave address"
                 disabled={!repoOwner}
               />
-              <Button disabled={!repoOwner} onClick={handleSubmit(handleAddButtonClick)} variant="primary-solid">
+              <Button
+                isLoading={isLoading}
+                disabled={!repoOwner || isLoading}
+                onClick={handleSubmit(handleAddButtonClick)}
+                variant="primary-solid"
+              >
                 Invite
               </Button>
             </div>
@@ -93,6 +138,39 @@ export default function Contributors() {
               <div className="flex bg-gray-50 cursor-pointer hover:bg-primary-50 text-gray-600 hover:text-gray-900 items-center gap-4 py-[10px] px-4 border-b-[1px] border-gray-300 last:border-b-0">
                 <div className="w-[50%]">{address}</div>
                 <div className="w-[50%]">Contributor</div>
+              </div>
+            ))}
+        </div>
+      </div>
+      <div className="w-full border-b-[1px] border-[#cbc9f6] py-1">
+        <h1 className="text-2xl text-liberty-dark-100">Invited Contributors</h1>
+      </div>
+      <div className="flex flex-col gap-4">
+        <div className="flex min-h-[200px] flex-col border-gray-300 border-[1px] rounded-lg overflow-hidden bg-white">
+          <div className="flex font-medium bg-gray-200 border-b-[1px] border-gray-300 text-gray-900 px-4 py-2 rounded-t-lg overflow-hidden">
+            <div className="w-[60%]">Address</div>
+            <div className="w-[25%]">Status</div>
+            <div className="w-[25%]">Action</div>
+          </div>
+
+          {repo &&
+            repo?.contributorInvites?.filter(filterContributorInvited).map((invite) => (
+              <div className="flex bg-gray-50 cursor-pointer hover:bg-primary-50 text-gray-600 hover:text-gray-900 items-center gap-4 py-[10px] px-4 border-b-[1px] border-gray-300 last:border-b-0">
+                <div className="w-[60%]">{invite.address}</div>
+                <div className="w-[25%] capitalize">{invite.status.toLowerCase()}</div>
+                <div className="w-[25%] capitalize">
+                  {invite.status === 'ACCEPTED' && repoOwner && (
+                    <Button
+                      isLoading={isGrantAccessLoading}
+                      disabled={!repoOwner || isGrantAccessLoading}
+                      onClick={() => handleGrantAccessClick(invite)}
+                      variant="primary-outline"
+                      className="!py-1"
+                    >
+                      Grant Access
+                    </Button>
+                  )}
+                </div>
               </div>
             ))}
         </div>

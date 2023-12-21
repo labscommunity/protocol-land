@@ -111,7 +111,7 @@ export async function decryptRepo(repoArrayBuf: ArrayBuffer, privateStateTxId: s
   const pubKey = await window.arweaveWallet.getActivePublicKey()
   const address = await deriveAddress(pubKey)
 
-  const encAesKeyStr = privateState.keys[address]
+  const encAesKeyStr = privateState.encKeys[address]
   const encAesKeyBuf = arweave.utils.b64UrlToBuffer(encAesKeyStr)
 
   const aesKey = (await decryptAesKeyWithPrivateKey(encAesKeyBuf)) as unknown as ArrayBuffer

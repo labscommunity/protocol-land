@@ -27,6 +27,7 @@ import {
   inviteContributor,
   isRepositoryNameAvailable,
   rejectContributorInvite,
+  updatePrivateStateTx,
   updateRepositoryDetails,
   updateRepositoryTxId
 } from './actions/repository'
@@ -65,6 +66,8 @@ export async function handle(state: ContractState, action: RepositoryAction | Ev
       return await acceptContributorInvite(state, action as RepositoryAction)
     case 'rejectContributorInvite':
       return await rejectContributorInvite(state, action as RepositoryAction)
+    case 'updatePrivateStateTx':
+      return await updatePrivateStateTx(state, action as RepositoryAction)
     case 'createPullRequest':
       return await createNewPullRequest(state, action as RepositoryAction)
     case 'updatePullRequestStatus':

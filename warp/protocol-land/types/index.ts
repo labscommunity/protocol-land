@@ -194,7 +194,8 @@ const repoFnList = [
   'updateBounty',
   'updateProfileDetails',
   'getUserDetails',
-  'postEvolve'
+  'postEvolve',
+  'updatePrivateStateTx'
 ] as const
 
 export type RepositoryFunction = (typeof repoFnList)[number] // more types will be added later

@@ -2,8 +2,9 @@ import { User } from './user'
 
 export type PrivateState = {
   iv: string
-  keys: Record<string, string>
+  encKeys: Record<string, string>
   version: string
+  pubKeys: string[]
 }
 
 export type Repo = {

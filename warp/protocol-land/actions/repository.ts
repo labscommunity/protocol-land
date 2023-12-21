@@ -351,7 +351,7 @@ export async function acceptContributorInvite(
   { input: { payload }, caller }: RepositoryAction
 ): Promise<ContractResult<ContractState>> {
   // validate payload
-  if (!payload.id) {
+  if (!payload.id || !payload.visibility) {
     throw new ContractError('Invalid inputs supplied.')
   }
 
@@ -369,7 +369,7 @@ export async function acceptContributorInvite(
 
   const contributorExists = repo.contributors.findIndex((address) => address === caller)
 
-  if (contributorExists) {
+  if (contributorExists > -1) {
     throw new ContractError('Contributor already exists.')
   }
 
@@ -380,6 +380,13 @@ export async function acceptContributorInvite(
   }
 
   repo.contributorInvites[contributorInviteIdx].status = 'ACCEPTED'
+
+  if (payload.visibility === 'private' && payload.privateStateTxId) {
+    repo.privateStateTxId = payload.privateStateTxId
+
+    return { state }
+  }
+
   repo.contributors.push(invite.address)
 
   return { state }
@@ -407,7 +414,7 @@ export async function rejectContributorInvite(
 
   const contributorExists = repo.contributors.findIndex((address) => address === caller)
 
-  if (contributorExists) {
+  if (contributorExists > -1) {
     throw new ContractError('Contributor already exists.')
   }
 
@@ -418,6 +425,32 @@ export async function rejectContributorInvite(
   }
 
   repo.contributorInvites[contributorInviteIdx].status = 'REJECTED'
+
+  return { state }
+}
+
+export async function updatePrivateStateTx(
+  state: ContractState,
+  { input: { payload }, caller }: RepositoryAction
+): Promise<ContractResult<ContractState>> {
+  // validate payload
+  if (!payload.privateStateTxId || !payload.id) {
+    throw new ContractError('Invalid inputs supplied.')
+  }
+
+  const repo = state.repos[payload.id]
+
+  if (!repo) {
+    throw new ContractError('Repository not found.')
+  }
+
+  const hasPermissions = caller === repo.owner
+
+  if (!hasPermissions) {
+    throw new ContractError('Error: You dont have permissions for this operation.')
+  }
+
+  repo.privateStateTxId = payload.privateStateTxId
 
   return { state }
 }

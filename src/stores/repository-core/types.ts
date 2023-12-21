@@ -17,6 +17,8 @@ export type RepoCoreState = {
       pullRequests: UserPROrIssue[]
       issues: UserPROrIssue[]
     }
+    isInvitedContributor: boolean
+    isPrivateRepo: boolean
   }
   parentRepo: {
     status: ApiStatus
@@ -48,6 +50,10 @@ export type RepoCoreActions = {
   addDeployment: (
     deployment: Omit<Deployment, 'deployedBy' | 'branch' | 'timestamp'>
   ) => Promise<Deployment | undefined>
+  addContributor: (address: string) => Promise<void>
+  acceptContributor: () => Promise<void>
+  rejectContributor: () => Promise<void>
+  grantAccessToContributor: () => Promise<void>
   fetchAndLoadRepository: (id: string, branchName?: string) => Promise<string>
   fetchAndLoadParentRepository: (repo: Repo) => Promise<void>
   fetchAndLoadForkRepository: (id: string) => Promise<void>
