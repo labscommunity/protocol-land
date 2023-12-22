@@ -8,7 +8,7 @@ export async function getArweaveUSD() {
     const response = await fetch(`https://api.redstone.finance/prices/?symbol=AR&provider=redstone&limit=1`)
     const data = await response.json()
 
-    return data[0].value as number
+    return data[0].source.coingecko as number
   }
 }
 
