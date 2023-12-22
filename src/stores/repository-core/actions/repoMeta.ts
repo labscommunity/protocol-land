@@ -58,6 +58,16 @@ export const handleAcceptContributor = async (id: string, visibility: string, pr
     function: 'acceptContributorInvite',
     payload: { id, visibility, privateStateTxId }
   })
+
+  const {
+    cachedValue: {
+      state: { repos }
+    }
+  } = await contract.readState()
+
+  const repo = repos[id] as Repo
+
+  return { contributorInvites: repo.contributorInvites, contributors: repo.contributors }
 }
 
 export const handleRejectContributor = async (id: string) => {
@@ -71,6 +81,16 @@ export const handleRejectContributor = async (id: string) => {
     function: 'rejectContributorInvite',
     payload: { id }
   })
+
+  const {
+    cachedValue: {
+      state: { repos }
+    }
+  } = await contract.readState()
+
+  const repo = repos[id] as Repo
+
+  return { contributorInvites: repo.contributorInvites, contributors: repo.contributors }
 }
 
 export const handleCancelContributorInvite = async (id: string, contributor: string) => {
@@ -79,8 +99,6 @@ export const handleCancelContributorInvite = async (id: string, contributor: str
   await userSigner.setPublicKey()
 
   const contract = getWarpContract(CONTRACT_TX_ID, userSigner)
-
-
 
   await contract.writeInteraction({
     function: 'cancelContributorInvite',

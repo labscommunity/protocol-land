@@ -22,12 +22,26 @@ const addressSchema = yup
 export default function Contributors() {
   const [isLoading, setIsLoading] = React.useState(false)
   const [isGrantAccessLoading, setIsGrantAccessLoading] = React.useState(false)
-  const [repo, inviteContributor, addContributor, cancelContributor, isRepoOwner] = useGlobalStore((state) => [
+  const [isAcceptLoading, setAcceptIsLoading] = React.useState(false)
+  const [isRejectLoading, setIsRejectLoading] = React.useState(false)
+  const [
+    address,
+    repo,
+    inviteContributor,
+    addContributor,
+    cancelContributor,
+    isRepoOwner,
+    acceptContributor,
+    rejectContributor
+  ] = useGlobalStore((state) => [
+    state.authState.address,
     state.repoCoreState.selectedRepo.repo,
     state.repoCoreActions.inviteContributor,
     state.repoCoreActions.addContributor,
     state.repoCoreActions.cancelContributor,
-    state.repoCoreActions.isRepoOwner
+    state.repoCoreActions.isRepoOwner,
+    state.repoCoreActions.acceptContributor,
+    state.repoCoreActions.rejectContributor
   ])
   const {
     register,
@@ -145,6 +159,44 @@ export default function Contributors() {
     )
   }
 
+  async function handleAcceptInviteClick() {
+    setAcceptIsLoading(true)
+    await acceptContributor()
+    setAcceptIsLoading(false)
+  }
+
+  async function handleDeclineInviteClick() {
+    //
+    setIsRejectLoading(true)
+    await rejectContributor()
+    setIsRejectLoading(true)
+  }
+
+  const inviteActionsMapForContributor = {
+    INVITED: () => (
+      <div className="flex gap-2 items-center">
+        <Button
+          isLoading={isRejectLoading}
+          disabled={isAcceptLoading || isRejectLoading}
+          onClick={handleDeclineInviteClick}
+          variant="primary-outline"
+          className="!py-1 border-red-400 text-red-400 hover:bg-red-50"
+        >
+          Reject
+        </Button>
+        <Button
+          isLoading={isAcceptLoading}
+          disabled={isAcceptLoading || isRejectLoading}
+          onClick={handleAcceptInviteClick}
+          variant="primary-outline"
+          className="!py-1"
+        >
+          Accept
+        </Button>
+      </div>
+    )
+  }
+
   return (
     <div className="flex flex-col gap-4">
       <div className="w-full border-b-[1px] border-[#cbc9f6] py-1">
@@ -213,12 +265,17 @@ export default function Contributors() {
           {repo &&
             repo?.contributorInvites?.filter(filterContributorInvited).map((invite) => {
               const InviteActionComponent = inviteActionsMap[invite.status as keyof typeof inviteActionsMap]
+              const ContributorInviteActionComponent =
+                inviteActionsMapForContributor[invite.status as keyof typeof inviteActionsMapForContributor]
               return (
                 <div className="flex bg-gray-50 cursor-pointer hover:bg-primary-50 text-gray-600 hover:text-gray-900 items-center gap-4 py-[10px] px-4 border-b-[1px] border-gray-300 last:border-b-0">
                   <div className="w-[60%]">{invite.address}</div>
                   <div className="w-[25%] capitalize">{invite.status.toLowerCase()}</div>
                   <div className="w-[25%] capitalize">
                     {repoOwner && InviteActionComponent && <InviteActionComponent invite={invite} />}
+                    {address === invite.address && ContributorInviteActionComponent && (
+                      <ContributorInviteActionComponent />
+                    )}
                   </div>
                 </div>
               )

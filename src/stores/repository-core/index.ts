@@ -275,9 +275,15 @@ const createRepoCoreSlice: StateCreator<CombinedSlices, [['zustand/immer', never
         privateStateTxId = updatedPrivateStateTxId
       }
 
-      const { error } = await withAsync(() => handleAcceptContributor(repo.id, visibility, privateStateTxId))
+      const { error, response } = await withAsync(() => handleAcceptContributor(repo.id, visibility, privateStateTxId))
 
-      if (!error) {
+      if (!error && response) {
+        if (!repo.private) {
+          set((state) => {
+            state.repoCoreState.selectedRepo.repo!.contributorInvites = response.contributorInvites
+            state.repoCoreState.selectedRepo.repo!.contributors = response.contributors
+          })
+        }
         trackGoogleAnalyticsEvent('Repository', 'Accept contributor invite', 'Accept repo contributor invite', {
           repo_name: repo.name,
           repo_id: repo.id,
@@ -300,9 +306,14 @@ const createRepoCoreSlice: StateCreator<CombinedSlices, [['zustand/immer', never
         return
       }
 
-      const { error } = await withAsync(() => handleRejectContributor(repo.id))
+      const { error, response } = await withAsync(() => handleRejectContributor(repo.id))
 
-      if (!error) {
+      if (!error && response) {
+        if (!repo.private) {
+          set((state) => {
+            state.repoCoreState.selectedRepo.repo!.contributorInvites = response.contributorInvites
+          })
+        }
         trackGoogleAnalyticsEvent('Repository', 'Reject contributor invite', 'Reject repo contributor invite', {
           repo_name: repo.name,
           repo_id: repo.id,

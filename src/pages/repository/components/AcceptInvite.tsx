@@ -79,7 +79,7 @@ export default function AcceptInvite({ repo }: { repo: Repo | null }) {
           <div className="flex justify-center mt-3 gap-3">
             <Button
               isLoading={isRejectLoading}
-              disabled={isRejectLoading}
+              disabled={isRejectLoading || isAcceptLoading}
               variant="primary-outline"
               className="px-16 justify-center"
               onClick={handleDeclineInviteClick}
@@ -88,7 +88,7 @@ export default function AcceptInvite({ repo }: { repo: Repo | null }) {
             </Button>
             <Button
               isLoading={isAcceptLoading}
-              disabled={isAcceptLoading}
+              disabled={isAcceptLoading || isRejectLoading}
               variant="primary-solid"
               className="px-16 justify-center"
               onClick={handleAcceptInviteClick}

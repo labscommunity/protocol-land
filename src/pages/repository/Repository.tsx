@@ -75,14 +75,15 @@ export default function Repository() {
     branchAbscent
 
   const isReady = selectedRepo.status === 'SUCCESS'
-  const redirectToInviteScreen = selectedRepo.isInvitedContributor && selectedRepo.isPrivateRepo
+  const redirectToInviteScreenPrivate = selectedRepo.isInvitedContributor && selectedRepo.isPrivateRepo
 
-  if (redirectToInviteScreen) return <AcceptInvite repo={selectedRepo.repo} />
+  if (redirectToInviteScreenPrivate) return <AcceptInvite repo={selectedRepo.repo} />
 
   if (isPageNotFound) return <PageNotFound />
 
   return (
     <div className="h-full flex-1 flex flex-col max-w-[1280px] mx-auto w-full mt-6 gap-2">
+      {/* <div className="w-full h-[70px] bg-primary-300 mb-4 rounded-md"></div> */}
       <RepoHeader
         owner={authState.address}
         isLoading={!isReady}
