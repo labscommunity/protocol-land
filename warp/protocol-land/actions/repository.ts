@@ -410,10 +410,12 @@ export async function rejectContributorInvite(
     throw new ContractError('Repository not found.')
   }
 
-  const contributorInviteIdx = repo.contributorInvites.findIndex((invite) => invite.address === caller)
+  const contributorInviteIdx = repo.contributorInvites.findIndex(
+    (invite) => invite.address === caller && invite.status === 'INVITED'
+  )
 
   if (contributorInviteIdx < 0) {
-    throw new ContractError('Error: No invite was found to contribute.')
+    throw new ContractError('Error: No invite was found to reject.')
   }
 
   const contributorExists = repo.contributors.findIndex((address) => address === caller)

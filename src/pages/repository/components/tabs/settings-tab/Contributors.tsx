@@ -114,7 +114,7 @@ export default function Contributors() {
   }
 
   async function handleCancelInviteClick(invite: ContributorInvite) {
-    if (!repo || !repo.privateStateTxId) return false
+    if (!repo) return false
 
     try {
       setIsGrantAccessLoading(true)
