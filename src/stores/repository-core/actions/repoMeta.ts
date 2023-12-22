@@ -72,3 +72,28 @@ export const handleRejectContributor = async (id: string) => {
     payload: { id }
   })
 }
+
+export const handleCancelContributorInvite = async (id: string, contributor: string) => {
+  //rotate keys
+  const userSigner = new InjectedArweaveSigner(window.arweaveWallet)
+  await userSigner.setPublicKey()
+
+  const contract = getWarpContract(CONTRACT_TX_ID, userSigner)
+
+
+
+  await contract.writeInteraction({
+    function: 'cancelContributorInvite',
+    payload: { id, contributor }
+  })
+
+  const {
+    cachedValue: {
+      state: { repos }
+    }
+  } = await contract.readState()
+
+  const repo = repos[id] as Repo
+
+  return repo.contributorInvites
+}

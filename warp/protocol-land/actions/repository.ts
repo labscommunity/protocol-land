@@ -329,7 +329,9 @@ export async function inviteContributor(
     throw new ContractError('Contributor already exists.')
   }
 
-  const invite = repo.contributorInvites.find((invite) => invite.address === payload.contributor)
+  const invite = repo.contributorInvites.find(
+    (invite) => invite.address === payload.contributor && invite.status === 'INVITED'
+  )
 
   if (invite) {
     throw new ContractError('Error: Invite already exists.')
@@ -361,7 +363,9 @@ export async function acceptContributorInvite(
     throw new ContractError('Repository not found.')
   }
 
-  const contributorInviteIdx = repo.contributorInvites.findIndex((invite) => invite.address === caller)
+  const contributorInviteIdx = repo.contributorInvites.findIndex(
+    (invite) => invite.address === caller && invite.status === 'INVITED'
+  )
 
   if (contributorInviteIdx < 0) {
     throw new ContractError('Error: No invite was found to contribute.')
@@ -425,6 +429,45 @@ export async function rejectContributorInvite(
   }
 
   repo.contributorInvites[contributorInviteIdx].status = 'REJECTED'
+
+  return { state }
+}
+
+export async function cancelContributorInvite(
+  state: ContractState,
+  { input: { payload }, caller }: RepositoryAction
+): Promise<ContractResult<ContractState>> {
+  if (!payload.id || !payload.contributor) {
+    throw new ContractError('Invalid inputs supplied.')
+  }
+
+  const repo = state.repos[payload.id]
+
+  if (!repo) {
+    throw new ContractError('Repository not found.')
+  }
+
+  if (caller !== repo.owner) {
+    throw new ContractError('Error: Only repo owner can cancel invites.')
+  }
+
+  const targetInvite = repo.contributorInvites.find(
+    (invite) => invite.address === payload.contributor && invite.status === 'INVITED'
+  )
+
+  if (!targetInvite) {
+    throw new ContractError('Error: No invite was found to cancel.')
+  }
+
+  const filteredInvites = repo.contributorInvites.filter((invite) => {
+    if (invite.address === payload.contributor && invite.status === 'INVITED') {
+      return false
+    }
+
+    return true
+  })
+
+  repo.contributorInvites = filteredInvites
 
   return { state }
 }

@@ -46,13 +46,14 @@ export type RepoCoreActions = {
   updateRepoName: (name: string) => Promise<void>
   updateRepoDescription: (description: string) => Promise<void>
   updateRepoDeploymentBranch: (deploymentBranch: string) => Promise<void>
-  inviteContributor: (address: string) => Promise<void>
+  inviteContributor: (address: string) => Promise<{ status: boolean; response?: any } | void>
   addDeployment: (
     deployment: Omit<Deployment, 'deployedBy' | 'branch' | 'timestamp'>
   ) => Promise<Deployment | undefined>
   addContributor: (address: string) => Promise<void>
   acceptContributor: () => Promise<void>
   rejectContributor: () => Promise<void>
+  cancelContributor: (contributor: string) => Promise<void>
   grantAccessToContributor: () => Promise<void>
   fetchAndLoadRepository: (id: string, branchName?: string) => Promise<string>
   fetchAndLoadParentRepository: (repo: Repo) => Promise<void>

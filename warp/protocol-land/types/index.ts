@@ -195,7 +195,8 @@ const repoFnList = [
   'updateProfileDetails',
   'getUserDetails',
   'postEvolve',
-  'updatePrivateStateTx'
+  'updatePrivateStateTx',
+  'cancelContributorInvite'
 ] as const
 
 export type RepositoryFunction = (typeof repoFnList)[number] // more types will be added later

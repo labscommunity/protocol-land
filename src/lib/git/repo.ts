@@ -417,7 +417,24 @@ export async function inviteContributor(address: string, repoId: string) {
   const userSigner = new InjectedArweaveSigner(window.arweaveWallet)
   await userSigner.setPublicKey()
 
+  const caller = await window.arweaveWallet.getActiveAddress()
+
   const contract = getWarpContract(CONTRACT_TX_ID, userSigner)
+
+  const dryRunResult = await contract.dryWrite(
+    {
+      function: 'inviteContributor',
+      payload: {
+        id: repoId,
+        contributor: address
+      }
+    },
+    caller
+  )
+
+  if (dryRunResult.type === 'error') {
+    throw dryRunResult.errorMessage
+  }
 
   await contract.writeInteraction({
     function: 'inviteContributor',

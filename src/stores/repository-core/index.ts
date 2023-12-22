@@ -21,6 +21,7 @@ import {
   getOidOfHeadRef,
   getRepositoryMetaFromContract,
   handleAcceptContributor,
+  handleCancelContributorInvite,
   handleRejectContributor,
   loadRepository,
   renameRepoDir,
@@ -241,6 +242,19 @@ const createRepoCoreSlice: StateCreator<CombinedSlices, [['zustand/immer', never
           contributor_address: address,
           result: 'SUCCESS'
         })
+
+        return { status: true }
+      }
+
+      if (error) {
+        trackGoogleAnalyticsEvent('Repository', 'Invite contributor to a repo', 'Invite repo contributor', {
+          repo_name: repo.name,
+          repo_id: repo.id,
+          contributor_address: address,
+          result: 'FAILED'
+        })
+
+        return { status: false, response: error }
       }
     },
     acceptContributor: async () => {
@@ -289,13 +303,42 @@ const createRepoCoreSlice: StateCreator<CombinedSlices, [['zustand/immer', never
       const { error } = await withAsync(() => handleRejectContributor(repo.id))
 
       if (!error) {
-        trackGoogleAnalyticsEvent('Repository', 'Accept contributor invite', 'Accept repo contributor invite', {
+        trackGoogleAnalyticsEvent('Repository', 'Reject contributor invite', 'Reject repo contributor invite', {
           repo_name: repo.name,
           repo_id: repo.id,
           result: 'SUCCESS'
         })
       } else {
-        trackGoogleAnalyticsEvent('Repository', 'Accept contributor invite', 'Accept repo contributor invite', {
+        trackGoogleAnalyticsEvent('Repository', 'Reject contributor invite', 'Reject repo contributor invite', {
+          repo_name: repo.name,
+          repo_id: repo.id,
+          result: 'FAILED'
+        })
+      }
+    },
+    cancelContributor: async (contributor) => {
+      const repo = get().repoCoreState.selectedRepo.repo
+
+      if (!repo) {
+        set((state) => (state.repoCoreState.git.status = 'ERROR'))
+
+        return
+      }
+
+      const { error, response } = await withAsync(() => handleCancelContributorInvite(repo.id, contributor))
+
+      if (!error && response) {
+        set((state) => {
+          state.repoCoreState.selectedRepo.repo!.contributorInvites = response
+        })
+
+        trackGoogleAnalyticsEvent('Repository', 'Cancel contributor invite', 'Cancel repo contributor invite', {
+          repo_name: repo.name,
+          repo_id: repo.id,
+          result: 'SUCCESS'
+        })
+      } else {
+        trackGoogleAnalyticsEvent('Repository', 'Cancel contributor invite', 'Cancel repo contributor invite', {
           repo_name: repo.name,
           repo_id: repo.id,
           result: 'FAILED'
@@ -359,7 +402,7 @@ const createRepoCoreSlice: StateCreator<CombinedSlices, [['zustand/immer', never
         const address = await window.arweaveWallet.getActiveAddress()
 
         if (address) {
-          const invite = contributorInvites.find((invite) => invite.address === address)
+          const invite = contributorInvites.find((invite) => invite.address === address && invite.status === 'INVITED')
 
           set((state) => {
             state.repoCoreState.selectedRepo.isInvitedContributor = invite && invite.status === 'INVITED' ? true : false

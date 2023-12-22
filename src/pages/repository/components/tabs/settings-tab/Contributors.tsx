@@ -22,10 +22,11 @@ const addressSchema = yup
 export default function Contributors() {
   const [isLoading, setIsLoading] = React.useState(false)
   const [isGrantAccessLoading, setIsGrantAccessLoading] = React.useState(false)
-  const [repo, inviteContributor, addContributor, isRepoOwner] = useGlobalStore((state) => [
+  const [repo, inviteContributor, addContributor, cancelContributor, isRepoOwner] = useGlobalStore((state) => [
     state.repoCoreState.selectedRepo.repo,
     state.repoCoreActions.inviteContributor,
     state.repoCoreActions.addContributor,
+    state.repoCoreActions.cancelContributor,
     state.repoCoreActions.isRepoOwner
   ])
   const {
@@ -44,13 +45,25 @@ export default function Contributors() {
 
       if (isContributor || isOwner) {
         toast.error('You already have permissions to this repo')
-      } else {
-        setIsLoading(true)
-        await inviteContributor(data.address)
-        resetField('address')
-        toast.success('Successfully invited a contributor')
-        setIsLoading(false)
+
+        return
       }
+
+      try {
+        setIsLoading(true)
+        const result = await inviteContributor(data.address)
+        if (result && result.status) {
+          toast.success('Successfully invited a contributor')
+        } else {
+          throw result?.response || 'Failed to invite.'
+        }
+
+        resetField('address')
+      } catch (error: any) {
+        toast.error(error)
+      }
+
+      setIsLoading(false)
     }
   }
 
@@ -86,7 +99,51 @@ export default function Contributors() {
     }
   }
 
+  async function handleCancelInviteClick(invite: ContributorInvite) {
+    if (!repo || !repo.privateStateTxId) return false
+
+    try {
+      setIsGrantAccessLoading(true)
+
+      await cancelContributor(invite.address)
+
+      toast.success('Successfully cancelled the contributor invite.')
+
+      setIsGrantAccessLoading(false)
+    } catch (error) {
+      toast.error('Failed to grant access.')
+
+      console.error({ error })
+
+      setIsGrantAccessLoading(false)
+    }
+  }
+
   const repoOwner = isRepoOwner()
+  const inviteActionsMap = {
+    ACCEPTED: ({ invite }: { invite: ContributorInvite }) => (
+      <Button
+        isLoading={isGrantAccessLoading}
+        disabled={!repoOwner || isGrantAccessLoading}
+        onClick={() => handleGrantAccessClick(invite)}
+        variant="primary-outline"
+        className="!py-1"
+      >
+        Grant Access
+      </Button>
+    ),
+    INVITED: ({ invite }: { invite: ContributorInvite }) => (
+      <Button
+        isLoading={isGrantAccessLoading}
+        disabled={!repoOwner || isGrantAccessLoading}
+        onClick={() => handleCancelInviteClick(invite)}
+        variant="primary-outline"
+        className="!py-1 border-red-400 text-red-400 hover:bg-red-50"
+      >
+        Cancel Invite
+      </Button>
+    )
+  }
 
   return (
     <div className="flex flex-col gap-4">
@@ -154,25 +211,18 @@ export default function Contributors() {
           </div>
 
           {repo &&
-            repo?.contributorInvites?.filter(filterContributorInvited).map((invite) => (
-              <div className="flex bg-gray-50 cursor-pointer hover:bg-primary-50 text-gray-600 hover:text-gray-900 items-center gap-4 py-[10px] px-4 border-b-[1px] border-gray-300 last:border-b-0">
-                <div className="w-[60%]">{invite.address}</div>
-                <div className="w-[25%] capitalize">{invite.status.toLowerCase()}</div>
-                <div className="w-[25%] capitalize">
-                  {invite.status === 'ACCEPTED' && repoOwner && (
-                    <Button
-                      isLoading={isGrantAccessLoading}
-                      disabled={!repoOwner || isGrantAccessLoading}
-                      onClick={() => handleGrantAccessClick(invite)}
-                      variant="primary-outline"
-                      className="!py-1"
-                    >
-                      Grant Access
-                    </Button>
-                  )}
+            repo?.contributorInvites?.filter(filterContributorInvited).map((invite) => {
+              const InviteActionComponent = inviteActionsMap[invite.status as keyof typeof inviteActionsMap]
+              return (
+                <div className="flex bg-gray-50 cursor-pointer hover:bg-primary-50 text-gray-600 hover:text-gray-900 items-center gap-4 py-[10px] px-4 border-b-[1px] border-gray-300 last:border-b-0">
+                  <div className="w-[60%]">{invite.address}</div>
+                  <div className="w-[25%] capitalize">{invite.status.toLowerCase()}</div>
+                  <div className="w-[25%] capitalize">
+                    {repoOwner && InviteActionComponent && <InviteActionComponent invite={invite} />}
+                  </div>
                 </div>
-              </div>
-            ))}
+              )
+            })}
         </div>
       </div>
     </div>

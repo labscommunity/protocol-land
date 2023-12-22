@@ -19,6 +19,7 @@ import {
   acceptContributorInvite,
   addContributor,
   addDeployment,
+  cancelContributorInvite,
   forkRepository,
   getAllRepositoriesByContributor,
   getAllRepositoriesByOwner,
@@ -66,6 +67,8 @@ export async function handle(state: ContractState, action: RepositoryAction | Ev
       return await acceptContributorInvite(state, action as RepositoryAction)
     case 'rejectContributorInvite':
       return await rejectContributorInvite(state, action as RepositoryAction)
+    case 'cancelContributorInvite':
+      return await cancelContributorInvite(state, action as RepositoryAction)
     case 'updatePrivateStateTx':
       return await updatePrivateStateTx(state, action as RepositoryAction)
     case 'createPullRequest':
