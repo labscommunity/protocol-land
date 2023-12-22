@@ -11,15 +11,7 @@ import * as yup from 'yup'
 import CloseCrossIcon from '@/assets/icons/close-cross.svg'
 import { Button } from '@/components/common/buttons'
 import { withAsync } from '@/helpers/withAsync'
-import {
-  getAllANTs,
-  getAllArNSNames,
-  getARBalance,
-  getArNSNameFees,
-  getIOBalance,
-  registerArNSName,
-  searchArNSName
-} from '@/lib/dragondeploy/arns'
+import { getARBalance, getArNSNameFees, getIOBalance, registerArNSName, searchArNSName } from '@/lib/dragondeploy/arns'
 import { useGlobalStore } from '@/stores/globalStore'
 
 const schema = yup
@@ -41,15 +33,20 @@ const schema = yup
   })
   .required()
 
-export default function ArNSModal() {
+export default function ArNSRegisterModal() {
   const [isOpen, setIsOpen] = useState(false)
-  const [isLoading, setIsLoading] = useState(false)
+  const [isSearching, setIsSearching] = useState(false)
+  const [isRegistering, setIsRegistering] = useState(false)
   const [isAvailable, setIsAvailable] = useState(false)
   const [balance, setBalance] = useState({ io: 0, ar: 0 })
   const [fees, setFees] = useState({ io: 0, ar: 0 })
   const [error, setError] = useState('')
 
-  const [authState, selectedRepo] = useGlobalStore((state) => [state.authState, state.repoCoreState.selectedRepo.repo])
+  const [authState, selectedRepo, addDomain] = useGlobalStore((state) => [
+    state.authState,
+    state.repoCoreState.selectedRepo.repo,
+    state.repoCoreActions.addDomain
+  ])
 
   const {
     register,
@@ -82,21 +79,27 @@ export default function ArNSModal() {
   }
 
   async function handleCreateBtnClick(data: yup.InferType<typeof schema>) {
-    setIsLoading(true)
+    setIsRegistering(true)
     const { name, years } = data
     const transactionId = selectedRepo?.deployments[selectedRepo?.deployments.length - 1].txId as string
     const { response, error } = await withAsync(() => registerArNSName({ name, years, transactionId }))
     if (response?.success) {
+      await addDomain({
+        name,
+        txId: transactionId,
+        controller: authState.address!,
+        contractTxId: response.ant.contractTxId
+      })
       toast.success(response.message)
       closeModal()
     } else {
       setError(response?.message ?? (error as any)?.message)
     }
-    setIsLoading(false)
+    setIsRegistering(false)
   }
 
   async function handleSearchBtnClick(data: yup.InferType<typeof schema>) {
-    setIsLoading(true)
+    setIsSearching(true)
     const { name } = data
 
     const { response, error } = await withAsync(() => searchArNSName(name))
@@ -107,14 +110,12 @@ export default function ArNSModal() {
     } else {
       setError(response?.message ?? (error as any)?.message)
     }
-    setIsLoading(false)
+    setIsSearching(false)
   }
 
   useEffect(() => {
     if (authState.isLoggedIn) {
       loadBalances()
-      getAllANTs(authState.address!).then((ants) => console.log(ants))
-      getAllArNSNames(authState.address!).then((arnsNames) => console.log(arnsNames))
     }
   }, [authState.isLoggedIn])
 
@@ -265,16 +266,16 @@ export default function ArNSModal() {
                               <Button
                                 className="w-full flex justify-center"
                                 variant="primary-solid"
-                                isLoading={isLoading}
+                                isLoading={isRegistering}
                                 loadingText="Registering..."
                                 onClick={handleSubmit(handleCreateBtnClick)}
                                 disabled={
-                                  isLoading ||
+                                  isRegistering ||
                                   !!error ||
                                   fees.ar === 0 ||
                                   fees.ar === 0 ||
                                   balance.io < fees.io ||
-                                  balance.ar < fees.io
+                                  balance.ar < fees.ar
                                 }
                               >
                                 Register
@@ -295,8 +296,8 @@ export default function ArNSModal() {
                               <Button
                                 className="w-full flex justify-center"
                                 variant="primary-solid"
-                                isLoading={isLoading}
-                                disabled={isLoading}
+                                isLoading={isSearching}
+                                disabled={isSearching}
                                 loadingText="Searching..."
                                 onClick={handleSubmit(handleSearchBtnClick)}
                               >

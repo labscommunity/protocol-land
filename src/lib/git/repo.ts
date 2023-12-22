@@ -10,7 +10,7 @@ import { toArrayBuffer } from '@/helpers/toArrayBuffer'
 import { waitFor } from '@/helpers/waitFor'
 import { withAsync } from '@/helpers/withAsync'
 import { ForkRepositoryOptions } from '@/stores/repository-core/types'
-import { Deployment, PrivateState, Repo } from '@/types/repository'
+import { Deployment, Domain, PrivateState, Repo } from '@/types/repository'
 
 import { decryptAesKeyWithPrivateKey } from '../private-repos/crypto/decrypt'
 import {
@@ -451,6 +451,36 @@ export async function inviteContributor(address: string, repoId: string) {
   const repo = repos[repoId] as Repo
 
   return repo.contributorInvites
+}
+
+export async function addDomain(domain: Domain, repoId: string) {
+  const userSigner = new InjectedArweaveSigner(window.arweaveWallet)
+  await userSigner.setPublicKey()
+
+  const contract = getWarpContract(CONTRACT_TX_ID, userSigner)
+
+  await contract.writeInteraction({
+    function: 'addDomain',
+    payload: {
+      id: repoId,
+      domain
+    }
+  })
+}
+
+export async function updateDomain(domain: Omit<Domain, 'controller'>, repoId: string) {
+  const userSigner = new InjectedArweaveSigner(window.arweaveWallet)
+  await userSigner.setPublicKey()
+
+  const contract = getWarpContract(CONTRACT_TX_ID, userSigner)
+
+  await contract.writeInteraction({
+    function: 'updateDomain',
+    payload: {
+      id: repoId,
+      domain
+    }
+  })
 }
 
 export async function addContributor(address: string, repoId: string) {

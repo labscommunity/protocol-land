@@ -5,7 +5,8 @@ import { HiChevronUpDown } from 'react-icons/hi2'
 import { IoCheckmark } from 'react-icons/io5'
 
 import { Button } from '@/components/common/buttons'
-import ArNSModal from '@/components/DragonDeploy/ArNSModal'
+import ArNSDomainModal from '@/components/DragonDeploy/ArNSDomainModal'
+import ArNSRegisterModal from '@/components/DragonDeploy/ArNSRegisterModal'
 import DragonDeploy from '@/components/DragonDeploy/DragonDeploy'
 import { withAsync } from '@/helpers/withAsync'
 import { useGlobalStore } from '@/stores/globalStore'
@@ -22,6 +23,9 @@ export default function Deployments() {
   const [branches, setBranches] = useState<string[]>([defaultBranch])
   const [selectedBranch, setSelectedBranch] = useState(branches[0])
   const [isUpdating, setIsUpdating] = useState(false)
+
+  const hasDeployments = (selectedRepo?.deployments?.length ?? 0) > 0
+  const hasDomains = (selectedRepo?.domains.length ?? 0) > 0
 
   async function handleUpdateButtonClick() {
     if (selectedRepo && selectedBranch !== selectedRepo.deploymentBranch) {
@@ -129,7 +133,7 @@ export default function Deployments() {
                 Save
               </Button>
               {repoContributor && <DragonDeploy />}
-              {repoContributor && (selectedRepo?.deployments?.length ?? 0) > 0 && <ArNSModal />}
+              {repoContributor && hasDeployments && (hasDomains ? <ArNSDomainModal /> : <ArNSRegisterModal />)}
             </div>
           </div>
         </div>

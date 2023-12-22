@@ -1,13 +1,13 @@
 import Arweave from 'arweave'
 import { WarpFactory } from 'warp-contracts'
 import { DeployPlugin } from 'warp-contracts-plugin-deploy'
-import { InjectedArweaveSigner } from 'warp-contracts-plugin-signature'
 
 import getWarpContract from '@/helpers/getWrapContract'
 
 const warp = WarpFactory.forMainnet().use(new DeployPlugin())
 
-const REGISTRY = 'bLAgYxAdX2Ry-nt6aH2ixgvJXbpsEYm28NgJgyqfs-U'
+// const REGISTRY = 'bLAgYxAdX2Ry-nt6aH2ixgvJXbpsEYm28NgJgyqfs-U'
+const REGISTRY = 'kDnA4dbyrdeUON9f4AJEB2UMKaIkZ9FZoYlxigfCD-U'
 const ANT_SOURCE = 'H2uxnw_oVIEzXeBeYmxDgJuxPqwBCGPO4OmQzdWQu3U'
 
 const arweave = Arweave.init({})
@@ -39,12 +39,9 @@ export async function registerArNSName({
   years: number
   transactionId: string
 }) {
-  const userSigner = new InjectedArweaveSigner(window.arweaveWallet)
-  await userSigner.setPublicKey()
-
-  const registry = getWarpPstContract(REGISTRY, userSigner)
+  const registry = getWarpPstContract(REGISTRY, window.arweaveWallet)
   const registryState = await registry.currentState()
-  const owner = await userSigner.getAddress()
+  const owner = await window.arweaveWallet.getActiveAddress()
 
   if (registryState.records[name]) {
     return { success: false, message: `ArNS name ${name} is already taken and is not available for purchase` }
@@ -59,7 +56,7 @@ export async function registerArNSName({
   // create ANT contract
   const ant = await warp.createContract.deployFromSourceTx(
     {
-      wallet: userSigner,
+      wallet: window.arweaveWallet,
       initState: JSON.stringify({
         ticker: `ANT-${name.toUpperCase()}`,
         name,
@@ -67,7 +64,7 @@ export async function registerArNSName({
         controllers: [owner],
         evolve: null,
         records: {
-          ['@']: transactionId
+          ['@']: { transactionId, ttlSeconds: 900 }
         },
         balances: {
           [owner]: 1
@@ -93,31 +90,30 @@ export async function registerArNSName({
   return { success: true, ant, message: `Successfully registred ${name}.arweave.dev` }
 }
 
-export async function updateSubDomain({
+export async function updateArNSDomain({
   antContract,
   transactionId,
-  subdomain = '@'
+  subDomain = '@'
 }: {
   antContract: string
   transactionId: string
-  subdomain: string
+  subDomain?: string
 }) {
-  const userSigner = new InjectedArweaveSigner(window.arweaveWallet)
-  await userSigner.setPublicKey()
-
-  const result = await getWarpContract(antContract, userSigner).writeInteraction(
+  const result = await getWarpContract(antContract, window.arweaveWallet).writeInteraction(
     {
       function: 'setRecord',
-      subDomain: subdomain,
-      transactionId
+      subDomain,
+      transactionId,
+      ttlSeconds: 900
     },
     { disableBundling: true, strict: true }
   )
 
-  return { success: true, id: result.originalTxId, message: 'Successfully updated subdomain' }
+  return { success: true, id: result.originalTxId, message: 'Successfully updated domain' }
 }
 
 export async function getIOBalance(owner: string) {
+  return 1000000000000
   const response = await fetch(`https://api.arns.app/v1/contract/${REGISTRY}/balances/${owner}`)
   return +((await response.json())?.balance ?? 0).toFixed(2)
 }
@@ -125,14 +121,15 @@ export async function getIOBalance(owner: string) {
 export async function getArNSNameFees(name = '', years = 1) {
   if (name === '') return [0, 0]
 
-  const response = await fetch(
-    `https://api.arns.app/v1/contract/${REGISTRY}/read/priceForInteraction?interactionName=buyRecord&name=${name}&years=${years}&type=lease&contractTxId=atomic`
-  )
-  if (response.status !== 200) {
-    throw new Error(await response.text())
-  }
+  // const response = await fetch(
+  //   `https://api.arns.app/v1/contract/${REGISTRY}/read/priceForInteraction?interactionName=buyRecord&name=${name}&years=${years}&type=lease&contractTxId=atomic`
+  // )
+  // if (response.status !== 200) {
+  //   throw new Error(await response.text())
+  // }
 
-  const price = +((await response.json())?.result?.price ?? 0).toFixed(2)
+  // const price = +((await response.json())?.result?.price ?? 0).toFixed(2)
+  const price = 1000
   const fee = (await arweave.api.get(`price/${name.length}`)).data
   return [price, +arweave.ar.winstonToAr(fee, { decimals: 4 })]
 }

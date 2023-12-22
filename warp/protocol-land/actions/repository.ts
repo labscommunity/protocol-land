@@ -343,6 +343,10 @@ export async function addDomain(
     throw new ContractError('Error: You dont have permissions for this operation.')
   }
 
+  if (!repo.domains && !Array.isArray(repo.domains)) {
+    repo.domains = []
+  }
+
   const domain: Domain = {
     txId: payload.domain.txId,
     name: payload.domain.name,
