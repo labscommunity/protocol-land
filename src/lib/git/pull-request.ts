@@ -44,7 +44,7 @@ export async function postNewPullRequest({
   const address = useGlobalStore.getState().authState.address
 
   const baseFS = fsWithName(baseRepo.repoId)
-  const baseDir = `/${baseRepo.repoName}`
+  const baseDir = `/${baseRepo.repoId}`
 
   const oid = await git.resolveRef({ fs: baseFS, dir: baseDir, ref: baseBranch })
 

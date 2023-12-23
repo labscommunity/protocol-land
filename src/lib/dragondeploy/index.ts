@@ -213,7 +213,7 @@ export async function uploadFiles(
   setUploadPercent(100)
 
   if (branchToRestore) {
-    await checkoutBranch({ fs: fsWithName(repo.id), dir: `/${repo.name}`, name: branchToRestore })
+    await checkoutBranch({ fs: fsWithName(repo.id), dir: `/${repo.id}`, name: branchToRestore })
   }
   return response
 }

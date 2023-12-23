@@ -51,13 +51,7 @@ const createPullRequestSlice: StateCreator<CombinedSlices, [['zustand/immer', ne
 
       const commits = get().pullRequestState.commits
       const { response, error } = await withAsync(() =>
-        traverseAndCopyForkObjects(
-          PR.compareRepo.repoId,
-          PR.compareRepo.repoName,
-          commits,
-          parentRepo.id,
-          parentRepo.name
-        )
+        traverseAndCopyForkObjects(PR.compareRepo.repoId, commits, parentRepo.id)
       )
 
       if (error || !response) {
@@ -160,7 +154,7 @@ const createPullRequestSlice: StateCreator<CombinedSlices, [['zustand/immer', ne
         return
       }
 
-      const { error, response } = await withAsync(() => getChangedFiles(repo.id, repo.name, branchA, branchB))
+      const { error, response } = await withAsync(() => getChangedFiles(repo.id, branchA, branchB))
 
       if (error) {
         set((state) => {
@@ -221,7 +215,7 @@ const createPullRequestSlice: StateCreator<CombinedSlices, [['zustand/immer', ne
       }
 
       const { error } = await withAsync(() =>
-        mergePR(repo.id, id, repo.name, baseBranch, compareBranch, author!, isFork, repo.private, repo.privateStateTxId)
+        mergePR(repo.id, id, baseBranch, compareBranch, author!, isFork, repo.private, repo.privateStateTxId)
       )
 
       if (!error) {

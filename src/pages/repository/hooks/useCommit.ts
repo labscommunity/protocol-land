@@ -59,7 +59,7 @@ export default function useCommit() {
 
   async function addFiles({ files, id, message, name, owner, defaultBranch }: AddFilesOptions) {
     const fs = fsWithName(id)
-    const dir = `/${name}`
+    const dir = `/${id}`
 
     const { error: addFilesToFsError } = await withAsync(() => addFilesForCommit({ fs, dir, files }))
 
