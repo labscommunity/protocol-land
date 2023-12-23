@@ -136,10 +136,23 @@ export async function mergePR(
   branchA: string,
   branchB: string,
   author: string,
-  fork: boolean = false
+  fork: boolean = false,
+  isPrivate: boolean = false,
+  privateStateTxId: string | undefined
 ) {
   const fs = fsWithName(repoId)
   const dir = `/${name}`
 
-  return mergePullRequest({ fs, dir, base: branchA, compare: branchB, author, prId, repoId, fork })
+  return mergePullRequest({
+    fs,
+    dir,
+    base: branchA,
+    compare: branchB,
+    author,
+    prId,
+    repoId,
+    fork,
+    isPrivate,
+    privateStateTxId
+  })
 }

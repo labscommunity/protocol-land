@@ -28,7 +28,8 @@ type AddFilesOptions = {
 }
 
 export default function useCommit() {
-  const [repoCommitsG, setRepoCommitsG] = useGlobalStore((state) => [
+  const [selectedRepo, repoCommitsG, setRepoCommitsG] = useGlobalStore((state) => [
+    state.repoCoreState.selectedRepo,
     state.repoCoreState.git.commits,
     state.repoCoreActions.git.setCommits
   ])
@@ -80,7 +81,9 @@ export default function useCommit() {
 
     if (commitError || !commitSHA) throw trackAndThrowError('Failed to commit files', name, id)
 
-    const { error, response } = await withAsync(() => postUpdatedRepo({ fs, dir, owner, id }))
+    const isPrivate = selectedRepo.repo?.private || false
+    const privateStateTxId = selectedRepo.repo?.privateStateTxId
+    const { error, response } = await withAsync(() => postUpdatedRepo({ fs, dir, owner, id, isPrivate, privateStateTxId }))
 
     if (error) throw trackAndThrowError('Failed to update repository', name, id)
 

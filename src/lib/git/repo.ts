@@ -10,8 +10,15 @@ import { toArrayBuffer } from '@/helpers/toArrayBuffer'
 import { waitFor } from '@/helpers/waitFor'
 import { withAsync } from '@/helpers/withAsync'
 import { ForkRepositoryOptions } from '@/stores/repository-core/types'
-import { Deployment, Repo } from '@/types/repository'
+import { Deployment, PrivateState, Repo } from '@/types/repository'
 
+import { decryptAesKeyWithPrivateKey } from '../private-repos/crypto/decrypt'
+import {
+  encryptAesKeyWithPublicKeys,
+  encryptDataWithExistingKey,
+  encryptFileWithAesGcm
+} from '../private-repos/crypto/encrypt'
+import { deriveAddress, strToJwkPubKey } from '../private-repos/utils'
 import { checkoutBranch, getCurrentBranch } from './branch'
 import { FSType } from './helpers/fsWithName'
 import { packGitRepo, unpackGitRepo } from './helpers/zipUtils'
@@ -22,13 +29,13 @@ const arweave = new Arweave({
   protocol: 'https'
 })
 
-export async function postNewRepo({ id, title, description, file, owner }: any) {
+export async function postNewRepo({ id, title, description, file, owner, visibility }: any) {
+  const publicKey = await window.arweaveWallet.getActivePublicKey()
+
   const userSigner = new InjectedArweaveSigner(window.arweaveWallet)
   await userSigner.setPublicKey()
 
-  const data = (await toArrayBuffer(file)) as ArrayBuffer
-
-  await waitFor(500)
+  let data = (await toArrayBuffer(file)) as ArrayBuffer
 
   const inputTags = [
     { name: 'App-Name', value: 'Protocol.Land' },
@@ -36,8 +43,46 @@ export async function postNewRepo({ id, title, description, file, owner }: any) 
     { name: 'Creator', value: owner },
     { name: 'Title', value: title },
     { name: 'Description', value: description },
-    { name: 'Type', value: 'repo-create' }
+    { name: 'Type', value: 'repo-create' },
+    { name: 'Visibility', value: visibility }
   ]
+
+  let privateStateTxId = ''
+  if (visibility === 'private') {
+    const pubKeyArray = [strToJwkPubKey(publicKey)]
+    // Encrypt
+    const { aesKey, encryptedFile, iv } = await encryptFileWithAesGcm(data)
+    const encryptedAesKeysArray = await encryptAesKeyWithPublicKeys(aesKey, pubKeyArray)
+    // // Store 'encrypted', 'iv', and 'encryptedKeyArray' securely
+
+    const privateState = {
+      version: '0.1',
+      iv,
+      encKeys: encryptedAesKeysArray,
+      pubKeys: [publicKey]
+    }
+
+    const privateStateTx = await arweave.createTransaction({
+      data: JSON.stringify(privateState)
+    })
+
+    privateStateTx.addTag('Content-Type', 'application/json')
+    privateStateTx.addTag('App-Name', 'Protocol.Land')
+    privateStateTx.addTag('Type', 'private-state')
+    privateStateTx.addTag('ID', id)
+
+    const privateStateTxResponse = await window.arweaveWallet.dispatch(privateStateTx)
+
+    if (!privateStateTxResponse) {
+      throw new Error('Failed to post Private State')
+    }
+
+    privateStateTxId = privateStateTxResponse.id
+
+    data = encryptedFile
+  }
+
+  await waitFor(500)
 
   const transaction = await arweave.createTransaction({
     data
@@ -59,7 +104,9 @@ export async function postNewRepo({ id, title, description, file, owner }: any) 
       id,
       name: title,
       description,
-      dataTxId: dataTxResponse.id
+      dataTxId: dataTxResponse.id,
+      visibility,
+      privateStateTxId
     }
   })
 
@@ -87,7 +134,7 @@ export async function createNewFork(data: ForkRepositoryOptions) {
   return uuid
 }
 
-export async function postUpdatedRepo({ fs, dir, owner, id }: PostUpdatedRepoOptions) {
+export async function postUpdatedRepo({ fs, dir, owner, id, isPrivate, privateStateTxId }: PostUpdatedRepoOptions) {
   const { error: initialError, result: initialBranch } = await getCurrentBranch({ fs, dir })
 
   if (initialError || (initialBranch && initialBranch !== 'master')) {
@@ -108,9 +155,25 @@ export async function postUpdatedRepo({ fs, dir, owner, id }: PostUpdatedRepoOpt
   const userSigner = new InjectedArweaveSigner(window.arweaveWallet)
   await userSigner.setPublicKey()
 
-  const data = (await toArrayBuffer(repoBlob)) as ArrayBuffer
+  let data = (await toArrayBuffer(repoBlob)) as ArrayBuffer
 
   await waitFor(500)
+
+  if (isPrivate && privateStateTxId) {
+    const pubKey = await window.arweaveWallet.getActivePublicKey()
+    const address = await deriveAddress(pubKey)
+
+    const response = await fetch(`https://arweave.net/${privateStateTxId}`)
+    const privateState = (await response.json()) as PrivateState
+
+    const encAesKeyStr = privateState.encKeys[address]
+    const encAesKeyBuf = arweave.utils.b64UrlToBuffer(encAesKeyStr)
+
+    const aesKey = (await decryptAesKeyWithPrivateKey(encAesKeyBuf)) as unknown as ArrayBuffer
+    const ivArrBuff = arweave.utils.b64UrlToBuffer(privateState.iv)
+
+    data = await encryptDataWithExistingKey(data, aesKey, ivArrBuff)
+  }
 
   const inputTags = [
     { name: 'App-Name', value: 'Protocol.Land' },
@@ -142,6 +205,82 @@ export async function postUpdatedRepo({ fs, dir, owner, id }: PostUpdatedRepoOpt
   })
 
   return dataTxResponse
+}
+
+export async function addActivePubKeyToPrivateState(id: string, currentPrivateStateTxId: string) {
+  const activePubKey = await window.arweaveWallet.getActivePublicKey()
+  const response = await fetch(`https://arweave.net/${currentPrivateStateTxId}`)
+  const currentPrivateState = (await response.json()) as unknown as PrivateState
+
+  const privateState = {
+    ...currentPrivateState,
+    pubKeys: [...currentPrivateState.pubKeys, activePubKey]
+  }
+
+  const privateStateTx = await arweave.createTransaction({
+    data: JSON.stringify(privateState)
+  })
+
+  privateStateTx.addTag('Content-Type', 'application/json')
+  privateStateTx.addTag('App-Name', 'Protocol.Land')
+  privateStateTx.addTag('Type', 'private-state')
+  privateStateTx.addTag('ID', id)
+
+  const privateStateTxResponse = await window.arweaveWallet.dispatch(privateStateTx)
+
+  if (!privateStateTxResponse) {
+    throw new Error('Failed to post updated Private State')
+  }
+
+  return privateStateTxResponse.id
+}
+
+export async function rotateKeysAndUpdateRepo({ id, currentPrivateStateTxId }: RotateKeysAndUpdateRepoOptions) {
+  const activePubKey = await window.arweaveWallet.getActivePublicKey()
+  const activeAddress = await deriveAddress(activePubKey)
+  const response = await fetch(`https://arweave.net/${currentPrivateStateTxId}`)
+  const currentPrivateState = (await response.json()) as unknown as PrivateState
+
+  const pubKeyArray = currentPrivateState.pubKeys.map((pubKey) => strToJwkPubKey(pubKey))
+
+  const encAesKeyStr = currentPrivateState.encKeys[activeAddress]
+  const encAesKeyBuf = arweave.utils.b64UrlToBuffer(encAesKeyStr)
+
+  const aesKey = (await decryptAesKeyWithPrivateKey(encAesKeyBuf)) as unknown as ArrayBuffer
+  const encryptedAesKeysArray = await encryptAesKeyWithPublicKeys(aesKey, pubKeyArray)
+
+  const privateState: PrivateState = {
+    ...currentPrivateState,
+    encKeys: encryptedAesKeysArray
+  }
+
+  const privateStateTx = await arweave.createTransaction({
+    data: JSON.stringify(privateState)
+  })
+
+  privateStateTx.addTag('Content-Type', 'application/json')
+  privateStateTx.addTag('App-Name', 'Protocol.Land')
+  privateStateTx.addTag('Type', 'private-state')
+  privateStateTx.addTag('ID', id)
+
+  const privateStateTxResponse = await window.arweaveWallet.dispatch(privateStateTx)
+
+  if (!privateStateTxResponse) {
+    throw new Error('Failed to post Private State')
+  }
+
+  const userSigner = new InjectedArweaveSigner(window.arweaveWallet)
+  await userSigner.setPublicKey()
+
+  const contract = getWarpContract(CONTRACT_TX_ID, userSigner)
+
+  await contract.writeInteraction({
+    function: 'updatePrivateStateTx',
+    payload: {
+      id,
+      privateStateTxId: privateStateTxResponse.id
+    }
+  })
 }
 
 export async function createNewRepo(title: string, fs: FSType, owner: string) {
@@ -274,6 +413,48 @@ export async function addDeployment(deployment: Partial<Deployment>, repoId: str
   return latestDeployment
 }
 
+export async function inviteContributor(address: string, repoId: string) {
+  const userSigner = new InjectedArweaveSigner(window.arweaveWallet)
+  await userSigner.setPublicKey()
+
+  const caller = await window.arweaveWallet.getActiveAddress()
+
+  const contract = getWarpContract(CONTRACT_TX_ID, userSigner)
+
+  const dryRunResult = await contract.dryWrite(
+    {
+      function: 'inviteContributor',
+      payload: {
+        id: repoId,
+        contributor: address
+      }
+    },
+    caller
+  )
+
+  if (dryRunResult.type === 'error') {
+    throw dryRunResult.errorMessage
+  }
+
+  await contract.writeInteraction({
+    function: 'inviteContributor',
+    payload: {
+      id: repoId,
+      contributor: address
+    }
+  })
+
+  const {
+    cachedValue: {
+      state: { repos }
+    }
+  } = await contract.readState()
+
+  const repo = repos[repoId] as Repo
+
+  return repo.contributorInvites
+}
+
 export async function addContributor(address: string, repoId: string) {
   const userSigner = new InjectedArweaveSigner(window.arweaveWallet)
   await userSigner.setPublicKey()
@@ -294,4 +475,11 @@ type PostUpdatedRepoOptions = {
   fs: FSType
   dir: string
   owner: string
+  isPrivate: boolean
+  privateStateTxId?: string
+}
+
+type RotateKeysAndUpdateRepoOptions = {
+  id: string
+  currentPrivateStateTxId: string
 }

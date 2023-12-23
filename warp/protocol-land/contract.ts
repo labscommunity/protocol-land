@@ -1,4 +1,4 @@
-import { evolveContract } from './actions/evolve'
+import { evolveContract, postEvolve } from './actions/evolve'
 import {
   addAssigneeToIssue,
   addCommentToIssue,
@@ -16,14 +16,19 @@ import {
   updatePullRequestStatus
 } from './actions/pull-requests'
 import {
+  acceptContributorInvite,
   addContributor,
   addDeployment,
+  cancelContributorInvite,
   forkRepository,
   getAllRepositoriesByContributor,
   getAllRepositoriesByOwner,
   getRepository,
   initializeNewRepository,
+  inviteContributor,
   isRepositoryNameAvailable,
+  rejectContributorInvite,
+  updatePrivateStateTx,
   updateRepositoryDetails,
   updateRepositoryTxId
 } from './actions/repository'
@@ -56,6 +61,16 @@ export async function handle(state: ContractState, action: RepositoryAction | Ev
       return await addDeployment(state, action as RepositoryAction)
     case 'addContributor':
       return await addContributor(state, action as RepositoryAction)
+    case 'inviteContributor':
+      return await inviteContributor(state, action as RepositoryAction)
+    case 'acceptContributorInvite':
+      return await acceptContributorInvite(state, action as RepositoryAction)
+    case 'rejectContributorInvite':
+      return await rejectContributorInvite(state, action as RepositoryAction)
+    case 'cancelContributorInvite':
+      return await cancelContributorInvite(state, action as RepositoryAction)
+    case 'updatePrivateStateTx':
+      return await updatePrivateStateTx(state, action as RepositoryAction)
     case 'createPullRequest':
       return await createNewPullRequest(state, action as RepositoryAction)
     case 'updatePullRequestStatus':
@@ -86,6 +101,8 @@ export async function handle(state: ContractState, action: RepositoryAction | Ev
       return await getUserDetails(state, action as RepositoryAction)
     case 'evolve':
       return await evolveContract(state, action as EvolveAction)
+    case 'postEvolve':
+      return await postEvolve(state, action as EvolveAction)
     default:
       throw new ContractError(`No function supplied or function not recognised`)
   }

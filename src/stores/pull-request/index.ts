@@ -221,7 +221,7 @@ const createPullRequestSlice: StateCreator<CombinedSlices, [['zustand/immer', ne
       }
 
       const { error } = await withAsync(() =>
-        mergePR(repo.id, id, repo.name, baseBranch, compareBranch, author!, isFork)
+        mergePR(repo.id, id, repo.name, baseBranch, compareBranch, author!, isFork, repo.private, repo.privateStateTxId)
       )
 
       if (!error) {

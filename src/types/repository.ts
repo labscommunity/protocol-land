@@ -1,5 +1,12 @@
 import { User } from './user'
 
+export type PrivateState = {
+  iv: string
+  encKeys: Record<string, string>
+  version: string
+  pubKeys: string[]
+}
+
 export type Repo = {
   id: string
   name: string
@@ -16,7 +23,18 @@ export type Repo = {
   fork: boolean
   parent: string | null
   timestamp: number
+  private: boolean
+  privateStateTxId?: string
+  contributorInvites: ContributorInvite[]
 }
+
+export type ContributorInvite = {
+  address: string
+  timestamp: number
+  status: ContributorStatus
+}
+
+export type ContributorStatus = 'INVITED' | 'ACCEPTED' | 'REJECTED'
 
 export type ForkMetaData = Pick<Repo, 'id' | 'name' | 'owner' | 'timestamp'>
 

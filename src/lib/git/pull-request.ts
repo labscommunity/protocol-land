@@ -142,7 +142,9 @@ export async function mergePullRequest({
   dryRun,
   repoId,
   prId,
-  fork
+  fork,
+  isPrivate,
+  privateStateTxId
 }: MergePullRequestOptions) {
   const { error } = await withAsync(() =>
     git.merge({
@@ -174,7 +176,7 @@ export async function mergePullRequest({
     if (fork) {
       await deleteBranch({ fs, dir, name: compare })
     }
-    await postUpdatedRepo({ fs, dir, owner: author, id: repoId })
+    await postUpdatedRepo({ fs, dir, owner: author, id: repoId, isPrivate, privateStateTxId })
 
     await waitFor(1000)
 
@@ -319,6 +321,8 @@ type MergePullRequestOptions = {
   repoId: string
   prId: number
   fork: boolean
+  isPrivate: boolean
+  privateStateTxId?: string
 }
 
 type GetStatusMatrixOfTwoBranchesOptions = {

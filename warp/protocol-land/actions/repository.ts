@@ -1,4 +1,5 @@
-import { ContractResult, ContractState, Deployment, Repo, RepositoryAction } from '../types'
+import { ContractResult, ContractState, ContributorInvite, Deployment, Repo, RepositoryAction } from '../types'
+import { getBlockTimeStamp } from '../utils/getBlockTimeStamp'
 
 declare const ContractError, SmartWeave
 
@@ -41,10 +42,17 @@ export async function initializeNewRepository(
     deployments: [],
     issues: [],
     deploymentBranch: '',
-    timestamp: Date.now(),
+    timestamp: getBlockTimeStamp(),
     fork: false,
     forks: {},
-    parent: null
+    parent: null,
+    private: false,
+    contributorInvites: []
+  }
+
+  if (payload.visibility === 'private') {
+    repo.private = true
+    repo.privateStateTxId = payload.privateStateTxId
   }
 
   state.repos[repo.id] = repo
@@ -93,10 +101,12 @@ export async function forkRepository(
     issues: [],
     deployments: [],
     deploymentBranch: '',
-    timestamp: Date.now(),
+    timestamp: getBlockTimeStamp(),
     fork: true,
     forks: {},
-    parent: payload.parent
+    parent: payload.parent,
+    private: false,
+    contributorInvites: []
   }
 
   const parentRepo: Repo = state.repos[payload.parent]
@@ -290,6 +300,202 @@ export async function addDeployment(
   }
 
   repo.deployments.push(deployment)
+
+  return { state }
+}
+
+export async function inviteContributor(
+  state: ContractState,
+  { input: { payload }, caller }: RepositoryAction
+): Promise<ContractResult<ContractState>> {
+  // validate payload
+  if (!payload.id || !payload.contributor) {
+    throw new ContractError('Invalid inputs supplied.')
+  }
+
+  const repo = state.repos[payload.id]
+
+  if (!repo) {
+    throw new ContractError('Repository not found.')
+  }
+
+  if (caller !== repo.owner) {
+    throw new ContractError('Error: Only repo owner can update repo details.')
+  }
+
+  const contributorExists = repo.contributors.find((address) => address === payload.contributor)
+
+  if (contributorExists) {
+    throw new ContractError('Contributor already exists.')
+  }
+
+  const invite = repo.contributorInvites.find(
+    (invite) => invite.address === payload.contributor && invite.status === 'INVITED'
+  )
+
+  if (invite) {
+    throw new ContractError('Error: Invite already exists.')
+  }
+
+  const contributorInvite: ContributorInvite = {
+    address: payload.contributor,
+    timestamp: getBlockTimeStamp(),
+    status: 'INVITED'
+  }
+
+  repo.contributorInvites.push(contributorInvite)
+
+  return { state }
+}
+
+export async function acceptContributorInvite(
+  state: ContractState,
+  { input: { payload }, caller }: RepositoryAction
+): Promise<ContractResult<ContractState>> {
+  // validate payload
+  if (!payload.id || !payload.visibility) {
+    throw new ContractError('Invalid inputs supplied.')
+  }
+
+  const repo = state.repos[payload.id]
+
+  if (!repo) {
+    throw new ContractError('Repository not found.')
+  }
+
+  const contributorInviteIdx = repo.contributorInvites.findIndex(
+    (invite) => invite.address === caller && invite.status === 'INVITED'
+  )
+
+  if (contributorInviteIdx < 0) {
+    throw new ContractError('Error: No invite was found to contribute.')
+  }
+
+  const contributorExists = repo.contributors.findIndex((address) => address === caller)
+
+  if (contributorExists > -1) {
+    throw new ContractError('Contributor already exists.')
+  }
+
+  const invite = repo.contributorInvites[contributorInviteIdx]
+
+  if (invite.status !== 'INVITED') {
+    throw new ContractError('Contributor invite has been approved or rejected.')
+  }
+
+  repo.contributorInvites[contributorInviteIdx].status = 'ACCEPTED'
+
+  if (payload.visibility === 'private' && payload.privateStateTxId) {
+    repo.privateStateTxId = payload.privateStateTxId
+
+    return { state }
+  }
+
+  repo.contributors.push(invite.address)
+
+  return { state }
+}
+
+export async function rejectContributorInvite(
+  state: ContractState,
+  { input: { payload }, caller }: RepositoryAction
+): Promise<ContractResult<ContractState>> {
+  if (!payload.id) {
+    throw new ContractError('Invalid inputs supplied.')
+  }
+
+  const repo = state.repos[payload.id]
+
+  if (!repo) {
+    throw new ContractError('Repository not found.')
+  }
+
+  const contributorInviteIdx = repo.contributorInvites.findIndex(
+    (invite) => invite.address === caller && invite.status === 'INVITED'
+  )
+
+  if (contributorInviteIdx < 0) {
+    throw new ContractError('Error: No invite was found to reject.')
+  }
+
+  const contributorExists = repo.contributors.findIndex((address) => address === caller)
+
+  if (contributorExists > -1) {
+    throw new ContractError('Contributor already exists.')
+  }
+
+  const invite = repo.contributorInvites[contributorInviteIdx]
+
+  if (invite.status !== 'INVITED') {
+    throw new ContractError('Contributor invite has been approved or rejected.')
+  }
+
+  repo.contributorInvites[contributorInviteIdx].status = 'REJECTED'
+
+  return { state }
+}
+
+export async function cancelContributorInvite(
+  state: ContractState,
+  { input: { payload }, caller }: RepositoryAction
+): Promise<ContractResult<ContractState>> {
+  if (!payload.id || !payload.contributor) {
+    throw new ContractError('Invalid inputs supplied.')
+  }
+
+  const repo = state.repos[payload.id]
+
+  if (!repo) {
+    throw new ContractError('Repository not found.')
+  }
+
+  if (caller !== repo.owner) {
+    throw new ContractError('Error: Only repo owner can cancel invites.')
+  }
+
+  const targetInvite = repo.contributorInvites.find(
+    (invite) => invite.address === payload.contributor && invite.status === 'INVITED'
+  )
+
+  if (!targetInvite) {
+    throw new ContractError('Error: No invite was found to cancel.')
+  }
+
+  const filteredInvites = repo.contributorInvites.filter((invite) => {
+    if (invite.address === payload.contributor && invite.status === 'INVITED') {
+      return false
+    }
+
+    return true
+  })
+
+  repo.contributorInvites = filteredInvites
+
+  return { state }
+}
+
+export async function updatePrivateStateTx(
+  state: ContractState,
+  { input: { payload }, caller }: RepositoryAction
+): Promise<ContractResult<ContractState>> {
+  // validate payload
+  if (!payload.privateStateTxId || !payload.id) {
+    throw new ContractError('Invalid inputs supplied.')
+  }
+
+  const repo = state.repos[payload.id]
+
+  if (!repo) {
+    throw new ContractError('Repository not found.')
+  }
+
+  const hasPermissions = caller === repo.owner
+
+  if (!hasPermissions) {
+    throw new ContractError('Error: You dont have permissions for this operation.')
+  }
+
+  repo.privateStateTxId = payload.privateStateTxId
 
   return { state }
 }
