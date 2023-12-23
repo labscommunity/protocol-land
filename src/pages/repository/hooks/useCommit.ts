@@ -35,9 +35,9 @@ export default function useCommit() {
   ])
   const [commitsList, setCommitsList] = React.useState<CommitResult[]>([])
 
-  async function fetchAllCommits(id: string, name: string) {
+  async function fetchAllCommits(id: string) {
     const fs = fsWithName(id)
-    const dir = `/${name}`
+    const dir = `/${id}`
     const commits = await getAllCommits({ fs, dir })
 
     if (commits && commits.length > 0) {
@@ -46,9 +46,9 @@ export default function useCommit() {
     }
   }
 
-  async function fetchFirstCommit(id: string, name: string) {
+  async function fetchFirstCommit(id: string) {
     const fs = fsWithName(id)
-    const dir = `/${name}`
+    const dir = `/${id}`
     const commits = await getFirstCommit({ fs, dir })
 
     if (commits && commits.length > 0) {
@@ -105,7 +105,7 @@ export default function useCommit() {
       }
     }
 
-    await fetchFirstCommit(id, name)
+    await fetchFirstCommit(id)
 
     return response
   }

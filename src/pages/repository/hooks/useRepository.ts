@@ -22,7 +22,7 @@ export default function useRepository(id: string, name: string) {
 
   async function initRepoLoading() {
     const fs = fsWithName(id)
-    const dir = `/${name}`
+    const dir = `/${id}`
 
     setLoadRepoStatus('PENDING')
 
@@ -38,7 +38,7 @@ export default function useRepository(id: string, name: string) {
 
   async function fetchFilesFromOid(oid: string) {
     const fs = fsWithName(id)
-    const dir = `/${name}`
+    const dir = `/${id}`
 
     if (loadRepoStatus !== 'PENDING') setLoadRepoStatus('PENDING')
 
@@ -55,7 +55,7 @@ export default function useRepository(id: string, name: string) {
 
   async function fetchFileContentFromOid(oid: string) {
     const fs = fsWithName(id)
-    const dir = `/${name}`
+    const dir = `/${id}`
 
     if (loadRepoStatus !== 'PENDING') setLoadRepoStatus('PENDING')
 
@@ -88,7 +88,7 @@ export default function useRepository(id: string, name: string) {
 
   async function downloadRepository() {
     const fs = fsWithName(id)
-    const dir = `/${name}`
+    const dir = `/${id}`
 
     const blob = await packGitRepo({ fs, dir })
 

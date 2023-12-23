@@ -10,30 +10,30 @@ import { decryptAesKeyWithPrivateKey, decryptFileWithAesGcm } from '@/lib/privat
 import { deriveAddress } from '@/lib/private-repos/utils'
 import { PrivateState } from '@/types/repository'
 
-export async function getOidOfHeadRef(id: string, name: string) {
+export async function getOidOfHeadRef(id: string) {
   const fs = fsWithName(id)
-  const dir = `/${name}`
+  const dir = `/${id}`
 
   return getOidFromRef({ ref: 'HEAD', dir, fs })
 }
 
-export async function getFilesFromOid(id: string, oid: string, name: string) {
+export async function getFilesFromOid(id: string, oid: string) {
   const fs = fsWithName(id)
-  const dir = `/${name}`
+  const dir = `/${id}`
 
   return readFilesFromOid({ dir, oid, prefix: '', fs })
 }
 
-export async function getFileContentFromOid(id: string, oid: string, name: string) {
+export async function getFileContentFromOid(id: string, oid: string) {
   const fs = fsWithName(id)
-  const dir = `/${name}`
+  const dir = `/${id}`
 
   return readFileFromOid({ dir, oid, fs })
 }
 
 export async function saveRepository(id: string, name: string) {
   const fs = fsWithName(id)
-  const dir = `/${name}`
+  const dir = `/${id}`
 
   const blob = await packGitRepo({ fs, dir })
 
@@ -53,7 +53,7 @@ export async function saveRepository(id: string, name: string) {
   document.body.removeChild(downloadLink)
 }
 
-export async function loadRepository(id: string, name: string, dataTxId: string, privateStateTxId?: string) {
+export async function loadRepository(id: string, dataTxId: string, privateStateTxId?: string) {
   await unmountRepository(id)
 
   const response = await fetch(`https://arweave.net/${dataTxId}`)
@@ -64,7 +64,7 @@ export async function loadRepository(id: string, name: string, dataTxId: string,
   }
 
   const fs = fsWithName(id)
-  const dir = `/${name}`
+  const dir = `/${id}`
 
   const success = await importRepoFromBlob(fs, dir, new Blob([repoArrayBuf]))
 
