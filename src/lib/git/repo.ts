@@ -283,8 +283,8 @@ export async function rotateKeysAndUpdateRepo({ id, currentPrivateStateTxId }: R
   })
 }
 
-export async function createNewRepo(title: string, fs: FSType, owner: string) {
-  const dir = `/${title}`
+export async function createNewRepo(title: string, fs: FSType, owner: string, id: string) {
+  const dir = `/${id}`
   const filePath = `${dir}/README.md`
 
   try {
