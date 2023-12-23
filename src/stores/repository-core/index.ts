@@ -408,7 +408,7 @@ const createRepoCoreSlice: StateCreator<CombinedSlices, [['zustand/immer', never
           state.repoCoreState.selectedRepo.repo = metaResponse.result
         })
 
-        const { id: repoId, name, dataTxId, fork, parent, privateStateTxId, contributorInvites } = metaResponse.result
+        const { id: repoId, dataTxId, fork, parent, privateStateTxId, contributorInvites } = metaResponse.result
 
         const address = await window.arweaveWallet.getActiveAddress()
 
@@ -421,7 +421,7 @@ const createRepoCoreSlice: StateCreator<CombinedSlices, [['zustand/immer', never
           })
         }
 
-        let parentRepoName = null
+        let parentRepoId = null
 
         if (fork) {
           const { error: parentMetaError, response: parentMetaResponse } = await withAsync(() =>
@@ -432,8 +432,8 @@ const createRepoCoreSlice: StateCreator<CombinedSlices, [['zustand/immer', never
             throw new Error('Error fetching repository meta.')
           }
 
-          if (name !== parentMetaResponse.result.name) {
-            parentRepoName = parentMetaResponse.result.name
+          if (repoId !== parentMetaResponse.result.id) {
+            parentRepoId = parentMetaResponse.result.id
           }
 
           await get().repoCoreActions.fetchAndLoadParentRepository(parentMetaResponse.result)
@@ -442,6 +442,12 @@ const createRepoCoreSlice: StateCreator<CombinedSlices, [['zustand/immer', never
         const { error: repoFetchError, response: repoFetchResponse } = await withAsync(() =>
           loadRepository(repoId, dataTxId, privateStateTxId)
         )
+
+        if (fork && parentRepoId && repoId !== parentRepoId) {
+          const renamed = await renameRepoDir(repoId, parentRepoId, repoId)
+
+          if (!renamed) throw new Error('Error loading the repository.')
+        }
 
         // Always checkout default master branch if available
         if (!repoFetchError && repoFetchResponse) {
@@ -452,12 +458,6 @@ const createRepoCoreSlice: StateCreator<CombinedSlices, [['zustand/immer', never
           } else if (!branchError && currentBranch) {
             checkedOutBranch = currentBranch
           }
-        }
-
-        if (fork && parentRepoName && name !== parentRepoName) {
-          const renamed = await renameRepoDir(repoId, parentRepoName, name)
-
-          if (!renamed) throw new Error('Error loading the repository.')
         }
 
         if (repoFetchError || !repoFetchResponse) {
