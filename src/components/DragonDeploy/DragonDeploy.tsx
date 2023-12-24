@@ -7,7 +7,14 @@ import SVG from 'react-inlinesvg'
 import CloseCrossIcon from '@/assets/icons/close-cross.svg'
 import { Button } from '@/components/common/buttons'
 import CostEstimatesToolTip from '@/components/CostEstimatesToolTip'
-import { type Commit, type File, getDeploymentBranchFiles, hasIndexFile, uploadFiles } from '@/lib/dragondeploy'
+import {
+  type Commit,
+  type File,
+  getDeploymentBranchFiles,
+  hasIndexFile,
+  restoreBranch,
+  uploadFiles
+} from '@/lib/dragondeploy'
 import { useGlobalStore } from '@/stores/globalStore'
 import { Deployment } from '@/types/repository'
 
@@ -38,6 +45,12 @@ export default function DragonDeploy() {
   useEffect(() => {
     loadFilesForDeployment()
   }, [selectedRepo?.deploymentBranch, isOpen])
+
+  useEffect(() => {
+    if (!isOpen) {
+      restoreBranch(selectedRepo!, branchToRestore)
+    }
+  }, [isOpen])
 
   function closeModal() {
     setIsOpen(false)
@@ -85,6 +98,7 @@ export default function DragonDeploy() {
         })
         setCurrentDeployment(deployment)
         setDeployedTxId(response.id)
+        setBranchToRestore('')
         toast.success('Deployed successfully')
       } catch (err) {
         toast.error('Deploy failed')
