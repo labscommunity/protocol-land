@@ -93,7 +93,7 @@ export default function AddFilesModal({ setIsOpen, isOpen }: NewBranchModal) {
   async function captureRepoBlobSize() {
     if (!userRepo) return
     const fs = fsWithName(id!)
-    const dir = `/${userRepo.name}`
+    const dir = `/${userRepo.id}`
 
     const blob = await packGitRepo({ fs, dir })
 

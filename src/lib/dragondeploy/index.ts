@@ -100,7 +100,7 @@ export async function getHashToTxId(files: File[]) {
 export async function getDeploymentBranchFiles(repo: Repo, currentBranch: string) {
   const fs = fsWithName(repo.id)
   const restoreToPreviousBranch = currentBranch !== repo.deploymentBranch
-  const dir = `/${repo.name}`
+  const dir = `/${repo.id}`
 
   if (restoreToPreviousBranch) {
     await checkoutBranch({ fs, dir, name: repo.deploymentBranch })
@@ -213,7 +213,7 @@ export async function uploadFiles(
   setUploadPercent(100)
 
   if (branchToRestore) {
-    await checkoutBranch({ fs: fsWithName(repo.id), dir: `/${repo.name}`, name: branchToRestore })
+    await checkoutBranch({ fs: fsWithName(repo.id), dir: `/${repo.id}`, name: branchToRestore })
   }
   return response
 }

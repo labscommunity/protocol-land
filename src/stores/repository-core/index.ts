@@ -408,7 +408,7 @@ const createRepoCoreSlice: StateCreator<CombinedSlices, [['zustand/immer', never
           state.repoCoreState.selectedRepo.repo = metaResponse.result
         })
 
-        const { id: repoId, name, dataTxId, fork, parent, privateStateTxId, contributorInvites } = metaResponse.result
+        const { id: repoId, dataTxId, fork, parent, privateStateTxId, contributorInvites } = metaResponse.result
 
         const address = await window.arweaveWallet.getActiveAddress()
 
@@ -421,7 +421,7 @@ const createRepoCoreSlice: StateCreator<CombinedSlices, [['zustand/immer', never
           })
         }
 
-        let parentRepoName = null
+        let parentRepoId = null
 
         if (fork) {
           const { error: parentMetaError, response: parentMetaResponse } = await withAsync(() =>
@@ -432,32 +432,32 @@ const createRepoCoreSlice: StateCreator<CombinedSlices, [['zustand/immer', never
             throw new Error('Error fetching repository meta.')
           }
 
-          if (name !== parentMetaResponse.result.name) {
-            parentRepoName = parentMetaResponse.result.name
+          if (repoId !== parentMetaResponse.result.id) {
+            parentRepoId = parentMetaResponse.result.id
           }
 
           await get().repoCoreActions.fetchAndLoadParentRepository(parentMetaResponse.result)
         }
 
         const { error: repoFetchError, response: repoFetchResponse } = await withAsync(() =>
-          loadRepository(repoId, name, dataTxId, privateStateTxId)
+          loadRepository(repoId, dataTxId, privateStateTxId)
         )
+
+        if (fork && parentRepoId && repoId !== parentRepoId) {
+          const renamed = await renameRepoDir(repoId, parentRepoId, repoId)
+
+          if (!renamed) throw new Error('Error loading the repository.')
+        }
 
         // Always checkout default master branch if available
         if (!repoFetchError && repoFetchResponse) {
-          const { error: branchError, result: currentBranch } = await getCurrentActiveBranch(repoId, name)
+          const { error: branchError, result: currentBranch } = await getCurrentActiveBranch(repoId)
           if (!branchError && currentBranch && branchName && currentBranch !== branchName) {
-            const { error: changeError } = await changeBranch(repoId, name, branchName)
+            const { error: changeError } = await changeBranch(repoId, branchName)
             checkedOutBranch = changeError ? currentBranch : (branchName as string)
           } else if (!branchError && currentBranch) {
             checkedOutBranch = currentBranch
           }
-        }
-
-        if (fork && parentRepoName && name !== parentRepoName) {
-          const renamed = await renameRepoDir(repoId, parentRepoName, name)
-
-          if (!renamed) throw new Error('Error loading the repository.')
         }
 
         if (repoFetchError || !repoFetchResponse) {
@@ -481,7 +481,7 @@ const createRepoCoreSlice: StateCreator<CombinedSlices, [['zustand/immer', never
       })
 
       const { error: repoFetchError, response: repoFetchResponse } = await withAsync(() =>
-        loadRepository(repo.id, repo.name, repo.dataTxId, repo.privateStateTxId)
+        loadRepository(repo.id, repo.dataTxId, repo.privateStateTxId)
       )
 
       if (repoFetchError) {
@@ -514,12 +514,7 @@ const createRepoCoreSlice: StateCreator<CombinedSlices, [['zustand/immer', never
 
       if (metaResponse) {
         const { error: repoFetchError, response: repoFetchResponse } = await withAsync(() =>
-          loadRepository(
-            metaResponse.result.id,
-            metaResponse.result.name,
-            metaResponse.result.dataTxId,
-            metaResponse.result.privateStateTxId
-          )
+          loadRepository(metaResponse.result.id, metaResponse.result.dataTxId, metaResponse.result.privateStateTxId)
         )
 
         if (repoFetchError) {
@@ -550,8 +545,7 @@ const createRepoCoreSlice: StateCreator<CombinedSlices, [['zustand/immer', never
         return
       }
 
-      const repoName = repo.name
-      const { error, response } = await withAsync(() => getOidOfHeadRef(repo.id, repoName))
+      const { error, response } = await withAsync(() => getOidOfHeadRef(repo.id))
 
       if (error) {
         set((state) => {
@@ -605,8 +599,7 @@ const createRepoCoreSlice: StateCreator<CombinedSlices, [['zustand/immer', never
           return
         }
 
-        const repoName = repo.name
-        const { error, response } = await withAsync(() => getFilesFromOid(repo.id, oid, repoName))
+        const { error, response } = await withAsync(() => getFilesFromOid(repo.id, oid))
 
         if (error) {
           set((state) => {
@@ -635,8 +628,7 @@ const createRepoCoreSlice: StateCreator<CombinedSlices, [['zustand/immer', never
           return null
         }
 
-        const repoName = repo.name
-        const { error, response } = await withAsync(() => getFileContentFromOid(repo.id, oid, repoName))
+        const { error, response } = await withAsync(() => getFileContentFromOid(repo.id, oid))
 
         if (error) {
           set((state) => {

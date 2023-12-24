@@ -33,7 +33,7 @@ const createBranchSlice: StateCreator<CombinedSlices, [['zustand/immer', never],
         return
       }
 
-      const { error, response } = await withAsync(() => getBranchList(repo.id, repo.name))
+      const { error, response } = await withAsync(() => getBranchList(repo.id))
 
       if (error) {
         set((state) => {
@@ -62,7 +62,7 @@ const createBranchSlice: StateCreator<CombinedSlices, [['zustand/immer', never],
         return
       }
 
-      const { error, result } = await getCurrentActiveBranch(repo.id, repo.name)
+      const { error, result } = await getCurrentActiveBranch(repo.id)
 
       if (error) {
         set((state) => {
@@ -88,7 +88,7 @@ const createBranchSlice: StateCreator<CombinedSlices, [['zustand/immer', never],
         return
       }
 
-      const { error } = await withAsync(() => addNewBranch(repo.id, repo.name, branchName))
+      const { error } = await withAsync(() => addNewBranch(repo.id, branchName))
 
       if (error) {
         set((state) => {
@@ -134,7 +134,7 @@ const createBranchSlice: StateCreator<CombinedSlices, [['zustand/immer', never],
         return
       }
 
-      const { error } = await changeBranch(repo.id, repo.name, branchName)
+      const { error } = await changeBranch(repo.id, branchName)
 
       if (error) {
         set((state) => {

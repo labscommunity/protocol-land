@@ -1,4 +1,4 @@
-import { evolveContract, postEvolve } from './actions/evolve'
+import { evolveContract } from './actions/evolve'
 import {
   addAssigneeToIssue,
   addCommentToIssue,
@@ -101,8 +101,6 @@ export async function handle(state: ContractState, action: RepositoryAction | Ev
       return await getUserDetails(state, action as RepositoryAction)
     case 'evolve':
       return await evolveContract(state, action as EvolveAction)
-    case 'postEvolve':
-      return await postEvolve(state, action as EvolveAction)
     default:
       throw new ContractError(`No function supplied or function not recognised`)
   }

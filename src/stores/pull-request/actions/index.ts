@@ -12,8 +12,8 @@ import { PRSideOptions } from '../types'
 export async function compareTwoBranches({ base, compare }: PRSideOptions) {
   const baseFS = fsWithName(base.id)
   const compareFS = fsWithName(compare.id)
-  const baseDir = `/${base.repoName}`
-  const compareDir = `/${compare.repoName}`
+  const baseDir = `/${base.id}`
+  const compareDir = `/${compare.id}`
 
   if (base.branch === compare.branch && base.id === compare.id) return []
 
@@ -27,26 +27,20 @@ export async function compareTwoBranches({ base, compare }: PRSideOptions) {
   })
 }
 
-export async function getChangedFiles(id: string, name: string, branchA: string, branchB: string) {
+export async function getChangedFiles(id: string, branchA: string, branchB: string) {
   const fs = fsWithName(id)
-  const dir = `/${name}`
+  const dir = `/${id}`
 
   if (branchA === branchB) return []
 
   return getStatusMatrixOfTwoBranches({ fs, dir, base: branchA, compare: branchB })
 }
 
-export async function traverseAndCopyForkObjects(
-  id: string,
-  name: string,
-  commits: CommitResult[],
-  targetId: string,
-  targetName: string
-) {
+export async function traverseAndCopyForkObjects(id: string, commits: CommitResult[], targetId: string) {
   const fs = fsWithName(id)
   const targetFs = fsWithName(targetId)
-  const dir = `/${name}`
-  const targetDir = `/${targetName}`
+  const dir = `/${id}`
+  const targetDir = `/${targetId}`
   const extractedOids = []
 
   for (const commit of commits) {
@@ -132,7 +126,6 @@ export async function traverseAndCopyForkObjects(
 export async function mergePR(
   repoId: string,
   prId: number,
-  name: string,
   branchA: string,
   branchB: string,
   author: string,
@@ -141,7 +134,7 @@ export async function mergePR(
   privateStateTxId: string | undefined
 ) {
   const fs = fsWithName(repoId)
-  const dir = `/${name}`
+  const dir = `/${repoId}`
 
   return mergePullRequest({
     fs,
