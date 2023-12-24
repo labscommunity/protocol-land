@@ -5,7 +5,6 @@ export type ContractState = {
   canEvolve: boolean
   evolve: null | any
   owner: Address
-  stateEvolve1: boolean
 }
 
 export type User = {
