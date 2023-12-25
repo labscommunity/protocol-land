@@ -181,7 +181,7 @@ export default function ArNSRegisterModal() {
                 <Dialog.Panel className="w-full max-w-md transform rounded-2xl bg-white p-6 text-left align-middle shadow-xl transition-all">
                   <div className="w-full flex justify-between align-middle">
                     <Dialog.Title as="h3" className="text-xl font-medium text-gray-900">
-                      {selectedRepo?.name}
+                      Setup ArNS
                     </Dialog.Title>
                     <SVG onClick={closeModal} src={CloseCrossIcon} className="w-6 h-6 cursor-pointer" />
                   </div>
@@ -215,7 +215,7 @@ export default function ArNSRegisterModal() {
                             </div>
                           </div>
                         )}
-                        <div className="flex flex-col mt-6 gap-3">
+                        <div className="flex flex-col mt-4 gap-3">
                           <div>
                             <label htmlFor="title" className="block mb-1 text-sm font-medium text-gray-600">
                               Name

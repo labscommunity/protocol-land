@@ -3,11 +3,11 @@ import { WarpFactory } from 'warp-contracts'
 import { DeployPlugin } from 'warp-contracts-plugin-deploy'
 
 import getWarpContract from '@/helpers/getWrapContract'
+import { Domain } from '@/types/repository'
 
 const warp = WarpFactory.forMainnet().use(new DeployPlugin())
 
-// const REGISTRY = 'bLAgYxAdX2Ry-nt6aH2ixgvJXbpsEYm28NgJgyqfs-U'
-const REGISTRY = 'kDnA4dbyrdeUON9f4AJEB2UMKaIkZ9FZoYlxigfCD-U'
+const REGISTRY = 'bLAgYxAdX2Ry-nt6aH2ixgvJXbpsEYm28NgJgyqfs-U'
 const ANT_SOURCE = 'H2uxnw_oVIEzXeBeYmxDgJuxPqwBCGPO4OmQzdWQu3U'
 
 const arweave = Arweave.init({})
@@ -23,7 +23,6 @@ function getWarpPstContract(contractTxId: string, signer?: any) {
 export async function searchArNSName(name: string) {
   const registry = getWarpPstContract(REGISTRY)
   const registryState = await registry.currentState()
-  console.log(registryState)
   if (registryState.records[name]) {
     return { success: false, message: `ArNS Name ${name} is already taken and is not available for purchase` }
   }
@@ -87,7 +86,7 @@ export async function registerArNSName({
     { disableBundling: true }
   )
 
-  return { success: true, ant, message: `Successfully registred ${name}.arweave.dev` }
+  return { success: true, ant, message: `Successfully registred ${name}` }
 }
 
 export async function updateArNSDomain({
@@ -113,7 +112,6 @@ export async function updateArNSDomain({
 }
 
 export async function getIOBalance(owner: string) {
-  return 1000000000000
   const response = await fetch(`https://api.arns.app/v1/contract/${REGISTRY}/balances/${owner}`)
   return +((await response.json())?.balance ?? 0).toFixed(2)
 }
@@ -121,15 +119,14 @@ export async function getIOBalance(owner: string) {
 export async function getArNSNameFees(name = '', years = 1) {
   if (name === '') return [0, 0]
 
-  // const response = await fetch(
-  //   `https://api.arns.app/v1/contract/${REGISTRY}/read/priceForInteraction?interactionName=buyRecord&name=${name}&years=${years}&type=lease&contractTxId=atomic`
-  // )
-  // if (response.status !== 200) {
-  //   throw new Error(await response.text())
-  // }
+  const response = await fetch(
+    `https://api.arns.app/v1/contract/${REGISTRY}/read/priceForInteraction?interactionName=buyRecord&name=${name}&years=${years}&type=lease&contractTxId=atomic`
+  )
+  if (response.status !== 200) {
+    throw new Error(await response.text())
+  }
 
-  // const price = +((await response.json())?.result?.price ?? 0).toFixed(2)
-  const price = 1000
+  const price = +((await response.json())?.result?.price ?? 0).toFixed(2)
   const fee = (await arweave.api.get(`price/${name.length}`)).data
   return [price, +arweave.ar.winstonToAr(fee, { decimals: 4 })]
 }
@@ -145,6 +142,16 @@ async function getANTsContractTxIds(owner: string) {
   const response = await fetch(`https://api.arns.app/v1/wallet/${owner}/contracts?type=ant`)
   const contractTxIds = (await response.json()).contractTxIds
   return contractTxIds as string[]
+}
+
+export async function getDomainStatus(domain: Domain) {
+  const response = await fetch(`https://${domain.name}.ar-io.dev`, { cache: 'reload' })
+  const isOnline = response.status === 200
+  let isUpdated = false
+  if (isOnline) {
+    isUpdated = response.headers.get('x-arns-resolved-id') === domain.txId
+  }
+  return { isOnline, isUpdated }
 }
 
 export async function getAllArNSNames(owner: string) {

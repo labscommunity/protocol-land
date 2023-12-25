@@ -1,5 +1,6 @@
 import { Dialog, Transition } from '@headlessui/react'
-import { useState } from 'react'
+import clsx from 'clsx'
+import { useEffect, useState } from 'react'
 import { Fragment } from 'react'
 import toast from 'react-hot-toast'
 import SVG from 'react-inlinesvg'
@@ -7,12 +8,15 @@ import SVG from 'react-inlinesvg'
 import CloseCrossIcon from '@/assets/icons/close-cross.svg'
 import { Button } from '@/components/common/buttons'
 import { withAsync } from '@/helpers/withAsync'
-import { updateArNSDomain } from '@/lib/dragondeploy/arns'
+import { getDomainStatus, updateArNSDomain } from '@/lib/dragondeploy/arns'
 import { useGlobalStore } from '@/stores/globalStore'
 
 export default function ArNSDomainModal() {
   const [isOpen, setIsOpen] = useState(false)
+  const [isOnline, setIsOnline] = useState(false)
+  const [isUpdated, setIsUpdated] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
+  const [intervalValue, setIntervalValue] = useState<number>()
 
   const [selectedRepo, updateDomain] = useGlobalStore((state) => [
     state.repoCoreState.selectedRepo.repo,
@@ -23,8 +27,6 @@ export default function ArNSDomainModal() {
   const deployment = selectedRepo?.deployments?.[deploymentCounts - 1]
   const domain = selectedRepo?.domains?.[0]
   const updateNeeded = deployment?.txId !== domain?.txId
-
-  console.log(domain)
 
   function closeModal() {
     setIsOpen(false)
@@ -51,19 +53,53 @@ export default function ArNSDomainModal() {
         throw updateDomainResult.error
       }
 
+      setIsUpdated(false)
+
       toast.success('Updated domain to the latest deployment')
     } catch (error) {
-      console.error(error)
       toast.error((error as any)?.message)
     } finally {
       setIsLoading(false)
     }
   }
 
+  async function checkDomain() {
+    if (domain) {
+      const { response, error } = await withAsync(() => getDomainStatus(domain))
+      if (!error) {
+        setIsOnline(!!response?.isOnline)
+        setIsUpdated(!!response?.isUpdated)
+      }
+      return response
+    }
+  }
+
+  useEffect(() => {
+    if (isOpen && domain) {
+      checkDomain()
+      const interval = setInterval(async (): Promise<void> => {
+        const response = await checkDomain()
+        if (response && response.isOnline && response.isUpdated) {
+          clearInterval(interval)
+        }
+      }, 60000)
+
+      setIntervalValue(interval as unknown as number)
+    }
+
+    return () => clearInterval(intervalValue)
+  }, [isOpen])
+
+  useEffect(() => {
+    if (!isOpen && intervalValue) {
+      clearInterval(intervalValue)
+    }
+  }, [isOpen])
+
   return (
     <>
       <Button variant="primary-solid" onClick={() => setIsOpen(true)}>
-        Domain Modal
+        Domain Settings
       </Button>
       <Transition appear show={isOpen} as={Fragment}>
         <Dialog as="div" className="relative z-10" onClose={closeModal}>
@@ -93,23 +129,31 @@ export default function ArNSDomainModal() {
                 <Dialog.Panel className="w-full max-w-md transform rounded-2xl bg-white p-6 text-left align-middle shadow-xl transition-all">
                   <div className="w-full flex justify-between align-middle">
                     <Dialog.Title as="h3" className="text-xl font-medium text-gray-900">
-                      {selectedRepo?.name}
+                      Domain Settings
                     </Dialog.Title>
                     <SVG onClick={closeModal} src={CloseCrossIcon} className="w-6 h-6 cursor-pointer" />
                   </div>
                   <Dialog.Description className="mt-4">
                     <div className="flex justify-center items-center w-full">
                       <div className="bg-white rounded-lg p-1 w-full">
-                        <p className="text-gray-600">Update ArNS domain for this repo deployment</p>
-                        <div className="flex flex-col gap-2 justify-between items-center mt-4">
-                          <a
-                            className="text-primary-600 hover:underline hover:text-primary-700"
-                            href={`https://${domain?.name}.arweave.dev`}
-                            target="_blank"
-                          >
-                            {domain?.name}.arweave.dev
-                          </a>
-                          <span>Domain is {updateNeeded ? 'not' : ''} upto-date with the latest deployment.</span>
+                        <p className="text-gray-600">Update ArNS domain to latest repo deployment</p>
+                        <div className="flex flex-col gap-2 justify-between mt-4">
+                          <div className="flex gap-1">
+                            <a
+                              className="text-primary-600 hover:underline hover:text-primary-700"
+                              href={`https://${domain?.name}.ar-io.dev`}
+                              target="_blank"
+                            >
+                              {domain?.name}.ar-io.dev
+                            </a>
+                            <div
+                              className={clsx(
+                                'h-[10px] w-[10px] rounded-full border border-slate-300',
+                                isOnline ? 'bg-green-600' : 'bg-red-600'
+                              )}
+                            ></div>
+                          </div>
+                          {!isUpdated && isOnline && <span>Update in progress...</span>}
                         </div>
                         <div className="flex flex-col gap-3 justify-center mt-6">
                           <div className="flex gap-2">

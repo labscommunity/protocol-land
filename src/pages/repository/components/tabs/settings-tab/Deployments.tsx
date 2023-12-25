@@ -5,8 +5,8 @@ import { HiChevronUpDown } from 'react-icons/hi2'
 import { IoCheckmark } from 'react-icons/io5'
 
 import { Button } from '@/components/common/buttons'
-import ArNSDomainModal from '@/components/DragonDeploy/ArNSDomainModal'
 import ArNSRegisterModal from '@/components/DragonDeploy/ArNSRegisterModal'
+import ArNSUpdateModal from '@/components/DragonDeploy/ArNSUpdateModal'
 import DragonDeploy from '@/components/DragonDeploy/DragonDeploy'
 import { withAsync } from '@/helpers/withAsync'
 import { useGlobalStore } from '@/stores/globalStore'
@@ -133,7 +133,7 @@ export default function Deployments() {
                 Save
               </Button>
               {repoContributor && <DragonDeploy />}
-              {repoContributor && hasDeployments && (hasDomains ? <ArNSDomainModal /> : <ArNSRegisterModal />)}
+              {repoContributor && hasDeployments && (hasDomains ? <ArNSUpdateModal /> : <ArNSRegisterModal />)}
             </div>
           </div>
         </div>
