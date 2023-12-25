@@ -99,7 +99,7 @@ export default function ArNSDomainModal() {
   return (
     <>
       <Button variant="primary-solid" onClick={() => setIsOpen(true)}>
-        Domain Settings
+        ArNS Domain
       </Button>
       <Transition appear show={isOpen} as={Fragment}>
         <Dialog as="div" className="relative z-10" onClose={closeModal}>
@@ -129,7 +129,7 @@ export default function ArNSDomainModal() {
                 <Dialog.Panel className="w-full max-w-md transform rounded-2xl bg-white p-6 text-left align-middle shadow-xl transition-all">
                   <div className="w-full flex justify-between align-middle">
                     <Dialog.Title as="h3" className="text-xl font-medium text-gray-900">
-                      Domain Settings
+                      ArNS Domain
                     </Dialog.Title>
                     <SVG onClick={closeModal} src={CloseCrossIcon} className="w-6 h-6 cursor-pointer" />
                   </div>
