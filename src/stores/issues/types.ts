@@ -18,6 +18,7 @@ export type IssuesActions = {
   createIssue: (title: string, description: string) => Promise<undefined | Issue>
   reopenIssue: (id: number) => Promise<void>
   closeIssue: (id: number) => Promise<void>
+  updateIssueDetails: (id: number, updateData: Partial<Issue>) => Promise<void>
   getAssigneesList: (id: number) => string[]
   addAssignee: (id: number, assignees: string[]) => Promise<void>
   addComment: (id: number, comment: string) => Promise<void>

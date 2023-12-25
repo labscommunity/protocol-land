@@ -2,7 +2,16 @@ import { StateCreator } from 'zustand'
 
 import { trackGoogleAnalyticsEvent } from '@/helpers/google-analytics'
 import { withAsync } from '@/helpers/withAsync'
-import { addContributor, updateRepoDescription, updateRepoName } from '@/lib/git'
+import {
+  addActivePubKeyToPrivateState,
+  addContributor,
+  addDeployment,
+  inviteContributor,
+  updateRepoDeploymentBranch,
+  updateRepoDescription,
+  updateRepoName
+} from '@/lib/git'
+import { Deployment } from '@/types/repository'
 
 import { changeBranch, getCurrentActiveBranch } from '../branch/actions'
 import { CombinedSlices } from '../types'
@@ -11,6 +20,9 @@ import {
   getFilesFromOid,
   getOidOfHeadRef,
   getRepositoryMetaFromContract,
+  handleAcceptContributor,
+  handleCancelContributorInvite,
+  handleRejectContributor,
   loadRepository,
   renameRepoDir,
   saveRepository
@@ -26,7 +38,9 @@ const initialRepoCoreState: RepoCoreState = {
       commits: [],
       pullRequests: [],
       issues: []
-    }
+    },
+    isInvitedContributor: false,
+    isPrivateRepo: false
   },
   parentRepo: {
     status: 'IDLE',
@@ -128,6 +142,30 @@ const createRepoCoreSlice: StateCreator<CombinedSlices, [['zustand/immer', never
         })
       }
     },
+    updateRepoDeploymentBranch: async (deploymentBranch: string) => {
+      const repo = get().repoCoreState.selectedRepo.repo
+
+      if (!repo) {
+        set((state) => (state.repoCoreState.git.status = 'ERROR'))
+
+        return
+      }
+
+      const { error } = await withAsync(() => updateRepoDeploymentBranch(deploymentBranch, repo.id))
+
+      if (!error) {
+        set((state) => {
+          state.repoCoreState.selectedRepo.repo!.deploymentBranch = deploymentBranch
+        })
+
+        trackGoogleAnalyticsEvent('Repository', 'Update default deployment branch', 'Update deployment branch', {
+          repo_name: repo.name,
+          repo_id: repo.id,
+          deploymentBranch,
+          result: 'SUCCESS'
+        })
+      }
+    },
     setRepoContributionStats: (data) => {
       set((state) => {
         state.repoCoreState.selectedRepo.statistics = data
@@ -157,6 +195,201 @@ const createRepoCoreSlice: StateCreator<CombinedSlices, [['zustand/immer', never
         })
       }
     },
+    addDeployment: async (deployment: Omit<Deployment, 'deployedBy' | 'branch' | 'timestamp'>) => {
+      const repo = get().repoCoreState.selectedRepo.repo
+
+      if (!repo) {
+        set((state) => (state.repoCoreState.git.status = 'ERROR'))
+
+        return
+      }
+
+      const { error, response } = await withAsync(() => addDeployment(deployment, repo.id))
+
+      if (!error && response) {
+        set((state) => {
+          state.repoCoreState.selectedRepo.repo!.deployments.push(response)
+        })
+
+        trackGoogleAnalyticsEvent('Repository', 'Add deployment to a repo', 'Add repo deployment', {
+          repo_name: repo.name,
+          repo_id: repo.id,
+          deployment,
+          result: 'SUCCESS'
+        })
+        return response
+      }
+    },
+    inviteContributor: async (address: string) => {
+      const repo = get().repoCoreState.selectedRepo.repo
+
+      if (!repo) {
+        set((state) => (state.repoCoreState.git.status = 'ERROR'))
+
+        return
+      }
+
+      const { error, response } = await withAsync(() => inviteContributor(address, repo.id))
+
+      if (!error && response) {
+        set((state) => {
+          state.repoCoreState.selectedRepo.repo!.contributorInvites = response
+        })
+
+        trackGoogleAnalyticsEvent('Repository', 'Invite contributor to a repo', 'Invite repo contributor', {
+          repo_name: repo.name,
+          repo_id: repo.id,
+          contributor_address: address,
+          result: 'SUCCESS'
+        })
+
+        return { status: true }
+      }
+
+      if (error) {
+        trackGoogleAnalyticsEvent('Repository', 'Invite contributor to a repo', 'Invite repo contributor', {
+          repo_name: repo.name,
+          repo_id: repo.id,
+          contributor_address: address,
+          result: 'FAILED'
+        })
+
+        return { status: false, response: error }
+      }
+    },
+    acceptContributor: async () => {
+      const repo = get().repoCoreState.selectedRepo.repo
+
+      if (!repo) {
+        set((state) => (state.repoCoreState.git.status = 'ERROR'))
+
+        return
+      }
+
+      const visibility = repo.private ? 'private' : 'public'
+      let privateStateTxId: string | null = null
+
+      if (repo.private && repo.privateStateTxId) {
+        const updatedPrivateStateTxId = await addActivePubKeyToPrivateState(repo.id, repo.privateStateTxId)
+
+        privateStateTxId = updatedPrivateStateTxId
+      }
+
+      const { error, response } = await withAsync(() => handleAcceptContributor(repo.id, visibility, privateStateTxId))
+
+      if (!error && response) {
+        if (!repo.private) {
+          set((state) => {
+            state.repoCoreState.selectedRepo.repo!.contributorInvites = response.contributorInvites
+            state.repoCoreState.selectedRepo.repo!.contributors = response.contributors
+          })
+        }
+        trackGoogleAnalyticsEvent('Repository', 'Accept contributor invite', 'Accept repo contributor invite', {
+          repo_name: repo.name,
+          repo_id: repo.id,
+          result: 'SUCCESS'
+        })
+      } else {
+        trackGoogleAnalyticsEvent('Repository', 'Accept contributor invite', 'Accept repo contributor invite', {
+          repo_name: repo.name,
+          repo_id: repo.id,
+          result: 'FAILED'
+        })
+      }
+    },
+    rejectContributor: async () => {
+      const repo = get().repoCoreState.selectedRepo.repo
+
+      if (!repo) {
+        set((state) => (state.repoCoreState.git.status = 'ERROR'))
+
+        return
+      }
+
+      const { error, response } = await withAsync(() => handleRejectContributor(repo.id))
+
+      if (!error && response) {
+        if (!repo.private) {
+          set((state) => {
+            state.repoCoreState.selectedRepo.repo!.contributorInvites = response.contributorInvites
+          })
+        }
+        trackGoogleAnalyticsEvent('Repository', 'Reject contributor invite', 'Reject repo contributor invite', {
+          repo_name: repo.name,
+          repo_id: repo.id,
+          result: 'SUCCESS'
+        })
+      } else {
+        trackGoogleAnalyticsEvent('Repository', 'Reject contributor invite', 'Reject repo contributor invite', {
+          repo_name: repo.name,
+          repo_id: repo.id,
+          result: 'FAILED'
+        })
+      }
+    },
+    cancelContributor: async (contributor) => {
+      const repo = get().repoCoreState.selectedRepo.repo
+
+      if (!repo) {
+        set((state) => (state.repoCoreState.git.status = 'ERROR'))
+
+        return
+      }
+
+      const { error, response } = await withAsync(() => handleCancelContributorInvite(repo.id, contributor))
+
+      if (!error && response) {
+        set((state) => {
+          state.repoCoreState.selectedRepo.repo!.contributorInvites = response
+        })
+
+        trackGoogleAnalyticsEvent('Repository', 'Cancel contributor invite', 'Cancel repo contributor invite', {
+          repo_name: repo.name,
+          repo_id: repo.id,
+          result: 'SUCCESS'
+        })
+      } else {
+        trackGoogleAnalyticsEvent('Repository', 'Cancel contributor invite', 'Cancel repo contributor invite', {
+          repo_name: repo.name,
+          repo_id: repo.id,
+          result: 'FAILED'
+        })
+      }
+    },
+    grantAccessToContributor: async () => {
+      const repo = get().repoCoreState.selectedRepo.repo
+
+      if (!repo) {
+        set((state) => (state.repoCoreState.git.status = 'ERROR'))
+
+        return
+      }
+
+      const visibility = repo.private ? 'private' : 'public'
+      let privateStateTxId: string | null = null
+
+      if (repo.private && repo.privateStateTxId) {
+        const updatedPrivateStateTxId = await addActivePubKeyToPrivateState(repo.id, repo.privateStateTxId)
+
+        privateStateTxId = updatedPrivateStateTxId
+      }
+
+      const { error } = await withAsync(() => handleAcceptContributor(repo.id, visibility, privateStateTxId))
+
+      if (!error) {
+        trackGoogleAnalyticsEvent('Repository', 'Accept contributor invite', 'Accept repo contributor invite', {
+          repo_name: repo.name,
+          repo_id: repo.id,
+          result: 'SUCCESS'
+        })
+      } else {
+        trackGoogleAnalyticsEvent('Repository', 'Accept contributor invite', 'Accept repo contributor invite', {
+          repo_name: repo.name,
+          repo_id: repo.id,
+          result: 'FAILED'
+        })
+      }
+    },
     fetchAndLoadRepository: async (id: string, branchName?: string) => {
       branchName = branchName || 'master'
       let checkedOutBranch = ''
@@ -167,12 +400,28 @@ const createRepoCoreSlice: StateCreator<CombinedSlices, [['zustand/immer', never
 
         const { error: metaError, response: metaResponse } = await withAsync(() => getRepositoryMetaFromContract(id))
 
-        if (metaError || !metaResponse) {
+        if (metaError || !metaResponse || !metaResponse.result) {
           throw new Error('Error fetching repository meta.')
         }
 
-        const { id: repoId, name, dataTxId, fork, parent } = metaResponse.result
-        let parentRepoName = null
+        set((state) => {
+          state.repoCoreState.selectedRepo.repo = metaResponse.result
+        })
+
+        const { id: repoId, dataTxId, fork, parent, privateStateTxId, contributorInvites } = metaResponse.result
+
+        const address = await window.arweaveWallet.getActiveAddress()
+
+        if (address) {
+          const invite = contributorInvites.find((invite) => invite.address === address && invite.status === 'INVITED')
+
+          set((state) => {
+            state.repoCoreState.selectedRepo.isInvitedContributor = invite && invite.status === 'INVITED' ? true : false
+            state.repoCoreState.selectedRepo.isPrivateRepo = privateStateTxId ? true : false
+          })
+        }
+
+        let parentRepoId = null
 
         if (fork) {
           const { error: parentMetaError, response: parentMetaResponse } = await withAsync(() =>
@@ -183,32 +432,32 @@ const createRepoCoreSlice: StateCreator<CombinedSlices, [['zustand/immer', never
             throw new Error('Error fetching repository meta.')
           }
 
-          if (name !== parentMetaResponse.result.name) {
-            parentRepoName = parentMetaResponse.result.name
+          if (repoId !== parentMetaResponse.result.id) {
+            parentRepoId = parentMetaResponse.result.id
           }
 
           await get().repoCoreActions.fetchAndLoadParentRepository(parentMetaResponse.result)
         }
 
         const { error: repoFetchError, response: repoFetchResponse } = await withAsync(() =>
-          loadRepository(repoId, name, dataTxId)
+          loadRepository(repoId, dataTxId, privateStateTxId)
         )
+
+        if (fork && parentRepoId && repoId !== parentRepoId) {
+          const renamed = await renameRepoDir(repoId, parentRepoId, repoId)
+
+          if (!renamed) throw new Error('Error loading the repository.')
+        }
 
         // Always checkout default master branch if available
         if (!repoFetchError && repoFetchResponse) {
-          const { error: branchError, result: currentBranch } = await getCurrentActiveBranch(repoId, name)
+          const { error: branchError, result: currentBranch } = await getCurrentActiveBranch(repoId)
           if (!branchError && currentBranch && branchName && currentBranch !== branchName) {
-            const { error: changeError } = await changeBranch(repoId, name, branchName)
+            const { error: changeError } = await changeBranch(repoId, branchName)
             checkedOutBranch = changeError ? currentBranch : (branchName as string)
           } else if (!branchError && currentBranch) {
             checkedOutBranch = currentBranch
           }
-        }
-
-        if (fork && parentRepoName && name !== parentRepoName) {
-          const renamed = await renameRepoDir(repoId, parentRepoName, name)
-
-          if (!renamed) throw new Error('Error loading the repository.')
         }
 
         if (repoFetchError || !repoFetchResponse) {
@@ -216,7 +465,6 @@ const createRepoCoreSlice: StateCreator<CombinedSlices, [['zustand/immer', never
         }
 
         set((state) => {
-          state.repoCoreState.selectedRepo.repo = metaResponse.result
           state.repoCoreState.selectedRepo.status = 'SUCCESS'
         })
       } catch (error: any) {
@@ -233,7 +481,7 @@ const createRepoCoreSlice: StateCreator<CombinedSlices, [['zustand/immer', never
       })
 
       const { error: repoFetchError, response: repoFetchResponse } = await withAsync(() =>
-        loadRepository(repo.id, repo.name, repo.dataTxId)
+        loadRepository(repo.id, repo.dataTxId, repo.privateStateTxId)
       )
 
       if (repoFetchError) {
@@ -266,7 +514,7 @@ const createRepoCoreSlice: StateCreator<CombinedSlices, [['zustand/immer', never
 
       if (metaResponse) {
         const { error: repoFetchError, response: repoFetchResponse } = await withAsync(() =>
-          loadRepository(metaResponse.result.id, metaResponse.result.name, metaResponse.result.dataTxId)
+          loadRepository(metaResponse.result.id, metaResponse.result.dataTxId, metaResponse.result.privateStateTxId)
         )
 
         if (repoFetchError) {
@@ -297,8 +545,7 @@ const createRepoCoreSlice: StateCreator<CombinedSlices, [['zustand/immer', never
         return
       }
 
-      const repoName = repo.name
-      const { error, response } = await withAsync(() => getOidOfHeadRef(repo.id, repoName))
+      const { error, response } = await withAsync(() => getOidOfHeadRef(repo.id))
 
       if (error) {
         set((state) => {
@@ -352,8 +599,7 @@ const createRepoCoreSlice: StateCreator<CombinedSlices, [['zustand/immer', never
           return
         }
 
-        const repoName = repo.name
-        const { error, response } = await withAsync(() => getFilesFromOid(repo.id, oid, repoName))
+        const { error, response } = await withAsync(() => getFilesFromOid(repo.id, oid))
 
         if (error) {
           set((state) => {
@@ -382,8 +628,7 @@ const createRepoCoreSlice: StateCreator<CombinedSlices, [['zustand/immer', never
           return null
         }
 
-        const repoName = repo.name
-        const { error, response } = await withAsync(() => getFileContentFromOid(repo.id, oid, repoName))
+        const { error, response } = await withAsync(() => getFileContentFromOid(repo.id, oid))
 
         if (error) {
           set((state) => {

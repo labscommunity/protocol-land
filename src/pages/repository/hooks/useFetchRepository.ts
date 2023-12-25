@@ -8,7 +8,7 @@ import { fsWithName } from '@/lib/git/helpers/fsWithName'
 export default function useFetchRepository() {
   const [fetchRepoStatus, setFetchRepoStatus] = React.useState<ApiStatus>('IDLE')
 
-  const initFetchRepo = async (id: string, name: string, dataTxId: string) => {
+  const initFetchRepo = async (id: string, dataTxId: string) => {
     if (fetchRepoStatus !== 'PENDING') setFetchRepoStatus('PENDING')
 
     await unmountRepo(id)
@@ -19,7 +19,7 @@ export default function useFetchRepository() {
       setFetchRepoStatus('ERROR')
     } else if (response) {
       const fs = fsWithName(id)
-      const dir = `/${name}`
+      const dir = `/${id}`
 
       const repoArrayBuf = await response.arrayBuffer()
       const success = await importRepoFromBlob(fs, dir, new Blob([repoArrayBuf]))

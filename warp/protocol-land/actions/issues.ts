@@ -1,4 +1,4 @@
-import { Bounty, Comment, ContractResult, ContractState, Issue, RepositoryAction } from '../types'
+import { Bounty, ContractResult, ContractState, Issue, IssueActivity, RepositoryAction } from '../types'
 
 declare const ContractError
 
@@ -6,7 +6,7 @@ export async function createNewIssue(
   state: ContractState,
   { caller, input: { payload } }: RepositoryAction
 ): Promise<ContractResult<ContractState>> {
-  if (!payload.repoId || !payload.title || !payload.description) {
+  if (!payload.repoId || !payload.title) {
     throw new ContractError('Invalid inputs supplied.')
   }
 
@@ -20,11 +20,11 @@ export async function createNewIssue(
     id: 1,
     repoId: payload.repoId,
     title: payload.title,
-    description: payload.description,
+    description: payload.description ?? '',
     author: caller,
     status: 'OPEN',
     assignees: [],
-    comments: [],
+    activities: [],
     bounties: [],
     timestamp: Date.now()
   }
@@ -104,7 +104,73 @@ export async function updateIssueStatus(
     throw new ContractError('Issue not found.')
   }
 
-  issue.status = payload.status
+  const validStatusValues = ['COMPLETED', 'REOPEN']
+  if (!validStatusValues.includes(payload.status)) {
+    throw new ContractError('Invalid issue status specified. Must be one of: ' + validStatusValues.join(', '))
+  }
+
+  if (issue.status === payload.status) {
+    throw new ContractError('Issue status is already set to the specified status.')
+  }
+
+  if (issue.status === 'OPEN' && payload.status === 'REOPEN') {
+    throw new ContractError('Issue status is already set to OPEN')
+  }
+
+  const activity: IssueActivity = {
+    type: 'STATUS',
+    author: caller,
+    timestamp: Date.now(),
+    status: payload.status
+  }
+
+  issue.status = issue.status === 'COMPLETED' && payload.status === 'REOPEN' ? 'OPEN' : 'COMPLETED'
+  issue.activities.push(activity)
+
+  if (issue.status === 'COMPLETED') {
+    issue.completedTimestamp = Date.now()
+  }
+
+  return { state }
+}
+
+export async function updateIssueDetails(
+  state: ContractState,
+  { caller, input: { payload } }: RepositoryAction
+): Promise<ContractResult<ContractState>> {
+  if (!payload.repoId || !payload.issueId) {
+    throw new ContractError('repoId and issueId are required.')
+  }
+
+  if (!payload.title && !payload.description) {
+    throw new ContractError('Either title or description should be present.')
+  }
+
+  const repo = state.repos[payload.repoId]
+
+  if (!repo) {
+    throw new ContractError('Repository not found.')
+  }
+
+  const hasPermissions = caller === repo.owner || repo.contributors.indexOf(caller) > -1
+
+  if (!hasPermissions) {
+    throw new ContractError('Error: You dont have permissions for this operation.')
+  }
+
+  const issue = repo.issues[+payload.issueId - 1]
+
+  if (!issue) {
+    throw new ContractError('Issue not found.')
+  }
+
+  if (payload.title) {
+    issue.title = payload.title
+  }
+
+  if (payload.description) {
+    issue.description = payload.description
+  }
 
   return { state }
 }
@@ -172,17 +238,14 @@ export async function addCommentToIssue(
     throw new ContractError('Issue not found.')
   }
 
-  const comment: Comment = {
+  const comment: IssueActivity = {
+    type: 'COMMENT',
     author: caller,
     description: payload.comment,
     timestamp: Date.now()
   }
 
-  if (!issue?.comments) {
-    issue.comments = []
-  }
-
-  issue.comments.push(comment)
+  issue.activities.push(comment)
 
   return { state }
 }

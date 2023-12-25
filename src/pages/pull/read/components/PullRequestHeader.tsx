@@ -4,8 +4,10 @@ import { RiGitClosePullRequestLine } from 'react-icons/ri'
 import { useNavigate } from 'react-router-dom'
 
 import { Button } from '@/components/common/buttons'
+import PrTitle from '@/components/IssuePr/Title'
 import { shortenAddress } from '@/helpers/shortenAddress'
-import { PullRequest, PullRequestStatus } from '@/types/repository'
+import { rootTabConfig } from '@/pages/repository/config/rootTabConfig'
+import { PullRequest, PullRequestStatus, Repo } from '@/types/repository'
 
 const statusMap = {
   OPEN: ({ status }: { status: PullRequestStatus }) => (
@@ -25,12 +27,31 @@ const statusMap = {
   )
 }
 
-export default function PullRequestHeader({ PR }: { PR: PullRequest }) {
+export default function PullRequestHeader({
+  PR,
+  repo,
+  compareRepoOwner
+}: {
+  PR: PullRequest
+  repo: Repo
+  compareRepoOwner: string
+}) {
   const StatusComponent = statusMap[PR.status]
   const navigate = useNavigate()
+  const isMergeInSameRepo = PR.baseRepo.repoId === PR.compareRepo.repoId
 
   function goBack() {
     navigate(`/repository/${PR.repoId}/pulls`)
+  }
+
+  function gotoBranch(id: string, branchName: string) {
+    navigate(rootTabConfig[0].getPath(id, branchName))
+  }
+
+  function gotoUser(userAddress: string) {
+    if (userAddress) {
+      navigate(`/user/${userAddress}`)
+    }
   }
 
   return (
@@ -40,15 +61,30 @@ export default function PullRequestHeader({ PR }: { PR: PullRequest }) {
           <FaArrowLeft className="h-4 w-4 text-white" />
         </Button>
       </div>
-      <h1 className="text-3xl text-gray-900">
-        {PR?.title} <span className="text-primary-600 ml-2">#{PR?.id}</span>
-      </h1>
+      <PrTitle issueOrPr={PR} />
       <div className="flex items-center gap-4">
         {PR && <StatusComponent status={PR!.status} />}
         <div className="text-gray-900 text-lg">
-          <span className="font-medium">{PR?.author && shortenAddress(PR?.author)} </span>
-          wants to merge <span className="text-primary-600 bg-primary-200 px-1">{PR?.compareBranch}</span> into{' '}
-          <span className="text-primary-600 bg-primary-200 px-1">{PR?.baseBranch}</span>
+          <span
+            className="font-medium cursor-pointer hover:underline hover:text-primary-700"
+            onClick={() => gotoUser(PR?.author)}
+          >
+            {PR?.author && shortenAddress(PR?.author)}
+          </span>{' '}
+          wants to merge{' '}
+          <span
+            className="text-primary-600 bg-primary-200 px-1 cursor-pointer"
+            onClick={() => gotoBranch(PR.compareRepo.repoId, PR?.compareBranch)}
+          >
+            {isMergeInSameRepo ? PR?.compareBranch : `${shortenAddress(compareRepoOwner)}:${PR?.compareBranch}`}
+          </span>{' '}
+          into{' '}
+          <span
+            className="text-primary-600 bg-primary-200 px-1 cursor-pointer"
+            onClick={() => gotoBranch(PR.baseRepo.repoId, PR?.baseBranch)}
+          >
+            {isMergeInSameRepo ? PR?.baseBranch : `${shortenAddress(repo.owner)}:${PR?.baseBranch}`}
+          </span>
         </div>
       </div>
     </div>

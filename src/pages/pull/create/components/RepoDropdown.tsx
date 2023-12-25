@@ -15,7 +15,7 @@ type Props = {
 
 export default function RepoDropdown({ selectedItem, setSelectedItem, items, label, disabled = false }: Props) {
   function repoObjToRepoName(repo: Repo) {
-    return `${shortenAddress(repo.owner, 5)}/${repo.name}`
+    return `${shortenAddress(repo?.owner || '', 5)}/${repo.name}`
   }
 
   return (
@@ -48,7 +48,9 @@ export default function RepoDropdown({ selectedItem, setSelectedItem, items, lab
               >
                 {({ selected }) => (
                   <>
-                    <span className={`block truncate ${selected ? 'font-medium' : 'font-normal'}`}>{repoObjToRepoName(item)}</span>
+                    <span className={`block truncate ${selected ? 'font-medium' : 'font-normal'}`}>
+                      {repoObjToRepoName(item)}
+                    </span>
                   </>
                 )}
               </Listbox.Option>

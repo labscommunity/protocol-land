@@ -3,6 +3,7 @@ import { InjectedArweaveSigner } from 'warp-contracts-plugin-signature'
 import { CONTRACT_TX_ID } from '@/helpers/constants'
 import getWarpContract from '@/helpers/getWrapContract'
 import { postIssueStatDataTxToArweave } from '@/lib/user'
+import { Issue } from '@/types/repository'
 
 export async function createNewIssue(title: string, description: string, repoId: string, address: string) {
   const userSigner = new InjectedArweaveSigner(window.arweaveWallet)
@@ -105,6 +106,22 @@ export async function closeIssue(repoId: string, issueId: number) {
       status: 'COMPLETED'
     }
   })
+
+  const {
+    cachedValue: {
+      state: { repos }
+    }
+  } = await contract.readState()
+
+  const issues = repos[repoId]?.issues
+
+  if (!issues) return
+
+  const issue = issues[issueId - 1]
+
+  if (!issue) return
+
+  return issue
 }
 
 export async function reopenIssue(repoId: string, issueId: number) {
@@ -118,8 +135,48 @@ export async function reopenIssue(repoId: string, issueId: number) {
     payload: {
       repoId,
       issueId,
-      status: 'OPEN'
+      status: 'REOPEN'
     }
+  })
+
+  const {
+    cachedValue: {
+      state: { repos }
+    }
+  } = await contract.readState()
+
+  const issues = repos[repoId]?.issues
+
+  if (!issues) return
+
+  const issue = issues[issueId - 1]
+
+  if (!issue) return
+
+  return issue
+}
+
+export async function updateIssueDetails(repoId: string, issueId: number, issue: Partial<Issue>) {
+  const userSigner = new InjectedArweaveSigner(window.arweaveWallet)
+  await userSigner.setPublicKey()
+
+  const contract = getWarpContract(CONTRACT_TX_ID, userSigner)
+  let payload = {
+    repoId,
+    issueId
+  } as any
+
+  if (issue.title) {
+    payload = { ...payload, title: issue.title }
+  }
+
+  if (issue.description) {
+    payload = { ...payload, description: issue.description }
+  }
+
+  await contract.writeInteraction({
+    function: 'updateIssueDetails',
+    payload: payload
   })
 }
 

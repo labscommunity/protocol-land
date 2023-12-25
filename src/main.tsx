@@ -14,7 +14,15 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
   <ArweaveWalletKit
     config={{
       strategies: [new ArConnectStrategy(), new BrowserWalletStrategy()],
-      permissions: ['ACCESS_ADDRESS', 'SIGN_TRANSACTION', 'ACCESS_PUBLIC_KEY', 'SIGNATURE', 'DISPATCH'],
+      permissions: [
+        'ACCESS_ADDRESS',
+        'SIGN_TRANSACTION',
+        'ACCESS_PUBLIC_KEY',
+        'SIGNATURE',
+        'DISPATCH',
+        'DECRYPT',
+        'ENCRYPT'
+      ],
       ensurePermissions: true
     }}
     theme={{

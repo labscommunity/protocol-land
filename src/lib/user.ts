@@ -105,7 +105,7 @@ export async function computeContributionsFromRepo(
     if ((!name && !description) || !id || !dataTxId) continue
 
     try {
-      await unmountRepoFromBrowser(name)
+      await unmountRepoFromBrowser(id)
     } catch (error) {
       //fail silently
       console.error(error)
@@ -117,7 +117,7 @@ export async function computeContributionsFromRepo(
       if (error || !response) continue
 
       const fs = fsWithName(id)
-      const dir = `/${name}`
+      const dir = `/${id}`
 
       const repoArrayBuf = await response.arrayBuffer()
       const success = await importRepoFromBlob(fs, dir, new Blob([repoArrayBuf]))
@@ -166,7 +166,7 @@ export async function computeContributionsFromRepo(
     } catch (err) {
       console.error(err)
     } finally {
-      await unmountRepoFromBrowser(name)
+      await unmountRepoFromBrowser(id)
     }
 
     if (repo.pullRequests) {

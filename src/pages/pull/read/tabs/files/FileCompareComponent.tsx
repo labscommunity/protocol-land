@@ -17,7 +17,7 @@ type Props = {
   repoId: string
 }
 
-export default function FileCompareComponent({ fileStatus, base, compare, repoName, repoId }: Props) {
+export default function FileCompareComponent({ fileStatus, base, compare, repoId }: Props) {
   const [baseValue, setBaseValue] = useState('')
   const [compareValue, setCompareValue] = useState('')
 
@@ -27,7 +27,7 @@ export default function FileCompareComponent({ fileStatus, base, compare, repoNa
 
   async function initReadFromFilesToCompare() {
     const fs = fsWithName(repoId)
-    const dir = `/${repoName}`
+    const dir = `/${repoId}`
 
     const { error: compareErr, response: compareResponse } = await withAsync(() =>
       readFileFromRef({ fs, dir, ref: compare, filePath: fileStatus[0] })
@@ -47,7 +47,7 @@ export default function FileCompareComponent({ fileStatus, base, compare, repoNa
 
   const Original = CodeMirrorMerge.Original
   const Modified = CodeMirrorMerge.Modified
-  
+
   return (
     <div className="w-full flex flex-col border-gray-300 border-[1px] rounded-t-xl">
       <div className="flex font-medium bg-gray-200 text-gray-900 px-4 py-3 border-b-[1px] border-gray-300 rounded-t-xl overflow-hidden">

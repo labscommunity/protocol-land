@@ -7,6 +7,7 @@ import { trackGoogleAnalyticsEvent } from '@/helpers/google-analytics'
 import { waitFor } from '@/helpers/waitFor'
 import { withAsync } from '@/helpers/withAsync'
 import { useGlobalStore } from '@/stores/globalStore'
+import { PullRequest } from '@/types/repository'
 
 import { postPRStatDataTxToArweave } from '../user'
 import { postUpdatedRepo } from '.'
@@ -43,7 +44,7 @@ export async function postNewPullRequest({
   const address = useGlobalStore.getState().authState.address
 
   const baseFS = fsWithName(baseRepo.repoId)
-  const baseDir = `/${baseRepo.repoName}`
+  const baseDir = `/${baseRepo.repoId}`
 
   const oid = await git.resolveRef({ fs: baseFS, dir: baseDir, ref: baseBranch })
 
@@ -141,7 +142,9 @@ export async function mergePullRequest({
   dryRun,
   repoId,
   prId,
-  fork
+  fork,
+  isPrivate,
+  privateStateTxId
 }: MergePullRequestOptions) {
   const { error } = await withAsync(() =>
     git.merge({
@@ -173,7 +176,7 @@ export async function mergePullRequest({
     if (fork) {
       await deleteBranch({ fs, dir, name: compare })
     }
-    await postUpdatedRepo({ fs, dir, owner: author, id: repoId })
+    await postUpdatedRepo({ fs, dir, owner: author, id: repoId, isPrivate, privateStateTxId })
 
     await waitFor(1000)
 
@@ -208,6 +211,30 @@ export async function closePullRequest({ repoId, prId }: { repoId: string; prId:
       prId,
       status: 'CLOSED'
     }
+  })
+}
+
+export async function updatePullRequestDetails(repoId: string, prId: number, pullRequest: Partial<PullRequest>) {
+  const userSigner = new InjectedArweaveSigner(window.arweaveWallet)
+  await userSigner.setPublicKey()
+
+  const contract = getWarpContract(CONTRACT_TX_ID, userSigner)
+  let payload = {
+    repoId,
+    prId
+  } as any
+
+  if (pullRequest.title) {
+    payload = { ...payload, title: pullRequest.title }
+  }
+
+  if (pullRequest.description) {
+    payload = { ...payload, description: pullRequest.description }
+  }
+
+  await contract.writeInteraction({
+    function: 'updatePullRequestDetails',
+    payload: payload
   })
 }
 
@@ -294,6 +321,8 @@ type MergePullRequestOptions = {
   repoId: string
   prId: number
   fork: boolean
+  isPrivate: boolean
+  privateStateTxId?: string
 }
 
 type GetStatusMatrixOfTwoBranchesOptions = {

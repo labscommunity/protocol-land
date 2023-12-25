@@ -5,17 +5,30 @@ import {
   createNewBounty,
   createNewIssue,
   updateBounty,
+  updateIssueDetails,
   updateIssueStatus
 } from './actions/issues'
-import { addReviewersToPR, approvePR, createNewPullRequest, updatePullRequestStatus } from './actions/pull-requests'
 import {
+  addReviewersToPR,
+  approvePR,
+  createNewPullRequest,
+  updatePullRequestDetails,
+  updatePullRequestStatus
+} from './actions/pull-requests'
+import {
+  acceptContributorInvite,
   addContributor,
+  addDeployment,
+  cancelContributorInvite,
   forkRepository,
   getAllRepositoriesByContributor,
   getAllRepositoriesByOwner,
   getRepository,
   initializeNewRepository,
+  inviteContributor,
   isRepositoryNameAvailable,
+  rejectContributorInvite,
+  updatePrivateStateTx,
   updateRepositoryDetails,
   updateRepositoryTxId
 } from './actions/repository'
@@ -44,12 +57,26 @@ export async function handle(state: ContractState, action: RepositoryAction | Ev
       return await updateRepositoryDetails(state, action as RepositoryAction)
     case 'isRepositoryNameAvailable':
       return await isRepositoryNameAvailable(state, action as RepositoryAction)
+    case 'addDeployment':
+      return await addDeployment(state, action as RepositoryAction)
     case 'addContributor':
       return await addContributor(state, action as RepositoryAction)
+    case 'inviteContributor':
+      return await inviteContributor(state, action as RepositoryAction)
+    case 'acceptContributorInvite':
+      return await acceptContributorInvite(state, action as RepositoryAction)
+    case 'rejectContributorInvite':
+      return await rejectContributorInvite(state, action as RepositoryAction)
+    case 'cancelContributorInvite':
+      return await cancelContributorInvite(state, action as RepositoryAction)
+    case 'updatePrivateStateTx':
+      return await updatePrivateStateTx(state, action as RepositoryAction)
     case 'createPullRequest':
       return await createNewPullRequest(state, action as RepositoryAction)
     case 'updatePullRequestStatus':
       return await updatePullRequestStatus(state, action as RepositoryAction)
+    case 'updatePullRequestDetails':
+      return await updatePullRequestDetails(state, action as RepositoryAction)
     case 'addReviewersToPR':
       return await addReviewersToPR(state, action as RepositoryAction)
     case 'approvePR':
@@ -58,6 +85,8 @@ export async function handle(state: ContractState, action: RepositoryAction | Ev
       return await createNewIssue(state, action as RepositoryAction)
     case 'updateIssueStatus':
       return await updateIssueStatus(state, action as RepositoryAction)
+    case 'updateIssueDetails':
+      return await updateIssueDetails(state, action as RepositoryAction)
     case 'addAssigneeToIssue':
       return await addAssigneeToIssue(state, action as RepositoryAction)
     case 'addCommentToIssue':

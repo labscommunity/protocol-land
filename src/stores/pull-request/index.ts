@@ -2,7 +2,8 @@ import { StateCreator } from 'zustand'
 
 import { trackGoogleAnalyticsEvent } from '@/helpers/google-analytics'
 import { withAsync } from '@/helpers/withAsync'
-import { addReviewersToPR, approvePR, closePullRequest } from '@/lib/git/pull-request'
+import { addReviewersToPR, approvePR, closePullRequest, updatePullRequestDetails } from '@/lib/git/pull-request'
+import { PullRequest } from '@/types/repository'
 
 import { CombinedSlices } from '../types'
 import { compareTwoBranches, getChangedFiles, mergePR, traverseAndCopyForkObjects } from './actions'
@@ -50,13 +51,7 @@ const createPullRequestSlice: StateCreator<CombinedSlices, [['zustand/immer', ne
 
       const commits = get().pullRequestState.commits
       const { response, error } = await withAsync(() =>
-        traverseAndCopyForkObjects(
-          PR.compareRepo.repoId,
-          PR.compareRepo.repoName,
-          commits,
-          parentRepo.id,
-          parentRepo.name
-        )
+        traverseAndCopyForkObjects(PR.compareRepo.repoId, commits, parentRepo.id)
       )
 
       if (error || !response) {
@@ -159,7 +154,7 @@ const createPullRequestSlice: StateCreator<CombinedSlices, [['zustand/immer', ne
         return
       }
 
-      const { error, response } = await withAsync(() => getChangedFiles(repo.id, repo.name, branchA, branchB))
+      const { error, response } = await withAsync(() => getChangedFiles(repo.id, branchA, branchB))
 
       if (error) {
         set((state) => {
@@ -220,7 +215,7 @@ const createPullRequestSlice: StateCreator<CombinedSlices, [['zustand/immer', ne
       }
 
       const { error } = await withAsync(() =>
-        mergePR(repo.id, id, repo.name, baseBranch, compareBranch, author!, isFork)
+        mergePR(repo.id, id, baseBranch, compareBranch, author!, isFork, repo.private, repo.privateStateTxId)
       )
 
       if (!error) {
@@ -272,6 +267,41 @@ const createPullRequestSlice: StateCreator<CombinedSlices, [['zustand/immer', ne
 
       if (error) {
         trackGoogleAnalyticsEvent('Repository', 'Close a PR', 'Close PR', {
+          repo_name: repo.name,
+          repo_id: repo.id,
+          pr_id: id,
+          result: 'FAILED'
+        })
+        throw error
+      }
+    },
+    updatePullRequestDetails: async (id, updateData: Partial<PullRequest>) => {
+      const repo = get().repoCoreState.selectedRepo.repo
+
+      if (!repo) {
+        set((state) => (state.pullRequestState.status = 'ERROR'))
+
+        return
+      }
+
+      const { error } = await withAsync(() => updatePullRequestDetails(repo.id, id, updateData))
+
+      if (!error) {
+        set((state) => {
+          const pr = state.repoCoreState.selectedRepo.repo!.pullRequests[id - 1]
+          state.repoCoreState.selectedRepo.repo!.pullRequests[id - 1] = { ...pr, ...updateData }
+        })
+
+        trackGoogleAnalyticsEvent('Repository', 'Update a PR', 'Update PR', {
+          repo_name: repo.name,
+          repo_id: repo.id,
+          pr_id: id,
+          result: 'SUCCESS'
+        })
+      }
+
+      if (error) {
+        trackGoogleAnalyticsEvent('Repository', 'Update an PR', 'Update PR', {
           repo_name: repo.name,
           repo_id: repo.id,
           pr_id: id,

@@ -11,12 +11,14 @@ const VARIANTS = {
   solid: 'bg-[#4388f6] text-base tracking-wide text-white',
   'primary-solid':
     'bg-primary-600 text-white hover:bg-primary-500 shadow-[0px_2px_4px_0px_rgba(0,0,0,0.05)] active:bg-primary-700 active:shadow-[0px_2px_6px_0px_rgba(0,0,0,0.05)]',
-  'primary-outline': 'border-[1.5px] border-primary-600 bg-white text-primary-700 shadow-[0px_2px_4px_0px_rgba(0,0,0,0.05)] hover:bg-primary-50 active:bg-primary-100 active:shadow-[0px_2px_6px_0px_rgba(0,0,0,0.05)]',
-  'secondary': 'border-[1px] bg-white border-gray-300 text-gray-900 shadow-[0px_2px_4px_0px_rgba(0,0,0,0.05)] hover:bg-gray-50 active:shadow-[0px_2px_6px_0px_rgba(0,0,0,0.05)] active:bg-gray-100'
+  'primary-outline':
+    'border-[1.5px] border-primary-600 disabled:border-gray-300 bg-white text-primary-700 shadow-[0px_2px_4px_0px_rgba(0,0,0,0.05)] hover:bg-primary-50 active:bg-primary-100 active:shadow-[0px_2px_6px_0px_rgba(0,0,0,0.05)]',
+  secondary:
+    'border-[1px] bg-white border-gray-300 text-gray-900 shadow-[0px_2px_4px_0px_rgba(0,0,0,0.05)] hover:bg-gray-50 active:shadow-[0px_2px_6px_0px_rgba(0,0,0,0.05)] active:bg-gray-100'
 }
 
 export default function Button<C extends React.ElementType = 'button'>(props: ButtonProps<C>) {
-  const { children, as, className, variant, ...buttonProps } = props
+  const { children, as, className, variant, loadingText, ...buttonProps } = props
   const Component = as || 'button'
 
   const buttonClasses =
@@ -39,7 +41,7 @@ export default function Button<C extends React.ElementType = 'button'>(props: Bu
               d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
             ></path>
           </svg>
-          Processing
+          {loadingText ?? 'Processing'}
         </>
       )}
       {!props.isLoading && children}

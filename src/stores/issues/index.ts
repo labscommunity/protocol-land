@@ -12,7 +12,8 @@ import {
   closeBounty,
   closeIssue,
   createNewIssue,
-  reopenIssue
+  reopenIssue,
+  updateIssueDetails
 } from './actions'
 import { IssuesSlice, IssuesState } from './types'
 
@@ -80,11 +81,17 @@ const createPullRequestSlice: StateCreator<CombinedSlices, [['zustand/immer', ne
         return
       }
 
-      const { error } = await withAsync(() => reopenIssue(repo.id, id))
+      const { error, response } = await withAsync(() => reopenIssue(repo.id, id))
 
-      if (!error) {
+      if (!error && response) {
+        const activities = response?.activities
+
+        if (!activities || !Array.isArray(activities)) return
+
         set((state) => {
-          state.repoCoreState.selectedRepo.repo!.issues[id - 1].status = 'OPEN'
+          const issue = state.repoCoreState.selectedRepo.repo!.issues[id - 1]
+          issue.activities = activities
+          issue.status = 'OPEN'
         })
 
         trackGoogleAnalyticsEvent('Repository', 'Reopen a issue', 'Reopen issue', {
@@ -113,11 +120,18 @@ const createPullRequestSlice: StateCreator<CombinedSlices, [['zustand/immer', ne
         return
       }
 
-      const { error } = await withAsync(() => closeIssue(repo.id, id))
+      const { error, response } = await withAsync(() => closeIssue(repo.id, id))
 
-      if (!error) {
+      if (!error && response) {
+        const activities = response?.activities
+
+        if (!activities || !Array.isArray(activities)) return
+
         set((state) => {
-          state.repoCoreState.selectedRepo.repo!.issues[id - 1].status = 'COMPLETED'
+          const issue = state.repoCoreState.selectedRepo.repo!.issues[id - 1]
+          issue.activities = activities
+          issue.completedTimestamp = response.completedTimestamp
+          issue.status = 'COMPLETED'
         })
 
         trackGoogleAnalyticsEvent('Repository', 'Close an issue', 'Close issue', {
@@ -135,6 +149,41 @@ const createPullRequestSlice: StateCreator<CombinedSlices, [['zustand/immer', ne
           issue_id: id,
           result: 'FAILED'
         })
+      }
+    },
+    updateIssueDetails: async (id, updateData: Partial<Issue>) => {
+      const repo = get().repoCoreState.selectedRepo.repo
+
+      if (!repo) {
+        set((state) => (state.issuesState.status = 'ERROR'))
+
+        return
+      }
+
+      const { error } = await withAsync(() => updateIssueDetails(repo.id, id, updateData))
+
+      if (!error) {
+        set((state) => {
+          const issue = state.repoCoreState.selectedRepo.repo!.issues[id - 1]
+          state.repoCoreState.selectedRepo.repo!.issues[id - 1] = { ...issue, ...updateData }
+        })
+
+        trackGoogleAnalyticsEvent('Repository', 'Update an issue', 'Update issue', {
+          repo_name: repo.name,
+          repo_id: repo.id,
+          issue_id: id,
+          result: 'SUCCESS'
+        })
+      }
+
+      if (error) {
+        trackGoogleAnalyticsEvent('Repository', 'Update an issue', 'Update issue', {
+          repo_name: repo.name,
+          repo_id: repo.id,
+          issue_id: id,
+          result: 'FAILED'
+        })
+        throw error
       }
     },
     getAssigneesList: (issueId: number) => {
@@ -202,12 +251,12 @@ const createPullRequestSlice: StateCreator<CombinedSlices, [['zustand/immer', ne
       const { error, response } = await withAsync(() => addCommentToIssue(repo.id, id, comment))
 
       if (!error && response) {
-        const comments = response?.comments
+        const activities = response?.activities
 
-        if (!comments || !Array.isArray(comments)) return
+        if (!activities || !Array.isArray(activities)) return
 
         set((state) => {
-          state.repoCoreState.selectedRepo.repo!.issues[id - 1].comments = comments
+          state.repoCoreState.selectedRepo.repo!.issues[id - 1].activities = activities
         })
 
         trackGoogleAnalyticsEvent('Repository', 'Add comment to issue', 'Comment on issue', {

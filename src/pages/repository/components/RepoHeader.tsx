@@ -74,7 +74,9 @@ export default function RepoHeader({ repo, isLoading, owner, parentRepo }: Props
 
   function handleForkButtonClick() {
     if (owner && owner === repo.owner) {
-      toast.error('Cannot fork your own repo')
+      toast.error('Cannot fork your own repo.')
+    } else if (repo.private) {
+      toast.error('Cannot fork private repo.')
     } else {
       setIsForkModalOpen(true)
     }

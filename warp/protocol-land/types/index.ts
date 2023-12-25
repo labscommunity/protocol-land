@@ -42,13 +42,35 @@ export type Repo = {
   pullRequests: PullRequest[]
   issues: Issue[]
   contributors: string[]
+  deployments: Deployment[]
+  deploymentBranch: string
   timestamp: number
   forks: Forks
   fork: boolean
   parent: string | null
+  private: boolean
+  privateStateTxId?: string
+  contributorInvites: ContributorInvite[]
 }
 
+export type ContributorInvite = {
+  address: string
+  timestamp: number
+  status: ContributorStatus
+}
+
+export type ContributorStatus = 'INVITED' | 'ACCEPTED' | 'REJECTED'
+
 export type Forks = Record<Address, Pick<Repo, 'id' | 'name' | 'owner' | 'timestamp'>>
+
+export type Deployment = {
+  txId: string
+  branch: string
+  deployedBy: string
+  commitOid: string
+  commitMessage: string
+  timestamp: number
+}
 
 export type PullRequest = {
   id: number
@@ -79,8 +101,9 @@ export type Issue = {
   author: string
   status: IssueStatus
   timestamp: number
+  completedTimestamp?: number
   assignees: string[]
-  comments: Comment[]
+  activities: IssueActivity[]
   bounties: Bounty[]
 }
 
@@ -93,9 +116,19 @@ export type Bounty = {
   timestamp: number
 }
 
-export type Comment = {
+export type IssueActivity = IssueActivityStatus | IssueActivityComment
+
+export type BaseActivity = {
+  type: ActivityType
   author: string
   timestamp: number
+}
+
+export interface IssueActivityStatus extends BaseActivity {
+  status: IssueStatus | 'REOPEN'
+}
+
+export interface IssueActivityComment extends BaseActivity {
   description: string
 }
 
@@ -106,7 +139,9 @@ export type Reviewer = {
 
 export type PullRequestStatus = 'OPEN' | 'CLOSED' | 'MERGED'
 
-export type IssueStatus = 'OPEN' | 'CLOSED' | 'COMPLETED'
+export type ActivityType = 'STATUS' | 'COMMENT'
+
+export type IssueStatus = 'OPEN' | 'COMPLETED'
 
 export type BountyStatus = 'ACTIVE' | 'CLAIMED' | 'EXPIRED' | 'CLOSED'
 
@@ -140,18 +175,27 @@ const repoFnList = [
   'isRepositoryNameAvailable',
   'createPullRequest',
   'updatePullRequestStatus',
+  'updatePullRequestDetails',
   'updateRepositoryDetails',
+  'addDeployment',
   'addContributor',
+  'inviteContributor',
+  'acceptContributorInvite',
+  'rejectContributorInvite',
   'addReviewersToPR',
   'approvePR',
   'createIssue',
   'updateIssueStatus',
+  'updateIssueDetails',
   'addAssigneeToIssue',
   'addCommentToIssue',
   'createNewBounty',
   'updateBounty',
   'updateProfileDetails',
-  'getUserDetails'
+  'getUserDetails',
+  'postEvolve',
+  'updatePrivateStateTx',
+  'cancelContributorInvite'
 ] as const
 
 export type RepositoryFunction = (typeof repoFnList)[number] // more types will be added later

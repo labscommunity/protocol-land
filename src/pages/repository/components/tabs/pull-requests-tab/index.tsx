@@ -29,7 +29,7 @@ export default function PullRequestsTab() {
       setOpenPRList(openPRs)
       setClosedPRList(closedPRs)
     }
-  }, [repo, view])
+  }, [repo])
 
   const hasPRs = openPRList.length > 0 || closedPRList.length > 0
 
@@ -38,32 +38,22 @@ export default function PullRequestsTab() {
       <div className="flex flex-col w-full border-gray-300 border-[1px] rounded-lg bg-white overflow-hidden">
         <TableHeader openCount={openPRList.length} closedCount={closedPRList.length} view={view} setView={setView} />
         <div className="rounded-b-lg w-full bg-white text-liberty-dark-100 overflow-hidden">
-          {!hasPRs && (
-            <div className="flex flex-col gap-2 h-32 w-full items-center justify-center">
-              <FiGitPullRequest className="h-7 w-7" />
-              <h1 className="text-lg font-medium">Get started by creating a new pull request</h1>
-            </div>
+          {!hasPRs && <EmptyStateMessage message="Get started by creating a new pull request." />}
+          {hasPRs && view === 'OPEN' && openPRList.length === 0 && (
+            <EmptyStateMessage message="There aren’t any open pull requests." />
           )}
-          {view === 'OPEN' &&
-            openPRList.map((pr) => (
-              <PullRequestRow
-                id={pr.id}
-                author={pr.author}
-                title={pr.title}
-                status={pr.status}
-                timestamp={pr.timestamp}
-              />
-            ))}
-          {view === 'CLOSED' &&
-            closedPRList.map((pr) => (
-              <PullRequestRow
-                id={pr.id}
-                author={pr.author}
-                title={pr.title}
-                status={pr.status}
-                timestamp={pr.timestamp}
-              />
-            ))}
+          {hasPRs && view === 'CLOSED' && closedPRList.length === 0 && (
+            <EmptyStateMessage message="There aren’t any closed pull requests." />
+          )}
+          {(view === 'OPEN' ? openPRList : closedPRList).map((pr) => (
+            <PullRequestRow
+              id={pr.id}
+              author={pr.author}
+              title={pr.title}
+              status={pr.status}
+              timestamp={pr.timestamp}
+            />
+          ))}
           {/* <PullRequestRow status="OPEN" />
           <PullRequestRow status="CLOSED" />
           <PullRequestRow status="MERGED" /> */}
@@ -72,3 +62,10 @@ export default function PullRequestsTab() {
     </div>
   )
 }
+
+const EmptyStateMessage = ({ message }: { message: string }) => (
+  <div className="flex flex-col gap-2 h-32 w-full items-center justify-center">
+    <FiGitPullRequest className="h-7 w-7" />
+    <h1 className="text-lg font-medium">{message}</h1>
+  </div>
+)
