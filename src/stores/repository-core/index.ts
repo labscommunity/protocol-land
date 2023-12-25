@@ -412,15 +412,22 @@ const createRepoCoreSlice: StateCreator<CombinedSlices, [['zustand/immer', never
 
         const { id: repoId, dataTxId, fork, parent, privateStateTxId, contributorInvites } = metaResponse.result
 
-        const address = await window.arweaveWallet.getActiveAddress()
+        try {
+          const address = await window.arweaveWallet.getActiveAddress()
 
-        if (address) {
-          const invite = contributorInvites.find((invite) => invite.address === address && invite.status === 'INVITED')
+          if (address) {
+            const invite = contributorInvites.find(
+              (invite) => invite.address === address && invite.status === 'INVITED'
+            )
 
-          set((state) => {
-            state.repoCoreState.selectedRepo.isInvitedContributor = invite && invite.status === 'INVITED' ? true : false
-            state.repoCoreState.selectedRepo.isPrivateRepo = privateStateTxId ? true : false
-          })
+            set((state) => {
+              state.repoCoreState.selectedRepo.isInvitedContributor =
+                invite && invite.status === 'INVITED' ? true : false
+              state.repoCoreState.selectedRepo.isPrivateRepo = privateStateTxId ? true : false
+            })
+          }
+        } catch (err: any) {
+          console.log(`Error: ${err}`)
         }
 
         let parentRepoId = null
