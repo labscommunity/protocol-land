@@ -110,13 +110,15 @@ const createRepoCoreSlice: StateCreator<CombinedSlices, [['zustand/immer', never
         return
       }
 
-      const { error } = await withAsync(() => updateRepoName(repo.name, name, repo.id))
+      const { error } = await withAsync(() => updateRepoName(repo.id, name))
 
       if (!error) {
         set((state) => {
           state.repoCoreState.selectedRepo.repo!.name = name
         })
       }
+
+      if (error) throw error
     },
     updateRepoDescription: async (description: string) => {
       const repo = get().repoCoreState.selectedRepo.repo

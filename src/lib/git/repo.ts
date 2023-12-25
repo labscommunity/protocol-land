@@ -334,9 +334,7 @@ export async function unmountRepoFromBrowser(name: string) {
   return true
 }
 
-export async function updateRepoName(oldName: string, newName: string, repoId: string) {
-  await unmountRepoFromBrowser(oldName)
-
+export async function updateRepoName(repoId: string, newName: string) {
   const userSigner = new InjectedArweaveSigner(window.arweaveWallet)
   await userSigner.setPublicKey()
 
