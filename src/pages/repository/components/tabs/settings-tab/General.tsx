@@ -1,18 +1,24 @@
 import { yupResolver } from '@hookform/resolvers/yup'
 import clsx from 'clsx'
+import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import toast from 'react-hot-toast'
 import * as yup from 'yup'
 
 import { Button } from '@/components/common/buttons'
+import { withAsync } from '@/helpers/withAsync'
 import { useGlobalStore } from '@/stores/globalStore'
+import { isRepositoryNameAvailable } from '@/stores/repository-core/actions'
 
 const titleSchema = yup
   .object({
     title: yup
       .string()
       .required('Title is required')
-      .matches(/^[a-z]+(-[a-z]+)*$/, 'Invalid title format')
+      .matches(
+        /^[a-zA-Z0-9._-]+$/,
+        'The repository title can only contain ASCII letters, digits, and the characters ., -, and _.'
+      )
   })
   .required()
 
@@ -23,7 +29,10 @@ const descriptionSchema = yup
   .required()
 
 export default function General() {
-  const [selectedRepo, updateDescription, updateName, isRepoOwner] = useGlobalStore((state) => [
+  const [isSubmittingName, setIsSubmittingName] = useState(false)
+  const [isSubmittingDescription, setIsSubmittingDescription] = useState(false)
+  const [connectedAddress, selectedRepo, updateDescription, updateName, isRepoOwner] = useGlobalStore((state) => [
+    state.authState.address,
     state.repoCoreState.selectedRepo.repo,
     state.repoCoreActions.updateRepoDescription,
     state.repoCoreActions.updateRepoName,
@@ -32,29 +41,49 @@ export default function General() {
   const {
     register: registerTitle,
     handleSubmit: handleTitleSubmit,
-    formState: { errors: titleErrors }
+    formState: { errors: titleErrors, isValid: isTitleValid, isDirty: isTitleDirty }
   } = useForm({
-    resolver: yupResolver(titleSchema)
+    resolver: yupResolver(titleSchema),
+    mode: 'onChange'
   })
   const {
     register: registerDescription,
     handleSubmit: handleDescriptionSubmit,
-    formState: { errors: descriptionErrors }
+    formState: { errors: descriptionErrors, isValid: isDescriptionValid, isDirty: isDescriptionDirty }
   } = useForm({
     resolver: yupResolver(descriptionSchema)
   })
 
   async function handleUpdateButtonClick(data: yup.InferType<typeof descriptionSchema>) {
-    if (selectedRepo) {
+    if (selectedRepo && selectedRepo.description !== data.description) {
+      setIsSubmittingDescription(true)
       await updateDescription(data.description)
       toast.success('Successfully updated repository description')
+      setIsSubmittingDescription(false)
     }
   }
 
   async function handleRenameButtonClick(data: yup.InferType<typeof titleSchema>) {
-    if (selectedRepo) {
-      await updateName(data.title)
-      toast.success('Successfully updated repository name')
+    if (selectedRepo && data.title !== selectedRepo.name) {
+      setIsSubmittingName(true)
+      const { response: isAvailable, error } = await withAsync(() =>
+        isRepositoryNameAvailable(data.title, connectedAddress!)
+      )
+
+      if (!error && isAvailable === false) {
+        toast.error(`The repository ${data.title} already exists.`)
+        setIsSubmittingName(false)
+        return
+      }
+
+      const { error: updateError } = await withAsync(() => updateName(data.title))
+      if (!updateError) {
+        toast.success('Successfully updated repository name')
+      } else {
+        toast.error('Error updating repository name')
+      }
+
+      setIsSubmittingName(false)
     }
   }
 
@@ -81,9 +110,14 @@ export default function General() {
                 )}
                 defaultValue={selectedRepo?.name}
                 placeholder="my-cool-repo"
-                disabled
+                disabled={!repoOwner}
               />
-              <Button disabled onClick={handleTitleSubmit(handleRenameButtonClick)} variant="primary-solid">
+              <Button
+                isLoading={isSubmittingName}
+                disabled={isSubmittingName || !repoOwner || !isTitleValid || !isTitleDirty}
+                onClick={handleTitleSubmit(handleRenameButtonClick)}
+                variant="primary-solid"
+              >
                 Rename
               </Button>
             </div>
@@ -108,7 +142,8 @@ export default function General() {
                 disabled={!repoOwner}
               />
               <Button
-                disabled={!repoOwner}
+                isLoading={isSubmittingDescription}
+                disabled={!repoOwner || isSubmittingDescription || !isDescriptionValid || !isDescriptionDirty}
                 onClick={handleDescriptionSubmit(handleUpdateButtonClick)}
                 variant="primary-solid"
               >

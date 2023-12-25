@@ -221,7 +221,23 @@ export async function updateRepositoryDetails(
   }
 
   if (payload.name) {
-    repo.name = payload.name
+    const newName = payload.name
+    if (!/^[a-zA-Z0-9._-]+$/.test(newName)) {
+      throw new ContractError(
+        'The repository name can only contain ASCII letters, digits, and the characters ., -, and _.'
+      )
+    }
+
+    const newNameLowercased = newName.toLowerCase()
+    const callerRepos = state.userRepoIdMap[caller]
+
+    if (callerRepos[newNameLowercased]) {
+      throw new ContractError('Repository with the same name already exists.')
+    }
+
+    delete callerRepos[repo.name.toLowerCase()]
+    repo.name = newName
+    callerRepos[newNameLowercased] = repo.id
   }
 
   if (payload.description) {
