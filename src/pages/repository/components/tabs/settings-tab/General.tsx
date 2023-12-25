@@ -60,6 +60,8 @@ export default function General() {
       await updateDescription(data.description)
       toast.success('Successfully updated repository description')
       setIsSubmittingDescription(false)
+    } else {
+      toast.error('The new description you have entered is the same as your current description.')
     }
   }
 
@@ -84,6 +86,8 @@ export default function General() {
       }
 
       setIsSubmittingName(false)
+    } else {
+      toast.error('The new name you have entered is the same as your current name.')
     }
   }
 
