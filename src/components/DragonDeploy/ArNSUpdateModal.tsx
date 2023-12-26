@@ -40,7 +40,7 @@ export default function ArNSDomainModal() {
       setIsLoading(true)
       const ant = await getANT(domain.contractTxId)
 
-      if (!ant?.controllers?.includes(connectedAddress)) {
+      if ((ant?.controllers && !ant?.controllers?.includes(connectedAddress)) || ant.owner !== connectedAddress) {
         throw new Error('You are not allowed to update this domain')
       }
 
@@ -160,7 +160,8 @@ export default function ArNSDomainModal() {
                               )}
                             ></div>
                           </div>
-                          {!isUpdated && isOnline && <span>Update in progress...</span>}
+                          {!updateNeeded && !isUpdated && isOnline && <span>Update in progress...</span>}
+                          {updateNeeded && <span>Update to latest deployment?</span>}
                         </div>
                         <div className="flex flex-col gap-3 justify-center mt-6">
                           <div className="flex gap-2">

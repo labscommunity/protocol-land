@@ -24,9 +24,13 @@ export async function searchArNSName(name: string) {
   name = name.toLowerCase()
   const response = await fetch(`https://api.arns.app/v1/contract/${REGISTRY}/records/${name}`)
   if (response.status === 404) {
-    return { success: true }
+    return { success: true, record: null, message: `${name} is not registered` }
   }
-  return { success: false, message: `${name} is already taken and is not available` }
+  return {
+    success: false,
+    record: await response.json(),
+    message: `${name} is already registered`
+  }
 }
 
 export async function registerArNSName({
@@ -119,6 +123,13 @@ export async function getArNSNameFees(name = '', years = 1) {
   const price = +((await response.json())?.result?.price ?? 0).toFixed(2)
   const fee = (await arweave.api.get(`price/${name.length}`)).data
   return [price, +arweave.ar.winstonToAr(fee, { decimals: 4 })]
+}
+
+export async function getArFee(name = '') {
+  if (name === '') return 0
+
+  const fee = (await arweave.api.get(`price/${name.length}`)).data
+  return +arweave.ar.winstonToAr(fee, { decimals: 4 })
 }
 
 export async function getARBalance(owner: string, decimals = true) {
