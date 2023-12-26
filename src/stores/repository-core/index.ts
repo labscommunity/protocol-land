@@ -240,7 +240,8 @@ const createRepoCoreSlice: StateCreator<CombinedSlices, [['zustand/immer', never
 
       if (!error) {
         set((state) => {
-          state.repoCoreState.selectedRepo.repo!.domains.push(domain)
+          const selectedRepo = state.repoCoreState.selectedRepo.repo!
+          selectedRepo.domains = [...(selectedRepo.domains || []), domain]
         })
 
         trackGoogleAnalyticsEvent('Repository', 'Add domain to a repo', 'Add repo domain', {
@@ -266,7 +267,7 @@ const createRepoCoreSlice: StateCreator<CombinedSlices, [['zustand/immer', never
 
       if (!error) {
         set((state) => {
-          const foundDomain = state.repoCoreState.selectedRepo.repo!.domains.find(
+          const foundDomain = (state.repoCoreState.selectedRepo.repo!.domains || []).find(
             (d) => d.name === domain.name || d.contractTxId === domain.contractTxId
           )
           if (foundDomain) {
