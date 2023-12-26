@@ -21,12 +21,12 @@ function getWarpPstContract(contractTxId: string, signer?: any) {
 }
 
 export async function searchArNSName(name: string) {
-  const registry = getWarpPstContract(REGISTRY)
-  const registryState = await registry.currentState()
-  if (registryState.records[name]) {
-    return { success: false, message: `ArNS Name ${name} is already taken and is not available for purchase` }
+  name = name.toLowerCase()
+  const response = await fetch(`https://api.arns.app/v1/contract/${REGISTRY}/records/${name}`)
+  if (response.status === 404) {
+    return { success: true }
   }
-  return { success: true }
+  return { success: false, message: `${name} is already taken and is not available` }
 }
 
 export async function registerArNSName({
@@ -38,19 +38,9 @@ export async function registerArNSName({
   years: number
   transactionId: string
 }) {
+  name = name.toLowerCase()
   const registry = getWarpPstContract(REGISTRY, window.arweaveWallet)
-  const registryState = await registry.currentState()
   const owner = await window.arweaveWallet.getActiveAddress()
-
-  if (registryState.records[name]) {
-    return { success: false, message: `ArNS name ${name} is already taken and is not available for purchase` }
-  }
-
-  const ioBalance = registryState.balances[owner]
-
-  if (typeof ioBalance === 'undefined' || ioBalance < registryState.fees[name.length.toString()]) {
-    return { success: false, message: `Not enough IO Test Token to purchase this name.` }
-  }
 
   // create ANT contract
   const ant = await warp.createContract.deployFromSourceTx(
@@ -203,8 +193,9 @@ export async function getAllANTs(owner: string) {
 export async function getANT(ANT: string) {
   const subdomain = 'not_defined'
   try {
-    const ant = await getWarpContract(ANT)
-    const antState = await ant.readState().then((result: { cachedValue: { state: any } }) => result.cachedValue.state)
+    const response = await fetch(`https://api.arns.app/v1/contract/${ANT}`)
+    const responseJson = await response.json()
+    const antState = responseJson.state
     return { ...antState, id: ANT, subdomain: antState.name }
   } catch (e) {
     return { id: ANT, subdomain }

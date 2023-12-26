@@ -114,10 +114,10 @@ export default function ArNSRegisterModal() {
   }
 
   useEffect(() => {
-    if (authState.isLoggedIn) {
+    if (authState.isLoggedIn && isAvailable) {
       loadBalances()
     }
-  }, [authState.isLoggedIn])
+  }, [authState.isLoggedIn, isAvailable])
 
   useEffect(() => {
     const subscription = watch(({ name, years, isAvailable }) => {
