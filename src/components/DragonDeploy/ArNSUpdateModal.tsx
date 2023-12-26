@@ -1,6 +1,6 @@
 import { Dialog, Transition } from '@headlessui/react'
 import clsx from 'clsx'
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Fragment } from 'react'
 import toast from 'react-hot-toast'
 import SVG from 'react-inlinesvg'
@@ -16,6 +16,7 @@ export default function ArNSDomainModal() {
   const [isOnline, setIsOnline] = useState(false)
   const [isUpdated, setIsUpdated] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
+  const [domainTxId, setDomainTxId] = useState('')
   const [intervalValue, setIntervalValue] = useState<number>()
 
   const [connectedAddress, selectedRepo, updateDomain] = useGlobalStore((state) => [
@@ -25,9 +26,14 @@ export default function ArNSDomainModal() {
   ])
 
   const deploymentCounts = selectedRepo?.deployments?.length ?? 0
-  const deployment = selectedRepo?.deployments?.[deploymentCounts - 1]
+  const deployments = selectedRepo?.deployments ?? []
+  const deployment = deployments?.[deploymentCounts - 1]
   const domain = selectedRepo?.domains?.[0]
-  const updateNeeded = deployment?.txId !== domain?.txId
+
+  const updateNeeded = useMemo(() => {
+    const isDomainTxPresent = deployments.findIndex((d) => d.txId === domainTxId) > -1
+    return deployment?.txId !== domainTxId || !isDomainTxPresent
+  }, [deployment, domainTxId])
 
   function closeModal() {
     setIsOpen(false)
@@ -63,6 +69,8 @@ export default function ArNSDomainModal() {
       setIsUpdated(false)
 
       toast.success('Updated domain to the latest deployment')
+
+      closeModal()
     } catch (error) {
       toast.error((error as any)?.message)
     } finally {
@@ -81,9 +89,28 @@ export default function ArNSDomainModal() {
     }
   }
 
+  async function checkANT() {
+    if (domain) {
+      const { response: ant } = await withAsync(() => getANT(domain.contractTxId))
+      if (ant && 'records' in ant) {
+        const nameSplits = domain.name.split('_')
+        const undername = nameSplits.length > 1 ? nameSplits[0] : ''
+        const record = ant.records[undername || '@']
+        setDomainTxId(record?.transactionId || record)
+      }
+    }
+  }
+
+  useEffect(() => {
+    if (domain && domainTxId === '') {
+      setDomainTxId(domain.txId)
+    }
+  }, [domain])
+
   useEffect(() => {
     if (isOpen && domain) {
       checkDomain()
+      checkANT()
       const interval = setInterval(async (): Promise<void> => {
         const response = await checkDomain()
         if (response && response.isOnline && response.isUpdated) {

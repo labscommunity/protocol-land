@@ -10,7 +10,11 @@ const warp = WarpFactory.forMainnet().use(new DeployPlugin())
 const REGISTRY = 'bLAgYxAdX2Ry-nt6aH2ixgvJXbpsEYm28NgJgyqfs-U'
 const ANT_SOURCE = 'H2uxnw_oVIEzXeBeYmxDgJuxPqwBCGPO4OmQzdWQu3U'
 
-const arweave = Arweave.init({})
+const arweave = new Arweave({
+  host: 'ar-io.net',
+  port: 443,
+  protocol: 'https'
+})
 
 function getWarpPstContract(contractTxId: string, signer?: any) {
   if (signer) {
@@ -80,7 +84,7 @@ export async function registerArNSName({
     { disableBundling: true }
   )
 
-  return { success: true, ant, message: `Successfully registred ${name}` }
+  return { success: true, ant, message: `Successfully registered ${name}` }
 }
 
 export async function updateArNSDomain({
@@ -149,10 +153,12 @@ export async function getDomainStatus(domain: Domain) {
   const response = await fetch(`https://${domain.name}.ar-io.dev`, { cache: 'reload' })
   const isOnline = response.status === 200
   let isUpdated = false
+  let resolvedTxId = ''
   if (isOnline) {
-    isUpdated = response.headers.get('x-arns-resolved-id') === domain.txId
+    resolvedTxId = response.headers.get('x-arns-resolved-id') as string
+    isUpdated = resolvedTxId === domain.txId
   }
-  return { isOnline, isUpdated }
+  return { isOnline, isUpdated, expectedTxId: domain.txId, resolvedTxId: resolvedTxId }
 }
 
 export async function getAllArNSNames(owner: string) {

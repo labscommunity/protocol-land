@@ -80,7 +80,10 @@ export default function ArNSAdd({ closeModal }: ArNSAddProps) {
       setIsAdding(true)
       const ant = await getANT(domain.contractTxId)
 
-      if ((ant?.controllers && !ant?.controllers?.includes(authState.address)) || ant.owner !== authState.address) {
+      const hasPermission =
+        (ant?.controllers && ant?.controllers?.includes(authState.address)) || ant.owner === authState.address
+
+      if (!hasPermission) {
         throw new Error('You are not allowed to update this domain')
       }
 
