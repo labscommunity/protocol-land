@@ -200,7 +200,7 @@ export async function getAllANTs(owner: string) {
   return Promise.resolve(ants.filter((rec: { subdomain: string }) => rec.subdomain !== 'not_defined'))
 }
 
-export async function getANT(ANT: any) {
+export async function getANT(ANT: string) {
   const subdomain = 'not_defined'
   try {
     const ant = await getWarpContract(ANT)

@@ -8,7 +8,7 @@ import SVG from 'react-inlinesvg'
 import CloseCrossIcon from '@/assets/icons/close-cross.svg'
 import { Button } from '@/components/common/buttons'
 import { withAsync } from '@/helpers/withAsync'
-import { getDomainStatus, updateArNSDomain } from '@/lib/dragondeploy/arns'
+import { getANT, getDomainStatus, updateArNSDomain } from '@/lib/dragondeploy/arns'
 import { useGlobalStore } from '@/stores/globalStore'
 
 export default function ArNSDomainModal() {
@@ -18,7 +18,8 @@ export default function ArNSDomainModal() {
   const [isLoading, setIsLoading] = useState(false)
   const [intervalValue, setIntervalValue] = useState<number>()
 
-  const [selectedRepo, updateDomain] = useGlobalStore((state) => [
+  const [connectedAddress, selectedRepo, updateDomain] = useGlobalStore((state) => [
+    state.authState.address,
     state.repoCoreState.selectedRepo.repo,
     state.repoCoreActions.updateDomain
   ])
@@ -37,6 +38,12 @@ export default function ArNSDomainModal() {
 
     try {
       setIsLoading(true)
+      const ant = await getANT(domain.contractTxId)
+
+      if (!ant?.controllers?.includes(connectedAddress)) {
+        throw new Error('You are not allowed to update this domain')
+      }
+
       const updateArNSDomainResult = await withAsync(() =>
         updateArNSDomain({ antContract: domain.contractTxId, transactionId: deployment.txId })
       )
