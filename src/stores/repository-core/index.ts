@@ -110,13 +110,15 @@ const createRepoCoreSlice: StateCreator<CombinedSlices, [['zustand/immer', never
         return
       }
 
-      const { error } = await withAsync(() => updateRepoName(repo.name, name, repo.id))
+      const { error } = await withAsync(() => updateRepoName(repo.id, name))
 
       if (!error) {
         set((state) => {
           state.repoCoreState.selectedRepo.repo!.name = name
         })
       }
+
+      if (error) throw error
     },
     updateRepoDescription: async (description: string) => {
       const repo = get().repoCoreState.selectedRepo.repo
@@ -410,15 +412,22 @@ const createRepoCoreSlice: StateCreator<CombinedSlices, [['zustand/immer', never
 
         const { id: repoId, dataTxId, fork, parent, privateStateTxId, contributorInvites } = metaResponse.result
 
-        const address = await window.arweaveWallet.getActiveAddress()
+        try {
+          const address = await window.arweaveWallet.getActiveAddress()
 
-        if (address) {
-          const invite = contributorInvites.find((invite) => invite.address === address && invite.status === 'INVITED')
+          if (address) {
+            const invite = contributorInvites.find(
+              (invite) => invite.address === address && invite.status === 'INVITED'
+            )
 
-          set((state) => {
-            state.repoCoreState.selectedRepo.isInvitedContributor = invite && invite.status === 'INVITED' ? true : false
-            state.repoCoreState.selectedRepo.isPrivateRepo = privateStateTxId ? true : false
-          })
+            set((state) => {
+              state.repoCoreState.selectedRepo.isInvitedContributor =
+                invite && invite.status === 'INVITED' ? true : false
+              state.repoCoreState.selectedRepo.isPrivateRepo = privateStateTxId ? true : false
+            })
+          }
+        } catch (err: any) {
+          console.log(`Error: ${err}`)
         }
 
         let parentRepoId = null
