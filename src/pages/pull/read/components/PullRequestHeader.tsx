@@ -40,6 +40,7 @@ export default function PullRequestHeader({
   const StatusComponent = statusMap[PR.status]
   const navigate = useNavigate()
   const isMergeInSameRepo = PR.baseRepo.repoId === PR.compareRepo.repoId
+  const lastActivity = PR.activities?.[(PR?.activities?.length ?? 0) - 1]
 
   function goBack() {
     navigate(`/repository/${PR.repoId}/pulls`)
@@ -55,8 +56,6 @@ export default function PullRequestHeader({
     }
   }
 
-  console.log(PR)
-
   return (
     <div className="flex flex-col gap-2 border-b-[1px] border-gray-200 pb-4">
       <div>
@@ -70,9 +69,11 @@ export default function PullRequestHeader({
         <div className="text-gray-900 text-lg">
           <span
             className="font-medium cursor-pointer hover:underline hover:text-primary-700"
-            onClick={() => gotoUser(PR?.author)}
+            onClick={() => gotoUser(PR.status === 'MERGED' ? lastActivity?.author : PR?.author)}
           >
-            {PR?.author && shortenAddress(PR?.author)}
+            {PR.status === 'MERGED'
+              ? lastActivity?.author && shortenAddress(lastActivity?.author)
+              : PR?.author && shortenAddress(PR?.author)}
           </span>{' '}
           {PR.status !== 'MERGED' ? 'wants to merge' : 'merged'}{' '}
           <span
