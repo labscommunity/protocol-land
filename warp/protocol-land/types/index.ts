@@ -133,7 +133,7 @@ export interface IssueActivityStatus extends BaseActivity {
 }
 
 export interface PullRequestActivityStatus extends BaseActivity {
-  status: PullRequestStatus | 'REOPEN'
+  status: PullRequestStatus | 'REOPEN' | 'APPROVAL'
 }
 
 export interface IssueActivityComment extends BaseActivity {

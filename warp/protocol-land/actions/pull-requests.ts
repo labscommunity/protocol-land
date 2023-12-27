@@ -4,6 +4,7 @@ import {
   PullRequest,
   PullRequestActivity,
   PullRequestActivityComment,
+  PullRequestActivityStatus,
   RepositoryAction,
   Reviewer
 } from '../types'
@@ -277,7 +278,11 @@ export async function approvePR(
   state: ContractState,
   { caller, input: { payload } }: RepositoryAction
 ): Promise<ContractResult<ContractState>> {
-  if (!payload.repoId || !payload.prId) {
+  if (
+    isInvalidInput(payload, 'object') ||
+    isInvalidInput(payload.repoId) ||
+    isInvalidInput(payload.prId, ['number', 'string'])
+  ) {
     throw new ContractError('Invalid inputs supplied.')
   }
 
@@ -305,7 +310,20 @@ export async function approvePR(
     throw new ContractError('Reviewer not found.')
   }
 
-  PR.reviewers[reviewerIdx].approved = true
+  if (!PR.reviewers[reviewerIdx].approved) {
+    if (!Array.isArray(PR.activities)) {
+      PR.activities = []
+    }
+
+    const activity: PullRequestActivityStatus = {
+      type: 'STATUS',
+      status: 'APPROVAL',
+      author: caller,
+      timestamp: getBlockTimeStamp()
+    }
+    PR.reviewers[reviewerIdx].approved = true
+    PR.activities.push(activity)
+  }
 
   return { state }
 }

@@ -473,12 +473,17 @@ const createPullRequestSlice: StateCreator<CombinedSlices, [['zustand/immer', ne
 
       const PR = repo.pullRequests[id - 1]
 
-      const { error } = await withAsync(() => approvePR({ repoId: repo.id, prId: PR.id }))
+      const { response, error } = await withAsync(() => approvePR({ repoId: repo.id, prId: PR.id }))
 
-      if (!error) {
+      if (!error && response) {
+        const activities = response?.activities
+
+        if (!activities || !Array.isArray(activities)) return
+
         const reviewerIdx = PR.reviewers.findIndex((reviewer) => reviewer.address === address)
 
         set((state) => {
+          state.repoCoreState.selectedRepo.repo!.pullRequests[id - 1].activities = activities
           state.repoCoreState.selectedRepo.repo!.pullRequests[id - 1].reviewers[reviewerIdx].approved = true
         })
 
@@ -497,6 +502,7 @@ const createPullRequestSlice: StateCreator<CombinedSlices, [['zustand/immer', ne
           pr_id: id,
           result: 'FAILED'
         })
+        throw error
       }
     }
   }

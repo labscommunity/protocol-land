@@ -15,10 +15,8 @@ type Props = {
 
 export default function RepoDropdown({ selectedItem, setSelectedItem, items, label, disabled = false }: Props) {
   function repoObjToRepoName(repo: Repo) {
-    return `${shortenAddress(repo?.owner || '', 5)}/${repo.name}`
+    return `${shortenAddress(repo?.owner || '', 5)}/${repo?.name || ''}`
   }
-
-  if (!selectedItem) return null
 
   return (
     <Listbox disabled={disabled} value={selectedItem} onChange={setSelectedItem}>

@@ -5,6 +5,7 @@ import { useState } from 'react'
 import toast from 'react-hot-toast'
 import { AiFillCloseCircle } from 'react-icons/ai'
 import { FiGitMerge } from 'react-icons/fi'
+import { IoMdCheckmark } from 'react-icons/io'
 import { VscGitMerge, VscGitPullRequest, VscGitPullRequestClosed } from 'react-icons/vsc'
 import { useNavigate, useParams } from 'react-router-dom'
 
@@ -21,13 +22,15 @@ const StatusColorMap = {
   OPEN: '',
   REOPEN: 'bg-[#38a457]',
   MERGED: 'bg-purple-700',
-  CLOSED: 'bg-red-700'
+  CLOSED: 'bg-red-700',
+  APPROVAL: 'bg-[#38a457]'
 }
 
 const StatusLogoMap = {
   REOPEN: <VscGitPullRequest className="h-4 w-4 text-white" />,
   MERGED: <VscGitMerge className="h-4 w-4 text-white" />,
   CLOSED: <VscGitPullRequestClosed className="h-4 w-4 text-white" />,
+  APPROVAL: <IoMdCheckmark className="h-4 w-4 text-white" />,
   OPEN: <></>
 }
 
@@ -35,7 +38,8 @@ const StatusTextMap = {
   OPEN: '',
   CLOSED: 'closed',
   MERGED: 'merged',
-  REOPEN: 'reopened'
+  REOPEN: 'reopened',
+  APPROVAL: 'approved'
 }
 
 export default function OverviewTab() {
@@ -170,7 +174,9 @@ export default function OverviewTab() {
                           {shortenAddress(statusActivity.author)}
                         </span>
                         <span className="text-gray-500">
-                          {StatusTextMap[statusActivity.status]} this {formatTimestamp(statusActivity.timestamp)}
+                          {StatusTextMap[statusActivity.status]} this{' '}
+                          {statusActivity.status === 'APPROVAL' && 'changes'}{' '}
+                          {formatTimestamp(statusActivity.timestamp)}
                         </span>
                       </div>
                     </li>
