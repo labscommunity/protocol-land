@@ -179,66 +179,68 @@ export default function OverviewTab() {
               })}
           </ol>
         </div>
-        {isLoggedIn && contributor && (
-          <div className="flex flex-col border-t-[1px] border-gray-200 pt-4">
-            {isOpen && (
-              <div className="mb-4 border p-4 flex justify-center items-center">
-                <Button
-                  onClick={handleMergePullRequest}
-                  disabled={isSubmittingMerge}
-                  isLoading={isSubmittingMerge}
-                  className="gap-2 justify-center font-medium"
-                  variant="primary-solid"
-                >
-                  <FiGitMerge className="w-4 h-4" />
-                  Merge pull request
-                </Button>
-              </div>
-            )}
-            {isOpen && (
-              <div className="flex flex-col gap-2">
-                <span className="font-medium">Add a comment</span>
-                <MDEditor height={180} preview="edit" value={commentVal} onChange={(val) => setCommentVal(val!)} />
-              </div>
-            )}
-            {isOpen && (
-              <div className="flex w-full py-4 justify-center gap-4">
-                <Button
-                  onClick={handleClosePullRequest}
-                  className="gap-2 justify-center font-medium"
-                  variant="secondary"
-                  disabled={isSubmittingClose}
-                  isLoading={isSubmittingClose}
-                >
-                  <AiFillCloseCircle className="w-4 h-4" />
-                  Close
-                </Button>
+        <div className="border-t-[1px] border-gray-200">
+          {isLoggedIn && contributor && (
+            <div className="flex flex-col pt-4">
+              {isOpen && (
+                <div className="mb-4 border p-4 flex justify-center items-center">
+                  <Button
+                    onClick={handleMergePullRequest}
+                    disabled={isSubmittingMerge}
+                    isLoading={isSubmittingMerge}
+                    className="gap-2 justify-center font-medium"
+                    variant="primary-solid"
+                  >
+                    <FiGitMerge className="w-4 h-4" />
+                    Merge pull request
+                  </Button>
+                </div>
+              )}
+              {isOpen && (
+                <div className="flex flex-col gap-2">
+                  <span className="font-medium">Add a comment</span>
+                  <MDEditor height={180} preview="edit" value={commentVal} onChange={(val) => setCommentVal(val!)} />
+                </div>
+              )}
+              {isOpen && (
+                <div className="flex w-full py-4 justify-center gap-4">
+                  <Button
+                    onClick={handleClosePullRequest}
+                    className="gap-2 justify-center font-medium"
+                    variant="secondary"
+                    disabled={isSubmittingClose}
+                    isLoading={isSubmittingClose}
+                  >
+                    <AiFillCloseCircle className="w-4 h-4" />
+                    Close
+                  </Button>
 
-                <Button
-                  onClick={handleAddComment}
-                  isLoading={isSubmittingComment}
-                  disabled={commentVal.length === 0 || isSubmittingComment}
-                  variant="primary-solid"
-                  className="justify-center"
-                >
-                  Comment
-                </Button>
-              </div>
-            )}
-            {!isOpen && !isMerged && (
-              <div className="flex w-full justify-center gap-4 py-4">
-                <Button
-                  isLoading={isSubmittingClose}
-                  disabled={isSubmittingClose}
-                  onClick={handleReopenPullRequest}
-                  variant="primary-solid"
-                >
-                  Reopen
-                </Button>
-              </div>
-            )}
-          </div>
-        )}
+                  <Button
+                    onClick={handleAddComment}
+                    isLoading={isSubmittingComment}
+                    disabled={commentVal.length === 0 || isSubmittingComment}
+                    variant="primary-solid"
+                    className="justify-center"
+                  >
+                    Comment
+                  </Button>
+                </div>
+              )}
+              {!isOpen && !isMerged && (
+                <div className="flex w-full justify-center gap-4 py-4">
+                  <Button
+                    isLoading={isSubmittingClose}
+                    disabled={isSubmittingClose}
+                    onClick={handleReopenPullRequest}
+                    variant="primary-solid"
+                  >
+                    Reopen
+                  </Button>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
       </div>
       <Sidebar />
     </div>

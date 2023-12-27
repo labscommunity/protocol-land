@@ -18,6 +18,8 @@ export default function RepoDropdown({ selectedItem, setSelectedItem, items, lab
     return `${shortenAddress(repo?.owner || '', 5)}/${repo.name}`
   }
 
+  if (!selectedItem) return null
+
   return (
     <Listbox disabled={disabled} value={selectedItem} onChange={setSelectedItem}>
       <div className="relative mt-1">

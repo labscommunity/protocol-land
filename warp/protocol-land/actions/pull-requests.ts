@@ -8,6 +8,7 @@ import {
   Reviewer
 } from '../types'
 import { getBlockTimeStamp } from '../utils/getBlockTimeStamp'
+import { isInvalidInput } from '../utils/isInvalidInput'
 
 declare const ContractError
 
@@ -118,7 +119,12 @@ export async function updatePullRequestStatus(
   state: ContractState,
   { input: { payload }, caller }: RepositoryAction
 ): Promise<ContractResult<ContractState>> {
-  if (!payload.status || !payload.repoId || !payload.prId) {
+  if (
+    isInvalidInput(payload, 'object') ||
+    isInvalidInput(payload.repoId) ||
+    isInvalidInput(payload.prId, ['number', 'string']) ||
+    isInvalidInput(payload.status)
+  ) {
     throw new ContractError('Invalid inputs supplied.')
   }
 
@@ -308,7 +314,12 @@ export async function addCommentToPR(
   state: ContractState,
   { caller, input: { payload } }: RepositoryAction
 ): Promise<ContractResult<ContractState>> {
-  if (!payload.repoId || !payload.prId || !payload.comment) {
+  if (
+    isInvalidInput(payload, 'object') ||
+    isInvalidInput(payload.repoId) ||
+    isInvalidInput(payload.prId, ['number', 'string']) ||
+    isInvalidInput(payload.comment)
+  ) {
     throw new ContractError('Invalid inputs supplied.')
   }
 
