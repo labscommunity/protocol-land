@@ -2,7 +2,14 @@ import { StateCreator } from 'zustand'
 
 import { trackGoogleAnalyticsEvent } from '@/helpers/google-analytics'
 import { withAsync } from '@/helpers/withAsync'
-import { addReviewersToPR, approvePR, closePullRequest, updatePullRequestDetails } from '@/lib/git/pull-request'
+import {
+  addCommentToPR,
+  addReviewersToPR,
+  approvePR,
+  closePullRequest,
+  reopenPullRequest,
+  updatePullRequestDetails
+} from '@/lib/git/pull-request'
 import { PullRequest } from '@/types/repository'
 
 import { CombinedSlices } from '../types'
@@ -214,13 +221,18 @@ const createPullRequestSlice: StateCreator<CombinedSlices, [['zustand/immer', ne
         return
       }
 
-      const { error } = await withAsync(() =>
+      const { response, error } = await withAsync(() =>
         mergePR(repo.id, id, baseBranch, compareBranch, author!, isFork, repo.private, repo.privateStateTxId)
       )
 
-      if (!error) {
+      if (!error && response) {
+        const activities = response?.activities
+        if (!activities || !Array.isArray(activities)) return
+
         set((state) => {
-          state.repoCoreState.selectedRepo.repo!.pullRequests[id - 1].status = 'MERGED'
+          const PR = state.repoCoreState.selectedRepo.repo!.pullRequests[id - 1]
+          PR.activities = activities
+          PR.status = 'MERGED'
         })
 
         trackGoogleAnalyticsEvent('Repository', 'Merge a PR', 'Merge PR', {
@@ -250,11 +262,16 @@ const createPullRequestSlice: StateCreator<CombinedSlices, [['zustand/immer', ne
         return
       }
 
-      const { error } = await withAsync(() => closePullRequest({ repoId: repo.id, prId: id }))
+      const { response, error } = await withAsync(() => closePullRequest({ repoId: repo.id, prId: id }))
 
-      if (!error) {
+      if (!error && response) {
+        const activities = response?.activities
+        if (!activities || !Array.isArray(activities)) return
+
         set((state) => {
-          state.repoCoreState.selectedRepo.repo!.pullRequests[id - 1].status = 'CLOSED'
+          const PR = state.repoCoreState.selectedRepo.repo!.pullRequests[id - 1]
+          PR.activities = activities
+          PR.status = 'CLOSED'
         })
 
         trackGoogleAnalyticsEvent('Repository', 'Close a PR', 'Close PR', {
@@ -267,6 +284,45 @@ const createPullRequestSlice: StateCreator<CombinedSlices, [['zustand/immer', ne
 
       if (error) {
         trackGoogleAnalyticsEvent('Repository', 'Close a PR', 'Close PR', {
+          repo_name: repo.name,
+          repo_id: repo.id,
+          pr_id: id,
+          result: 'FAILED'
+        })
+        throw error
+      }
+    },
+    reopenPullRequest: async (id) => {
+      const repo = get().repoCoreState.selectedRepo.repo
+
+      if (!repo) {
+        set((state) => (state.pullRequestState.status = 'ERROR'))
+
+        return
+      }
+
+      const { response, error } = await withAsync(() => reopenPullRequest({ repoId: repo.id, prId: id }))
+
+      if (!error && response) {
+        const activities = response?.activities
+        if (!activities || !Array.isArray(activities)) return
+
+        set((state) => {
+          const PR = state.repoCoreState.selectedRepo.repo!.pullRequests[id - 1]
+          PR.activities = activities
+          PR.status = 'OPEN'
+        })
+
+        trackGoogleAnalyticsEvent('Repository', 'Reopen a PR', 'Reopen PR', {
+          repo_name: repo.name,
+          repo_id: repo.id,
+          pr_id: id,
+          result: 'SUCCESS'
+        })
+      }
+
+      if (error) {
+        trackGoogleAnalyticsEvent('Repository', 'Reopen a PR', 'Reopen PR', {
           repo_name: repo.name,
           repo_id: repo.id,
           pr_id: id,
@@ -360,6 +416,43 @@ const createPullRequestSlice: StateCreator<CombinedSlices, [['zustand/immer', ne
 
       if (error) {
         trackGoogleAnalyticsEvent('Repository', 'Add or update PR reviewers', 'Modify reviewers', {
+          repo_name: repo.name,
+          repo_id: repo.id,
+          pr_id: id,
+          result: 'FAILED'
+        })
+      }
+    },
+    addComment: async (id, comment) => {
+      const repo = get().repoCoreState.selectedRepo.repo
+
+      if (!repo) {
+        set((state) => (state.pullRequestState.status = 'ERROR'))
+
+        return
+      }
+
+      const { error, response } = await withAsync(() => addCommentToPR(repo.id, id, comment))
+
+      if (!error && response) {
+        const activities = response?.activities
+
+        if (!activities || !Array.isArray(activities)) return
+
+        set((state) => {
+          state.repoCoreState.selectedRepo.repo!.pullRequests[id - 1].activities = activities
+        })
+
+        trackGoogleAnalyticsEvent('Repository', 'Add comment to PR', 'Comment on PR', {
+          repo_name: repo.name,
+          repo_id: repo.id,
+          pr_id: id,
+          result: 'SUCCESS'
+        })
+      }
+
+      if (error) {
+        trackGoogleAnalyticsEvent('Repository', 'Add comment to PR', 'Comment on PR', {
           repo_name: repo.name,
           repo_id: repo.id,
           pr_id: id,

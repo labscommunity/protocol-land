@@ -193,6 +193,22 @@ export async function mergePullRequest({
         status: 'MERGED'
       }
     })
+
+    const {
+      cachedValue: {
+        state: { repos }
+      }
+    } = await contract.readState()
+
+    const PRs = repos[repoId]?.pullRequests
+
+    if (!PRs) return
+
+    const PR = PRs[prId - 1]
+
+    if (!PR) return
+
+    return PR
   } else {
     throw error
   }
@@ -212,6 +228,54 @@ export async function closePullRequest({ repoId, prId }: { repoId: string; prId:
       status: 'CLOSED'
     }
   })
+
+  const {
+    cachedValue: {
+      state: { repos }
+    }
+  } = await contract.readState()
+
+  const PRs = repos[repoId]?.pullRequests
+
+  if (!PRs) return
+
+  const PR = PRs[prId - 1]
+
+  if (!PR) return
+
+  return PR
+}
+
+export async function reopenPullRequest({ repoId, prId }: { repoId: string; prId: number }) {
+  const userSigner = new InjectedArweaveSigner(window.arweaveWallet)
+  await userSigner.setPublicKey()
+
+  const contract = getWarpContract(CONTRACT_TX_ID, userSigner)
+
+  await contract.writeInteraction({
+    function: 'updatePullRequestStatus',
+    payload: {
+      repoId,
+      prId,
+      status: 'REOPEN'
+    }
+  })
+
+  const {
+    cachedValue: {
+      state: { repos }
+    }
+  } = await contract.readState()
+
+  const PRs = repos[repoId]?.pullRequests
+
+  if (!PRs) return
+
+  const PR = PRs[prId - 1]
+
+  if (!PR) return
+
+  return PR
 }
 
 export async function updatePullRequestDetails(repoId: string, prId: number, pullRequest: Partial<PullRequest>) {
@@ -267,6 +331,38 @@ export async function approvePR({ repoId, prId }: ApprovePROptions) {
       prId
     }
   })
+}
+
+export async function addCommentToPR(repoId: string, prId: number, comment: string) {
+  const userSigner = new InjectedArweaveSigner(window.arweaveWallet)
+  await userSigner.setPublicKey()
+
+  const contract = getWarpContract(CONTRACT_TX_ID, userSigner)
+
+  await contract.writeInteraction({
+    function: 'addCommentToPR',
+    payload: {
+      repoId,
+      prId,
+      comment
+    }
+  })
+
+  const {
+    cachedValue: {
+      state: { repos }
+    }
+  } = await contract.readState()
+
+  const PRs = repos[repoId]?.pullRequests
+
+  if (!PRs) return
+
+  const PR = PRs[prId - 1]
+
+  if (!PR) return
+
+  return PR
 }
 
 type ApprovePROptions = {

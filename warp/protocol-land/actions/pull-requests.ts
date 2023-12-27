@@ -1,4 +1,13 @@
-import { ContractResult, ContractState, PullRequest, RepositoryAction, Reviewer } from '../types'
+import {
+  ContractResult,
+  ContractState,
+  PullRequest,
+  PullRequestActivity,
+  PullRequestActivityComment,
+  RepositoryAction,
+  Reviewer
+} from '../types'
+import { getBlockTimeStamp } from '../utils/getBlockTimeStamp'
 
 declare const ContractError
 
@@ -50,6 +59,7 @@ export async function createNewPullRequest(
     author: caller,
     status: 'OPEN',
     reviewers: [],
+    activities: [],
     timestamp: Date.now(),
     baseRepo: payload.baseRepo,
     compareRepo: payload.compareRepo
@@ -130,7 +140,44 @@ export async function updatePullRequestStatus(
     throw new ContractError('Pull Request not found.')
   }
 
-  PR.status = payload.status
+  if (PR.status === 'MERGED') {
+    throw new Error('Pull Request already merged')
+  }
+
+  const validStatusValues = ['REOPEN', 'CLOSED', 'MERGED']
+  if (!validStatusValues.includes(payload.status)) {
+    throw new ContractError('Invalid Pull Request status specified. Must be one of: ' + validStatusValues.join(', '))
+  }
+
+  if (PR.status === payload.status) {
+    throw new ContractError('Pull Request status is already set to the specified status.')
+  }
+
+  if (PR.status === 'OPEN' && payload.status === 'REOPEN') {
+    throw new ContractError('Pull Request status is already set to OPEN')
+  }
+
+  if (PR.status === 'CLOSED' && payload.status === 'MERGED') {
+    throw new Error('Pull Request is closed; Reopen to merge')
+  }
+
+  const activity: PullRequestActivity = {
+    type: 'STATUS',
+    author: caller,
+    timestamp: getBlockTimeStamp(),
+    status: payload.status
+  }
+
+  if (!PR.activities || !Array.isArray(PR.activities)) {
+    PR.activities = []
+  }
+
+  PR.status = PR.status === 'CLOSED' && payload.status === 'REOPEN' ? 'OPEN' : payload.status
+  PR.activities.push(activity)
+
+  if (PR.status === 'MERGED') {
+    PR.mergedTimestamp = getBlockTimeStamp()
+  }
 
   return { state }
 }
@@ -253,6 +300,48 @@ export async function approvePR(
   }
 
   PR.reviewers[reviewerIdx].approved = true
+
+  return { state }
+}
+
+export async function addCommentToPR(
+  state: ContractState,
+  { caller, input: { payload } }: RepositoryAction
+): Promise<ContractResult<ContractState>> {
+  if (!payload.repoId || !payload.prId || !payload.comment) {
+    throw new ContractError('Invalid inputs supplied.')
+  }
+
+  const repo = state.repos[payload.repoId]
+
+  if (!repo) {
+    throw new ContractError('Repo not found.')
+  }
+
+  const hasPermissions = caller === repo.owner || repo.contributors.indexOf(caller) > -1
+
+  if (!hasPermissions) {
+    throw new ContractError('Error: You dont have permissions for this operation.')
+  }
+
+  const PR = repo.pullRequests[+payload.prId - 1]
+
+  if (!PR) {
+    throw new ContractError('Pull Request not found.')
+  }
+
+  if (!PR.activities || !Array.isArray(PR.activities)) {
+    PR.activities = []
+  }
+
+  const comment: PullRequestActivityComment = {
+    type: 'COMMENT',
+    author: caller,
+    description: payload.comment,
+    timestamp: getBlockTimeStamp()
+  }
+
+  PR.activities.push(comment)
 
   return { state }
 }

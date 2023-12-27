@@ -1,3 +1,4 @@
+import { formatDistanceToNow } from 'date-fns'
 import { FaArrowLeft } from 'react-icons/fa'
 import { FiGitMerge, FiGitPullRequest } from 'react-icons/fi'
 import { RiGitClosePullRequestLine } from 'react-icons/ri'
@@ -54,6 +55,8 @@ export default function PullRequestHeader({
     }
   }
 
+  console.log(PR)
+
   return (
     <div className="flex flex-col gap-2 border-b-[1px] border-gray-200 pb-4">
       <div>
@@ -71,7 +74,7 @@ export default function PullRequestHeader({
           >
             {PR?.author && shortenAddress(PR?.author)}
           </span>{' '}
-          wants to merge{' '}
+          {PR.status !== 'MERGED' ? 'wants to merge' : 'merged'}{' '}
           <span
             className="text-primary-600 bg-primary-200 px-1 cursor-pointer"
             onClick={() => gotoBranch(PR.compareRepo.repoId, PR?.compareBranch)}
@@ -84,7 +87,10 @@ export default function PullRequestHeader({
             onClick={() => gotoBranch(PR.baseRepo.repoId, PR?.baseBranch)}
           >
             {isMergeInSameRepo ? PR?.baseBranch : `${shortenAddress(repo.owner)}:${PR?.baseBranch}`}
-          </span>
+          </span>{' '}
+          {PR.status === 'MERGED' &&
+            PR.mergedTimestamp &&
+            formatDistanceToNow(new Date(PR.mergedTimestamp), { addSuffix: true })}
         </div>
       </div>
     </div>

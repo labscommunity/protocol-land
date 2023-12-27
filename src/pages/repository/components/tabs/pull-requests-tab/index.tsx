@@ -52,6 +52,7 @@ export default function PullRequestsTab() {
               title={pr.title}
               status={pr.status}
               timestamp={pr.timestamp}
+              mergedTimestamp={pr.mergedTimestamp}
             />
           ))}
           {/* <PullRequestRow status="OPEN" />
