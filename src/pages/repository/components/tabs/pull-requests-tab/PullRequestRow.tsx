@@ -54,7 +54,7 @@ export default function PullRequestRow({ status, author, id, title, timestamp, m
           <span> {formatDistanceToNow(new Date(timestamp), { addSuffix: true })}</span>
         )}
         {status === 'MERGED' && mergedTimestamp && (
-          <span> {formatDistanceToNow(new Date(timestamp), { addSuffix: true })}</span>
+          <span> {formatDistanceToNow(new Date(mergedTimestamp), { addSuffix: true })}</span>
         )}
       </div>
     </div>

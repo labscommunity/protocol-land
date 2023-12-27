@@ -233,6 +233,7 @@ const createPullRequestSlice: StateCreator<CombinedSlices, [['zustand/immer', ne
           const PR = state.repoCoreState.selectedRepo.repo!.pullRequests[id - 1]
           PR.activities = activities
           PR.status = 'MERGED'
+          PR.mergedTimestamp = response?.mergedTimestamp
         })
 
         trackGoogleAnalyticsEvent('Repository', 'Merge a PR', 'Merge PR', {
