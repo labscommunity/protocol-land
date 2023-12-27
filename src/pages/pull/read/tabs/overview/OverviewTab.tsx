@@ -97,7 +97,7 @@ export default function OverviewTab() {
   const isMerged = PR.status === 'MERGED'
 
   return (
-    <div className="flex gap-6">
+    <div className="flex gap-6 pb-10">
       <div className="flex flex-col w-full">
         <div className="flex flex-col gap-8">
           <ol className="relative border-s-2 border-gray-300 ms-5">
