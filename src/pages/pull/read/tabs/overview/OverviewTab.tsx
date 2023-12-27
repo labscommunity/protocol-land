@@ -5,6 +5,7 @@ import { useState } from 'react'
 import toast from 'react-hot-toast'
 import { AiFillCloseCircle } from 'react-icons/ai'
 import { FiGitMerge } from 'react-icons/fi'
+import { GoEye } from 'react-icons/go'
 import { IoMdCheckmark } from 'react-icons/io'
 import { VscGitMerge, VscGitPullRequest, VscGitPullRequestClosed } from 'react-icons/vsc'
 import { useNavigate, useParams } from 'react-router-dom'
@@ -23,7 +24,8 @@ const StatusColorMap = {
   REOPEN: 'bg-[#38a457]',
   MERGED: 'bg-purple-700',
   CLOSED: 'bg-red-700',
-  APPROVAL: 'bg-[#38a457]'
+  APPROVAL: 'bg-[#38a457]',
+  REVIEW_REQUEST: 'bg-gray-300'
 }
 
 const StatusLogoMap = {
@@ -31,6 +33,7 @@ const StatusLogoMap = {
   MERGED: <VscGitMerge className="h-4 w-4 text-white" />,
   CLOSED: <VscGitPullRequestClosed className="h-4 w-4 text-white" />,
   APPROVAL: <IoMdCheckmark className="h-4 w-4 text-white" />,
+  REVIEW_REQUEST: <GoEye className="h-4 w-4 text-gray-700" />,
   OPEN: <></>
 }
 
@@ -39,7 +42,8 @@ const StatusTextMap = {
   CLOSED: 'closed',
   MERGED: 'merged',
   REOPEN: 'reopened',
-  APPROVAL: 'approved'
+  APPROVAL: 'approved',
+  REVIEW_REQUEST: 'requested review'
 }
 
 export default function OverviewTab() {
@@ -119,6 +123,10 @@ export default function OverviewTab() {
     }
   }
 
+  function getSeperator(currentIndex: number, array: Array<string>) {
+    return currentIndex < array.length - 2 ? ', ' : currentIndex === array.length - 2 ? ' and ' : ''
+  }
+
   const formatTimestamp = (timestamp: number) => formatDistanceToNow(new Date(timestamp), { addSuffix: true })
 
   if (!PR) return null
@@ -174,8 +182,23 @@ export default function OverviewTab() {
                           {shortenAddress(statusActivity.author)}
                         </span>
                         <span className="text-gray-500">
-                          {StatusTextMap[statusActivity.status]} this{' '}
-                          {statusActivity.status === 'APPROVAL' && 'changes'}{' '}
+                          {StatusTextMap[statusActivity.status]}{' '}
+                          {statusActivity.status !== 'REVIEW_REQUEST' ? 'this' : 'from'}{' '}
+                          {statusActivity.status === 'APPROVAL' && 'changes'}
+                          {statusActivity.status === 'REVIEW_REQUEST' &&
+                            statusActivity?.reviewers &&
+                            statusActivity.reviewers?.map((reviewer, index) => (
+                              <>
+                                <span
+                                  id={`reviewer-${index}`}
+                                  className="text-black font-medium hover:underline cursor-pointer hover:text-primary-700"
+                                  onClick={() => navigate(`/user/${reviewer}`)}
+                                >
+                                  {shortenAddress(reviewer)}
+                                </span>
+                                {getSeperator(index, statusActivity.reviewers!)}
+                              </>
+                            ))}{' '}
                           {formatTimestamp(statusActivity.timestamp)}
                         </span>
                       </div>

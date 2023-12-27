@@ -111,7 +111,8 @@ export interface IssueActivityStatus extends BaseActivity {
 }
 
 export interface PullRequestActivityStatus extends BaseActivity {
-  status: PullRequestStatus | 'REOPEN' | 'APPROVAL'
+  status: PullRequestStatus | 'REOPEN' | 'APPROVAL' | 'REVIEW_REQUEST'
+  reviewers?: Array<string>
 }
 
 export interface IssueActivityComment extends BaseActivity {

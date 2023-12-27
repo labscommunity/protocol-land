@@ -234,7 +234,12 @@ export async function addReviewersToPR(
   state: ContractState,
   { input: { payload }, caller }: RepositoryAction
 ): Promise<ContractResult<ContractState>> {
-  if (!payload.repoId || !payload.prId || !payload.reviewers) {
+  if (
+    isInvalidInput(payload, 'object') ||
+    isInvalidInput(payload.repoId) ||
+    isInvalidInput(payload.prId, ['number', 'string']) ||
+    isInvalidInput(payload.reviewers, 'array')
+  ) {
     throw new ContractError('Invalid inputs supplied.')
   }
 
@@ -264,12 +269,25 @@ export async function addReviewersToPR(
     throw new ContractError('No new reviewers to add.')
   }
 
+  if (!Array.isArray(PR.activities)) {
+    PR.activities = []
+  }
+
   const reviewers: Reviewer[] = newReviewers.map((reviewer: string) => ({
     address: reviewer,
     approved: false
   }))
 
+  const reviewRequestActivity: PullRequestActivityStatus = {
+    type: 'STATUS',
+    author: caller,
+    status: 'REVIEW_REQUEST',
+    timestamp: getBlockTimeStamp(),
+    reviewers: newReviewers
+  }
+
   PR.reviewers.push(...reviewers)
+  PR.activities.push(reviewRequestActivity)
 
   return { state }
 }

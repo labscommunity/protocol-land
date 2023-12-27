@@ -316,6 +316,22 @@ export async function addReviewersToPR({ reviewers, repoId, prId }: AddReviewers
       reviewers
     }
   })
+
+  const {
+    cachedValue: {
+      state: { repos }
+    }
+  } = await contract.readState()
+
+  const PRs = repos[repoId]?.pullRequests
+
+  if (!PRs) return
+
+  const PR = PRs[prId - 1]
+
+  if (!PR) return
+
+  return PR
 }
 
 export async function approvePR({ repoId, prId }: ApprovePROptions) {

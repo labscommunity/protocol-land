@@ -1,4 +1,4 @@
-type ExpectedType = 'string' | 'number' | 'bigint' | 'boolean' | 'symbol' | 'undefined' | 'object' | 'function'
+type ExpectedType = 'string' | 'number' | 'bigint' | 'boolean' | 'symbol' | 'object' | 'function' | 'array'
 
 /**
  * Checks if the given input is invalid based on its type, comparing it against one or more expected types.
@@ -10,6 +10,6 @@ type ExpectedType = 'string' | 'number' | 'bigint' | 'boolean' | 'symbol' | 'und
  */
 export const isInvalidInput = (input: any, expectedTypes: ExpectedType | ExpectedType[] = ['string']) =>
   !input ||
-  !(Array.isArray(expectedTypes) ? expectedTypes : [expectedTypes]).some(
-    (expectedType) => typeof input === expectedType
+  !(Array.isArray(expectedTypes) ? expectedTypes : [expectedTypes]).some((expectedType) =>
+    expectedType === 'array' ? Array.isArray(input) : typeof input === expectedType
   )

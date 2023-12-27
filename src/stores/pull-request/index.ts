@@ -397,13 +397,18 @@ const createPullRequestSlice: StateCreator<CombinedSlices, [['zustand/immer', ne
         return
       }
 
-      const { error } = await withAsync(() => addReviewersToPR({ repoId: repo.id, prId: id, reviewers }))
+      const { response, error } = await withAsync(() => addReviewersToPR({ repoId: repo.id, prId: id, reviewers }))
 
-      if (!error) {
+      if (!error && response) {
+        const activities = response?.activities
+        if (!activities || !Array.isArray(activities)) return
+
         set((state) => {
+          const PR = state.repoCoreState.selectedRepo.repo!.pullRequests[id - 1]
           const reviewersMap = reviewers.map((address) => ({ address, approved: false }))
 
-          state.repoCoreState.selectedRepo.repo!.pullRequests[id - 1].reviewers.push(...reviewersMap)
+          PR.activities = activities
+          PR.reviewers.push(...reviewersMap)
         })
 
         trackGoogleAnalyticsEvent('Repository', 'Add or update PR reviewers', 'Modify PR reviewers', {
@@ -421,6 +426,7 @@ const createPullRequestSlice: StateCreator<CombinedSlices, [['zustand/immer', ne
           pr_id: id,
           result: 'FAILED'
         })
+        throw error
       }
     },
     addComment: async (id, comment) => {
