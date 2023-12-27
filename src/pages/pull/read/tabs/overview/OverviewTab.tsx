@@ -17,6 +17,27 @@ import { PullRequestActivityComment, PullRequestActivityStatus } from '@/types/r
 
 import Sidebar from '../../components/Sidebar'
 
+const StatusColorMap = {
+  OPEN: '',
+  REOPEN: 'bg-[#38a457]',
+  MERGED: 'bg-purple-700',
+  CLOSED: 'bg-red-700'
+}
+
+const StatusLogoMap = {
+  REOPEN: <VscGitPullRequest className="h-4 w-4 text-white" />,
+  MERGED: <VscGitMerge className="h-4 w-4 text-white" />,
+  CLOSED: <VscGitPullRequestClosed className="h-4 w-4 text-white" />,
+  OPEN: <></>
+}
+
+const StatusTextMap = {
+  OPEN: '',
+  CLOSED: 'closed',
+  MERGED: 'merged',
+  REOPEN: 'reopened'
+}
+
 export default function OverviewTab() {
   const [isSubmittingMerge, setIsSubmittingMerge] = useState(false)
   const [isSubmittingClose, setIsSubmittingClose] = useState(false)
@@ -82,17 +103,23 @@ export default function OverviewTab() {
     if (PR) {
       setIsSubmittingComment(true)
 
-      await addComment(PR.id, commentVal)
+      const { error } = await withAsync(() => addComment(PR.id, commentVal))
+
+      if (error) {
+        toast.error('Failed to add comment')
+      } else {
+        setCommentVal('')
+      }
 
       setIsSubmittingComment(false)
-      setCommentVal('')
     }
   }
+
+  const formatTimestamp = (timestamp: number) => formatDistanceToNow(new Date(timestamp), { addSuffix: true })
 
   if (!PR) return null
 
   const contributor = isContributor()
-
   const isOpen = PR.status === 'OPEN'
   const isMerged = PR.status === 'MERGED'
 
@@ -118,7 +145,7 @@ export default function OverviewTab() {
                           >
                             {shortenAddress(commentActivity.author)}
                           </span>
-                          <span> {formatDistanceToNow(new Date(commentActivity.timestamp), { addSuffix: true })}</span>
+                          <span> {formatTimestamp(commentActivity.timestamp)}</span>
                         </div>
                         <div className="text-gray-900 p-4 bg-white">
                           <MDEditor.Markdown source={commentActivity.description} />
@@ -131,23 +158,8 @@ export default function OverviewTab() {
                   return (
                     <li className="mb-10 ms-6">
                       <span className="absolute flex items-center justify-center rounded-full -start-4">
-                        <div
-                          className={clsx(
-                            'rounded-full p-[6px] flex',
-                            statusActivity.status === 'REOPEN'
-                              ? 'bg-[#38a457]'
-                              : statusActivity.status === 'MERGED'
-                              ? 'bg-purple-700'
-                              : 'bg-red-700'
-                          )}
-                        >
-                          {statusActivity.status === 'REOPEN' ? (
-                            <VscGitPullRequest className="h-4 w-4 text-white" />
-                          ) : statusActivity.status === 'MERGED' ? (
-                            <VscGitMerge className="h-4 w-4 text-white" />
-                          ) : (
-                            <VscGitPullRequestClosed className="h-4 w-4 text-white" />
-                          )}
+                        <div className={clsx('rounded-full p-[6px] flex', StatusColorMap[statusActivity.status])}>
+                          {StatusLogoMap[statusActivity.status]}
                         </div>
                       </span>
                       <div className="flex gap-1">
@@ -158,12 +170,7 @@ export default function OverviewTab() {
                           {shortenAddress(statusActivity.author)}
                         </span>
                         <span className="text-gray-500">
-                          {statusActivity.status === 'CLOSED'
-                            ? 'closed this'
-                            : statusActivity.status === 'MERGED'
-                            ? 'merged this'
-                            : 'reopened this'}{' '}
-                          {formatDistanceToNow(new Date(statusActivity.timestamp), { addSuffix: true })}
+                          {StatusTextMap[statusActivity.status]} this {formatTimestamp(statusActivity.timestamp)}
                         </span>
                       </div>
                     </li>

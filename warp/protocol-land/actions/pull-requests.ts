@@ -168,7 +168,7 @@ export async function updatePullRequestStatus(
     status: payload.status
   }
 
-  if (!PR.activities || !Array.isArray(PR.activities)) {
+  if (!Array.isArray(PR.activities)) {
     PR.activities = []
   }
 
@@ -330,7 +330,7 @@ export async function addCommentToPR(
     throw new ContractError('Pull Request not found.')
   }
 
-  if (!PR.activities || !Array.isArray(PR.activities)) {
+  if (!Array.isArray(PR.activities)) {
     PR.activities = []
   }
 
