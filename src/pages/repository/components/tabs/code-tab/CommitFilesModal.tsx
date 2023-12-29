@@ -44,10 +44,10 @@ export default function CommitFilesModal({ setIsOpen, setIsCommited, isOpen, fil
 
   const { addFiles } = useCommit()
   const { id } = useParams()
-  const [userRepo, address, loadFilesFromRepo] = useGlobalStore((state) => [
+  const [userRepo, address] = useGlobalStore((state) => [
     state.repoCoreState.selectedRepo.repo,
-    state.authState.address,
-    state.repoCoreActions.loadFilesFromRepo
+    state.authState.address
+    // state.repoCoreActions.loadFilesFromRepo
   ])
 
   const [fileSizes, setFileSizes] = React.useState<number[]>([])
@@ -82,8 +82,8 @@ export default function CommitFilesModal({ setIsOpen, setIsCommited, isOpen, fil
       )
 
       if (!error) {
-        await loadFilesFromRepo()
         setIsCommited(true)
+        // await loadFilesFromRepo()
         closeModal()
       } else {
         toast.error('Failed to commit changes')
