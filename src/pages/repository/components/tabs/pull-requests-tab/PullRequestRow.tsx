@@ -12,6 +12,7 @@ type Props = {
   id: number
   author: string
   timestamp: number
+  mergedTimestamp?: number
 }
 
 const STATUS_TO_ICON_MAP = {
@@ -20,7 +21,7 @@ const STATUS_TO_ICON_MAP = {
   MERGED: () => <FiGitMerge className="w-5 h-5 text-purple-700" />
 }
 
-export default function PullRequestRow({ status, author, id, title, timestamp }: Props) {
+export default function PullRequestRow({ status, author, id, title, timestamp, mergedTimestamp }: Props) {
   const navigate = useNavigate()
   const { id: repoId } = useParams()
 
@@ -42,10 +43,19 @@ export default function PullRequestRow({ status, author, id, title, timestamp }:
         </div>
         <span className="font-medium text-lg">{title}</span>
       </div>
-      <div className="flex gap-3 flex-shrink-0">
+      <div className="flex gap-1 flex-shrink-0">
         <span className="font-semibold">#{id}</span>
-        <span>opened by {shortenAddress(author)}</span>
-        {timestamp && <span> {formatDistanceToNow(new Date(timestamp), { addSuffix: true })}</span>}
+        {status !== 'MERGED' ? (
+          <span>opened by {shortenAddress(author)}</span>
+        ) : (
+          <span>by {shortenAddress(author)} was merged</span>
+        )}
+        {status !== 'MERGED' && timestamp && (
+          <span> {formatDistanceToNow(new Date(timestamp), { addSuffix: true })}</span>
+        )}
+        {status === 'MERGED' && mergedTimestamp && (
+          <span> {formatDistanceToNow(new Date(mergedTimestamp), { addSuffix: true })}</span>
+        )}
       </div>
     </div>
   )

@@ -60,7 +60,9 @@ export type PullRequest = {
   author: string
   status: PullRequestStatus
   reviewers: Reviewer[]
+  activities: PullRequestActivity[]
   timestamp: number
+  mergedTimestamp?: number
   baseRepo: {
     repoName: string
     repoId: string
@@ -96,6 +98,8 @@ export type Bounty = {
 
 export type IssueActivity = IssueActivityStatus | IssueActivityComment
 
+export type PullRequestActivity = PullRequestActivityStatus | PullRequestActivityComment
+
 export type BaseActivity = {
   type: ActivityType
   author: string
@@ -106,7 +110,16 @@ export interface IssueActivityStatus extends BaseActivity {
   status: IssueStatus | 'REOPEN'
 }
 
+export interface PullRequestActivityStatus extends BaseActivity {
+  status: PullRequestStatus | 'REOPEN' | 'APPROVAL' | 'REVIEW_REQUEST'
+  reviewers?: Array<string>
+}
+
 export interface IssueActivityComment extends BaseActivity {
+  description: string
+}
+
+export interface PullRequestActivityComment extends BaseActivity {
   description: string
 }
 

@@ -5,8 +5,9 @@ import { FiCheck, FiPlus } from 'react-icons/fi'
 import { useParams } from 'react-router-dom'
 
 import { Button } from '@/components/common/buttons'
-import { useGlobalStore } from '@/stores/globalStore'
 import { shortenAddress } from '@/helpers/shortenAddress'
+import { withAsync } from '@/helpers/withAsync'
+import { useGlobalStore } from '@/stores/globalStore'
 
 export default function ReviewerAdd() {
   const [isLoading, setIsLoading] = React.useState(false)
@@ -24,9 +25,14 @@ export default function ReviewerAdd() {
     if (reviewers.length > 0 && pullId) {
       setIsLoading(true)
 
-      await addReviewers(+pullId, reviewers)
-      setReviewers([])
-      toast.success('Successfully added reviewers')
+      const { error } = await withAsync(() => addReviewers(+pullId, reviewers))
+
+      if (error) {
+        toast.error('Failed to add reviewers')
+      } else {
+        setReviewers([])
+        toast.success('Successfully added reviewers')
+      }
 
       setIsLoading(false)
     }

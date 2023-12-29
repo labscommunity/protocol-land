@@ -9,6 +9,7 @@ import {
   updateIssueStatus
 } from './actions/issues'
 import {
+  addCommentToPR,
   addReviewersToPR,
   approvePR,
   createNewPullRequest,
@@ -79,6 +80,8 @@ export async function handle(state: ContractState, action: RepositoryAction | Ev
       return await updatePullRequestDetails(state, action as RepositoryAction)
     case 'addReviewersToPR':
       return await addReviewersToPR(state, action as RepositoryAction)
+    case 'addCommentToPR':
+      return await addCommentToPR(state, action as RepositoryAction)
     case 'approvePR':
       return await approvePR(state, action as RepositoryAction)
     case 'createIssue':

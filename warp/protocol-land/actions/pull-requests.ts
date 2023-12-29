@@ -1,4 +1,15 @@
-import { ContractResult, ContractState, PullRequest, RepositoryAction, Reviewer } from '../types'
+import {
+  ContractResult,
+  ContractState,
+  PullRequest,
+  PullRequestActivity,
+  PullRequestActivityComment,
+  PullRequestActivityStatus,
+  RepositoryAction,
+  Reviewer
+} from '../types'
+import { getBlockTimeStamp } from '../utils/getBlockTimeStamp'
+import { isInvalidInput } from '../utils/isInvalidInput'
 
 declare const ContractError
 
@@ -50,6 +61,7 @@ export async function createNewPullRequest(
     author: caller,
     status: 'OPEN',
     reviewers: [],
+    activities: [],
     timestamp: Date.now(),
     baseRepo: payload.baseRepo,
     compareRepo: payload.compareRepo
@@ -108,7 +120,12 @@ export async function updatePullRequestStatus(
   state: ContractState,
   { input: { payload }, caller }: RepositoryAction
 ): Promise<ContractResult<ContractState>> {
-  if (!payload.status || !payload.repoId || !payload.prId) {
+  if (
+    isInvalidInput(payload, 'object') ||
+    isInvalidInput(payload.repoId) ||
+    isInvalidInput(payload.prId, ['number', 'string']) ||
+    isInvalidInput(payload.status)
+  ) {
     throw new ContractError('Invalid inputs supplied.')
   }
 
@@ -130,7 +147,44 @@ export async function updatePullRequestStatus(
     throw new ContractError('Pull Request not found.')
   }
 
-  PR.status = payload.status
+  if (PR.status === 'MERGED') {
+    throw new Error('Pull Request already merged')
+  }
+
+  const validStatusValues = ['REOPEN', 'CLOSED', 'MERGED']
+  if (!validStatusValues.includes(payload.status)) {
+    throw new ContractError('Invalid Pull Request status specified. Must be one of: ' + validStatusValues.join(', '))
+  }
+
+  if (PR.status === payload.status) {
+    throw new ContractError('Pull Request status is already set to the specified status.')
+  }
+
+  if (PR.status === 'OPEN' && payload.status === 'REOPEN') {
+    throw new ContractError('Pull Request status is already set to OPEN')
+  }
+
+  if (PR.status === 'CLOSED' && payload.status === 'MERGED') {
+    throw new Error('Pull Request is closed; Reopen to merge')
+  }
+
+  const activity: PullRequestActivity = {
+    type: 'STATUS',
+    author: caller,
+    timestamp: getBlockTimeStamp(),
+    status: payload.status
+  }
+
+  if (!Array.isArray(PR.activities)) {
+    PR.activities = []
+  }
+
+  PR.status = PR.status === 'CLOSED' && payload.status === 'REOPEN' ? 'OPEN' : payload.status
+  PR.activities.push(activity)
+
+  if (PR.status === 'MERGED') {
+    PR.mergedTimestamp = getBlockTimeStamp()
+  }
 
   return { state }
 }
@@ -180,7 +234,12 @@ export async function addReviewersToPR(
   state: ContractState,
   { input: { payload }, caller }: RepositoryAction
 ): Promise<ContractResult<ContractState>> {
-  if (!payload.repoId || !payload.prId || !payload.reviewers) {
+  if (
+    isInvalidInput(payload, 'object') ||
+    isInvalidInput(payload.repoId) ||
+    isInvalidInput(payload.prId, ['number', 'string']) ||
+    isInvalidInput(payload.reviewers, 'array')
+  ) {
     throw new ContractError('Invalid inputs supplied.')
   }
 
@@ -210,12 +269,25 @@ export async function addReviewersToPR(
     throw new ContractError('No new reviewers to add.')
   }
 
+  if (!Array.isArray(PR.activities)) {
+    PR.activities = []
+  }
+
   const reviewers: Reviewer[] = newReviewers.map((reviewer: string) => ({
     address: reviewer,
     approved: false
   }))
 
+  const reviewRequestActivity: PullRequestActivityStatus = {
+    type: 'STATUS',
+    author: caller,
+    status: 'REVIEW_REQUEST',
+    timestamp: getBlockTimeStamp(),
+    reviewers: newReviewers
+  }
+
   PR.reviewers.push(...reviewers)
+  PR.activities.push(reviewRequestActivity)
 
   return { state }
 }
@@ -224,7 +296,11 @@ export async function approvePR(
   state: ContractState,
   { caller, input: { payload } }: RepositoryAction
 ): Promise<ContractResult<ContractState>> {
-  if (!payload.repoId || !payload.prId) {
+  if (
+    isInvalidInput(payload, 'object') ||
+    isInvalidInput(payload.repoId) ||
+    isInvalidInput(payload.prId, ['number', 'string'])
+  ) {
     throw new ContractError('Invalid inputs supplied.')
   }
 
@@ -252,7 +328,67 @@ export async function approvePR(
     throw new ContractError('Reviewer not found.')
   }
 
-  PR.reviewers[reviewerIdx].approved = true
+  if (!PR.reviewers[reviewerIdx].approved) {
+    if (!Array.isArray(PR.activities)) {
+      PR.activities = []
+    }
+
+    const activity: PullRequestActivityStatus = {
+      type: 'STATUS',
+      status: 'APPROVAL',
+      author: caller,
+      timestamp: getBlockTimeStamp()
+    }
+    PR.reviewers[reviewerIdx].approved = true
+    PR.activities.push(activity)
+  }
+
+  return { state }
+}
+
+export async function addCommentToPR(
+  state: ContractState,
+  { caller, input: { payload } }: RepositoryAction
+): Promise<ContractResult<ContractState>> {
+  if (
+    isInvalidInput(payload, 'object') ||
+    isInvalidInput(payload.repoId) ||
+    isInvalidInput(payload.prId, ['number', 'string']) ||
+    isInvalidInput(payload.comment)
+  ) {
+    throw new ContractError('Invalid inputs supplied.')
+  }
+
+  const repo = state.repos[payload.repoId]
+
+  if (!repo) {
+    throw new ContractError('Repo not found.')
+  }
+
+  const hasPermissions = caller === repo.owner || repo.contributors.indexOf(caller) > -1
+
+  if (!hasPermissions) {
+    throw new ContractError('Error: You dont have permissions for this operation.')
+  }
+
+  const PR = repo.pullRequests[+payload.prId - 1]
+
+  if (!PR) {
+    throw new ContractError('Pull Request not found.')
+  }
+
+  if (!Array.isArray(PR.activities)) {
+    PR.activities = []
+  }
+
+  const comment: PullRequestActivityComment = {
+    type: 'COMMENT',
+    author: caller,
+    description: payload.comment,
+    timestamp: getBlockTimeStamp()
+  }
+
+  PR.activities.push(comment)
 
   return { state }
 }

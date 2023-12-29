@@ -1,11 +1,13 @@
 import { useState } from 'react'
+import toast from 'react-hot-toast'
 import { FiCheck } from 'react-icons/fi'
 import { PiDotDuotone } from 'react-icons/pi'
 import { useParams } from 'react-router-dom'
 
 import { Button } from '@/components/common/buttons'
-import { useGlobalStore } from '@/stores/globalStore'
 import { shortenAddress } from '@/helpers/shortenAddress'
+import { withAsync } from '@/helpers/withAsync'
+import { useGlobalStore } from '@/stores/globalStore'
 
 import ReviewerAdd from './ReviewerAdd'
 
@@ -27,7 +29,10 @@ export default function Sidebar() {
     if (!isLoggedIn) return
 
     setIsApproving(true)
-    await approvePR(+pullId!)
+    const { error } = await withAsync(() => approvePR(+pullId!))
+    if (error) {
+      toast.error('Failed to approve pull request.')
+    }
     setIsApproving(false)
   }
 
