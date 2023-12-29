@@ -26,7 +26,10 @@ interface FileViewProps {
 }
 
 export default function FileView({ fileContent, setFileContent, filename, setFilename, filePath }: FileViewProps) {
-  const [isContributor] = useGlobalStore((state) => [state.repoCoreActions.isContributor])
+  const [loadFilesFromRepo, isContributor] = useGlobalStore((state) => [
+    state.repoCoreActions.loadFilesFromRepo,
+    state.repoCoreActions.isContributor
+  ])
   const [isCommitModalOpen, setIsCommitModalOpen] = React.useState(false)
   const [isSubmitting, setIsSubmitting] = React.useState(false)
   const [isEditMode, setIsEditMode] = React.useState(false)
@@ -41,6 +44,7 @@ export default function FileView({ fileContent, setFileContent, filename, setFil
       setFileContent({ original: fileContent.modified, modified: fileContent.modified })
       setIsEditMode(false)
       setIsPreviewMode(false)
+      loadFilesFromRepo()
     }
   }, [isFileCommited])
 

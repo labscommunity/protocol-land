@@ -8,6 +8,7 @@ import { useGlobalStore } from '@/stores/globalStore'
 
 import FileView from './FileView'
 import Header from './header/Header'
+import NewFile from './NewFile'
 import RepoError from './RepoError'
 import RepoLoading from './RepoLoading'
 import Row from './Row'
@@ -43,10 +44,6 @@ export default function CodeTab({ repoName = '', id = '' }: Props) {
     fetchFirstCommit(id)
   }, [currentBranch])
 
-  function getFullFilePath(prefix: string, path: string) {
-    return '/' + (prefix + '/' + path).split('/').filter(Boolean).join('/')
-  }
-
   function handleFolderClick(fileObject: any) {
     if (fileObject.oid !== git.currentOid) {
       gitActions.pushParentOid(git.currentOid)
@@ -67,7 +64,7 @@ export default function CodeTab({ repoName = '', id = '' }: Props) {
 
     setFileContent({ original: fileContent, modified: fileContent })
     setFilename(fileObject.path)
-    setFilePath(getFullFilePath(fileObject.prefix, fileObject.path))
+    setFilePath(`/${fileObject.prefix}`)
   }
 
   if (git.status === 'PENDING') {
@@ -83,11 +80,15 @@ export default function CodeTab({ repoName = '', id = '' }: Props) {
     return <RepoError />
   }
 
-  if (git.status === 'SUCCESS' && filename) {
+  if (git.status === 'SUCCESS' && (filename || git.isCreateNewFile)) {
     trackGoogleAnalyticsEvent('Repository', 'Load a repo', 'Successfully loaded a repo', {
       repo_id: id,
       repo_name: repoName
     })
+
+    if (git.isCreateNewFile) {
+      return <NewFile />
+    }
 
     return (
       <FileView

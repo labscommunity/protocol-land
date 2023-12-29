@@ -40,8 +40,9 @@ export default function AddFilesModal({ setIsOpen, isOpen }: NewBranchModal) {
 
   const { addFiles } = useCommit()
   const { id } = useParams()
-  const [git, userRepo, address, loadFilesFromRepo] = useGlobalStore((state) => [
+  const [git, getCurrentFolderPath, userRepo, address, loadFilesFromRepo] = useGlobalStore((state) => [
     state.repoCoreState.git,
+    state.repoCoreActions.git.getCurrentFolderPath,
     state.repoCoreState.selectedRepo.repo,
     state.authState.address,
     state.repoCoreActions.loadFilesFromRepo
@@ -77,7 +78,7 @@ export default function AddFilesModal({ setIsOpen, isOpen }: NewBranchModal) {
     if (files.length > 0 && userRepo) {
       setIsSubmitting(true)
 
-      const basePath = git.fileObjects[0].prefix
+      const basePath = getCurrentFolderPath()
 
       const updatedFiles = files.map((file) => {
         const updatedPath = joinPaths(basePath, file.path!)

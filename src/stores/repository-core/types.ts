@@ -39,6 +39,7 @@ export type RepoCoreState = {
     fileObjects: FileObject[]
     commits: CommitResult[]
     commitSourceBranch: string
+    isCreateNewFile: boolean
   }
 }
 
@@ -68,9 +69,11 @@ export type RepoCoreActions = {
     readFileContentFromOid: (oid: string) => Promise<Uint8Array | null>
     setCurrentOid: (oid: string) => void
     setRootOid: (oid: string) => void
+    setIsCreateNewFile: (value: boolean) => void
     pushParentOid: (oid: string) => void
     popParentOid: () => string
     goBack: () => Promise<void>
+    getCurrentFolderPath: () => string
     downloadRepository: () => Promise<null | undefined>
     setCommits: (commits: CommitResult[]) => void
   }

@@ -60,7 +60,8 @@ const initialRepoCoreState: RepoCoreState = {
     fileObjects: [],
     parentsOidList: [],
     commits: [],
-    commitSourceBranch: ''
+    commitSourceBranch: '',
+    isCreateNewFile: false
   }
 }
 
@@ -592,6 +593,11 @@ const createRepoCoreSlice: StateCreator<CombinedSlices, [['zustand/immer', never
           state.repoCoreState.git.rootOid = oid
         })
       },
+      setIsCreateNewFile: (value: boolean) => {
+        set((state) => {
+          state.repoCoreState.git.isCreateNewFile = value
+        })
+      },
       readFilesFromOid: async (oid, prefix) => {
         const repo = get().repoCoreState.selectedRepo.repo
         const status = get().repoCoreState.selectedRepo.status
@@ -687,6 +693,11 @@ const createRepoCoreSlice: StateCreator<CombinedSlices, [['zustand/immer', never
           state.repoCoreState.git.parentsOidList.push(oid)
         })
       },
+      getCurrentFolderPath: () => {
+        const fileObject = get().repoCoreState.git.fileObjects?.[0]
+        if (!fileObject) return ''
+        return fileObject.prefix.split('/').slice(0, -1).join('/')
+      },
       goBack: async () => {
         let currentOid = ''
 
@@ -699,7 +710,7 @@ const createRepoCoreSlice: StateCreator<CombinedSlices, [['zustand/immer', never
 
         if (currentOid) {
           const fileObject = get().repoCoreState.git.fileObjects[0]
-          const prefix = fileObject.prefix.split('/').slice(0, -1).join('/')
+          const prefix = fileObject.prefix.split('/').slice(0, -2).join('/')
           await get().repoCoreActions.git.readFilesFromOid(currentOid, prefix)
         }
       }

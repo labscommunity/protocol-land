@@ -8,7 +8,10 @@ import { useGlobalStore } from '@/stores/globalStore'
 import AddFilesModal from './AddFilesModal'
 
 export default function AddFilesButton() {
-  const [isContributor] = useGlobalStore((state) => [state.repoCoreActions.isContributor])
+  const [isContributor, setIsCreateNewFile] = useGlobalStore((state) => [
+    state.repoCoreActions.isContributor,
+    state.repoCoreActions.git.setIsCreateNewFile
+  ])
   const [isAddFilesModalOpen, setIsAddFilesModalOpen] = React.useState(false)
 
   const contributor = isContributor()
@@ -17,7 +20,7 @@ export default function AddFilesButton() {
 
   return (
     <div>
-      <Menu as="div">
+      <Menu as="div" className="relative inline-block text-left">
         <div>
           <Button as={Menu.Button} variant="primary-solid">
             Add file
@@ -38,6 +41,7 @@ export default function AddFilesButton() {
               <Menu.Item>
                 {({ active }) => (
                   <button
+                    onClick={() => setIsCreateNewFile(true)}
                     className={`${
                       active ? 'bg-gray-200' : ''
                     } group flex w-full items-center rounded-md px-2 py-2 text-sm text-gray-900`}
@@ -50,7 +54,10 @@ export default function AddFilesButton() {
               <Menu.Item>
                 {({ active }) => (
                   <button
-                    onClick={() => setIsAddFilesModalOpen(true)}
+                    onClick={() => {
+                      setIsCreateNewFile(false)
+                      setIsAddFilesModalOpen(true)
+                    }}
                     className={`${
                       active ? 'bg-gray-200' : ''
                     } group flex w-full items-center rounded-md px-2 py-2 text-sm text-gray-900`}
