@@ -8,7 +8,7 @@ export async function readFilesFromOid({ fs, dir, oid, prefix }: ReadFilesFromOi
   const { tree } = await git.readTree({ fs, dir, oid })
 
   for (const entry of tree) {
-    const updatedPrefix = join(prefix, entry.path)
+    const updatedPrefix = entry.type === 'tree' ? join(prefix, entry.path) : prefix
     const _oid = entry.oid
     const path = entry.path
     let type = 'file'

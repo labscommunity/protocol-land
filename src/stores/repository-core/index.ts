@@ -566,7 +566,7 @@ const createRepoCoreSlice: StateCreator<CombinedSlices, [['zustand/immer', never
       }
 
       if (response) {
-        await get().repoCoreActions.git.readFilesFromOid(response)
+        await get().repoCoreActions.git.readFilesFromOid(response, '')
 
         set((state) => {
           state.repoCoreState.git.rootOid = response
@@ -592,7 +592,7 @@ const createRepoCoreSlice: StateCreator<CombinedSlices, [['zustand/immer', never
           state.repoCoreState.git.rootOid = oid
         })
       },
-      readFilesFromOid: async (oid) => {
+      readFilesFromOid: async (oid, prefix) => {
         const repo = get().repoCoreState.selectedRepo.repo
         const status = get().repoCoreState.selectedRepo.status
 
@@ -608,7 +608,7 @@ const createRepoCoreSlice: StateCreator<CombinedSlices, [['zustand/immer', never
           return
         }
 
-        const { error, response } = await withAsync(() => getFilesFromOid(repo.id, oid))
+        const { error, response } = await withAsync(() => getFilesFromOid(repo.id, oid, prefix))
 
         if (error) {
           set((state) => {
@@ -698,7 +698,9 @@ const createRepoCoreSlice: StateCreator<CombinedSlices, [['zustand/immer', never
         })
 
         if (currentOid) {
-          await get().repoCoreActions.git.readFilesFromOid(currentOid)
+          const fileObject = get().repoCoreState.git.fileObjects[0]
+          const prefix = fileObject.prefix.split('/').slice(0, -1).join('/')
+          await get().repoCoreActions.git.readFilesFromOid(currentOid, prefix)
         }
       }
     }

@@ -64,7 +64,7 @@ export type RepoCoreActions = {
   isContributor: () => boolean
   reset: () => void
   git: {
-    readFilesFromOid: (oid: string) => Promise<void>
+    readFilesFromOid: (oid: string, prefix: string) => Promise<void>
     readFileContentFromOid: (oid: string) => Promise<Uint8Array | null>
     setCurrentOid: (oid: string) => void
     setRootOid: (oid: string) => void

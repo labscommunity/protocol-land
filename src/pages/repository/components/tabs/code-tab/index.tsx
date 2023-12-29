@@ -4,8 +4,10 @@ import { langs } from '@uiw/codemirror-extensions-langs'
 import { githubLight } from '@uiw/codemirror-theme-github'
 import CodeMirror from '@uiw/react-codemirror'
 import clsx from 'clsx'
+import mime from 'mime'
 import React from 'react'
 import CodeMirrorMerge from 'react-codemirror-merge'
+import { FileWithPath } from 'react-dropzone'
 import { FiArrowLeft, FiCode } from 'react-icons/fi'
 import { MdOutlineEdit } from 'react-icons/md'
 
@@ -15,6 +17,7 @@ import { getFileContent, isImage } from '@/pages/repository/helpers/filenameHelp
 import useCommit from '@/pages/repository/hooks/useCommit'
 import { useGlobalStore } from '@/stores/globalStore'
 
+import CommitFilesModal from './CommitFilesModal'
 import Header from './header/Header'
 import RepoError from './RepoError'
 import RepoLoading from './RepoLoading'
@@ -34,10 +37,15 @@ export default function CodeTab({ repoName = '', id = '' }: Props) {
     state.repoCoreActions.isContributor,
     state.branchState.currentBranch
   ])
+  const [isCommitModalOpen, setIsCommitModalOpen] = React.useState(false)
+  const [isSubmitting, setIsSubmitting] = React.useState(false)
   const [isEditMode, setIsEditMode] = React.useState(false)
   const [isPreviewMode, setIsPreviewMode] = React.useState(false)
+  const [isFileCommited, setIsFileCommitted] = React.useState(false)
   const [fileContent, setFileContent] = React.useState({ original: '', modified: '' })
   const [filename, setFilename] = React.useState('')
+  const [filePath, setFilePath] = React.useState('')
+  const [files, setFiles] = React.useState<FileWithPath[]>([])
 
   const { repoCommitsG, fetchFirstCommit } = useCommit()
 
@@ -53,13 +61,25 @@ export default function CodeTab({ repoName = '', id = '' }: Props) {
     fetchFirstCommit(id)
   }, [currentBranch])
 
+  React.useEffect(() => {
+    if (isFileCommited) {
+      setFileContent({ original: fileContent.modified, modified: fileContent.modified })
+      setIsEditMode(false)
+      setIsPreviewMode(false)
+    }
+  }, [isFileCommited])
+
+  function getFullFilePath(prefix: string, path: string) {
+    return '/' + (prefix + '/' + path).split('/').filter(Boolean).join('/')
+  }
+
   function handleFolderClick(fileObject: any) {
     if (fileObject.oid !== git.currentOid) {
       gitActions.pushParentOid(git.currentOid)
     }
 
     gitActions.setCurrentOid(fileObject.oid)
-    gitActions.readFilesFromOid(fileObject.oid)
+    gitActions.readFilesFromOid(fileObject.oid, fileObject.prefix)
   }
 
   async function handleFileClick(fileObject: any) {
@@ -69,14 +89,11 @@ export default function CodeTab({ repoName = '', id = '' }: Props) {
 
     if (!blob) return
 
-    const fileContent = await getFileContent(blob, fileObject.path)
-
-    if (!fileContent) return
-
-    console.log(fileObject)
+    const fileContent = (await getFileContent(blob, fileObject.path)) || ''
 
     setFileContent({ original: fileContent, modified: fileContent })
     setFilename(fileObject.path)
+    setFilePath(getFullFilePath(fileObject.prefix, fileObject.path))
   }
 
   function onGoBackClick() {
@@ -84,13 +101,17 @@ export default function CodeTab({ repoName = '', id = '' }: Props) {
     setFilename('')
     setIsEditMode(false)
     setIsPreviewMode(false)
+    setIsSubmitting(false)
+    setIsFileCommitted(false)
   }
 
   async function handleCommitChangesClick() {
-    const blob = new Blob([fileContent.modified], { type: 'text/plain' })
-    const file = new File([blob], 'example.txt', { type: 'text/plain' })
-
-    console.log(file)
+    const mimeType = mime.getType(filePath) ?? 'text/plain'
+    const blob = new Blob([fileContent.modified], { type: mimeType })
+    const file = new File([blob], filename, { type: mimeType })
+    Object.defineProperty(file, 'path', { value: filePath })
+    setFiles([file])
+    setIsCommitModalOpen(true)
   }
 
   if (git.status === 'PENDING') {
@@ -106,7 +127,7 @@ export default function CodeTab({ repoName = '', id = '' }: Props) {
     return <RepoError />
   }
 
-  if (git.status === 'SUCCESS' && fileContent.original.length > 0) {
+  if (git.status === 'SUCCESS' && filename) {
     trackGoogleAnalyticsEvent('Repository', 'Load a repo', 'Successfully loaded a repo', {
       repo_id: id,
       repo_name: repoName
@@ -124,6 +145,7 @@ export default function CodeTab({ repoName = '', id = '' }: Props) {
             <div className="flex gap-2">
               <Button
                 onClick={() => {
+                  setFileContent({ original: fileContent.original, modified: fileContent.original })
                   setIsEditMode(false)
                   setIsPreviewMode(false)
                 }}
@@ -132,12 +154,19 @@ export default function CodeTab({ repoName = '', id = '' }: Props) {
                 Cancel changes
               </Button>
               <Button
+                isLoading={isSubmitting}
                 onClick={handleCommitChangesClick}
                 variant="primary-solid"
-                disabled={fileContent.original === fileContent.modified}
+                disabled={fileContent.original === fileContent.modified || isSubmitting}
               >
-                Commit changes...
+                Commit changes
               </Button>
+              <CommitFilesModal
+                setIsCommited={setIsFileCommitted}
+                setIsOpen={setIsCommitModalOpen}
+                isOpen={isCommitModalOpen}
+                files={files}
+              />
             </div>
           )}
         </div>
@@ -167,9 +196,10 @@ export default function CodeTab({ repoName = '', id = '' }: Props) {
                   onClick={() => setIsEditMode(true)}
                   className="has-tooltip order-2 border border-gray-400 p-1 rounded-md cursor-pointer hover:bg-primary-200"
                 >
-                  <span className="tooltip rounded shadow-lg p-1 px-2 bg-gray-200 text-black text-sm -mt-12 -ml-12">
+                  <div className="tooltip rounded shadow-lg p-1 px-2 bg-gray-200 text-black text-sm -mt-12 -ml-16">
                     Edit this file
-                  </span>
+                    <div className="absolute top-[100%] right-[20%] border-l-[5px] border-r-[5px] border-t-[5px] border-t-gray-700"></div>
+                  </div>
                   <MdOutlineEdit className="h-4 w-4" />
                 </div>
               )}
