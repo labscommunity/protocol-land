@@ -1,6 +1,7 @@
 import { langs } from '@uiw/codemirror-extensions-langs'
 import { githubLight } from '@uiw/codemirror-theme-github'
 import CodeMirror from '@uiw/react-codemirror'
+import MDEditor from '@uiw/react-md-editor'
 import clsx from 'clsx'
 import mime from 'mime'
 import React, { useMemo } from 'react'
@@ -9,6 +10,7 @@ import { FiArrowLeft } from 'react-icons/fi'
 import { useNavigate } from 'react-router-dom'
 
 import { Button } from '@/components/common/buttons'
+import useMarkdown from '@/helpers/hooks/useMarkdown'
 import { rootTabConfig } from '@/pages/repository/config/rootTabConfig'
 import { useGlobalStore } from '@/stores/globalStore'
 
@@ -21,24 +23,21 @@ export default function NewFile() {
   const [isCommitModalOpen, setIsCommitModalOpen] = React.useState(false)
   const [isSubmitting, setIsSubmitting] = React.useState(false)
   const [isFileCommited, setIsFileCommitted] = React.useState(false)
+  const { isMarkdown } = useMarkdown(filename)
 
-  const [isContributor, gitActions] = useGlobalStore((state) => [
-    state.repoCoreActions.isContributor,
-    state.repoCoreActions.git
-  ])
-
-  const navigate = useNavigate()
-
-  const [loadFilesFromRepo, getCurrentFolderPath, currentBranch, selectedRepo] = useGlobalStore((state) => [
-    state.repoCoreActions.loadFilesFromRepo,
-    state.repoCoreActions.git.getCurrentFolderPath,
-    state.branchState.currentBranch,
-    state.repoCoreState.selectedRepo.repo
-  ])
-
-  const contributor = isContributor()
+  const [isContributor, gitActions, loadFilesFromRepo, getCurrentFolderPath, currentBranch, selectedRepo] =
+    useGlobalStore((state) => [
+      state.repoCoreActions.isContributor,
+      state.repoCoreActions.git,
+      state.repoCoreActions.loadFilesFromRepo,
+      state.repoCoreActions.git.getCurrentFolderPath,
+      state.branchState.currentBranch,
+      state.repoCoreState.selectedRepo.repo
+    ])
 
   const filePath = useMemo(() => joinPaths(getCurrentFolderPath(), filename), [filename])
+  const navigate = useNavigate()
+  const contributor = isContributor()
 
   React.useEffect(() => {
     if (isFileCommited) {
@@ -131,16 +130,20 @@ export default function NewFile() {
           <div className="rounded-t-lg flex justify-between bg-gray-200 border-b-[1px] border-gray-300 items-center gap-2 py-2 px-4 text-gray-900 font-medium h-10">
             <span className={clsx(!filename && 'py-10')}>{filename}</span>
           </div>
-          <CodeMirror
-            className="min-h-[100%] w-full"
-            value={fileContent}
-            minHeight="200px"
-            height="100%"
-            theme={githubLight}
-            extensions={[langs.javascript({ jsx: true })]}
-            onChange={(value) => setFileContent(value)}
-            editable={true}
-          />
+          {isMarkdown ? (
+            <MDEditor minHeight={200} preview="edit" value={fileContent} onChange={(value) => setFileContent(value)} />
+          ) : (
+            <CodeMirror
+              className="min-h-[100%] w-full"
+              value={fileContent}
+              minHeight="200px"
+              height="100%"
+              theme={githubLight}
+              extensions={[langs.javascript({ jsx: true })]}
+              onChange={(value) => setFileContent(value)}
+              editable={true}
+            />
+          )}
         </div>
       </div>
     </div>

@@ -3,6 +3,7 @@ import { EditorView } from '@codemirror/view'
 import { langs } from '@uiw/codemirror-extensions-langs'
 import { githubLight } from '@uiw/codemirror-theme-github'
 import CodeMirror from '@uiw/react-codemirror'
+import MDEditor from '@uiw/react-md-editor'
 import clsx from 'clsx'
 import mime from 'mime'
 import React from 'react'
@@ -12,6 +13,7 @@ import { FiArrowLeft } from 'react-icons/fi'
 import { MdOutlineEdit } from 'react-icons/md'
 
 import { Button } from '@/components/common/buttons'
+import useMarkdown from '@/helpers/hooks/useMarkdown'
 import { isImage } from '@/pages/repository/helpers/filenameHelper'
 import { useGlobalStore } from '@/stores/globalStore'
 
@@ -38,6 +40,8 @@ export default function FileView({ fileContent, setFileContent, filename, setFil
   const [files, setFiles] = React.useState<FileWithPath[]>([])
 
   const contributor = isContributor()
+
+  const { isMarkdown } = useMarkdown(filename)
 
   React.useEffect(() => {
     if (isFileCommited) {
@@ -144,27 +148,31 @@ export default function FileView({ fileContent, setFileContent, filename, setFil
               />
             </div>
           ) : isPreviewMode ? (
-            <CodeMirrorMerge orientation="a-b" theme={githubLight}>
-              <CodeMirrorMerge.Original
-                extensions={[
-                  langs.javascript({ jsx: true }),
-                  EditorView.editable.of(false),
-                  EditorState.readOnly.of(true)
-                ]}
-                value={fileContent.original}
-              />
-              <CodeMirrorMerge.Modified
-                extensions={[
-                  langs.javascript({ jsx: true }),
-                  EditorView.editable.of(false),
-                  EditorState.readOnly.of(true)
-                ]}
-                value={fileContent.modified}
-              />
-            </CodeMirrorMerge>
-          ) : (
+            !isMarkdown ? (
+              <CodeMirrorMerge orientation="a-b" theme={githubLight} style={{ minHeight: '200px' }}>
+                <CodeMirrorMerge.Original
+                  extensions={[
+                    langs.javascript({ jsx: true }),
+                    EditorView.editable.of(false),
+                    EditorState.readOnly.of(true)
+                  ]}
+                  value={fileContent.original}
+                />
+                <CodeMirrorMerge.Modified
+                  extensions={[
+                    langs.javascript({ jsx: true }),
+                    EditorView.editable.of(false),
+                    EditorState.readOnly.of(true)
+                  ]}
+                  value={fileContent.modified}
+                />
+              </CodeMirrorMerge>
+            ) : (
+              <MDEditor minHeight={200} preview={'preview'} hideToolbar={true} value={fileContent.modified} />
+            )
+          ) : !isMarkdown ? (
             <CodeMirror
-              className="min-h-[100%] w-full"
+              className="w-full"
               value={isEditMode ? fileContent.modified : fileContent.original}
               minHeight="200px"
               height="100%"
@@ -172,6 +180,14 @@ export default function FileView({ fileContent, setFileContent, filename, setFil
               extensions={[langs.javascript({ jsx: true })]}
               onChange={(value) => setFileContent((content) => ({ ...content, modified: value }))}
               editable={isEditMode}
+            />
+          ) : (
+            <MDEditor
+              minHeight={200}
+              preview={isEditMode ? 'edit' : 'preview'}
+              hideToolbar={isEditMode === false}
+              value={fileContent.modified}
+              onChange={(value) => setFileContent((content) => ({ ...content, modified: value! }))}
             />
           )}
         </div>
