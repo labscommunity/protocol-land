@@ -10,8 +10,8 @@ import { FiArrowLeft } from 'react-icons/fi'
 import { useNavigate } from 'react-router-dom'
 
 import { Button } from '@/components/common/buttons'
-import useMarkdown from '@/helpers/hooks/useMarkdown'
 import { rootTabConfig } from '@/pages/repository/config/rootTabConfig'
+import { isMarkdown } from '@/pages/repository/helpers/filenameHelper'
 import { useGlobalStore } from '@/stores/globalStore'
 
 import CommitFilesModal from './CommitFilesModal'
@@ -23,7 +23,8 @@ export default function NewFile() {
   const [isCommitModalOpen, setIsCommitModalOpen] = React.useState(false)
   const [isSubmitting, setIsSubmitting] = React.useState(false)
   const [isFileCommited, setIsFileCommitted] = React.useState(false)
-  const { isMarkdown } = useMarkdown(filename)
+
+  const isMarkdownFile = useMemo(() => isMarkdown(filename), [filename])
 
   const [isContributor, gitActions, loadFilesFromRepo, getCurrentFolderPath, currentBranch, selectedRepo] =
     useGlobalStore((state) => [
@@ -130,7 +131,7 @@ export default function NewFile() {
           <div className="rounded-t-lg flex justify-between bg-gray-200 border-b-[1px] border-gray-300 items-center gap-2 py-2 px-4 text-gray-900 font-medium h-10">
             <span className={clsx(!filename && 'py-10')}>{filename}</span>
           </div>
-          {isMarkdown ? (
+          {isMarkdownFile ? (
             <MDEditor minHeight={200} preview="edit" value={fileContent} onChange={(value) => setFileContent(value)} />
           ) : (
             <CodeMirror

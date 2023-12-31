@@ -13,8 +13,7 @@ import { FiArrowLeft } from 'react-icons/fi'
 import { MdOutlineEdit } from 'react-icons/md'
 
 import { Button } from '@/components/common/buttons'
-import useMarkdown from '@/helpers/hooks/useMarkdown'
-import { isImage } from '@/pages/repository/helpers/filenameHelper'
+import { isImage, isMarkdown } from '@/pages/repository/helpers/filenameHelper'
 import { useGlobalStore } from '@/stores/globalStore'
 
 import CommitFilesModal from './CommitFilesModal'
@@ -40,8 +39,8 @@ export default function FileView({ fileContent, setFileContent, filename, setFil
   const [files, setFiles] = React.useState<FileWithPath[]>([])
 
   const contributor = isContributor()
-
-  const { isMarkdown } = useMarkdown(filename)
+  const isMarkdownFile = isMarkdown(filename)
+  const isImageFile = isImage(filename)
 
   React.useEffect(() => {
     if (isFileCommited) {
@@ -127,19 +126,21 @@ export default function FileView({ fileContent, setFileContent, filename, setFil
                 </Button>
               </div>
             ) : (
-              <div
-                onClick={() => setIsEditMode(true)}
-                className="has-tooltip order-2 border border-gray-400 p-1 rounded-md cursor-pointer hover:bg-primary-200"
-              >
-                <div className="tooltip rounded shadow-lg p-1 px-2 bg-gray-200 text-black text-sm -mt-12 -ml-16">
-                  Edit this file
-                  <div className="absolute top-[100%] right-[20%] border-l-[5px] border-r-[5px] border-t-[5px] border-t-gray-700"></div>
+              !isImageFile && (
+                <div
+                  onClick={() => setIsEditMode(true)}
+                  className="has-tooltip order-2 border border-gray-400 p-1 rounded-md cursor-pointer hover:bg-primary-200"
+                >
+                  <div className="tooltip rounded shadow-lg p-1 px-2 bg-gray-200 text-black text-sm -mt-12 -ml-16">
+                    Edit this file
+                    <div className="absolute top-[100%] right-[20%] border-l-[5px] border-r-[5px] border-t-[5px] border-t-gray-700"></div>
+                  </div>
+                  <MdOutlineEdit className="h-4 w-4" />
                 </div>
-                <MdOutlineEdit className="h-4 w-4" />
-              </div>
+              )
             )}
           </div>
-          {isImage(filename) ? (
+          {isImageFile ? (
             <div className="h-full w-full bg-white flex items-center justify-center p-8">
               <img
                 src={fileContent.original}
@@ -148,7 +149,7 @@ export default function FileView({ fileContent, setFileContent, filename, setFil
               />
             </div>
           ) : isPreviewMode ? (
-            !isMarkdown ? (
+            !isMarkdownFile ? (
               <CodeMirrorMerge orientation="a-b" theme={githubLight} style={{ minHeight: '200px' }}>
                 <CodeMirrorMerge.Original
                   extensions={[
@@ -170,7 +171,7 @@ export default function FileView({ fileContent, setFileContent, filename, setFil
             ) : (
               <MDEditor minHeight={200} preview={'preview'} hideToolbar={true} value={fileContent.modified} />
             )
-          ) : !isMarkdown ? (
+          ) : !isMarkdownFile ? (
             <CodeMirror
               className="w-full"
               value={isEditMode ? fileContent.modified : fileContent.original}
