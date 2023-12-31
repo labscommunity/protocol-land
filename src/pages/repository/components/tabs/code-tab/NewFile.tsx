@@ -138,13 +138,14 @@ export default function NewFile() {
             <span className={clsx(!filename && 'py-10')}>{filename}</span>
           </div>
           {isMarkdownFile ? (
-            <MDEditor minHeight={200} preview="edit" value={fileContent} onChange={(value) => setFileContent(value)} />
+            <MDEditor minHeight={200} preview="edit" value={fileContent} onChange={(value) => setFileContent(value!)} />
           ) : (
             <CodeMirror
               className="min-h-[100%] w-full"
               value={fileContent}
               minHeight="200px"
               height="100%"
+              placeholder="Enter file contents here"
               theme={githubLight}
               extensions={[langs.javascript({ jsx: true })]}
               onChange={(value) => setFileContent(value)}

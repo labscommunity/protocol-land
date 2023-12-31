@@ -173,11 +173,12 @@ export default function FileView({ fileContent, setFileContent, filename, setFil
             )
           ) : !isMarkdownFile ? (
             <CodeMirror
-              className="w-full flex flex-grow"
+              className="w-full"
               value={isEditMode ? fileContent.modified : fileContent.original}
               minHeight="200px"
               height="100%"
               theme={githubLight}
+              placeholder="Enter file contents here"
               extensions={[langs.javascript({ jsx: true })]}
               onChange={(value) => setFileContent((content) => ({ ...content, modified: value }))}
               editable={isEditMode}
