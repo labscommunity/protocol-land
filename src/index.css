@@ -7,6 +7,10 @@
   list-style: revert;
 }
 
+.cm-theme .cm-editor {
+  height: 100% !important;
+}
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;

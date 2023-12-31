@@ -150,7 +150,7 @@ export default function FileView({ fileContent, setFileContent, filename, setFil
             </div>
           ) : isPreviewMode ? (
             !isMarkdownFile ? (
-              <CodeMirrorMerge orientation="a-b" theme={githubLight} style={{ minHeight: '200px' }}>
+              <CodeMirrorMerge orientation="a-b" theme={githubLight}>
                 <CodeMirrorMerge.Original
                   extensions={[
                     langs.javascript({ jsx: true }),
@@ -173,7 +173,7 @@ export default function FileView({ fileContent, setFileContent, filename, setFil
             )
           ) : !isMarkdownFile ? (
             <CodeMirror
-              className="w-full"
+              className="w-full flex flex-grow"
               value={isEditMode ? fileContent.modified : fileContent.original}
               minHeight="200px"
               height="100%"
