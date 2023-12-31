@@ -6,6 +6,7 @@ import clsx from 'clsx'
 import mime from 'mime'
 import React, { useMemo } from 'react'
 import { FileWithPath } from 'react-dropzone'
+import toast from 'react-hot-toast'
 import { FiArrowLeft } from 'react-icons/fi'
 import { useNavigate } from 'react-router-dom'
 
@@ -26,9 +27,10 @@ export default function NewFile() {
 
   const isMarkdownFile = useMemo(() => isMarkdown(filename), [filename])
 
-  const [isContributor, gitActions, loadFilesFromRepo, getCurrentFolderPath, currentBranch, selectedRepo] =
+  const [isContributor, git, gitActions, loadFilesFromRepo, getCurrentFolderPath, currentBranch, selectedRepo] =
     useGlobalStore((state) => [
       state.repoCoreActions.isContributor,
+      state.repoCoreState.git,
       state.repoCoreActions.git,
       state.repoCoreActions.loadFilesFromRepo,
       state.repoCoreActions.git.getCurrentFolderPath,
@@ -56,6 +58,10 @@ export default function NewFile() {
   }
 
   async function handleCommitChangesClick() {
+    if (git.fileObjects.findIndex((fileObject) => fileObject.path === filename) > -1) {
+      toast.error(`File ${filename} already exists in the same directory`)
+      return
+    }
     const mimeType = mime.getType(filePath) ?? 'text/plain'
     const blob = new Blob([fileContent], { type: mimeType })
     const file = new File([blob], filename, { type: mimeType })
