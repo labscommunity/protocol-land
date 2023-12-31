@@ -1,5 +1,6 @@
 import { NodeGlobalsPolyfillPlugin } from '@esbuild-plugins/node-globals-polyfill'
 import react from '@vitejs/plugin-react'
+import path from 'path'
 import rollupNodePolyFill from 'rollup-plugin-polyfill-node'
 import { fileURLToPath, URL } from 'url'
 import { defineConfig } from 'vite'
@@ -24,7 +25,8 @@ export default defineConfig({
   },
   resolve: {
     alias: {
-      '@': fileURLToPath(new URL('./src', import.meta.url))
+      '@': fileURLToPath(new URL('./src', import.meta.url)),
+      '@codemirror': path.resolve(__dirname, 'node_modules/@codemirror/'),
     }
   },
   build: {
