@@ -453,7 +453,7 @@ export async function inviteContributor(address: string, repoId: string) {
   return repo.contributorInvites
 }
 
-export async function addDomain(domain: Domain, repoId: string) {
+export async function addDomain(domain: Omit<Domain, 'timestamp'>, repoId: string) {
   const userSigner = new InjectedArweaveSigner(window.arweaveWallet)
   await userSigner.setPublicKey()
 
@@ -466,9 +466,19 @@ export async function addDomain(domain: Domain, repoId: string) {
       domain
     }
   })
+
+  const {
+    cachedValue: {
+      state: { repos }
+    }
+  } = await contract.readState()
+
+  const repo = repos[repoId] as Repo
+
+  return repo.domains
 }
 
-export async function updateDomain(domain: Omit<Domain, 'controller'>, repoId: string) {
+export async function updateDomain(domain: Omit<Domain, 'controller' | 'timestamp'>, repoId: string) {
   const userSigner = new InjectedArweaveSigner(window.arweaveWallet)
   await userSigner.setPublicKey()
 
@@ -481,6 +491,16 @@ export async function updateDomain(domain: Omit<Domain, 'controller'>, repoId: s
       domain
     }
   })
+
+  const {
+    cachedValue: {
+      state: { repos }
+    }
+  } = await contract.readState()
+
+  const repo = repos[repoId] as Repo
+
+  return repo.domains
 }
 
 export async function addContributor(address: string, repoId: string) {

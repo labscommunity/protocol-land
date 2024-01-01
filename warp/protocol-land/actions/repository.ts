@@ -351,7 +351,8 @@ export async function addDomain(
     txId: payload.domain.txId,
     name: payload.domain.name,
     contractTxId: payload.domain.contractTxId,
-    controller: caller
+    controller: caller,
+    timestamp: getBlockTimeStamp()
   }
 
   repo.domains.push(domain)
@@ -390,6 +391,7 @@ export async function updateDomain(
 
   if (payload.domain.txId) {
     domain.txId = payload.domain.txId
+    domain.timestamp = getBlockTimeStamp()
   }
 
   return { state }

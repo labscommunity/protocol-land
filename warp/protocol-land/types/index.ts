@@ -78,6 +78,7 @@ export type Domain = {
   contractTxId: string
   name: string
   controller: string
+  timestamp: number
 }
 
 export type PullRequest = {

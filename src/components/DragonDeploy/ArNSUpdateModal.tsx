@@ -10,6 +10,7 @@ import { Button } from '@/components/common/buttons'
 import { withAsync } from '@/helpers/withAsync'
 import { getANT, getDomainStatus, updateArNSDomain } from '@/lib/dragondeploy/arns'
 import { useGlobalStore } from '@/stores/globalStore'
+import { Deployment } from '@/types/repository'
 
 export default function ArNSDomainModal() {
   const [isOpen, setIsOpen] = useState(false)
@@ -31,9 +32,13 @@ export default function ArNSDomainModal() {
   const domain = selectedRepo?.domains?.[0]
 
   const updateNeeded = useMemo(() => {
-    const isDomainTxPresent = deployments.findIndex((d) => d.txId === domainTxId) > -1
-    return deployment?.txId !== domainTxId || !isDomainTxPresent
-  }, [deployment, domainTxId])
+    const isDomainTxPresent = deployments.some((d: Deployment) => d.txId === domainTxId)
+    if (domain?.timestamp) {
+      return deployment?.txId !== domain?.txId || (!isDomainTxPresent && new Date().getTime() - domain.timestamp > 3e6)
+    } else {
+      return deployment?.txId !== domain?.txId || !isDomainTxPresent
+    }
+  }, [deployment, domainTxId, domain])
 
   function closeModal() {
     setIsOpen(false)
@@ -45,6 +50,10 @@ export default function ArNSDomainModal() {
     try {
       setIsLoading(true)
       const ant = await getANT(domain.contractTxId)
+
+      if (ant.subdomain === 'not_defined') {
+        throw new Error(`The domain is currently unavailable, possibly undergoing registration.`)
+      }
 
       if ((ant?.controllers && !ant?.controllers?.includes(connectedAddress)) || ant.owner !== connectedAddress) {
         throw new Error('You are not allowed to update this domain')

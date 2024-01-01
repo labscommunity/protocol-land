@@ -227,7 +227,7 @@ const createRepoCoreSlice: StateCreator<CombinedSlices, [['zustand/immer', never
         throw error
       }
     },
-    addDomain: async (domain: Domain) => {
+    addDomain: async (domain: Omit<Domain, 'timestamp'>) => {
       const repo = get().repoCoreState.selectedRepo.repo
 
       if (!repo) {
@@ -236,12 +236,11 @@ const createRepoCoreSlice: StateCreator<CombinedSlices, [['zustand/immer', never
         return
       }
 
-      const { error } = await withAsync(() => addDomain(domain, repo.id))
+      const { response, error } = await withAsync(() => addDomain(domain, repo.id))
 
-      if (!error) {
+      if (!error && response) {
         set((state) => {
-          const selectedRepo = state.repoCoreState.selectedRepo.repo!
-          selectedRepo.domains = [...(selectedRepo.domains || []), domain]
+          state.repoCoreState.selectedRepo.repo!.domains = response
         })
 
         trackGoogleAnalyticsEvent('Repository', 'Add domain to a repo', 'Add repo domain', {
@@ -254,7 +253,7 @@ const createRepoCoreSlice: StateCreator<CombinedSlices, [['zustand/immer', never
         throw error
       }
     },
-    updateDomain: async (domain: Omit<Domain, 'controller'>) => {
+    updateDomain: async (domain: Omit<Domain, 'controller' | 'timestamp'>) => {
       const repo = get().repoCoreState.selectedRepo.repo
 
       if (!repo) {
@@ -263,16 +262,11 @@ const createRepoCoreSlice: StateCreator<CombinedSlices, [['zustand/immer', never
         return
       }
 
-      const { error } = await withAsync(() => updateDomain(domain, repo.id))
+      const { response, error } = await withAsync(() => updateDomain(domain, repo.id))
 
-      if (!error) {
+      if (!error && response) {
         set((state) => {
-          const foundDomain = (state.repoCoreState.selectedRepo.repo!.domains || []).find(
-            (d) => d.name === domain.name || d.contractTxId === domain.contractTxId
-          )
-          if (foundDomain) {
-            foundDomain.txId = domain.txId!
-          }
+          state.repoCoreState.selectedRepo.repo!.domains = response
         })
 
         trackGoogleAnalyticsEvent('Repository', 'Update domain in a repo', 'Update repo domain', {
