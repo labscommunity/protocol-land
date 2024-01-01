@@ -25,7 +25,7 @@ const schema = yup
       })
       .required('ArNS name is required'),
     isAvailable: yup.boolean().default(false),
-    years: yup.number().min(0).max(5).default(1).required('Years is required')
+    years: yup.number().integer().min(1).max(5).default(1).required('Years is required')
   })
   .required()
 
@@ -115,7 +115,8 @@ export default function ArNSRegister({ closeModal }: ArNSRegisterProps) {
 
   useEffect(() => {
     const subscription = watch(({ name, years, isAvailable }) => {
-      if (!errors.name?.message && !errors.years?.message && isAvailable) {
+      years = years ?? 1
+      if (name && isAvailable && years && years >= 1 && years <= 5) {
         getArNSNameFees(name, years)
           .then(([ioFee, arFee]) => {
             setError('')
