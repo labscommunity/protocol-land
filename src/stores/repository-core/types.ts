@@ -60,6 +60,7 @@ export type RepoCoreActions = {
   fetchAndLoadParentRepository: (repo: Repo) => Promise<void>
   fetchAndLoadForkRepository: (id: string) => Promise<void>
   loadFilesFromRepo: () => Promise<void>
+  reloadFilesOnCurrentFolder: () => Promise<void>
   setRepoContributionStats: (data: UserContributionData) => void
   isRepoOwner: () => boolean
   isContributor: () => boolean

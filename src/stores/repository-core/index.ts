@@ -576,6 +576,76 @@ const createRepoCoreSlice: StateCreator<CombinedSlices, [['zustand/immer', never
         })
       }
     },
+    reloadFilesOnCurrentFolder: async () => {
+      const currentFolder = get().repoCoreActions.git.getCurrentFolderPath()
+      set((state) => {
+        state.repoCoreState.git.status = 'PENDING'
+      })
+
+      const repo = get().repoCoreState.selectedRepo.repo
+
+      if (!repo) {
+        set((state) => (state.repoCoreState.git.status = 'ERROR'))
+
+        return
+      }
+
+      const { error, response: rootOid } = await withAsync(() => getOidOfHeadRef(repo.id))
+
+      if (error) {
+        set((state) => {
+          state.repoCoreState.git.status = 'ERROR'
+          state.repoCoreState.git.error = error
+        })
+
+        return
+      }
+
+      if (rootOid) {
+        try {
+          const paths = ['', ...currentFolder.split('/')]
+          let currentOid = rootOid
+          const parentsOidList: string[] = []
+          let fileObjects: { prefix: string; oid: string; path: string; type: string; parent: string }[] = []
+          for (let i = 0; i < paths.length; i++) {
+            const newPrefix = paths
+              .slice(0, i + 1)
+              .filter(Boolean)
+              .join('/')
+            const nextPrefix = paths
+              .slice(0, i + 2)
+              .filter(Boolean)
+              .join('/')
+
+            const response = await getFilesFromOid(repo.id, currentOid, newPrefix)
+            if (response) {
+              const { objects } = response
+              const fileObject = objects.find((fileObj) => fileObj.prefix === nextPrefix)
+
+              if (fileObject) {
+                if (currentOid !== fileObject.oid && i < paths.length - 1) {
+                  parentsOidList.push(currentOid)
+                }
+
+                currentOid = fileObject?.oid
+              }
+              fileObjects = objects
+            }
+          }
+
+          set((state) => {
+            state.repoCoreState.git.rootOid = rootOid
+            state.repoCoreState.git.currentOid = currentOid
+            state.repoCoreState.git.fileObjects = fileObjects
+            state.repoCoreState.git.parentsOidList = parentsOidList
+            state.repoCoreState.git.status = 'SUCCESS'
+          })
+        } catch (error) {
+          console.log(`Error: ${error}`)
+          await get().repoCoreActions.loadFilesFromRepo()
+        }
+      }
+    },
     git: {
       setCommits: (commits) => {
         set((state) => {

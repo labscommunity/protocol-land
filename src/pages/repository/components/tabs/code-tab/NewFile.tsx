@@ -27,16 +27,23 @@ export default function NewFile() {
 
   const isMarkdownFile = useMemo(() => isMarkdown(filename), [filename])
 
-  const [isContributor, git, gitActions, loadFilesFromRepo, getCurrentFolderPath, currentBranch, selectedRepo] =
-    useGlobalStore((state) => [
-      state.repoCoreActions.isContributor,
-      state.repoCoreState.git,
-      state.repoCoreActions.git,
-      state.repoCoreActions.loadFilesFromRepo,
-      state.repoCoreActions.git.getCurrentFolderPath,
-      state.branchState.currentBranch,
-      state.repoCoreState.selectedRepo.repo
-    ])
+  const [
+    isContributor,
+    git,
+    gitActions,
+    reloadFilesOnCurrentFolder,
+    getCurrentFolderPath,
+    currentBranch,
+    selectedRepo
+  ] = useGlobalStore((state) => [
+    state.repoCoreActions.isContributor,
+    state.repoCoreState.git,
+    state.repoCoreActions.git,
+    state.repoCoreActions.reloadFilesOnCurrentFolder,
+    state.repoCoreActions.git.getCurrentFolderPath,
+    state.branchState.currentBranch,
+    state.repoCoreState.selectedRepo.repo
+  ])
 
   const filePath = useMemo(() => joinPaths(getCurrentFolderPath(), filename), [filename])
   const navigate = useNavigate()
@@ -44,8 +51,8 @@ export default function NewFile() {
 
   React.useEffect(() => {
     if (isFileCommited) {
+      reloadFilesOnCurrentFolder()
       onGoBackClick()
-      loadFilesFromRepo()
     }
   }, [isFileCommited])
 
