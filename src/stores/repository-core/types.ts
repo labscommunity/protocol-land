@@ -39,6 +39,7 @@ export type RepoCoreState = {
     fileObjects: FileObject[]
     commits: CommitResult[]
     commitSourceBranch: string
+    isCreateNewFile: boolean
   }
 }
 
@@ -61,18 +62,21 @@ export type RepoCoreActions = {
   fetchAndLoadParentRepository: (repo: Repo) => Promise<void>
   fetchAndLoadForkRepository: (id: string) => Promise<void>
   loadFilesFromRepo: () => Promise<void>
+  reloadFilesOnCurrentFolder: () => Promise<void>
   setRepoContributionStats: (data: UserContributionData) => void
   isRepoOwner: () => boolean
   isContributor: () => boolean
   reset: () => void
   git: {
-    readFilesFromOid: (oid: string) => Promise<void>
+    readFilesFromOid: (oid: string, prefix: string) => Promise<void>
     readFileContentFromOid: (oid: string) => Promise<Uint8Array | null>
     setCurrentOid: (oid: string) => void
     setRootOid: (oid: string) => void
+    setIsCreateNewFile: (value: boolean) => void
     pushParentOid: (oid: string) => void
     popParentOid: () => string
     goBack: () => Promise<void>
+    getCurrentFolderPath: () => string
     downloadRepository: () => Promise<null | undefined>
     setCommits: (commits: CommitResult[]) => void
   }
