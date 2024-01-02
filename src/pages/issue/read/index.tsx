@@ -80,7 +80,7 @@ export default function ReadIssuePage() {
   }
 
   return (
-    <div className="h-full flex-1 flex flex-col max-w-[1280px] mx-auto w-full mt-6 gap-8 pb-16">
+    <div className="h-full flex-1 flex flex-col max-w-[1280px] px-8 mx-auto w-full mt-6 gap-8 pb-16">
       {selectedIssue && <IssueHeader issue={selectedIssue} />}
       <div className="flex flex-col flex-1">
         <Tab.Group>

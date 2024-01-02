@@ -133,7 +133,7 @@ export default function ReadPullRequest() {
   const PR = selectedRepo.repo ? selectedRepo.repo.pullRequests[+pullId! - 1] : null
 
   return (
-    <div className="h-full flex-1 flex flex-col max-w-[1280px] mx-auto w-full mt-6 gap-8">
+    <div className="h-full flex-1 flex flex-col max-w-[1280px] px-8 mx-auto w-full mt-6 gap-8">
       {/* PR Meta Details open */}
       {PR && <PullRequestHeader PR={PR} repo={selectedRepo.repo!} compareRepoOwner={compareRepoOwner} />}
       {/* PR Meta Details close */}
