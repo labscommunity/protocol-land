@@ -109,21 +109,25 @@ export default function FileView({ fileContent, setFileContent, filename, setFil
           <div className="rounded-t-lg flex justify-between bg-gray-200 border-b-[1px] border-gray-300 items-center gap-2 py-2 px-4 text-gray-900 font-medium h-10">
             <span className="order-2">{filename}</span>
             {isEditMode ? (
-              <div className="flex gap-1 h-7 order-1">
-                <Button
+              <div className="flex items-center p-1 bg-gray-100 border-[1px] border-gray-300 rounded-lg gap-1 h-8 order-1">
+                <span
                   onClick={() => setIsPreviewMode(false)}
-                  className={clsx(isPreviewMode && '!bg-[#E0E0E0] !border-0')}
-                  variant="primary-outline"
+                  className={clsx('cursor-pointer text-gray-700', {
+                    'px-2': isPreviewMode,
+                    'px-3 bg-primary-600 text-white rounded-md': !isPreviewMode
+                  })}
                 >
                   Edit
-                </Button>
-                <Button
+                </span>
+                <span
                   onClick={() => setIsPreviewMode(true)}
-                  className={clsx(!isPreviewMode && '!bg-[#E0E0E0] !border-0')}
-                  variant="primary-outline"
+                  className={clsx('cursor-pointer text-gray-700', {
+                    'px-2': !isPreviewMode,
+                    'px-3 bg-primary-600 text-white rounded-md': isPreviewMode
+                  })}
                 >
                   Preview
-                </Button>
+                </span>
               </div>
             ) : (
               !isImageFile && (
