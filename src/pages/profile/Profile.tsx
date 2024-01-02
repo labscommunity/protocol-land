@@ -44,7 +44,7 @@ export default function Profile() {
   }
 
   return (
-    <div className="h-full flex-1 flex max-w-[1280px] mx-auto w-full mt-12 gap-4 pb-12">
+    <div className="h-full flex-1 flex max-w-[1280px] px-8 mx-auto w-full mt-12 gap-4 pb-12">
       {status === 'SUCCESS' && <Sidebar setUserDetails={setUserDetails} userDetails={userDetails} />}
       {status === 'PENDING' && <SidebarLoading />}
       <div className="flex flex-col flex-1 px-8 gap-4">

@@ -63,7 +63,7 @@ export default function Home() {
     <div className="h-full flex flex-1">
       <Sidebar repos={userRepos} isLoading={fetchUserReposStatus === 'PENDING'} />
       <MainContent>
-        <div className="w-[70%] py-8 flex flex-col gap-8">
+        <div className="w-[70%] lg:w-[85%] xl:w-[80%] 2xl:w-[70%] py-8 flex flex-col gap-8">
           <div
             className={
               'bg-primary-100 p-6 h-[300px] flex flex-col items-center gap-10 justify-center rounded-2xl border-[1px] border-primary-200'
@@ -80,7 +80,7 @@ export default function Home() {
           <div className="flex gap-4 w-full">
             <div
               className={
-                'bg-primary-100 p-6 h-[200px] w-full flex flex-col items-center gap-4 justify-center rounded-2xl border-[1px] border-primary-200'
+                'bg-primary-100 p-6 min-h-[200px] w-full flex flex-col items-center gap-4 justify-center rounded-2xl border-[1px] border-primary-200'
               }
             >
               <div className="flex flex-col text-center gap-2">
@@ -95,7 +95,7 @@ export default function Home() {
             </div>
             <div
               className={
-                'bg-primary-100 p-6 h-[200px] w-full flex flex-col items-center gap-4 justify-center rounded-xl'
+                'bg-primary-100 p-6 min-h-[200px] w-full flex flex-col items-center gap-4 justify-center rounded-xl'
               }
             >
               <div className="flex flex-col text-center text-[whitesmoke] gap-2">

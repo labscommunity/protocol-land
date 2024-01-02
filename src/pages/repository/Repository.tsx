@@ -82,7 +82,7 @@ export default function Repository() {
   if (isPageNotFound) return <PageNotFound />
 
   return (
-    <div className="h-full flex-1 flex flex-col max-w-[1280px] mx-auto w-full mt-6 gap-2">
+    <div className="h-full flex-1 flex flex-col max-w-[1280px] px-8 mx-auto w-full my-6 gap-2">
       {/* <div className="w-full h-[70px] bg-primary-300 mb-4 rounded-md"></div> */}
       <RepoHeader
         owner={authState.address}

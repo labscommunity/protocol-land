@@ -64,7 +64,7 @@ export default function Contributions({ contributions = [], percentages, streakD
           <BiSync className="w-5 h-5" /> <span>Refresh</span>
         </div>
       </div> */}
-      <div className="w-full pt-4 pb-0 pr-4 flex items-center justify-center">
+      <div className="w-full [&>svg]:w-full pt-4 pb-0 pr-4 flex items-center justify-center">
         <CalendarHeatmap
           showWeekdayLabels
           startDate={getOneYearOldDateInstance()}
