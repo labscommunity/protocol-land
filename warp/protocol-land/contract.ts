@@ -20,6 +20,7 @@ import {
   acceptContributorInvite,
   addContributor,
   addDeployment,
+  addDomain,
   cancelContributorInvite,
   forkRepository,
   getAllRepositoriesByContributor,
@@ -29,6 +30,7 @@ import {
   inviteContributor,
   isRepositoryNameAvailable,
   rejectContributorInvite,
+  updateDomain,
   updatePrivateStateTx,
   updateRepositoryDetails,
   updateRepositoryTxId
@@ -60,6 +62,10 @@ export async function handle(state: ContractState, action: RepositoryAction | Ev
       return await isRepositoryNameAvailable(state, action as RepositoryAction)
     case 'addDeployment':
       return await addDeployment(state, action as RepositoryAction)
+    case 'addDomain':
+      return await addDomain(state, action as RepositoryAction)
+    case 'updateDomain':
+      return await updateDomain(state, action as RepositoryAction)
     case 'addContributor':
       return await addContributor(state, action as RepositoryAction)
     case 'inviteContributor':

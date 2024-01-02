@@ -11,6 +11,7 @@ export default function DeploymentsTab() {
   const navigate = useNavigate()
   const [userRepo] = useGlobalStore((state) => [state.repoCoreState.selectedRepo.repo])
   const deployments = [...(userRepo?.deployments ?? [])].reverse()
+  const domain = userRepo?.domains?.[0]
 
   function gotoUser(userAddress: string) {
     if (userAddress) {
@@ -72,7 +73,15 @@ export default function DeploymentsTab() {
                   </div>
                   <div className="flex gap-2">
                     <span>{formatDistanceToNow(new Date(deployment.timestamp), { addSuffix: true })}</span>
-                    <a className="hover:text-primary-700" href={`https://ar-io.net/${deployment.txId}`} target="_blank">
+                    <a
+                      className="hover:text-primary-700"
+                      href={
+                        domain && domain.txId === deployment.txId
+                          ? `https://${domain.name}.ar-io.dev`
+                          : `https://ar-io.net/${deployment.txId}`
+                      }
+                      target="_blank"
+                    >
                       <FiExternalLink className="cursor-pointer mt-1" />
                     </a>
                   </div>

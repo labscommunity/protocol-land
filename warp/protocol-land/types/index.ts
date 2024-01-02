@@ -43,6 +43,7 @@ export type Repo = {
   issues: Issue[]
   contributors: string[]
   deployments: Deployment[]
+  domains: Domain[]
   deploymentBranch: string
   timestamp: number
   forks: Forks
@@ -69,6 +70,14 @@ export type Deployment = {
   deployedBy: string
   commitOid: string
   commitMessage: string
+  timestamp: number
+}
+
+export type Domain = {
+  txId: string
+  contractTxId: string
+  name: string
+  controller: string
   timestamp: number
 }
 
@@ -191,6 +200,8 @@ const repoFnList = [
   'updatePullRequestDetails',
   'updateRepositoryDetails',
   'addDeployment',
+  'addDomain',
+  'updateDomain',
   'addContributor',
   'addCommentToPR',
   'inviteContributor',

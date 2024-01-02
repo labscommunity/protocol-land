@@ -18,6 +18,7 @@ export type Repo = {
   issues: Issue[]
   contributors: string[]
   deployments: Deployment[]
+  domains: Domain[]
   deploymentBranch: string
   forks: Forks
   fork: boolean
@@ -46,6 +47,14 @@ export type Deployment = {
   deployedBy: string
   commitOid: string
   commitMessage: string
+  timestamp: number
+}
+
+export type Domain = {
+  txId: string
+  contractTxId: string
+  name: string
+  controller: string
   timestamp: number
 }
 

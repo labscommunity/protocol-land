@@ -6,12 +6,14 @@ import {
   addActivePubKeyToPrivateState,
   addContributor,
   addDeployment,
+  addDomain,
   inviteContributor,
+  updateDomain,
   updateRepoDeploymentBranch,
   updateRepoDescription,
   updateRepoName
 } from '@/lib/git'
-import { Deployment } from '@/types/repository'
+import { Deployment, Domain } from '@/types/repository'
 
 import { changeBranch, getCurrentActiveBranch } from '../branch/actions'
 import { CombinedSlices } from '../types'
@@ -220,6 +222,61 @@ const createRepoCoreSlice: StateCreator<CombinedSlices, [['zustand/immer', never
           result: 'SUCCESS'
         })
         return response
+      }
+      if (error) {
+        throw error
+      }
+    },
+    addDomain: async (domain: Omit<Domain, 'timestamp'>) => {
+      const repo = get().repoCoreState.selectedRepo.repo
+
+      if (!repo) {
+        set((state) => (state.repoCoreState.git.status = 'ERROR'))
+
+        return
+      }
+
+      const { response, error } = await withAsync(() => addDomain(domain, repo.id))
+
+      if (!error && response) {
+        set((state) => {
+          state.repoCoreState.selectedRepo.repo!.domains = response
+        })
+
+        trackGoogleAnalyticsEvent('Repository', 'Add domain to a repo', 'Add repo domain', {
+          repo_name: repo.name,
+          repo_id: repo.id,
+          domain,
+          result: 'SUCCESS'
+        })
+      } else {
+        throw error
+      }
+    },
+    updateDomain: async (domain: Omit<Domain, 'controller' | 'timestamp'>) => {
+      const repo = get().repoCoreState.selectedRepo.repo
+
+      if (!repo) {
+        set((state) => (state.repoCoreState.git.status = 'ERROR'))
+
+        return
+      }
+
+      const { response, error } = await withAsync(() => updateDomain(domain, repo.id))
+
+      if (!error && response) {
+        set((state) => {
+          state.repoCoreState.selectedRepo.repo!.domains = response
+        })
+
+        trackGoogleAnalyticsEvent('Repository', 'Update domain in a repo', 'Update repo domain', {
+          repo_name: repo.name,
+          repo_id: repo.id,
+          domain,
+          result: 'SUCCESS'
+        })
+      } else {
+        throw error
       }
     },
     inviteContributor: async (address: string) => {

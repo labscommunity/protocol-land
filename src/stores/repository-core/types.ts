@@ -1,6 +1,6 @@
 import { UserCommit, UserContributionData, UserPROrIssue } from '@/lib/user'
 import { CommitResult } from '@/types/commit'
-import { Deployment, Repo } from '@/types/repository'
+import { Deployment, Domain, Repo } from '@/types/repository'
 
 export interface RepoCoreSlice {
   repoCoreState: RepoCoreState
@@ -55,6 +55,8 @@ export type RepoCoreActions = {
   rejectContributor: () => Promise<void>
   cancelContributor: (contributor: string) => Promise<void>
   grantAccessToContributor: () => Promise<void>
+  addDomain: (domain: Omit<Domain, 'timestamp'>) => Promise<void>
+  updateDomain: (domain: Omit<Domain, 'controller' | 'timestamp'>) => Promise<void>
   fetchAndLoadRepository: (id: string, branchName?: string) => Promise<string>
   fetchAndLoadParentRepository: (repo: Repo) => Promise<void>
   fetchAndLoadForkRepository: (id: string) => Promise<void>
