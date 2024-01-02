@@ -184,7 +184,7 @@ export default function ArNSAdd({ closeModal }: ArNSAddProps) {
   return (
     <div className="flex justify-center items-center w-full">
       <div className="bg-white rounded-lg p-1 w-full">
-        <p className="text-gray-600">Add a ArNS domain for this repo deployment</p>
+        <p className="text-gray-600">Add an ArNS domain for this repo deployment</p>
         {isAvailable && (
           <div className="flex justify-between items-center mt-4">
             <h3 className="font-semibold">$AR</h3>

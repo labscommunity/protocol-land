@@ -56,14 +56,14 @@ export default function ArNSRegisterModal() {
                   </div>
                   <Dialog.Description className="mt-4">
                     <Tab.Group>
-                      <Tab.List className="flex space-x-1 rounded-xl bg-primary-900/20 p-1">
+                      <Tab.List className="flex space-x-1 rounded-xl bg-primary-600 p-1">
                         {['Register', 'Add'].map((category) => (
                           <Tab
                             key={category}
                             className={({ selected }) =>
                               clsx(
                                 'w-full rounded-lg py-2.5 text-sm font-medium leading-5',
-                                'ring-white/60 ring-offset-2 ring-offset-primary-400 focus:outline-none focus:ring-2',
+                                'focus:outline-none',
                                 selected
                                   ? 'bg-white text-primary-700 shadow'
                                   : 'text-primary-100 hover:bg-white/[0.12] hover:text-white'
