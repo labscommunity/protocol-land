@@ -6,12 +6,14 @@ import {
   addActivePubKeyToPrivateState,
   addContributor,
   addDeployment,
+  addDomain,
   inviteContributor,
+  updateDomain,
   updateRepoDeploymentBranch,
   updateRepoDescription,
   updateRepoName
 } from '@/lib/git'
-import { Deployment } from '@/types/repository'
+import { Deployment, Domain } from '@/types/repository'
 
 import { changeBranch, getCurrentActiveBranch } from '../branch/actions'
 import { CombinedSlices } from '../types'
@@ -60,7 +62,8 @@ const initialRepoCoreState: RepoCoreState = {
     fileObjects: [],
     parentsOidList: [],
     commits: [],
-    commitSourceBranch: ''
+    commitSourceBranch: '',
+    isCreateNewFile: false
   }
 }
 
@@ -220,6 +223,61 @@ const createRepoCoreSlice: StateCreator<CombinedSlices, [['zustand/immer', never
           result: 'SUCCESS'
         })
         return response
+      }
+      if (error) {
+        throw error
+      }
+    },
+    addDomain: async (domain: Omit<Domain, 'timestamp'>) => {
+      const repo = get().repoCoreState.selectedRepo.repo
+
+      if (!repo) {
+        set((state) => (state.repoCoreState.git.status = 'ERROR'))
+
+        return
+      }
+
+      const { response, error } = await withAsync(() => addDomain(domain, repo.id))
+
+      if (!error && response) {
+        set((state) => {
+          state.repoCoreState.selectedRepo.repo!.domains = response
+        })
+
+        trackGoogleAnalyticsEvent('Repository', 'Add domain to a repo', 'Add repo domain', {
+          repo_name: repo.name,
+          repo_id: repo.id,
+          domain,
+          result: 'SUCCESS'
+        })
+      } else {
+        throw error
+      }
+    },
+    updateDomain: async (domain: Omit<Domain, 'controller' | 'timestamp'>) => {
+      const repo = get().repoCoreState.selectedRepo.repo
+
+      if (!repo) {
+        set((state) => (state.repoCoreState.git.status = 'ERROR'))
+
+        return
+      }
+
+      const { response, error } = await withAsync(() => updateDomain(domain, repo.id))
+
+      if (!error && response) {
+        set((state) => {
+          state.repoCoreState.selectedRepo.repo!.domains = response
+        })
+
+        trackGoogleAnalyticsEvent('Repository', 'Update domain in a repo', 'Update repo domain', {
+          repo_name: repo.name,
+          repo_id: repo.id,
+          domain,
+          result: 'SUCCESS'
+        })
+      } else {
+        throw error
       }
     },
     inviteContributor: async (address: string) => {
@@ -566,13 +624,83 @@ const createRepoCoreSlice: StateCreator<CombinedSlices, [['zustand/immer', never
       }
 
       if (response) {
-        await get().repoCoreActions.git.readFilesFromOid(response)
+        await get().repoCoreActions.git.readFilesFromOid(response, '')
 
         set((state) => {
           state.repoCoreState.git.rootOid = response
           state.repoCoreState.git.currentOid = response
           state.repoCoreState.git.status = 'SUCCESS'
         })
+      }
+    },
+    reloadFilesOnCurrentFolder: async () => {
+      const currentFolder = get().repoCoreActions.git.getCurrentFolderPath()
+      set((state) => {
+        state.repoCoreState.git.status = 'PENDING'
+      })
+
+      const repo = get().repoCoreState.selectedRepo.repo
+
+      if (!repo) {
+        set((state) => (state.repoCoreState.git.status = 'ERROR'))
+
+        return
+      }
+
+      const { error, response: rootOid } = await withAsync(() => getOidOfHeadRef(repo.id))
+
+      if (error) {
+        set((state) => {
+          state.repoCoreState.git.status = 'ERROR'
+          state.repoCoreState.git.error = error
+        })
+
+        return
+      }
+
+      if (rootOid) {
+        try {
+          const paths = ['', ...currentFolder.split('/')]
+          let currentOid = rootOid
+          const parentsOidList: string[] = []
+          let fileObjects: { prefix: string; oid: string; path: string; type: string; parent: string }[] = []
+          for (let i = 0; i < paths.length; i++) {
+            const newPrefix = paths
+              .slice(0, i + 1)
+              .filter(Boolean)
+              .join('/')
+            const nextPrefix = paths
+              .slice(0, i + 2)
+              .filter(Boolean)
+              .join('/')
+
+            const response = await getFilesFromOid(repo.id, currentOid, newPrefix)
+            if (response) {
+              const { objects } = response
+              const fileObject = objects.find((fileObj) => fileObj.prefix === nextPrefix)
+
+              if (fileObject) {
+                if (currentOid !== fileObject.oid && i < paths.length - 1) {
+                  parentsOidList.push(currentOid)
+                }
+
+                currentOid = fileObject?.oid
+              }
+              fileObjects = objects
+            }
+          }
+
+          set((state) => {
+            state.repoCoreState.git.rootOid = rootOid
+            state.repoCoreState.git.currentOid = currentOid
+            state.repoCoreState.git.fileObjects = fileObjects
+            state.repoCoreState.git.parentsOidList = parentsOidList
+            state.repoCoreState.git.status = 'SUCCESS'
+          })
+        } catch (error) {
+          console.log(`Error: ${error}`)
+          await get().repoCoreActions.loadFilesFromRepo()
+        }
       }
     },
     git: {
@@ -592,7 +720,12 @@ const createRepoCoreSlice: StateCreator<CombinedSlices, [['zustand/immer', never
           state.repoCoreState.git.rootOid = oid
         })
       },
-      readFilesFromOid: async (oid) => {
+      setIsCreateNewFile: (value: boolean) => {
+        set((state) => {
+          state.repoCoreState.git.isCreateNewFile = value
+        })
+      },
+      readFilesFromOid: async (oid, prefix) => {
         const repo = get().repoCoreState.selectedRepo.repo
         const status = get().repoCoreState.selectedRepo.status
 
@@ -608,7 +741,7 @@ const createRepoCoreSlice: StateCreator<CombinedSlices, [['zustand/immer', never
           return
         }
 
-        const { error, response } = await withAsync(() => getFilesFromOid(repo.id, oid))
+        const { error, response } = await withAsync(() => getFilesFromOid(repo.id, oid, prefix))
 
         if (error) {
           set((state) => {
@@ -687,6 +820,11 @@ const createRepoCoreSlice: StateCreator<CombinedSlices, [['zustand/immer', never
           state.repoCoreState.git.parentsOidList.push(oid)
         })
       },
+      getCurrentFolderPath: () => {
+        const fileObject = get().repoCoreState.git.fileObjects?.[0]
+        if (!fileObject) return ''
+        return fileObject.prefix.split('/').slice(0, -1).join('/')
+      },
       goBack: async () => {
         let currentOid = ''
 
@@ -698,7 +836,9 @@ const createRepoCoreSlice: StateCreator<CombinedSlices, [['zustand/immer', never
         })
 
         if (currentOid) {
-          await get().repoCoreActions.git.readFilesFromOid(currentOid)
+          const fileObject = get().repoCoreState.git.fileObjects[0]
+          const prefix = fileObject.prefix.split('/').slice(0, -2).join('/')
+          await get().repoCoreActions.git.readFilesFromOid(currentOid, prefix)
         }
       }
     }

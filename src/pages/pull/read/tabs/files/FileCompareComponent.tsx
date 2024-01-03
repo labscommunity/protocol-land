@@ -1,5 +1,6 @@
 import { EditorState } from '@codemirror/state'
 import { langs } from '@uiw/codemirror-extensions-langs'
+import { githubLight } from '@uiw/codemirror-theme-github'
 import { EditorView } from 'codemirror'
 import { useEffect, useState } from 'react'
 import CodeMirrorMerge from 'react-codemirror-merge'
@@ -49,14 +50,14 @@ export default function FileCompareComponent({ fileStatus, base, compare, repoId
   const Modified = CodeMirrorMerge.Modified
 
   return (
-    <div className="w-full flex flex-col border-gray-300 border-[1px] rounded-t-xl">
+    <div className="w-full flex flex-col border-gray-300 border-[1px] rounded-t-xl mb-4">
       <div className="flex font-medium bg-gray-200 text-gray-900 px-4 py-3 border-b-[1px] border-gray-300 rounded-t-xl overflow-hidden">
         {fileStatus[0]}
       </div>
       <CodeMirrorMerge
         collapseUnchanged={{}}
         className="bg-white"
-        theme={'dark'}
+        theme={githubLight}
         orientation="a-b"
         highlightChanges={true}
       >

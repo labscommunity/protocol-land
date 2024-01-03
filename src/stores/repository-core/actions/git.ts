@@ -17,11 +17,11 @@ export async function getOidOfHeadRef(id: string) {
   return getOidFromRef({ ref: 'HEAD', dir, fs })
 }
 
-export async function getFilesFromOid(id: string, oid: string) {
+export async function getFilesFromOid(id: string, oid: string, prefix: string) {
   const fs = fsWithName(id)
   const dir = `/${id}`
 
-  return readFilesFromOid({ dir, oid, prefix: '', fs })
+  return readFilesFromOid({ dir, oid, prefix, fs })
 }
 
 export async function getFileContentFromOid(id: string, oid: string) {

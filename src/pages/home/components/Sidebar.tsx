@@ -49,7 +49,7 @@ export default function Sidebar({ repos, isLoading }: { repos: Repo[]; isLoading
             repo.id ? (
               <Link to={`/repository/${repo.id}`}>
                 <Button
-                  className="text-gray-900 !pb-2 text-[18px] flex gap-2 items-center w-full hover:bg-primary-600 hover:rounded-md !px-2 hover:text-white"
+                  className="text-gray-900 !pb-2 text-[18px] text-left flex gap-2 items-center w-full hover:bg-primary-600 hover:rounded-md !px-2 hover:text-white"
                   variant="link"
                 >
                   <RiGitRepositoryFill className="w-5 h-5 text-inherit" />

@@ -43,6 +43,7 @@ export type Repo = {
   issues: Issue[]
   contributors: string[]
   deployments: Deployment[]
+  domains: Domain[]
   deploymentBranch: string
   timestamp: number
   forks: Forks
@@ -72,6 +73,14 @@ export type Deployment = {
   timestamp: number
 }
 
+export type Domain = {
+  txId: string
+  contractTxId: string
+  name: string
+  controller: string
+  timestamp: number
+}
+
 export type PullRequest = {
   id: number
   repoId: string
@@ -83,7 +92,9 @@ export type PullRequest = {
   author: string
   status: PullRequestStatus
   reviewers: Reviewer[]
+  activities: PullRequestActivity[]
   timestamp: number
+  mergedTimestamp?: number
   baseRepo: PRSide
   compareRepo: PRSide
 }
@@ -118,6 +129,8 @@ export type Bounty = {
 
 export type IssueActivity = IssueActivityStatus | IssueActivityComment
 
+export type PullRequestActivity = PullRequestActivityStatus | PullRequestActivityComment
+
 export type BaseActivity = {
   type: ActivityType
   author: string
@@ -128,7 +141,16 @@ export interface IssueActivityStatus extends BaseActivity {
   status: IssueStatus | 'REOPEN'
 }
 
+export interface PullRequestActivityStatus extends BaseActivity {
+  status: PullRequestStatus | 'REOPEN' | 'APPROVAL' | 'REVIEW_REQUEST'
+  reviewers?: Array<string>
+}
+
 export interface IssueActivityComment extends BaseActivity {
+  description: string
+}
+
+export interface PullRequestActivityComment extends BaseActivity {
   description: string
 }
 
@@ -178,7 +200,10 @@ const repoFnList = [
   'updatePullRequestDetails',
   'updateRepositoryDetails',
   'addDeployment',
+  'addDomain',
+  'updateDomain',
   'addContributor',
+  'addCommentToPR',
   'inviteContributor',
   'acceptContributorInvite',
   'rejectContributorInvite',
