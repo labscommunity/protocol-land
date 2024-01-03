@@ -8,7 +8,7 @@ import { AuthSlice, AuthState } from './types'
 const initialAuthState = {
   isLoggedIn: false,
   address: null,
-  method: null,
+  method: null
 }
 
 const createAuthSlice: StateCreator<CombinedSlices, [['zustand/immer', never], never], [], AuthSlice> = (set, get) => ({
@@ -23,11 +23,11 @@ const createAuthSlice: StateCreator<CombinedSlices, [['zustand/immer', never], n
       const whiteListedUser = await whitelistResponse.json()
 
       if (whiteListedUser && whiteListedUser.length > 0 && whiteListedUser[0].address === value.address) {
-        await get().userActions.setUserDetails()
-
         set((state) => {
           state.authState = value
         })
+
+        await get().userActions.setUserDetails()
 
         return true
       }
