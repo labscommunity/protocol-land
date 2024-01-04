@@ -26,7 +26,7 @@ export default defineConfig({
   resolve: {
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url)),
-      '@codemirror': path.resolve(__dirname, 'node_modules/@codemirror/'),
+      '@codemirror': path.resolve(__dirname, 'node_modules/@codemirror/')
     }
   },
   build: {

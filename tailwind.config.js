@@ -3,6 +3,14 @@ export default {
   content: ['./index.html', './src/**/*.{js,ts,jsx,tsx}'],
   theme: {
     extend: {
+      fontFamily: {
+        lekton: ['Lekton', 'sans-serif'],
+        inter: ['Inter', 'sans-serif'],
+        manrope: ['Manrope', 'sans-serif']
+      },
+      dropShadow: {
+        default: '0 50px 60px rgba(109, 171, 213, 0.4)'
+      },
       colors: {
         'liberty-dark': {
           50: '#4C61A2',
