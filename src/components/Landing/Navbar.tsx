@@ -7,7 +7,7 @@ import { Button } from '../common/buttons'
 import WhitelistModal from '../Navbar/WhitelistModal'
 
 export default function Navbar() {
-  const { whitelistModalOpen, setWhitelistModalOpen, handleConnectBtnClick } = useAuth()
+  const { connected, address, whitelistModalOpen, setWhitelistModalOpen, handleConnectBtnClick } = useAuth()
 
   return (
     <div className="w-full h-16 md:h-20 px-0 md:px-6 py-4 justify-between items-center inline-flex">
@@ -18,7 +18,13 @@ export default function Navbar() {
         <div className="text-white text-2xl font-bold font-lekton leading-7 md:leading-loose">Protocol.Land</div>
       </div>
       <div className="justify-end items-center gap-4 flex">
-        <Button className="h-11 px-4 py-2.5" onClick={handleConnectBtnClick} variant="gradient-dark">
+        <Button
+          className="h-11 px-4 py-2.5"
+          onClick={handleConnectBtnClick}
+          variant="gradient-dark"
+          isLoading={connected || !!address}
+          loadingText="Connecting"
+        >
           Connect Wallet
         </Button>
         <WhitelistModal isOpen={whitelistModalOpen} setIsOpen={setWhitelistModalOpen} />
