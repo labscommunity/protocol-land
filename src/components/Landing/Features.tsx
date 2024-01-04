@@ -10,25 +10,25 @@ const features = [
     icon: GitIssueIcon,
     title: 'Issue tracking',
     description: 'Keep track of tasks, bugs, development for your project',
-    className: 'md:w-64'
+    className: 'md:max-w-[256px]'
   },
   {
     icon: GitPullRequestIcon,
     title: 'Pull Requests',
     description: 'Submit changes to your repository hosted in Protocol.Land',
-    className: 'md:w-60'
+    className: 'md:max-w-[240px]'
   },
   {
     icon: GitForkIcon,
     title: 'Forking',
     description: 'Seamlessly create a copy of your repository',
-    className: 'md:w-56'
+    className: 'md:max-w-[224px]'
   },
   {
     icon: UserProfileIcon,
     title: 'User Profiles',
     description: 'Create your unique profile connected to your wallet address',
-    className: 'md:w-60'
+    className: 'md:max-w-[240px]'
   }
 ]
 

@@ -30,7 +30,7 @@ export default function Builders() {
             <div className="flex flex-col">
               <div>
                 <div className="text-3xl lg:text-5xl font-bold font-lekton">
-                  <span className="text-blue-300 leading-10">Built </span>
+                  <span className="text-primary-400 leading-10">Built </span>
                   <span className="text-white leading-10">for builders</span>
                 </div>
                 <div className="text-white text-lg font-normal font-inter leading-relaxed">
@@ -65,8 +65,8 @@ export default function Builders() {
         </div>
         <div className="pt-4 justify-center lg:justify-start items-start gap-4 inline-flex">
           <div className="justify-end items-center gap-4 flex">
-            <div className="px-4 py-2.5 bg-cyan-700 rounded-lg shadow justify-center items-center gap-2 flex">
-              <div className="text-white text-base font-medium font-inter leading-normal cursor-pointer">Jump In</div>
+            <div className="px-4 py-2.5 bg-[#397D9E] rounded-lg shadow justify-center items-center gap-2 flex text-white text-base font-medium font-inter leading-normal cursor-pointer">
+              Jump In
             </div>
           </div>
         </div>

@@ -29,10 +29,10 @@ export default function BackedByArweave() {
     <div className="w-full py-[60px] gap-[60px] flex flex-col items-center justify-center">
       <div className="flex flex-col gap-4 text-center">
         <div className="text-white text-base font-semibold font-inter leading-normal">Own</div>
-        <div className="text-center text-white text-5xl font-bold font-['Lekton']">
+        <div className="text-center text-white text-5xl font-bold font-lekton">
           <span className="leading-10">All stored permanently on </span>
-          <span className="text-blue-300 text-5xl font-bold font-['Lekton'] leading-10">Arweave</span>
-          <span className="text-white text-5xl font-bold font-['Lekton'] leading-10">, owned by you</span>
+          <span className="text-primary-400 text-5xl font-bold font-lekton leading-10">Arweave</span>
+          <span className="text-white text-5xl font-bold font-lekton leading-10">, owned by you</span>
         </div>
         <div className="text-center text-white text-lg font-normal font-inter leading-relaxed">
           Complete transparency on how your code repos are being stored
@@ -65,9 +65,9 @@ export default function BackedByArweave() {
 
         <div className="flex lg:flex-row flex-col">
           {features.map((feature, index) => (
-            <div key={`backed-feature-${index}`} className="flex">
+            <div key={`backed-feature-${index}`} className="flex flex-col lg:flex-row">
               <div
-                className="flex flex-col p-5 lg:p-10 gap-4 lg:gap-6 max-w-[440px] flex-1 self-stretch rounded-2xl border-2 border-[#77C6ED]"
+                className="flex flex-col p-5 lg:p-10 gap-4 lg:gap-6 max-w-[440px] flex-1 self-stretch rounded-2xl border-2 border-[#387C9E]"
                 style={{
                   background: 'linear-gradient(180deg, rgba(56, 124, 158, 0.20) 0%, rgba(0, 0, 0, 0.20) 100%)'
                 }}
@@ -104,8 +104,8 @@ export default function BackedByArweave() {
         </div>
       </div>
 
-      <div className="w-40 h-11 px-4 py-2.5 bg-cyan-700 rounded-lg shadow justify-center items-center gap-2 inline-flex">
-        <div className="text-white text-base font-medium font-inter leading-normal cursor-pointer">Explore Arweave</div>
+      <div className="w-40 h-11 px-4 py-2.5 bg-[#397D9E] rounded-lg shadow justify-center items-center gap-2 inline-flex text-white text-base font-medium font-inter leading-normal cursor-pointer">
+        Explore Arweave
       </div>
     </div>
   )

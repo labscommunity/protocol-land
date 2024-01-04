@@ -11,6 +11,9 @@ export default {
       dropShadow: {
         default: '0 50px 60px rgba(109, 171, 213, 0.4)'
       },
+      backgroundImage: {
+        'gradient-dark': 'linear-gradient(275deg, rgba(255, 255, 255, 0.50) -23.79%, rgba(255, 255, 255, 0.17) 141.13%)'
+      },
       colors: {
         'liberty-dark': {
           50: '#4C61A2',

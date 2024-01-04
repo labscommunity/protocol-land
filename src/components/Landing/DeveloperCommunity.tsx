@@ -64,7 +64,7 @@ export default function DeveloperCommunity() {
             </div>
           </div>
           <div className="hidden lg:block">
-            <div className="w-40 h-11 px-4 py-2.5 bg-cyan-700 rounded-lg shadow text-white text-base font-medium font-inter leading-normal cursor-pointer">
+            <div className="w-40 h-11 px-4 py-2.5 bg-[#397D9E] rounded-lg shadow text-white text-base font-medium font-inter leading-normal cursor-pointer">
               Join the Discord
             </div>
           </div>
@@ -119,7 +119,7 @@ export default function DeveloperCommunity() {
         </div>
       </div>
       <div className="flex justify-center pt-6 lg:hidden">
-        <div className="w-40 h-11 px-4 py-2.5 bg-cyan-700 rounded-lg shadow text-white text-base font-medium font-inter leading-normal">
+        <div className="w-40 h-11 px-4 py-2.5 bg-[#397D9E] rounded-lg shadow text-white text-base font-medium font-inter leading-normal cursor-pointer">
           Join the Discord
         </div>
       </div>

@@ -22,7 +22,7 @@ export default function Bounties() {
       <div className="flex items-center justify-center gap-4 flex-col">
         <div className="text-white text-base font-semibold font-inter leading-normal">Bounties</div>
         <div className="text-center">
-          <span className="text-blue-300 text-3xl md:text-5xl font-bold font-lekton leading-10">Earn </span>
+          <span className="text-primary-400 text-3xl md:text-5xl font-bold font-lekton leading-10">Earn </span>
           <span className="text-white text-3xl md:text-5xl font-bold font-lekton leading-10">from your work</span>
         </div>
         <div className="text-center text-white text-lg font-normal font-inter leading-relaxed">
@@ -50,13 +50,11 @@ export default function Bounties() {
         ))}
       </div>
       <div className="flex flex-col md:flex-row justify-center items-center md:h-14 pt-4 gap-4">
-        <div className="px-4 py-2.5 bg-cyan-700 rounded-lg shadow justify-center items-center gap-2 flex">
-          <div className="text-white text-base font-medium font-inter leading-normal cursor-pointer">
-            Explore projects
-          </div>
+        <div className="px-4 py-2.5 bg-[#397D9E] rounded-lg shadow justify-center items-center gap-2 flex text-white text-base font-medium font-inter leading-normal cursor-pointer">
+          Explore projects
         </div>
-        <div className="px-4 py-2.5 rounded-lg shadow border border-blue-400 justify-center items-center gap-2 flex">
-          <div className="text-white text-base font-medium font-inter leading-normal cursor-pointer">Learn more</div>
+        <div className="px-4 py-2.5 rounded-lg shadow border border-[#56ADD8] justify-center items-center gap-2 flex text-white text-base font-medium font-inter leading-normal cursor-pointer">
+          Learn more
         </div>
       </div>
     </div>

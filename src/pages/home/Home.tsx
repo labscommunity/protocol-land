@@ -22,7 +22,7 @@ export default function Home() {
   const [isCreateProfileModalOpen, setIsCreateProfileModalOpen] = React.useState(false)
   const { connect } = useConnection()
   const navigate = useNavigate()
-  const strategy = React.useMemo(() => localStorage.getItem('wallet_kit_strategy_id'), [])
+  const strategy = React.useMemo(() => localStorage.getItem('wallet_kit_strategy_id'), [authState.isLoggedIn])
 
   React.useEffect(() => {
     trackGoogleAnalyticsPageView('pageview', '/', 'Home Page Visit')
@@ -61,7 +61,7 @@ export default function Home() {
     navigate(`/repository/${PL_REPO_ID}`)
   }
 
-  if (!strategy || !authState.isLoggedIn) {
+  if (!strategy) {
     return <Landing />
   }
 

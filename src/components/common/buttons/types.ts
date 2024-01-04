@@ -45,7 +45,16 @@ export type ButtonProps<C extends React.ElementType> = PolymorphicComponentProps
   {
     children: React.ReactNode
     className?: string
-    variant?: 'solid' | 'outline' | 'ghost' | 'link' | 'gradient' | 'primary-solid' | 'primary-outline' | 'secondary'
+    variant?:
+      | 'solid'
+      | 'outline'
+      | 'ghost'
+      | 'link'
+      | 'gradient'
+      | 'gradient-dark'
+      | 'primary-solid'
+      | 'primary-outline'
+      | 'secondary'
     isLoading?: boolean
     loadingText?: string
   }
