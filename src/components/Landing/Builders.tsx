@@ -32,7 +32,7 @@ export default function Builders() {
                   <span className="text-white leading-10">for builders</span>
                 </div>
                 <div className="text-white text-lg font-normal font-inter leading-relaxed">
-                  Protocol.land is the go-to decentralized infrastructure whether you&aposre a solo developer, a startup
+                  Protocol.land is the go-to decentralized infrastructure whether you're a solo developer, a startup
                   team, or a thriving community
                 </div>
               </div>
