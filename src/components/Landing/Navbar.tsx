@@ -23,7 +23,7 @@ export default function Navbar() {
           onClick={handleConnectBtnClick}
           variant="gradient-dark"
           isLoading={connected || !!address}
-          loadingText="Connecting"
+          loadingText="Connecting..."
         >
           Connect Wallet
         </Button>
