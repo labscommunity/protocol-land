@@ -1,24 +1,31 @@
+import clsx from 'clsx'
+import { useState } from 'react'
+
+import CreateIssue from '@/assets/images/create-issues.gif'
+import PRCollaboration from '@/assets/images/pr_collaboration.gif'
 import RepoCreate from '@/assets/images/repo-create.gif'
 
 const features = [
   {
     title: 'Seamless Repository/Project Creation',
     description: 'Create a repo with one click and dive in without the hassle',
-    className: 'border-l-4 border-0 border-sky-300'
+    image: RepoCreate
   },
   {
     title: 'Transparent collaboration',
     description: 'Intuitive Issue Tracker & Pull Request System to make merges easy',
-    className: ''
+    image: CreateIssue
   },
   {
     title: 'Straightforward design',
     description: 'From a simple onboarding to cross-project collaboration',
-    className: ''
+    image: PRCollaboration
   }
 ]
 
 export default function Builders() {
+  const [selectedIndex, setSelectedIndex] = useState(0)
+
   return (
     <div className="w-full py-16 lg:py-[60px] justify-start items-start flex">
       <div className="flex flex-col">
@@ -36,15 +43,19 @@ export default function Builders() {
                   team, or a thriving community
                 </div>
               </div>
-              <div className="pt-6 lg:py-6">
+              <div className="flex flex-col pt-6 lg:py-6 gap-6">
                 <div className="flex flex-col gap-8 py-2">
                   {features.map((feature, index) => (
                     <div
                       key={`builders-feature-${index}`}
-                      className={`px-6 justify-start items-start gap-8 inline-flex ${feature.className}`}
+                      className={clsx(
+                        `px-6 justify-start items-start gap-8 inline-flex cursor-pointer group`,
+                        selectedIndex === index && 'border-l-4 border-0 border-sky-300'
+                      )}
+                      onClick={() => setSelectedIndex(index)}
                     >
                       <div className="grow shrink basis-0 flex-col justify-start items-start gap-1 inline-flex">
-                        <div className="self-stretch text-white text-xl lg:text-2xl font-bold font-inter leading-loose">
+                        <div className="self-stretch text-white group-hover:text-primary-400 text-xl lg:text-2xl font-bold font-inter leading-loose">
                           {feature.title}
                         </div>
                         <div className="self-stretch text-white text-base font-normal font-inter leading-normal">
@@ -54,17 +65,20 @@ export default function Builders() {
                     </div>
                   ))}
                 </div>
+                <div className="pt-4 hidden lg:justify-start items-start gap-4 lg:inline-flex">
+                  <div className="px-4 py-2.5 bg-[#397D9E] rounded-lg shadow justify-center items-center gap-2 flex text-white text-base font-medium font-inter leading-normal cursor-pointer">
+                    Jump In
+                  </div>
+                </div>
               </div>
             </div>
-            <div className="pb-10 lg:pb-0 drop-shadow-default">
-              <img className="rounded-2xl shadow" src={RepoCreate} alt="" />
+            <div className="flex items-center justify-center drop-shadow-default">
+              <img className="rounded-2xl shadow" src={features[selectedIndex].image} width={800} alt="" />
             </div>
-          </div>
-        </div>
-        <div className="pt-4 justify-center lg:justify-start items-start gap-4 inline-flex">
-          <div className="justify-end items-center gap-4 flex">
-            <div className="px-4 py-2.5 bg-[#397D9E] rounded-lg shadow justify-center items-center gap-2 flex text-white text-base font-medium font-inter leading-normal cursor-pointer">
-              Jump In
+            <div className="pt-4 justify-center lg:hidden items-start gap-4 inline-flex">
+              <div className="px-4 py-2.5 bg-[#397D9E] rounded-lg shadow justify-center items-center gap-2 flex text-white text-base font-medium font-inter leading-normal cursor-pointer">
+                Jump In
+              </div>
             </div>
           </div>
         </div>
