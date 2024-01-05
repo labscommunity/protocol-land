@@ -1,5 +1,3 @@
-import SVG from 'react-inlinesvg'
-
 import RepoCreate from '@/assets/images/repo-create.gif'
 
 const features = [

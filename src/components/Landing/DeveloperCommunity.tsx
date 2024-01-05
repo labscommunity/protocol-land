@@ -88,7 +88,7 @@ export default function DeveloperCommunity() {
                   <SVG src={Earth} />
                   <div className="absolute w-full h-full right-[36%] lg:right-[25%] bottom-24 lg:bottom-8 -z-10">
                     <svg
-                      className="h-[481px] max-w-[100vw] lg:h-[681px] lg:w-[681px]"
+                      className="h-[481px] max-w-xs sm:max-w-[100vw] lg:h-[681px] lg:w-[681px]"
                       xmlns="http://www.w3.org/2000/svg"
                       viewBox="0 0 681 681"
                       fill="none"
@@ -118,7 +118,7 @@ export default function DeveloperCommunity() {
           </div>
         </div>
       </div>
-      <div className="flex justify-center pt-6 lg:hidden">
+      <div className="flex justify-center pt-12 lg:hidden">
         <div className="w-40 h-11 px-4 py-2.5 bg-[#397D9E] rounded-lg shadow text-white text-base font-medium font-inter leading-normal cursor-pointer">
           Join the Discord
         </div>
