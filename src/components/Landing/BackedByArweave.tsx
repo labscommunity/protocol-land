@@ -5,6 +5,7 @@ import CloudCheckIcon from '@/assets/icons/cloud-check.svg'
 import FolderCodeIcon from '@/assets/icons/folder-code.svg'
 import GraphBarIcon from '@/assets/icons/graph-bar.svg'
 import Line from '@/assets/images/line.svg'
+import { openInNewTab } from '@/helpers/openInNewTab'
 
 const features = [
   {
@@ -114,7 +115,10 @@ export default function BackedByArweave() {
         </div>
       </div>
 
-      <div className="w-40 h-11 px-4 py-2.5 bg-[#397D9E] rounded-lg shadow justify-center items-center gap-2 inline-flex text-white text-base font-medium font-inter leading-normal cursor-pointer">
+      <div
+        className="w-40 h-11 px-4 py-2.5 bg-[#397D9E] hover:opacity-95 rounded-lg shadow justify-center items-center gap-2 inline-flex text-white text-base font-medium font-inter leading-normal cursor-pointer"
+        onClick={() => openInNewTab('https://viewblock.io/arweave/tx/OYL0nXU8UrQm9ekQB7vgXFuvM3LcVDsaSQfQ7-p7u7U')}
+      >
         Explore Arweave
       </div>
     </div>

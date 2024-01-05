@@ -1,3 +1,5 @@
+import { useNavigate } from 'react-router-dom'
+
 import AddBounty from '@/assets/images/add-bounty.png'
 import Reward from '@/assets/images/reward.png'
 import RewardCompleted from '@/assets/images/reward-completed.png'
@@ -17,6 +19,8 @@ const items = [
   }
 ]
 export default function Bounties() {
+  const navigate = useNavigate()
+
   return (
     <div className="w-full flex flex-col items-center justify-center py-16 gap-10 md:py-[60px] md:gap-[60px]">
       <div className="flex items-center justify-center gap-4 flex-col">
@@ -50,7 +54,10 @@ export default function Bounties() {
         ))}
       </div>
       <div className="flex flex-col md:flex-row justify-center items-center md:h-14 pt-4 gap-4">
-        <div className="px-4 py-2.5 bg-[#397D9E] rounded-lg shadow justify-center items-center gap-2 flex text-white text-base font-medium font-inter leading-normal cursor-pointer">
+        <div
+          className="px-4 py-2.5 bg-[#397D9E] hover:opacity-95 rounded-lg shadow justify-center items-center gap-2 flex text-white text-base font-medium font-inter leading-normal cursor-pointer"
+          onClick={() => navigate('/repository/6ace6247-d267-463d-b5bd-7e50d98c3693')}
+        >
           Explore projects
         </div>
         <div className="px-4 py-2.5 rounded-lg shadow border border-[#56ADD8] justify-center items-center gap-2 flex text-white text-base font-medium font-inter leading-normal cursor-pointer">

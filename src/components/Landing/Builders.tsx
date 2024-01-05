@@ -4,6 +4,7 @@ import { useState } from 'react'
 import CreateIssue from '@/assets/images/create-issues.gif'
 import PRCollaboration from '@/assets/images/pr-collaboration.gif'
 import RepoCreate from '@/assets/images/repo-create.gif'
+import useAuth from '@/helpers/hooks/useAuth'
 
 const features = [
   {
@@ -24,6 +25,7 @@ const features = [
 ]
 
 export default function Builders() {
+  const { handleConnectBtnClick } = useAuth()
   const [selectedIndex, setSelectedIndex] = useState(0)
 
   return (
@@ -66,7 +68,10 @@ export default function Builders() {
                   ))}
                 </div>
                 <div className="pt-4 hidden lg:justify-start items-start gap-4 lg:inline-flex">
-                  <div className="px-4 py-2.5 bg-[#397D9E] rounded-lg shadow justify-center items-center gap-2 flex text-white text-base font-medium font-inter leading-normal cursor-pointer">
+                  <div
+                    className="px-4 py-2.5 bg-[#397D9E] hover:opacity-95 rounded-lg shadow justify-center items-center gap-2 flex text-white text-base font-medium font-inter leading-normal cursor-pointer"
+                    onClick={handleConnectBtnClick}
+                  >
                     Jump In
                   </div>
                 </div>
@@ -76,7 +81,10 @@ export default function Builders() {
               <img className="rounded-2xl shadow" src={features[selectedIndex].image} width={800} alt="" />
             </div>
             <div className="pt-4 justify-center lg:hidden items-start gap-4 inline-flex">
-              <div className="px-4 py-2.5 bg-[#397D9E] rounded-lg shadow justify-center items-center gap-2 flex text-white text-base font-medium font-inter leading-normal cursor-pointer">
+              <div
+                className="px-4 py-2.5 bg-[#397D9E] hover:opacity-95 rounded-lg shadow justify-center items-center gap-2 flex text-white text-base font-medium font-inter leading-normal cursor-pointer"
+                onClick={handleConnectBtnClick}
+              >
                 Jump In
               </div>
             </div>
