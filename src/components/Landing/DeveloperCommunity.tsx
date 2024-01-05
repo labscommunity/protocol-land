@@ -7,8 +7,13 @@ import Developer4 from '@/assets/images/developer4.png'
 import Earth from '@/assets/images/earth.svg'
 import PLDiscord from '@/assets/images/pl-discord.png'
 import ProfilePage from '@/assets/images/profile-page.png'
+import { openInNewTab } from '@/helpers/openInNewTab'
 
 export default function DeveloperCommunity() {
+  function handleDiscordClick() {
+    openInNewTab('https://discord.com/invite/bdF7NRpmnN')
+  }
+
   return (
     <div className="w-full py-[60px]">
       <div className="flex flex-col lg:flex-row justify-between">
@@ -64,7 +69,10 @@ export default function DeveloperCommunity() {
             </div>
           </div>
           <div className="hidden lg:block">
-            <div className="w-40 h-11 px-4 py-2.5 bg-[#397D9E] rounded-lg shadow text-white text-base font-medium font-inter leading-normal cursor-pointer">
+            <div
+              className="w-40 h-11 px-4 py-2.5 bg-[#397D9E] rounded-lg shadow text-white text-base font-medium font-inter leading-normal cursor-pointer hover:opacity-90"
+              onClick={handleDiscordClick}
+            >
               Join the Discord
             </div>
           </div>
@@ -119,7 +127,10 @@ export default function DeveloperCommunity() {
         </div>
       </div>
       <div className="flex justify-center pt-12 lg:hidden">
-        <div className="w-40 h-11 px-4 py-2.5 bg-[#397D9E] rounded-lg shadow text-white text-base font-medium font-inter leading-normal cursor-pointer">
+        <div
+          className="w-40 h-11 px-4 py-2.5 bg-[#397D9E] rounded-lg shadow text-white text-base font-medium font-inter leading-normal cursor-pointer hover:opacity-90"
+          onClick={handleDiscordClick}
+        >
           Join the Discord
         </div>
       </div>

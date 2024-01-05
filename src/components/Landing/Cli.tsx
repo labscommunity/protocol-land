@@ -4,6 +4,8 @@ import { FiArrowUpRight } from 'react-icons/fi'
 import { IoCheckmarkSharp } from 'react-icons/io5'
 import { PiCopy } from 'react-icons/pi'
 
+import { openInNewTab } from '@/helpers/openInNewTab'
+
 export default function Cli() {
   const [isCopied, setIsCopied] = useState(false)
 
@@ -17,11 +19,6 @@ export default function Cli() {
         }, 1000)
       }
     })
-  }
-
-  const openInNewTab = (url: string): void => {
-    const newWindow = window.open(url, '_blank', 'noopener,noreferrer')
-    if (newWindow) newWindow.opener = null
   }
 
   return (
