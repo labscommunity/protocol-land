@@ -2,7 +2,7 @@ import clsx from 'clsx'
 import { useState } from 'react'
 
 import CreateIssue from '@/assets/images/create-issues.gif'
-import PRCollaboration from '@/assets/images/pr_collaboration.gif'
+import PRCollaboration from '@/assets/images/pr-collaboration.gif'
 import RepoCreate from '@/assets/images/repo-create.gif'
 
 const features = [
