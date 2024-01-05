@@ -42,7 +42,7 @@ export default function BackedByArweave() {
         <SVG
           className="w-20 h-20 p-4 bg-white rounded-full border border-zinc-500"
           style={{
-            boxShadow: '0px 0px 5.2px 0px #77C6ED'
+            boxShadow: '0px 0px 20px -1.441px #77C6ED'
           }}
           src={ArweaveIcon}
         />
@@ -53,12 +53,22 @@ export default function BackedByArweave() {
           <div className="relative w-full h-full">
             <div className="absolute flex right-[20%] -top-[3px]">
               <SVG src={Line} />
-              <div className="w-1 h-1 bg-white rounded-full shadow blur-none"></div>
+              <div
+                className="w-1 h-1 bg-white rounded-full"
+                style={{
+                  boxShadow: '0px 0px 3px 4px rgba(119, 198, 237, 0.5)'
+                }}
+              ></div>
             </div>
 
             <div className="absolute flex top-8 -left-[54px] rotate-90">
               <SVG src={Line} />
-              <div className="w-1 h-1 bg-white rounded-full blur-none"></div>
+              <div
+                className="w-1 h-1 bg-white rounded-full"
+                style={{
+                  boxShadow: '0px 0px 3px 4px rgba(119, 198, 237, 0.5)'
+                }}
+              ></div>
             </div>
           </div>
         </div>
