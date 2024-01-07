@@ -288,11 +288,11 @@ export async function updatePullRequestDetails(repoId: string, prId: number, pul
     prId
   } as any
 
-  if (pullRequest.title) {
+  if (pullRequest.title && typeof pullRequest.title === 'string') {
     payload = { ...payload, title: pullRequest.title }
   }
 
-  if (pullRequest.description) {
+  if (typeof pullRequest.description === 'string') {
     payload = { ...payload, description: pullRequest.description }
   }
 

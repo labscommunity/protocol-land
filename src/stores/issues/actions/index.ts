@@ -166,11 +166,11 @@ export async function updateIssueDetails(repoId: string, issueId: number, issue:
     issueId
   } as any
 
-  if (issue.title) {
+  if (issue.title && typeof issue.title === 'string') {
     payload = { ...payload, title: issue.title }
   }
 
-  if (issue.description) {
+  if (typeof issue.description === 'string') {
     payload = { ...payload, description: issue.description }
   }
 
