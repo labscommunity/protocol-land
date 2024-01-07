@@ -1,5 +1,6 @@
 import Arweave from 'arweave'
 
+import { getArrayBufSize } from '@/helpers/getArrayBufSize'
 import { waitFor } from '@/helpers/waitFor'
 import { withAsync } from '@/helpers/withAsync'
 import { importRepoFromBlob, unmountRepoFromBrowser } from '@/lib/git'
@@ -66,11 +67,13 @@ export async function loadRepository(id: string, dataTxId: string, privateStateT
   const fs = fsWithName(id)
   const dir = `/${id}`
 
+  const repoSize = getArrayBufSize(repoArrayBuf)
+
   const success = await importRepoFromBlob(fs, dir, new Blob([repoArrayBuf]))
 
   await waitFor(1000)
 
-  return success
+  return { success, repoSize }
 }
 
 export async function renameRepoDir(id: string, currentName: string, newName: string) {
