@@ -10,7 +10,8 @@ export async function createNewIssue(
   if (
     isInvalidInput(payload, 'object') ||
     isInvalidInput(payload.repoId, 'uuid') ||
-    isInvalidInput(payload.title, 'string')
+    isInvalidInput(payload.title, 'string') ||
+    isInvalidInput(payload.description, 'string', true)
   ) {
     throw new ContractError('Invalid inputs supplied.')
   }
@@ -21,13 +22,11 @@ export async function createNewIssue(
     throw new ContractError('Repository not found.')
   }
 
-  payload.description = isInvalidInput(payload.description, 'string', true) ? '' : payload.description
-
   const issue: Issue = {
     id: 1,
     repoId: payload.repoId,
     title: payload.title,
-    description: payload.description ?? '',
+    description: payload.description,
     author: caller,
     status: 'OPEN',
     assignees: [],

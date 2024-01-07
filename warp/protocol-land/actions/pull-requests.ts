@@ -30,7 +30,8 @@ export async function createNewPullRequest(
     isInvalidInput(payload.baseRepo.repoName, 'string') ||
     isInvalidInput(payload.compareRepo, 'object') ||
     isInvalidInput(payload.baseRepo.repoId, 'uuid') ||
-    isInvalidInput(payload.baseRepo.repoName, 'string')
+    isInvalidInput(payload.baseRepo.repoName, 'string') ||
+    isInvalidInput(payload.description, 'string', true)
   ) {
     throw new ContractError('Invalid inputs supplied.')
   }
@@ -59,7 +60,7 @@ export async function createNewPullRequest(
     id: 1,
     repoId: payload.repoId,
     title: payload.title,
-    description: payload.description ?? '',
+    description: payload.description,
     baseBranch: payload.baseBranch,
     compareBranch: payload.compareBranch,
     baseBranchOid: payload.baseBranchOid,

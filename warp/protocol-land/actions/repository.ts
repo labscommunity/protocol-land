@@ -12,6 +12,7 @@ export async function initializeNewRepository(
   if (
     isInvalidInput(payload, 'object') ||
     isInvalidInput(payload.name, 'string') ||
+    isInvalidInput(payload.description, 'string', true) ||
     isInvalidInput(payload.dataTxId, 'arweave-address') ||
     isInvalidInput(payload.id, 'uuid')
   ) {
@@ -39,7 +40,7 @@ export async function initializeNewRepository(
   const repo: Repo = {
     id: payload.id,
     name: payload.name,
-    description: payload.description ?? '',
+    description: payload.description,
     defaultBranch: 'master',
     dataTxId: payload.dataTxId,
     owner: caller,
@@ -77,6 +78,7 @@ export async function forkRepository(
   if (
     isInvalidInput(payload, 'object') ||
     isInvalidInput(payload.name, 'string') ||
+    isInvalidInput(payload.description, 'string', true) ||
     isInvalidInput(payload.dataTxId, 'arweave-address') ||
     isInvalidInput(payload.parent, 'uuid') ||
     isInvalidInput(payload.id, 'uuid')
@@ -105,7 +107,7 @@ export async function forkRepository(
   const repo: Repo = {
     id: payload.id,
     name: payload.name,
-    description: payload.description ?? '',
+    description: payload.description,
     defaultBranch: 'master',
     dataTxId: payload.dataTxId,
     owner: caller,
