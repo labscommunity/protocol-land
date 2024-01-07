@@ -19,13 +19,18 @@ export async function createNewPullRequest(
 ): Promise<ContractResult<ContractState>> {
   // validate payload
   if (
-    !payload.repoId ||
-    !payload.title ||
-    !payload.baseBranch ||
-    !payload.compareBranch ||
-    !payload.baseBranchOid ||
-    !payload.baseRepo ||
-    !payload.compareRepo
+    isInvalidInput(payload, 'object') ||
+    isInvalidInput(payload.repoId, 'uuid') ||
+    isInvalidInput(payload.title, 'string') ||
+    isInvalidInput(payload.baseBranch, 'string') ||
+    isInvalidInput(payload.compareBranch, 'string') ||
+    isInvalidInput(payload.baseBranchOid, 'string') ||
+    isInvalidInput(payload.baseRepo, 'object') ||
+    isInvalidInput(payload.baseRepo.repoId, 'uuid') ||
+    isInvalidInput(payload.baseRepo.repoName, 'string') ||
+    isInvalidInput(payload.compareRepo, 'object') ||
+    isInvalidInput(payload.baseRepo.repoId, 'uuid') ||
+    isInvalidInput(payload.baseRepo.repoName, 'string')
   ) {
     throw new ContractError('Invalid inputs supplied.')
   }
@@ -83,7 +88,7 @@ export async function getAllPullRequestsByRepoId(
   { input: { payload } }: RepositoryAction
 ): Promise<ContractResult<PullRequest[]>> {
   // validate payload
-  if (!payload.repoId) {
+  if (isInvalidInput(payload, 'object') || isInvalidInput(payload.repoId, 'uuid')) {
     throw new ContractError('Invalid inputs supplied.')
   }
 
@@ -101,7 +106,11 @@ export async function getPullRequestById(
   { input: { payload } }: RepositoryAction
 ): Promise<ContractResult<PullRequest[]>> {
   // validate payload
-  if (!payload.repoId || payload.prId) {
+  if (
+    isInvalidInput(payload, 'object') ||
+    isInvalidInput(payload.repoId, 'uuid') ||
+    isInvalidInput(payload.prId, 'number')
+  ) {
     throw new ContractError('Invalid inputs supplied.')
   }
 
@@ -122,9 +131,9 @@ export async function updatePullRequestStatus(
 ): Promise<ContractResult<ContractState>> {
   if (
     isInvalidInput(payload, 'object') ||
-    isInvalidInput(payload.repoId) ||
+    isInvalidInput(payload.repoId, 'uuid') ||
     isInvalidInput(payload.prId, ['number', 'string']) ||
-    isInvalidInput(payload.status)
+    isInvalidInput(payload.status, 'string')
   ) {
     throw new ContractError('Invalid inputs supplied.')
   }
@@ -193,11 +202,18 @@ export async function updatePullRequestDetails(
   state: ContractState,
   { caller, input: { payload } }: RepositoryAction
 ): Promise<ContractResult<ContractState>> {
-  if (!payload.repoId || !payload.prId) {
-    throw new ContractError('repoId and prId are required.')
+  if (
+    isInvalidInput(payload, 'object') ||
+    isInvalidInput(payload.repoId, 'uuid') ||
+    isInvalidInput(payload.prId, ['number', 'string'])
+  ) {
+    throw new ContractError('Invalid inputs supplied.')
   }
 
-  if (!payload.title && !payload.description) {
+  const isTitleInvalid = isInvalidInput(payload.title, 'string')
+  const isDescriptionInvalid = isInvalidInput(payload.description, 'string', true)
+
+  if (isTitleInvalid && isDescriptionInvalid) {
     throw new ContractError('Either title or description should be present.')
   }
 
@@ -219,11 +235,11 @@ export async function updatePullRequestDetails(
     throw new ContractError('Pull Request not found.')
   }
 
-  if (payload.title) {
+  if (!isTitleInvalid) {
     PR.title = payload.title
   }
 
-  if (payload.description) {
+  if (!isDescriptionInvalid) {
     PR.description = payload.description
   }
 
@@ -236,7 +252,7 @@ export async function addReviewersToPR(
 ): Promise<ContractResult<ContractState>> {
   if (
     isInvalidInput(payload, 'object') ||
-    isInvalidInput(payload.repoId) ||
+    isInvalidInput(payload.repoId, 'uuid') ||
     isInvalidInput(payload.prId, ['number', 'string']) ||
     isInvalidInput(payload.reviewers, 'array')
   ) {
@@ -298,7 +314,7 @@ export async function approvePR(
 ): Promise<ContractResult<ContractState>> {
   if (
     isInvalidInput(payload, 'object') ||
-    isInvalidInput(payload.repoId) ||
+    isInvalidInput(payload.repoId, 'uuid') ||
     isInvalidInput(payload.prId, ['number', 'string'])
   ) {
     throw new ContractError('Invalid inputs supplied.')
@@ -352,9 +368,9 @@ export async function addCommentToPR(
 ): Promise<ContractResult<ContractState>> {
   if (
     isInvalidInput(payload, 'object') ||
-    isInvalidInput(payload.repoId) ||
+    isInvalidInput(payload.repoId, 'uuid') ||
     isInvalidInput(payload.prId, ['number', 'string']) ||
-    isInvalidInput(payload.comment)
+    isInvalidInput(payload.comment, 'string')
   ) {
     throw new ContractError('Invalid inputs supplied.')
   }
