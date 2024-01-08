@@ -10,7 +10,9 @@ export default function Footer() {
     >
       <div className="flex flex-col justify-center items-center">
         <div className="text-white text-base font-bold font-lekton leading-10">In collaboration with</div>
-        <SVG src={CLabsTextIcon} />
+        <a href="https://www.communitylabs.com/" target="_blank">
+          <SVG src={CLabsTextIcon} />
+        </a>
       </div>
 
       <div

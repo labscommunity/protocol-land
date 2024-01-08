@@ -31,7 +31,7 @@ export default function Header() {
               Create a repo
             </Button>
             <div
-              className="px-4 py-2.5 rounded-lg shadow border border-white border-opacity-50 justify-center items-center gap-2 flex text-white text-base font-medium font-inter leading-normal cursor-pointer"
+              className="px-4 py-2.5 rounded-lg shadow border border-white border-opacity-50 justify-center items-center gap-2 flex text-white text-base font-medium font-inter leading-normal cursor-pointer hover:text-gray-300 hover:border-primary-800"
               onClick={handleSeeDocsBtnClick}
             >
               See docs

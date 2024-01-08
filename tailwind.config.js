@@ -12,7 +12,10 @@ export default {
         default: '0 50px 60px rgba(109, 171, 213, 0.4)'
       },
       backgroundImage: {
-        'gradient-dark': 'linear-gradient(275deg, rgba(255, 255, 255, 0.50) -23.79%, rgba(255, 255, 255, 0.17) 141.13%)'
+        'gradient-dark':
+          'linear-gradient(275deg, rgba(255, 255, 255, 0.50) -23.79%, rgba(255, 255, 255, 0.17) 141.13%)',
+        'gradient-dark-hover':
+          'linear-gradient(275deg, rgba(180, 180, 180, 0.40) -23.79%, rgba(255, 255, 255, 0.1) 141.13%)'
       },
       colors: {
         'liberty-dark': {

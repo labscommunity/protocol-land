@@ -72,7 +72,7 @@ export default function DeveloperCommunity() {
           </div>
           <div className="hidden lg:block">
             <div
-              className="w-40 h-11 px-4 py-2.5 bg-[#397D9E] rounded-lg shadow text-white text-base font-medium font-inter leading-normal cursor-pointer hover:opacity-90"
+              className="w-40 h-11 px-4 py-2.5 bg-[#397D9E] hover:bg-[#285E7B] rounded-lg shadow text-white text-base font-medium font-inter leading-normal cursor-pointer"
               onClick={handleDiscordBtnClick}
             >
               Join the Discord
@@ -130,7 +130,7 @@ export default function DeveloperCommunity() {
       </div>
       <div className="flex justify-center pt-12 lg:hidden">
         <div
-          className="w-40 h-11 px-4 py-2.5 bg-[#397D9E] rounded-lg shadow text-white text-base font-medium font-inter leading-normal cursor-pointer hover:opacity-90"
+          className="w-40 h-11 px-4 py-2.5 bg-[#397D9E] hover:bg-[#285E7B] hover:text-gray-300 rounded-lg shadow text-white text-base font-medium font-inter leading-normal cursor-pointer"
           onClick={handleDiscordBtnClick}
         >
           Join the Discord

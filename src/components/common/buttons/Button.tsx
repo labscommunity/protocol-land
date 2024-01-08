@@ -6,7 +6,7 @@ import { ButtonProps } from './types'
 const VARIANTS = {
   gradient: 'bg-primary-600 text-base tracking-wide text-white',
   'gradient-dark':
-    'text-white text-sm md:text-base font-medium font-inter leading-normal hover:opacity-90 shadow-[0px_2px_4px_0px_rgba(0,0,0,0.05)] border border-white border-opacity-50 bg-gradient-dark',
+    'text-white text-sm md:text-base font-medium font-inter leading-normal shadow-[0px_2px_4px_0px_rgba(0,0,0,0.05)] border border-white border-opacity-50 bg-gradient-dark hover:bg-gradient-dark-hover hover:text-gray-300 hover:border-opacity-40',
   outline: 'text-[#4388f6] hover:bg-[#4388f6] hover:text-white border-[1.2px] border-[#4388f6]',
   ghost: 'hover:bg-[#c6dcff] text-[#4388f6] rounded-[8px]',
   link: '!px-0 !pb-1 text-[#4388f6]',
