@@ -10,6 +10,8 @@ import ProfilePage from '@/assets/images/profile-page.png'
 import { trackGoogleAnalyticsEvent } from '@/helpers/google-analytics'
 import { openInNewTab } from '@/helpers/openInNewTab'
 
+const developers = [Developer1, Developer2, Developer3, Developer4]
+
 export default function DeveloperCommunity() {
   function handleDiscordBtnClick() {
     trackGoogleAnalyticsEvent('Landing', 'Join the Discord button click', 'Join the Discord Button')
@@ -18,7 +20,7 @@ export default function DeveloperCommunity() {
 
   return (
     <div className="w-full py-[60px]">
-      <div className="flex flex-col lg:flex-row justify-between">
+      <div className="flex flex-col xl:flex-row justify-between lg:gap-10">
         <div>
           <div className="flex flex-col gap-4">
             <div className="flex flex-col lg:flex-row gap-3 text-white text-3xl lg:text-5xl font-bold font-lekton leading-10">
@@ -26,7 +28,7 @@ export default function DeveloperCommunity() {
                 Engage with a developer community{' '}
                 <div className="hidden lg:inline-block align-middle">
                   <div className="flex flex-row order-1 lg:order-2 -space-x-2">
-                    {[Developer1, Developer2, Developer3, Developer4].map((developer, index) => (
+                    {developers.map((developer, index) => (
                       <img
                         key={`developer-${index}`}
                         className="w-6 h-6 lg:w-12 lg:h-12 rounded-full"
@@ -38,7 +40,7 @@ export default function DeveloperCommunity() {
                 </div>
               </div>
               <div className="flex flex-row order-1 lg:order-2 lg:hidden -space-x-2">
-                {[Developer1, Developer2, Developer3, Developer4].map((developer, index) => (
+                {developers.map((developer, index) => (
                   <img
                     key={`developer-${index}`}
                     className="w-6 h-6 lg:w-12 lg:h-12 rounded-full"
@@ -70,7 +72,7 @@ export default function DeveloperCommunity() {
               </div>
             </div>
           </div>
-          <div className="hidden lg:block">
+          <div className="hidden xl:block">
             <div
               className="w-40 h-11 px-4 py-2.5 bg-[#397D9E] hover:bg-[#285E7B] rounded-lg shadow text-white text-base font-medium font-inter leading-normal cursor-pointer"
               onClick={handleDiscordBtnClick}
@@ -128,7 +130,7 @@ export default function DeveloperCommunity() {
           </div>
         </div>
       </div>
-      <div className="flex justify-center pt-12 lg:hidden">
+      <div className="flex justify-center pt-12 xl:hidden">
         <div
           className="w-40 h-11 px-4 py-2.5 bg-[#397D9E] hover:bg-[#285E7B] hover:text-gray-300 rounded-lg shadow text-white text-base font-medium font-inter leading-normal cursor-pointer"
           onClick={handleDiscordBtnClick}
