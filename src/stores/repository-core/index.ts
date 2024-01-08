@@ -16,9 +16,10 @@ import {
 import { useRepoHeaderStore } from '@/pages/repository/store/repoHeader'
 import { Deployment, Domain } from '@/types/repository'
 
-import { changeBranch, getCurrentActiveBranch } from '../branch/actions'
+import { changeBranch, getBranchList, getCurrentActiveBranch } from '../branch/actions'
 import { CombinedSlices } from '../types'
 import {
+  countCommits,
   getFileContentFromOid,
   getFilesFromOid,
   getOidOfHeadRef,
@@ -530,6 +531,18 @@ const createRepoCoreSlice: StateCreator<CombinedSlices, [['zustand/immer', never
 
         if (repoFetchError || !repoFetchResponse || !repoFetchResponse.success) {
           throw new Error('Error loading the repository.')
+        }
+
+        const { error: branchListError, response: branchListResponse } = await withAsync(() => getBranchList(repoId))
+
+        if (branchListResponse && !branchListError && branchListResponse.length > 0) {
+          useRepoHeaderStore.getState().setBranches(branchListResponse.length)
+        }
+
+        const commitsCount = await countCommits(repoId)
+
+        if (commitsCount && commitsCount > 0) {
+          useRepoHeaderStore.getState().setCommits(commitsCount)
         }
 
         useRepoHeaderStore.getState().setRepoSize(repoFetchResponse.repoSize)

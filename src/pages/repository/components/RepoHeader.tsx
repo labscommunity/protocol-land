@@ -13,10 +13,6 @@ import IconStarOutline from '@/assets/icons/star-outline.svg'
 import { Button } from '@/components/common/buttons'
 import { trackGoogleAnalyticsPageView } from '@/helpers/google-analytics'
 import { shortenAddress } from '@/helpers/shortenAddress'
-import { getAllCommits } from '@/lib/git/commit'
-import { fsWithName } from '@/lib/git/helpers/fsWithName'
-import { getBranchList } from '@/stores/branch/actions'
-import { useGlobalStore } from '@/stores/globalStore'
 import { Repo } from '@/types/repository'
 
 import useRepository from '../hooks/useRepository'
@@ -40,29 +36,16 @@ export default function RepoHeader({ repo, isLoading, owner, parentRepo }: Props
   const navigate = useNavigate()
   const { downloadRepository } = useRepository(repo?.id, repo?.name)
 
-  const [repoHeaderState, setBranchCount, setCommitCount] = useRepoHeaderStore((state) => [
-    state.repoHeaderState,
-    state.setBranches,
-    state.setCommits
-  ])
-  const [commitsG] = useGlobalStore((state) => [state.repoCoreState.git.commits])
+  const [repoHeaderState] = useRepoHeaderStore((state) => [state.repoHeaderState])
 
   React.useEffect(() => {
     if (repo && repo?.name) {
-      readBranchCount(repo as Repo)
-
       trackGoogleAnalyticsPageView('pageview', location.pathname, 'Repository Page Visit', {
         repo_name: repo.name,
         repo_id: repo.id
       })
     }
   }, [repo])
-
-  React.useEffect(() => {
-    if (commitsG.length > 0 && repo) {
-      readCommitsCount(repo as Repo)
-    }
-  }, [commitsG, repo])
 
   if (isLoading) {
     return <RepoHeaderLoading />
@@ -105,25 +88,6 @@ export default function RepoHeader({ repo, isLoading, owner, parentRepo }: Props
     if (!parentRepo) return
 
     navigate(`/repository/${parentRepo.id}`)
-  }
-
-  async function readBranchCount(repo: Repo) {
-    if (!repo) return
-
-    const branchList = await getBranchList(repo.id)
-
-    setBranchCount(branchList.length)
-  }
-
-  async function readCommitsCount(repo: Repo) {
-    if (!repo || isLoading) return
-
-    const fs = fsWithName(repo.id)
-    const dir = `/${repo.id}`
-
-    const commits = await getAllCommits({ fs, dir })
-
-    setCommitCount(commits.length)
   }
 
   return (
