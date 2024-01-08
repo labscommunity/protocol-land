@@ -1,5 +1,6 @@
 import { ContractResult, ContractState, RepositoryAction, User } from '../types'
 import { isInvalidInput } from '../utils/isInvalidInput'
+import { pickKeys } from '../utils/pickKeys'
 
 declare const ContractError
 
@@ -13,19 +14,6 @@ function isInvalidTimezone(timezone: any): boolean {
     isInvalidInput(timezone.altName, 'string')
   )
 }
-
-const allowedKeys = [
-  'fullName',
-  'userName',
-  'avatar',
-  'bio',
-  'timezone',
-  'location',
-  'twitter',
-  'email',
-  'website',
-  'readmeTxId'
-]
 
 export async function updateProfileDetails(
   state: ContractState,
@@ -49,7 +37,18 @@ export async function updateProfileDetails(
   }
 
   // Filter the payload to only include allowed keys
-  const filteredPayload = Object.fromEntries(Object.entries(payload).filter(([key]) => allowedKeys.includes(key)))
+  const filteredPayload = pickKeys(payload, [
+    'fullName',
+    'userName',
+    'avatar',
+    'bio',
+    'timezone',
+    'location',
+    'twitter',
+    'email',
+    'website',
+    'readmeTxId'
+  ])
 
   if (Object.keys(filteredPayload).length === 0) {
     throw new ContractError('Invalid inputs supplied.')

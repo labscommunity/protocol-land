@@ -10,6 +10,7 @@ import {
 } from '../types'
 import { getBlockTimeStamp } from '../utils/getBlockTimeStamp'
 import { isInvalidInput } from '../utils/isInvalidInput'
+import { pickKeys } from '../utils/pickKeys'
 
 declare const ContractError
 
@@ -69,8 +70,8 @@ export async function createNewPullRequest(
     reviewers: [],
     activities: [],
     timestamp: Date.now(),
-    baseRepo: payload.baseRepo,
-    compareRepo: payload.compareRepo
+    baseRepo: pickKeys(payload.baseRepo, ['repoId', 'repoName']),
+    compareRepo: pickKeys(payload.compareRepo, ['repoId', 'repoName'])
   }
 
   const pullRequestsCount = repo.pullRequests.length
