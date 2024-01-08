@@ -11,7 +11,7 @@ import { openInNewTab } from '@/helpers/openInNewTab'
 
 export default function DeveloperCommunity() {
   function handleDiscordClick() {
-    openInNewTab('https://discord.com/invite/bdF7NRpmnN')
+    openInNewTab('https://discord.com/invite/GqxX2vtwRj')
   }
 
   return (

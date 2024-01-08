@@ -78,7 +78,7 @@ export default function BackedByArweave() {
           {features.map((feature, index) => (
             <div key={`backed-feature-${index}`} className="flex flex-col lg:flex-row">
               <div
-                className="flex flex-col p-5 lg:p-10 gap-4 lg:gap-6 max-w-[440px] flex-1 self-stretch rounded-2xl border-2 border-[#387C9E]"
+                className="flex flex-col p-5 lg:p-10 gap-4 lg:gap-6 flex-1 self-stretch rounded-2xl border-2 border-[#387C9E]"
                 style={{
                   background: 'linear-gradient(180deg, rgba(56, 124, 158, 0.20) 0%, rgba(0, 0, 0, 0.20) 100%)'
                 }}
@@ -94,21 +94,7 @@ export default function BackedByArweave() {
                 </div>
               </div>
               {index < features.length - 1 && (
-                <div className="flex items-center justify-center">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    className="lg:rotate-0 rotate-90 my-4"
-                    width="41"
-                    height="3"
-                    viewBox="0 0 41 3"
-                    fill="none"
-                  >
-                    <path
-                      d="M0.666626 2.68799H2.66663V0.687988H0.666626V2.68799ZM6.66663 2.68799H10.6666V0.687988H6.66663V2.68799ZM14.6666 2.68799H18.6666V0.687988H14.6666V2.68799ZM22.6666 2.68799H26.6666V0.687988H22.6666V2.68799ZM30.6666 2.68799H34.6666V0.687988H30.6666V2.68799ZM38.6666 2.68799H40.6666V0.687988H38.6666V2.68799Z"
-                      fill="#77C6ED"
-                    />
-                  </svg>
-                </div>
+                <div className="h-7 w-px lg:w-[3vw] lg:h-px border-[3px] lg:border-t-0 border-l-0 border-dotted border-[#56ADD8] m-auto"></div>
               )}
             </div>
           ))}
