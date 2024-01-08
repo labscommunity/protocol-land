@@ -7,10 +7,12 @@ import Developer4 from '@/assets/images/developer4.png'
 import Earth from '@/assets/images/earth.svg'
 import PLDiscord from '@/assets/images/pl-discord.png'
 import ProfilePage from '@/assets/images/profile-page.png'
+import { trackGoogleAnalyticsEvent } from '@/helpers/google-analytics'
 import { openInNewTab } from '@/helpers/openInNewTab'
 
 export default function DeveloperCommunity() {
-  function handleDiscordClick() {
+  function handleDiscordBtnClick() {
+    trackGoogleAnalyticsEvent('Landing', 'Join the Discord button click', 'Join the Discord Button')
     openInNewTab('https://discord.com/invite/GqxX2vtwRj')
   }
 
@@ -71,7 +73,7 @@ export default function DeveloperCommunity() {
           <div className="hidden lg:block">
             <div
               className="w-40 h-11 px-4 py-2.5 bg-[#397D9E] rounded-lg shadow text-white text-base font-medium font-inter leading-normal cursor-pointer hover:opacity-90"
-              onClick={handleDiscordClick}
+              onClick={handleDiscordBtnClick}
             >
               Join the Discord
             </div>
@@ -129,7 +131,7 @@ export default function DeveloperCommunity() {
       <div className="flex justify-center pt-12 lg:hidden">
         <div
           className="w-40 h-11 px-4 py-2.5 bg-[#397D9E] rounded-lg shadow text-white text-base font-medium font-inter leading-normal cursor-pointer hover:opacity-90"
-          onClick={handleDiscordClick}
+          onClick={handleDiscordBtnClick}
         >
           Join the Discord
         </div>

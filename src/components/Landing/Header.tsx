@@ -2,12 +2,17 @@ import SVG from 'react-inlinesvg'
 
 import SpiralArrowIcon from '@/assets/icons/spiral-arrow.svg'
 import Repo from '@/assets/images/Repo.svg'
+import { trackGoogleAnalyticsEvent } from '@/helpers/google-analytics'
 import useAuth from '@/helpers/hooks/useAuth'
 
 import { Button } from '../common/buttons'
 
 export default function Header() {
   const { handleConnectBtnClick } = useAuth()
+
+  function handleSeeDocsBtnClick() {
+    trackGoogleAnalyticsEvent('Landing', 'See docs button click', 'See docs Button')
+  }
 
   return (
     <div className="w-full py-16 md:pt-28 md:pb-10 flex-col justify-start items-center gap-14 inline-flex">
@@ -25,7 +30,10 @@ export default function Header() {
             <Button className="h-11 px-4 py-2.5" variant="gradient-dark" onClick={handleConnectBtnClick}>
               Create a repo
             </Button>
-            <div className="px-4 py-2.5 rounded-lg shadow border border-white border-opacity-50 justify-center items-center gap-2 flex text-white text-base font-medium font-inter leading-normal cursor-pointer">
+            <div
+              className="px-4 py-2.5 rounded-lg shadow border border-white border-opacity-50 justify-center items-center gap-2 flex text-white text-base font-medium font-inter leading-normal cursor-pointer"
+              onClick={handleSeeDocsBtnClick}
+            >
               See docs
             </div>
           </div>

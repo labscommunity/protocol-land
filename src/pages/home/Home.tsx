@@ -25,8 +25,10 @@ export default function Home() {
   const strategy = React.useMemo(() => localStorage.getItem('wallet_kit_strategy_id'), [authState.isLoggedIn])
 
   React.useEffect(() => {
-    trackGoogleAnalyticsPageView('pageview', '/', 'Home Page Visit')
-  }, [])
+    if (strategy) {
+      trackGoogleAnalyticsPageView('pageview', '/', 'Home Page Visit')
+    }
+  }, [strategy])
 
   React.useEffect(() => {
     if (authState.isLoggedIn) {

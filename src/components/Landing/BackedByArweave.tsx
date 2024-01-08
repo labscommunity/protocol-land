@@ -5,6 +5,7 @@ import CloudCheckIcon from '@/assets/icons/cloud-check.svg'
 import FolderCodeIcon from '@/assets/icons/folder-code.svg'
 import GraphBarIcon from '@/assets/icons/graph-bar.svg'
 import Line from '@/assets/images/line.svg'
+import { trackGoogleAnalyticsEvent } from '@/helpers/google-analytics'
 import { openInNewTab } from '@/helpers/openInNewTab'
 
 const features = [
@@ -26,6 +27,11 @@ const features = [
 ]
 
 export default function BackedByArweave() {
+  function handleExploreArweaveBtnClick() {
+    trackGoogleAnalyticsEvent('Landing', 'Explore Arweave button click', 'Explore Arweave Button')
+    openInNewTab('https://viewblock.io/arweave/tx/OYL0nXU8UrQm9ekQB7vgXFuvM3LcVDsaSQfQ7-p7u7U')
+  }
+
   return (
     <div className="w-full py-[60px] gap-[60px] flex flex-col items-center justify-center">
       <div className="flex flex-col gap-4 text-center">
@@ -103,7 +109,7 @@ export default function BackedByArweave() {
 
       <div
         className="w-40 h-11 px-4 py-2.5 bg-[#397D9E] hover:opacity-95 rounded-lg shadow justify-center items-center gap-2 inline-flex text-white text-base font-medium font-inter leading-normal cursor-pointer"
-        onClick={() => openInNewTab('https://viewblock.io/arweave/tx/OYL0nXU8UrQm9ekQB7vgXFuvM3LcVDsaSQfQ7-p7u7U')}
+        onClick={handleExploreArweaveBtnClick}
       >
         Explore Arweave
       </div>

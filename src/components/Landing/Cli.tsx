@@ -4,6 +4,7 @@ import { FiArrowUpRight } from 'react-icons/fi'
 import { IoCheckmarkSharp } from 'react-icons/io5'
 import { PiCopy } from 'react-icons/pi'
 
+import { trackGoogleAnalyticsEvent } from '@/helpers/google-analytics'
 import { openInNewTab } from '@/helpers/openInNewTab'
 
 export default function Cli() {
@@ -19,6 +20,7 @@ export default function Cli() {
         }, 1000)
       }
     })
+    trackGoogleAnalyticsEvent('Landing', 'Copy CLI install command button click', 'Copy CLI command Button')
   }
 
   return (
