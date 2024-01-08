@@ -18,7 +18,7 @@ export default function Header() {
     <div className="w-full py-16 md:pt-28 md:pb-10 flex-col justify-start items-center gap-14 inline-flex">
       <div className="flex-col justify-start items-center gap-6 inline-flex">
         <div className="text-center text-primary-400 text-4xl md:text-6xl font-bold font-lekton leading-10">
-          Code collaboration, <span className="underlined after:mb-[-3px] md:after:mb-0">reimagined</span>
+          Code collaboration, <div className="inline-block underlined after:mb-[-1px] md:after:mb-0">reimagined</div>
         </div>
 
         <div className="text-center text-white text-base md:text-xl font-normal font-inter leading-loose">
