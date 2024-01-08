@@ -14,6 +14,19 @@ function isInvalidTimezone(timezone: any): boolean {
   )
 }
 
+const allowedKeys = [
+  'fullName',
+  'userName',
+  'avatar',
+  'bio',
+  'timezone',
+  'location',
+  'twitter',
+  'email',
+  'website',
+  'readmeTxId'
+]
+
 export async function updateProfileDetails(
   state: ContractState,
   { caller, input: { payload } }: RepositoryAction
@@ -35,13 +48,16 @@ export async function updateProfileDetails(
     throw new ContractError('Invalid inputs supplied.')
   }
 
-  if (Object.keys(payload).length === 0) {
+  // Filter the payload to only include allowed keys
+  const filteredPayload = Object.fromEntries(Object.entries(payload).filter(([key]) => allowedKeys.includes(key)))
+
+  if (Object.keys(filteredPayload).length === 0) {
     throw new ContractError('Invalid inputs supplied.')
   }
 
   const user: User = state.users[caller] ?? {}
 
-  state.users[caller] = { ...user, ...payload }
+  state.users[caller] = { ...user, ...filteredPayload }
 
   return { state }
 }

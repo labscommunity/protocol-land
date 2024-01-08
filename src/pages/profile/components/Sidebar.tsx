@@ -124,7 +124,7 @@ export default function Sidebar({
     Object.keys(updatedData).forEach((key: string) => {
       const typedKey = key as keyof User
 
-      if (typeof updatedData[typedKey] !== 'undefined' && originalData[typedKey] !== updatedData[typedKey]) {
+      if (typeof updatedData[typedKey] === 'string' && originalData[typedKey] !== updatedData[typedKey]) {
         changes[typedKey] = updatedData[typedKey]
       }
     })
