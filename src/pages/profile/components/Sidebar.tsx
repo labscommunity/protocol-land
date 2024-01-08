@@ -9,6 +9,7 @@ import { useParams } from 'react-router-dom'
 import * as yup from 'yup'
 
 import { Button } from '@/components/common/buttons'
+import { isInvalidInput } from '@/helpers/isInvalidInput'
 import { shortenAddress } from '@/helpers/shortenAddress'
 import { withAsync } from '@/helpers/withAsync'
 import { uploadUserAvatar } from '@/lib/user'
@@ -124,7 +125,7 @@ export default function Sidebar({
     Object.keys(updatedData).forEach((key: string) => {
       const typedKey = key as keyof User
 
-      if (typeof updatedData[typedKey] === 'string' && originalData[typedKey] !== updatedData[typedKey]) {
+      if (!isInvalidInput(updatedData[typedKey], 'string', true) && originalData[typedKey] !== updatedData[typedKey]) {
         changes[typedKey] = updatedData[typedKey]
       }
     })

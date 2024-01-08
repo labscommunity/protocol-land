@@ -4,6 +4,7 @@ import { InjectedArweaveSigner } from 'warp-contracts-plugin-signature'
 import { CONTRACT_TX_ID } from '@/helpers/constants'
 import getWarpContract from '@/helpers/getWrapContract'
 import { trackGoogleAnalyticsEvent } from '@/helpers/google-analytics'
+import { isInvalidInput } from '@/helpers/isInvalidInput'
 import { waitFor } from '@/helpers/waitFor'
 import { withAsync } from '@/helpers/withAsync'
 import { useGlobalStore } from '@/stores/globalStore'
@@ -288,11 +289,11 @@ export async function updatePullRequestDetails(repoId: string, prId: number, pul
     prId
   } as any
 
-  if (pullRequest.title && typeof pullRequest.title === 'string') {
+  if (!isInvalidInput(pullRequest.title, 'string')) {
     payload = { ...payload, title: pullRequest.title }
   }
 
-  if (typeof pullRequest.description === 'string') {
+  if (!isInvalidInput(pullRequest.description, 'string', true)) {
     payload = { ...payload, description: pullRequest.description }
   }
 
