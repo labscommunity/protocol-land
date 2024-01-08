@@ -4,7 +4,7 @@ export function getArrayBufSize(arrayBuffer: ArrayBuffer): GetArrayBufSizeReturn
   if (byteSize >= 1073741824) {
     return {
       size: (byteSize / 1073741824).toFixed(2),
-      unit: 'B'
+      unit: 'GB'
     }
   } else if (byteSize >= 1048576) {
     return {
