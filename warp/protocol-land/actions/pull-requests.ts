@@ -29,8 +29,8 @@ export async function createNewPullRequest(
     isInvalidInput(payload.baseRepo.repoId, 'uuid') ||
     isInvalidInput(payload.baseRepo.repoName, 'string') ||
     isInvalidInput(payload.compareRepo, 'object') ||
-    isInvalidInput(payload.baseRepo.repoId, 'uuid') ||
-    isInvalidInput(payload.baseRepo.repoName, 'string') ||
+    isInvalidInput(payload.compareRepo.repoId, 'uuid') ||
+    isInvalidInput(payload.compareRepo.repoName, 'string') ||
     isInvalidInput(payload.description, 'string', true)
   ) {
     throw new ContractError('Invalid inputs supplied.')
