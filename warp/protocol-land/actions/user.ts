@@ -24,7 +24,7 @@ export async function updateProfileDetails(
     isInvalidInput(payload, 'object') ||
     (payload.fullName !== undefined && isInvalidInput(payload.fullName, 'string', true)) ||
     (payload.userName !== undefined && isInvalidInput(payload.userName, 'string', true)) ||
-    (payload.avatar !== undefined && isInvalidInput(payload.avatar, 'string', true)) ||
+    (payload.avatar !== undefined && isInvalidInput(payload.avatar, 'arweave-address')) ||
     (payload.bio !== undefined && isInvalidInput(payload.bio, 'string', true)) ||
     (payload.timezone !== undefined && isInvalidTimezone(payload.timezone)) ||
     (payload.location !== undefined && isInvalidInput(payload.location, 'string', true)) ||
