@@ -10,9 +10,8 @@ import { AiOutlineCheck } from 'react-icons/ai'
 import { BiCodeAlt } from 'react-icons/bi'
 import { BsRocketTakeoff } from 'react-icons/bs'
 import { FaRegFileZipper } from 'react-icons/fa6'
-import { FiGitBranch, FiGitCommit, FiGitPullRequest } from 'react-icons/fi'
-import { FiChevronDown } from 'react-icons/fi'
-import { FiPlus, FiUpload } from 'react-icons/fi'
+import { FiChevronDown, FiGitBranch, FiGitCommit, FiGitPullRequest, FiPlus, FiUpload } from 'react-icons/fi'
+import { IoCheckmark } from 'react-icons/io5'
 import { LuGitBranchPlus } from 'react-icons/lu'
 import { PiCaretDownBold } from 'react-icons/pi'
 import { VscIssues } from 'react-icons/vsc'
@@ -72,7 +71,6 @@ const tabs = [
     Icon: BsRocketTakeoff,
     getPath: (id: string, _?: string) => `/repository/${id}/deployments`
   }
-  // { title: 'Settings', Icon: FiSettings, getPath: (id: string, _?: string) => `/repository/${id}/settings` }
 ]
 
 function Row({ item }: { item: any }) {
@@ -91,7 +89,7 @@ function Row({ item }: { item: any }) {
     >
       <SVG src={Icon} className="w-4 h-4" />
       <div className="grow shrink basis-0">{item.name}</div>
-      <div className="grow shrink basis-0">{item.description}</div>
+      <div className="grow shrink basis-0 hidden md:block">{item.description}</div>
       <div className="grow shrink basis-0">{item.date}</div>
     </div>
   )
@@ -123,7 +121,7 @@ export default function BranchButton() {
             leaveFrom="opacity-100"
             leaveTo="opacity-0"
           >
-            <Listbox.Options className="absolute mt-2 w-full max-h-60 overflow-auto rounded-lg bg-white shadow-[0px_2px_4px_0px_rgba(0,0,0,0.10)] focus:outline-none font-medium border-[1px] border-gray-300">
+            <Listbox.Options className="absolute z-10 mt-2 w-full max-h-60 overflow-auto rounded-lg bg-white shadow-[0px_2px_4px_0px_rgba(0,0,0,0.10)] focus:outline-none font-medium border-[1px] border-gray-300">
               {['development', 'master'].map((branch, idx) => (
                 <Listbox.Option
                   key={idx}
@@ -206,8 +204,8 @@ function AddFilesButton() {
         leaveFrom="transform opacity-100 scale-100"
         leaveTo="transform opacity-0 scale-95"
       >
-        <Menu.Items className="absolute right-0 mt-2 w-56 origin-top-right divide-y divide-gray-100 rounded-md bg-white shadow-lg ring-1 ring-black/5 focus:outline-none">
-          <div className="px-1 py-1 ">
+        <Menu.Items className="absolute left-0 md:right-0 mt-2 w-56 origin-top-right divide-y divide-gray-100 rounded-md bg-white shadow-lg ring-1 ring-black/5 focus:outline-none">
+          <div className="px-1 py-1">
             <Menu.Item>
               {({ active }) => (
                 <button
@@ -241,9 +239,96 @@ function AddFilesButton() {
   )
 }
 
-export function InteractiveRepo() {
+function RepoTabs() {
   const navigate = useNavigate()
   const [activeTab, setActiveTab] = useState('Code')
+
+  function handleTabChange(title: string) {
+    const tab = tabs.find((t) => t.title === title)
+    if (tab) {
+      setActiveTab(tab.title)
+      const timeout = setTimeout(() => {
+        navigate(tab.getPath(PL_REPO_ID))
+        clearTimeout(timeout)
+      }, 100)
+    }
+  }
+
+  return (
+    <>
+      <div className="w-full border-b border-gray-200 justify-start items-start hidden lg:flex">
+        {tabs.map((tab, idx) => (
+          <div
+            key={`tab-${idx}`}
+            className={clsx(
+              'px-3 py-2 justify-center items-center gap-1.5 flex cursor-pointer hover:bg-gray-100 hover:rounded-md',
+              tab.title === activeTab && 'border-b-2 border-blue-400'
+            )}
+            onClick={() => handleTabChange(tab.title)}
+          >
+            <tab.Icon className="w-4 h-4" />
+            <div className="text-gray-900 text-sm md:text-base font-medium font-inter leading-normal">{tab.title}</div>
+          </div>
+        ))}
+      </div>
+      <div className="w-full block lg:hidden">
+        <Listbox value={activeTab} onChange={handleTabChange}>
+          <div className="relative mt-1">
+            <Listbox.Button className="relative w-full cursor-default rounded-lg bg-white py-2 pl-3 pr-10 text-left shadow-md focus:outline-none focus-visible:border-indigo-500 focus-visible:ring-2 focus-visible:ring-white/75 focus-visible:ring-offset-2 focus-visible:ring-offset-orange-300 sm:text-sm">
+              <span className="block truncate">{activeTab}</span>
+              <span className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2">
+                <PiCaretDownBold className="w-4 h-4" />
+              </span>
+            </Listbox.Button>
+            <Transition
+              as={Fragment}
+              leave="transition ease-in duration-100"
+              leaveFrom="opacity-100"
+              leaveTo="opacity-0"
+            >
+              <Listbox.Options className="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md bg-white py-1 text-sm md:text-base shadow-lg ring-1 ring-black/5 focus:outline-none sm:text-sm">
+                {tabs.map((tab, tabIdx) => (
+                  <Listbox.Option
+                    key={tabIdx}
+                    className={({ active }) =>
+                      `relative cursor-default select-none py-2 pl-10 pr-4 ${active ? 'bg-gray-200' : ''}`
+                    }
+                    value={tab.title}
+                  >
+                    {({ selected }) => (
+                      <>
+                        <span className={`block truncate ${selected ? 'font-medium' : 'font-normal'}`}>
+                          {tab.title}
+                        </span>
+                        {selected ? (
+                          <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-green-600">
+                            <IoCheckmark className="h-5 w-5" aria-hidden="true" />
+                          </span>
+                        ) : null}
+                      </>
+                    )}
+                  </Listbox.Option>
+                ))}
+              </Listbox.Options>
+            </Transition>
+          </div>
+        </Listbox>
+      </div>
+    </>
+  )
+}
+
+function TransactionId({ className }: { className: string }) {
+  return (
+    <div className={clsx('text-xs md:text-sm font-normal font-inter leading-tight', className)}>
+      <span className="text-slate-600">Transaction ID: </span>
+      <span className="text-gray-900">OYL0nXU8UrQm9ekQB7vgXFuvM3LcVDsaSQfQ7-p7u7U</span>
+    </div>
+  )
+}
+
+export function InteractiveRepo() {
+  const navigate = useNavigate()
   const [showCloneDropdown, setShowCloneDropdown] = React.useState(false)
   const cloneRef = React.useRef<HTMLDivElement | null>(null)
 
@@ -253,9 +338,9 @@ export function InteractiveRepo() {
 
       copyTextToClipboard(divContent, (isCopied) => {
         if (isCopied) {
-          toast.success('Successfully copied to clipboard.')
+          toast.success('Copied to clipboard')
         } else {
-          toast.error('Copy to clipboard failed.')
+          toast.error('Copy to clipboard failed')
         }
       })
     }
@@ -270,38 +355,31 @@ export function InteractiveRepo() {
   }
 
   return (
-    <div className="px-[10px] md:px-[80px]">
-      <div className="w-full bg-gray-50 rounded-3xl border border-primary-800 flex-col justify-start items-center inline-flex">
-        <div className="self-stretch px-5 py-3 border-b border-gray-200 justify-between items-center inline-flex">
+    <div className="px-[10px] md:px-[80px] w-full">
+      <div className="w-full bg-gray-50 rounded-3xl border border-primary-800 flex-col justify-start items-center flex">
+        <div className="self-stretch px-5 py-3 border-b border-gray-200 justify-between items-center flex">
           <div className="justify-start items-center gap-1.5 flex cursor-pointer">
             <SVG className="w-4 h-6 text-primary-600" src={LogoLight} />
             <div className="text-primary-600 text-lg font-bold font-inter leading-normal">Protocol.Land</div>
           </div>
         </div>
-        <div className="self-stretch h-full px-20 pb-52 flex-col justify-start items-center flex">
-          <div className="self-stretch h-full pt-5 pb-3 flex-col justify-start items-center gap-3 flex">
-            <div className="self-stretch justify-between items-center inline-flex">
+        <div className="self-stretch h-full px-5 md:px-10 lg:px-20 pb-20 md:pb-52 flex-col justify-start items-center flex">
+          <div className="self-stretch h-full pt-5 pb-3 flex-col justify-start items-start gap-3 flex">
+            <div className="self-stretch justify-between items-start md:items-center flex flex-col md:flex-row gap-3 md:gap-0">
               <div className="justify-start items-center gap-3 flex">
-                <div className="w-9 h-9 p-1.5 bg-white rounded-full border border-gray-300 flex-col justify-center items-center gap-1.5 inline-flex">
+                <div className="w-9 h-9 p-1.5 bg-white rounded-full border border-gray-300 flex-col justify-center items-center gap-1.5 flex">
                   <div className="text-slate-700 text-base font-bold font-inter leading-snug">PL</div>
                 </div>
-                <div className="flex-col justify-start items-start inline-flex">
+                <div className="flex-col justify-start items-start flex">
                   <div className="text-gray-900 text-sm md:text-base font-bold font-inter leading-snug">
                     protocol-land
                   </div>
-                  <div>
-                    <span className="text-slate-600 text-xs md:text-sm font-normal font-inter leading-tight">
-                      Transaction ID:{' '}
-                    </span>
-                    <span className="text-gray-900 text-xs md:text-sm font-normal font-inter leading-tight">
-                      OYL0nXU8UrQm9ekQB7vgXFuvM3LcVDsaSQfQ7-p7u7U
-                    </span>
-                  </div>
+                  <TransactionId className="hidden xl:block" />
                 </div>
               </div>
-              <div className="relative justify-end items-center gap-3 flex cursor-pointer">
+              <div className="relative justify-end items-center gap-3 flex">
                 <div
-                  className="px-3 py-2 bg-white rounded-md shadow border border-gray-300 justify-center items-center gap-1.5 flex hover:bg-gray-50"
+                  className="px-3 py-2 bg-white rounded-md shadow border border-gray-300 justify-center items-center gap-1.5 flex hover:bg-gray-50 cursor-pointer"
                   onClick={handleClick}
                 >
                   <SVG className="w-4 h-4" src={IconStarOutline} />
@@ -335,7 +413,7 @@ export function InteractiveRepo() {
                       <div className="flex w-full px-2 py-1 gap-1 justify-start items-center border-[0.5px] border-gray-300 bg-gray-200 rounded-md overflow-hidden">
                         <div className="pr-2 overflow-scroll [&::-webkit-scrollbar]:hidden whitespace-nowrap">
                           <div ref={cloneRef} className="text-gray-900 w-full flex">
-                            git clone proland://6ace6247-d267-463d-b5bd-7e50d98c3693 protocol-land
+                            git clone proland://{PL_REPO_ID} protocol-land
                           </div>
                         </div>
                         <div
@@ -354,8 +432,9 @@ export function InteractiveRepo() {
                 )}
               </div>
             </div>
+            <TransactionId className="block xl:hidden" />
             <div className="self-stretch h-14 flex-col justify-start items-start gap-3 flex">
-              <div className="justify-start items-start gap-2.5 inline-flex">
+              <div className="justify-start items-start gap-2.5 flex">
                 <div className="px-1.5 py-1 bg-gray-200 rounded justify-start items-center gap-1 flex">
                   <SVG className="w-4 h-4" src={IconCommitOutline} />
                   <div className="text-gray-900 text-xs md:text-sm font-normal font-inter leading-tight">
@@ -377,41 +456,19 @@ export function InteractiveRepo() {
                 Where decentralized protocols roam
               </div>
             </div>
-            <div className="w-full border-b border-gray-200 justify-start items-start inline-flex">
-              {tabs.map((tab, idx) => (
-                <div
-                  key={`tab-${idx}`}
-                  className={clsx(
-                    'px-3 py-2 justify-center items-center gap-1.5 flex cursor-pointer hover:bg-gray-100 hover:rounded-md',
-                    tab.title === activeTab && 'border-b-2 border-blue-400'
-                  )}
-                  onClick={() => {
-                    setActiveTab(tab.title)
-                    const timeout = setTimeout(() => {
-                      navigate(tab.getPath(PL_REPO_ID))
-                      clearTimeout(timeout)
-                    }, 100)
-                  }}
-                >
-                  <tab.Icon className="w-4 h-4" />
-                  <div className="text-gray-900 text-sm md:text-base font-medium font-inter leading-normal">
-                    {tab.title}
-                  </div>
-                </div>
-              ))}
-            </div>
+            <RepoTabs />
           </div>
           <div className="self-stretch h-full flex-col justify-start items-center gap-5 flex">
-            <div className="self-stretch justify-between items-center inline-flex">
+            <div className="self-stretch justify-between md:items-center flex md:flex-row flex-col gap-3">
               <BranchButton />
               <AddFilesButton />
             </div>
             <div className="self-stretch h-full rounded-md border border-gray-300 flex-col justify-start items-start flex">
-              <div className="self-stretch px-3 py-2 bg-gray-200 border-b border-gray-300 justify-center items-start gap-3 inline-flex">
+              <div className="self-stretch px-3 py-2 bg-gray-200 border-b border-gray-300 justify-center items-start gap-3 flex">
                 <div className="grow shrink basis-0 text-gray-900 text-xs md:text-sm font-medium font-inter leading-none">
                   File/Folder Name
                 </div>
-                <div className="grow shrink basis-0 text-gray-900 text-xs md:text-sm font-medium font-inter leading-none">
+                <div className="grow shrink basis-0 hidden md:block text-gray-900 text-xs md:text-sm font-medium font-inter leading-none">
                   Description
                 </div>
                 <div className="grow shrink basis-0 text-gray-900 text-xs md:text-sm font-medium font-inter leading-none">
