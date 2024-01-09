@@ -3,7 +3,7 @@ import React from 'react'
 import Lottie from 'react-lottie'
 import { useLocation, useParams } from 'react-router-dom'
 
-import loadingFilesAnimation from '@/assets/load-files.json'
+import loadingFilesAnimation from '@/assets/searching-files.json'
 import PageNotFound from '@/components/PageNotFound'
 import ScrollToTop from '@/components/ScrollToTop'
 import { trackGoogleAnalyticsPageView } from '@/helpers/google-analytics'
@@ -72,8 +72,8 @@ export default function ReadIssuePage() {
               preserveAspectRatio: 'xMidYMid slice'
             }
           }}
-          height={200}
-          width={800}
+          height={150}
+          width={400}
         />
       </div>
     )
