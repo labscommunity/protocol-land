@@ -58,7 +58,7 @@ export default function Sidebar() {
         </div>
         {PR && PR.reviewers.length === 0 && (
           <div>
-            <p className="text-gray-900">No reviews yet</p>
+            <p className="text-gray-900">No reviewers yet</p>
           </div>
         )}
         {PR &&

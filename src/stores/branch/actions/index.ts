@@ -1,5 +1,6 @@
 import { checkoutBranch, createNewBranch, getAllBranches, getCurrentBranch } from '@/lib/git/branch'
 import { fsWithName } from '@/lib/git/helpers/fsWithName'
+import { useRepoHeaderStore } from '@/pages/repository/store/repoHeader'
 
 export async function getBranchList(id: string) {
   const fs = fsWithName(id)
@@ -18,6 +19,9 @@ export async function getCurrentActiveBranch(id: string) {
 export async function addNewBranch(id: string, branchName: string) {
   const fs = fsWithName(id)
   const dir = `/${id}`
+
+  const branchCount = useRepoHeaderStore.getState().repoHeaderState.branches
+  useRepoHeaderStore.getState().setBranches(branchCount + 1)
 
   return createNewBranch({
     fs,
