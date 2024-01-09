@@ -48,7 +48,7 @@ export function InteractiveRepo() {
   }
 
   return (
-    <div className="px-[10px] md:px-[80px] w-full">
+    <div className="xl:px-[60px] w-full">
       <div className="w-full bg-gray-50 rounded-3xl border border-primary-800 flex-col justify-start items-center flex">
         <div className="self-stretch px-5 py-3 border-b border-gray-200 justify-between items-center flex">
           <div className="justify-start items-center gap-1.5 flex cursor-pointer">

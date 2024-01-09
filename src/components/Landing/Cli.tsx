@@ -25,7 +25,7 @@ export default function Cli() {
 
   return (
     <div className="w-full py-16 md:py-[60px] flex-col justify-center items-center gap-10 inline-flex">
-      <div className="self-stretch px-[10px] md:px-[60px] justify-center items-center inline-flex">
+      <div className="self-stretch px-[10px] lg:px-[60px] justify-center items-center inline-flex">
         <div className="grow shrink basis-0 flex lg:bg-[url('/cli-background.svg')] bg-no-repeat bg-right">
           <div
             className="grow shrink basis-0 p-5 md:px-10 lg:px-20 xl:py-[60px] md:py-[60px] rounded-3xl border border-primary-500 flex-col justify-center items-center gap-7 inline-flex"
