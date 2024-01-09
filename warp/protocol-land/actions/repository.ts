@@ -12,7 +12,6 @@ export async function initializeNewRepository(
   if (
     isInvalidInput(payload, 'object') ||
     isInvalidInput(payload.name, 'string') ||
-    isInvalidInput(payload.description, 'string', true) ||
     isInvalidInput(payload.dataTxId, 'arweave-address') ||
     isInvalidInput(payload.id, 'uuid')
   ) {
@@ -37,10 +36,12 @@ export async function initializeNewRepository(
     throw new ContractError('Repository with the same name already exists.')
   }
 
+  const description = isInvalidInput(payload.description, 'string', true) ? '' : payload.description
+
   const repo: Repo = {
     id: payload.id,
     name: payload.name,
-    description: payload.description,
+    description,
     defaultBranch: 'master',
     dataTxId: payload.dataTxId,
     owner: caller,
@@ -78,7 +79,6 @@ export async function forkRepository(
   if (
     isInvalidInput(payload, 'object') ||
     isInvalidInput(payload.name, 'string') ||
-    isInvalidInput(payload.description, 'string', true) ||
     isInvalidInput(payload.dataTxId, 'arweave-address') ||
     isInvalidInput(payload.parent, 'uuid') ||
     isInvalidInput(payload.id, 'uuid')
@@ -104,10 +104,12 @@ export async function forkRepository(
     throw new ContractError('Repository with the same name already exists.')
   }
 
+  const description = isInvalidInput(payload.description, 'string', true) ? '' : payload.description
+
   const repo: Repo = {
     id: payload.id,
     name: payload.name,
-    description: payload.description,
+    description,
     defaultBranch: 'master',
     dataTxId: payload.dataTxId,
     owner: caller,

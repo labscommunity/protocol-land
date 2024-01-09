@@ -31,8 +31,7 @@ export async function createNewPullRequest(
     isInvalidInput(payload.baseRepo.repoName, 'string') ||
     isInvalidInput(payload.compareRepo, 'object') ||
     isInvalidInput(payload.compareRepo.repoId, 'uuid') ||
-    isInvalidInput(payload.compareRepo.repoName, 'string') ||
-    isInvalidInput(payload.description, 'string', true)
+    isInvalidInput(payload.compareRepo.repoName, 'string')
   ) {
     throw new ContractError('Invalid inputs supplied.')
   }
@@ -57,11 +56,13 @@ export async function createNewPullRequest(
     throw new ContractError('A similar open PR already exists for the specified branches and repositories.')
   }
 
+  const description = isInvalidInput(payload.description, 'string', true) ? '' : payload.description
+
   const pullRequest: PullRequest = {
     id: 1,
     repoId: payload.repoId,
     title: payload.title,
-    description: payload.description,
+    description,
     baseBranch: payload.baseBranch,
     compareBranch: payload.compareBranch,
     baseBranchOid: payload.baseBranchOid,
