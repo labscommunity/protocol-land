@@ -21,7 +21,9 @@ export default function AddFilesButton() {
       <div>
         <Menu.Button className="px-3 py-2 bg-primary-800 hover:bg-primary-900 rounded-md shadow justify-center items-center gap-1.5 flex">
           <div className="text-white text-sm md:text-base font-medium font-inter leading-normal">Add File</div>
-          <PiCaretDownBold className="text-white w-4 h-4" />
+          <div className="w-4 h-4">
+            <PiCaretDownBold className="text-white w-full h-full" />
+          </div>
         </Menu.Button>
       </div>
       <Transition

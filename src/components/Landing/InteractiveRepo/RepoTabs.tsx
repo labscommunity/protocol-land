@@ -37,7 +37,9 @@ export default function RepoTabs() {
             )}
             onClick={() => handleTabChange(tab.title)}
           >
-            <tab.Icon className="w-4 h-4" />
+            <div className="w-4 h-4">
+              <tab.Icon className="w-full h-full" />
+            </div>
             <div className="text-gray-900 text-sm md:text-base font-medium font-inter leading-normal">{tab.title}</div>
           </div>
         ))}

@@ -15,7 +15,9 @@ export default function RepoStats() {
     <div className="justify-start items-start gap-2.5 flex">
       {stats.map((stat, idx) => (
         <div key={`stat-${idx}`} className="px-1.5 py-1 bg-gray-200 rounded justify-start items-center gap-1 flex">
-          <SVG className="w-4 h-4" src={stat.icon} />
+          <div className="w-4 h-4">
+            <SVG className="w-4 h-4" src={stat.icon} />
+          </div>
           <div className="text-gray-900 text-xs md:text-sm font-normal font-inter leading-tight">{stat.name}</div>
         </div>
       ))}

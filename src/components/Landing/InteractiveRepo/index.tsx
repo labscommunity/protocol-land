@@ -52,7 +52,9 @@ export function InteractiveRepo() {
       <div className="w-full bg-gray-50 rounded-3xl border border-primary-800 flex-col justify-start items-center flex">
         <div className="self-stretch px-5 py-3 border-b border-gray-200 justify-between items-center flex">
           <div className="justify-start items-center gap-1.5 flex cursor-pointer">
-            <SVG className="w-4 h-6 text-primary-600" src={LogoLight} />
+            <div className="w-4 h-6">
+              <SVG className="w-full h-full text-primary-600" src={LogoLight} />
+            </div>
             <div className="text-primary-600 text-lg font-bold font-inter leading-normal">Protocol.Land</div>
           </div>
         </div>
@@ -75,14 +77,18 @@ export function InteractiveRepo() {
                   className="px-3 py-2 bg-white rounded-md shadow border border-gray-300 justify-center items-center gap-1.5 flex hover:bg-gray-50 cursor-pointer"
                   onClick={handleClick}
                 >
-                  <SVG className="w-4 h-4" src={IconStarOutline} />
+                  <div className="w-4 h-4">
+                    <SVG className="w-full h-full" src={IconStarOutline} />
+                  </div>
                   <div className="text-gray-900 text-sm md:text-base font-medium font-inter leading-normal">10</div>
                 </div>
                 <div
                   className="px-3 py-2 bg-white rounded-md shadow border border-gray-300 justify-center items-center gap-1.5 flex cursor-pointer hover:bg-gray-50"
                   onClick={handleClick}
                 >
-                  <SVG className="w-4 h-4" src={IconForkOutline} />
+                  <div className="w-4 h-4">
+                    <SVG className="w-full h-full" src={IconForkOutline} />
+                  </div>
                   <div className="flex text-gray-900 text-sm md:text-base font-medium font-inter leading-normal gap-1">
                     <span>Fork</span>
                     <span className="text-gray-400">|</span>
@@ -93,7 +99,9 @@ export function InteractiveRepo() {
                   className="relative px-3 py-2 bg-white rounded-md shadow border border-gray-300 justify-center items-center gap-1.5 flex cursor-pointer hover:bg-gray-50"
                   onClick={handleClickCloneDropdown}
                 >
-                  <SVG className="w-4 h-4" src={IconCloneOutline} />
+                  <div className="w-4 h-4">
+                    <SVG className="w-full h-full" src={IconCloneOutline} />
+                  </div>
                   <div className="text-gray-900 text-sm md:text-base font-medium font-inter leading-normal flex items-center gap-[2px]">
                     <span>Clone </span>
                     <PiCaretDownBold />
