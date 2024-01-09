@@ -123,11 +123,13 @@ export default function RepoHeader({ repo, isLoading, owner, parentRepo }: Props
           <div className="flex gap-3 items-center text-gray-900">
             <div className="flex gap-1 items-center px-4 py-1 bg-gray-200 rounded-[4px] cursor-default">
               <SVG src={IconCommitOutline} />
-              <p>{repoHeaderState.commits} Commit</p>
+              <p>
+                {repoHeaderState.commits} {repoHeaderState.commits === 1 ? 'Commit' : 'Commits'}
+              </p>
             </div>
             <div className="flex gap-1 items-center px-4 py-1 bg-gray-200 rounded-[4px] cursor-default">
               <SVG src={IconForkOutline} />
-              <p>{repoHeaderState.branches} Branches</p>
+              <p>{repoHeaderState.branches} {repoHeaderState.branches === 1 ? 'Branch' : 'Branches'}</p>
             </div>
             <div className="flex gap-1 items-center px-4 py-1 bg-gray-200 rounded-[4px] cursor-default">
               <SVG src={IconDriveOutline} />
