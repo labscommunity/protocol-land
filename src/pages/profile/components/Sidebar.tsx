@@ -51,8 +51,15 @@ const schema = yup.object().shape(
     //   altName: yup.string()
     // }),
     twitter: yup.string().trim(),
-    email: yup.string().trim(),
-    website: yup.string().trim()
+    // https://github.com/colinhacks/zod/blob/3e4f71e857e75da722bd7e735b6d657a70682df2/src/types.ts#L567
+    email: yup
+      .string()
+      .matches(/^(?!\.)(?!.*\.\.)([A-Z0-9_+-.]*)[A-Z0-9_+-]@([A-Z0-9][A-Z0-9-]*\.)+[A-Z]{2,}$/i, {
+        excludeEmptyString: true,
+        message: 'Email must be a valid email'
+      })
+      .trim(),
+    website: yup.string().url('Website must be a valid URL').trim()
   },
   [
     ['fullname', 'fullname'],
@@ -199,33 +206,39 @@ export default function Sidebar({
               />
             </div>
           </div>
-          <div className="flex gap-2 items-center text-gray-900">
-            <AiTwotoneMail className="w-5 h-5" />
-            <div className="w-full">
-              <input
-                type="text"
-                {...register('email')}
-                className={clsx(
-                  'bg-white border-[1px] text-gray-900 text-base rounded-lg hover:shadow-[0px_2px_4px_0px_rgba(0,0,0,0.10)] focus:border-primary-500 focus:border-[1.5px] block w-full px-2.5 py-1 outline-none',
-                  errors.email ? 'border-red-500' : 'border-gray-300'
-                )}
-                placeholder="johndoe@domain.com"
-              />
+          <div className="flex flex-col">
+            <div className="flex gap-2 items-center text-gray-900">
+              <AiTwotoneMail className="w-5 h-5" />
+              <div className="w-full">
+                <input
+                  type="text"
+                  {...register('email')}
+                  className={clsx(
+                    'bg-white border-[1px] text-gray-900 text-base rounded-lg hover:shadow-[0px_2px_4px_0px_rgba(0,0,0,0.10)] focus:border-primary-500 focus:border-[1.5px] block w-full px-2.5 py-1 outline-none',
+                    errors.email ? 'border-red-500' : 'border-gray-300'
+                  )}
+                  placeholder="johndoe@domain.com"
+                />
+              </div>
             </div>
+            {errors.email && <p className="text-red-500 text-sm italic mt-2 ml-5">{errors.email?.message}</p>}
           </div>
-          <div className="flex gap-2 items-center text-gray-900">
-            <BsGlobe className="w-5 h-5" />
-            <div className="w-full">
-              <input
-                type="text"
-                {...register('website')}
-                className={clsx(
-                  'bg-white border-[1px] text-gray-900 text-base rounded-lg hover:shadow-[0px_2px_4px_0px_rgba(0,0,0,0.10)] focus:border-primary-500 focus:border-[1.5px] block w-full px-2.5 py-1 outline-none',
-                  errors.website ? 'border-red-500' : 'border-gray-300'
-                )}
-                placeholder="https://mycoolsite.com"
-              />
+          <div className="flex flex-col">
+            <div className="flex gap-2 items-center text-gray-900">
+              <BsGlobe className="w-5 h-5" />
+              <div className="w-full">
+                <input
+                  type="text"
+                  {...register('website')}
+                  className={clsx(
+                    'bg-white border-[1px] text-gray-900 text-base rounded-lg hover:shadow-[0px_2px_4px_0px_rgba(0,0,0,0.10)] focus:border-primary-500 focus:border-[1.5px] block w-full px-2.5 py-1 outline-none',
+                    errors.website ? 'border-red-500' : 'border-gray-300'
+                  )}
+                  placeholder="https://mycoolsite.com"
+                />
+              </div>
             </div>
+            {errors.website && <p className="text-red-500 text-sm italic mt-2 ml-5">{errors.website?.message}</p>}
           </div>
         </div>
 

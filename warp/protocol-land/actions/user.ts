@@ -29,8 +29,8 @@ export async function updateProfileDetails(
     (payload.timezone !== undefined && isInvalidTimezone(payload.timezone)) ||
     (payload.location !== undefined && isInvalidInput(payload.location, 'string', true)) ||
     (payload.twitter !== undefined && isInvalidInput(payload.twitter, 'string', true)) ||
-    (payload.email !== undefined && isInvalidInput(payload.email, 'string', true)) ||
-    (payload.website !== undefined && isInvalidInput(payload.website, 'string', true)) ||
+    (payload.email !== undefined && isInvalidInput(payload.email, 'email', true)) ||
+    (payload.website !== undefined && isInvalidInput(payload.website, 'url', true)) ||
     (payload.readmeTxId !== undefined && isInvalidInput(payload.readmeTxId, 'arweave-address'))
   ) {
     throw new ContractError('Invalid inputs supplied.')
