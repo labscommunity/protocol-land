@@ -1,4 +1,5 @@
 import { Bounty, ContractResult, ContractState, Issue, IssueActivity, RepositoryAction } from '../types'
+import { isInvalidInput } from '../utils/isInvalidInput'
 
 declare const ContractError
 
@@ -6,7 +7,11 @@ export async function createNewIssue(
   state: ContractState,
   { caller, input: { payload } }: RepositoryAction
 ): Promise<ContractResult<ContractState>> {
-  if (!payload.repoId || !payload.title) {
+  if (
+    isInvalidInput(payload, 'object') ||
+    isInvalidInput(payload.repoId, 'uuid') ||
+    isInvalidInput(payload.title, 'string')
+  ) {
     throw new ContractError('Invalid inputs supplied.')
   }
 
@@ -16,11 +21,13 @@ export async function createNewIssue(
     throw new ContractError('Repository not found.')
   }
 
+  const description = isInvalidInput(payload.description, 'string', true) ? '' : payload.description
+
   const issue: Issue = {
     id: 1,
     repoId: payload.repoId,
     title: payload.title,
-    description: payload.description ?? '',
+    description,
     author: caller,
     status: 'OPEN',
     assignees: [],
@@ -45,7 +52,7 @@ export async function getAllIssuesByRepoId(
   { input: { payload } }: RepositoryAction
 ): Promise<ContractResult<Issue[]>> {
   // validate payload
-  if (!payload.repoId) {
+  if (isInvalidInput(payload, 'object') || isInvalidInput(payload.repoId, 'uuid')) {
     throw new ContractError('Invalid inputs supplied.')
   }
 
@@ -63,7 +70,11 @@ export async function getIssueById(
   { input: { payload } }: RepositoryAction
 ): Promise<ContractResult<Issue[]>> {
   // validate payload
-  if (!payload.repoId || payload.issueId) {
+  if (
+    isInvalidInput(payload, 'object') ||
+    isInvalidInput(payload.repoId, 'uuid') ||
+    isInvalidInput(payload.issueId, 'number')
+  ) {
     throw new ContractError('Invalid inputs supplied.')
   }
 
@@ -82,7 +93,12 @@ export async function updateIssueStatus(
   state: ContractState,
   { input: { payload }, caller }: RepositoryAction
 ): Promise<ContractResult<ContractState>> {
-  if (!payload.status || !payload.repoId || !payload.issueId) {
+  if (
+    isInvalidInput(payload, 'object') ||
+    isInvalidInput(payload.repoId, 'uuid') ||
+    isInvalidInput(payload.issueId, ['number', 'string']) ||
+    isInvalidInput(payload.status, 'string')
+  ) {
     throw new ContractError('Invalid inputs supplied.')
   }
 
@@ -138,11 +154,18 @@ export async function updateIssueDetails(
   state: ContractState,
   { caller, input: { payload } }: RepositoryAction
 ): Promise<ContractResult<ContractState>> {
-  if (!payload.repoId || !payload.issueId) {
-    throw new ContractError('repoId and issueId are required.')
+  if (
+    isInvalidInput(payload, 'object') ||
+    isInvalidInput(payload.repoId, 'uuid') ||
+    isInvalidInput(payload.issueId, ['number', 'string'])
+  ) {
+    throw new ContractError('Invalid inputs supplied.')
   }
 
-  if (!payload.title && !payload.description) {
+  const isTitleInvalid = isInvalidInput(payload.title, 'string')
+  const isDescriptionInvalid = isInvalidInput(payload.description, 'string', true)
+
+  if (isTitleInvalid && isDescriptionInvalid) {
     throw new ContractError('Either title or description should be present.')
   }
 
@@ -164,11 +187,11 @@ export async function updateIssueDetails(
     throw new ContractError('Issue not found.')
   }
 
-  if (payload.title) {
+  if (!isTitleInvalid) {
     issue.title = payload.title
   }
 
-  if (payload.description) {
+  if (!isDescriptionInvalid) {
     issue.description = payload.description
   }
 
@@ -179,7 +202,12 @@ export async function addAssigneeToIssue(
   state: ContractState,
   { input: { payload }, caller }: RepositoryAction
 ): Promise<ContractResult<ContractState>> {
-  if (!payload.repoId || !payload.issueId || !payload.assignees) {
+  if (
+    isInvalidInput(payload, 'object') ||
+    isInvalidInput(payload.repoId, 'uuid') ||
+    isInvalidInput(payload.issueId, ['number', 'string']) ||
+    isInvalidInput(payload.assignees, 'array')
+  ) {
     throw new ContractError('Invalid inputs supplied.')
   }
 
@@ -216,7 +244,12 @@ export async function addCommentToIssue(
   state: ContractState,
   { caller, input: { payload } }: RepositoryAction
 ): Promise<ContractResult<ContractState>> {
-  if (!payload.repoId || !payload.issueId || !payload.comment) {
+  if (
+    isInvalidInput(payload, 'object') ||
+    isInvalidInput(payload.repoId, 'uuid') ||
+    isInvalidInput(payload.issueId, ['number', 'string']) ||
+    isInvalidInput(payload.comment, 'string')
+  ) {
     throw new ContractError('Invalid inputs supplied.')
   }
 
@@ -254,7 +287,13 @@ export async function createNewBounty(
   state: ContractState,
   { caller, input: { payload } }: RepositoryAction
 ): Promise<ContractResult<ContractState>> {
-  if (!payload.repoId || !payload.issueId || !payload.amount || !payload.expiry) {
+  if (
+    isInvalidInput(payload, 'object') ||
+    isInvalidInput(payload.repoId, 'uuid') ||
+    isInvalidInput(payload.issueId, ['number', 'string']) ||
+    isInvalidInput(payload.amount, 'number') ||
+    isInvalidInput(payload.expiry, 'number')
+  ) {
     throw new ContractError('Invalid inputs supplied.')
   }
 
@@ -302,8 +341,19 @@ export async function updateBounty(
   state: ContractState,
   { caller, input: { payload } }: RepositoryAction
 ): Promise<ContractResult<ContractState>> {
-  if (!payload.repoId || !payload.issueId || !payload.bountyId || !payload.status) {
+  if (
+    isInvalidInput(payload, 'object') ||
+    isInvalidInput(payload.repoId, 'uuid') ||
+    isInvalidInput(payload.issueId, ['number', 'string']) ||
+    isInvalidInput(payload.bountyId, ['number', 'string']) ||
+    isInvalidInput(payload.status, 'string')
+  ) {
     throw new ContractError('Invalid inputs supplied.')
+  }
+
+  const validStatusValues = ['ACTIVE', 'CLAIMED', 'EXPIRED', 'CLOSED']
+  if (!validStatusValues.includes(payload.status)) {
+    throw new ContractError('Invalid issue status specified. Must be one of: ' + validStatusValues.join(', '))
   }
 
   if (payload.status === 'CLAIMED' && !payload.paymentTxId) {

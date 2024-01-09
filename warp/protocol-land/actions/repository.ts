@@ -1,14 +1,20 @@
 import { ContractResult, ContractState, ContributorInvite, Deployment, Domain, Repo, RepositoryAction } from '../types'
 import { getBlockTimeStamp } from '../utils/getBlockTimeStamp'
+import { isInvalidInput } from '../utils/isInvalidInput'
 
-declare const ContractError, SmartWeave
+declare const ContractError
 
 export async function initializeNewRepository(
   state: ContractState,
   { caller, input: { payload } }: RepositoryAction
 ): Promise<ContractResult<ContractState>> {
   // validate payload
-  if (!payload.name || !payload.dataTxId || !payload.id) {
+  if (
+    isInvalidInput(payload, 'object') ||
+    isInvalidInput(payload.name, 'string') ||
+    isInvalidInput(payload.dataTxId, 'arweave-address') ||
+    isInvalidInput(payload.id, 'uuid')
+  ) {
     throw new ContractError('Invalid inputs supplied.')
   }
 
@@ -30,10 +36,12 @@ export async function initializeNewRepository(
     throw new ContractError('Repository with the same name already exists.')
   }
 
+  const description = isInvalidInput(payload.description, 'string', true) ? '' : payload.description
+
   const repo: Repo = {
     id: payload.id,
     name: payload.name,
-    description: payload.description ?? '',
+    description,
     defaultBranch: 'master',
     dataTxId: payload.dataTxId,
     owner: caller,
@@ -68,7 +76,13 @@ export async function forkRepository(
   { caller, input: { payload } }: RepositoryAction
 ): Promise<ContractResult<ContractState>> {
   // validate payload
-  if (!payload.name || !payload.dataTxId || !payload.id || !payload.parent) {
+  if (
+    isInvalidInput(payload, 'object') ||
+    isInvalidInput(payload.name, 'string') ||
+    isInvalidInput(payload.dataTxId, 'arweave-address') ||
+    isInvalidInput(payload.parent, 'uuid') ||
+    isInvalidInput(payload.id, 'uuid')
+  ) {
     throw new ContractError('Invalid inputs supplied.')
   }
 
@@ -90,10 +104,12 @@ export async function forkRepository(
     throw new ContractError('Repository with the same name already exists.')
   }
 
+  const description = isInvalidInput(payload.description, 'string', true) ? '' : payload.description
+
   const repo: Repo = {
     id: payload.id,
     name: payload.name,
-    description: payload.description ?? '',
+    description,
     defaultBranch: 'master',
     dataTxId: payload.dataTxId,
     owner: caller,
@@ -132,7 +148,11 @@ export async function updateRepositoryTxId(
   { input: { payload }, caller }: RepositoryAction
 ): Promise<ContractResult<ContractState>> {
   // validate payload
-  if (!payload.dataTxId || !payload.id) {
+  if (
+    isInvalidInput(payload, 'object') ||
+    isInvalidInput(payload.dataTxId, 'arweave-address') ||
+    isInvalidInput(payload.id, 'uuid')
+  ) {
     throw new ContractError('Invalid inputs supplied.')
   }
 
@@ -157,8 +177,8 @@ export async function getRepository(
   state: ContractState,
   { input: { payload } }: RepositoryAction
 ): Promise<ContractResult<Repo>> {
-  // validate payload
-  if (!payload.id) {
+  // validate payloads
+  if (isInvalidInput(payload, 'object') || isInvalidInput(payload.id, 'uuid')) {
     throw new ContractError('Invalid inputs supplied.')
   }
 
@@ -176,7 +196,7 @@ export async function getAllRepositoriesByOwner(
   { input: { payload } }: RepositoryAction
 ): Promise<ContractResult<Repo[]>> {
   // validate payload
-  if (!payload.owner) {
+  if (isInvalidInput(payload, 'object') || isInvalidInput(payload.owner, 'arweave-address')) {
     throw new ContractError('Invalid inputs supplied.')
   }
 
@@ -191,7 +211,7 @@ export async function getAllRepositoriesByContributor(
   { input: { payload } }: RepositoryAction
 ): Promise<ContractResult<Repo[]>> {
   // validate payload
-  if (!payload.contributor) {
+  if (isInvalidInput(payload, 'object') || isInvalidInput(payload.contributor, 'arweave-address')) {
     throw new ContractError('Invalid inputs supplied.')
   }
 
@@ -208,8 +228,16 @@ export async function updateRepositoryDetails(
   { input: { payload }, caller }: RepositoryAction
 ): Promise<ContractResult<ContractState>> {
   // validate payload
-  if (!payload.id) {
+  if (isInvalidInput(payload, 'object') || isInvalidInput(payload.id, 'uuid')) {
     throw new ContractError('Invalid inputs supplied.')
+  }
+
+  const isNameInvalid = isInvalidInput(payload.name, 'string')
+  const isDescriptionInvalid = isInvalidInput(payload.description, 'string', true)
+  const isDeploymentBranchInvalid = isInvalidInput(payload.deploymentBranch, 'string', true)
+
+  if (isNameInvalid && isDescriptionInvalid && isDeploymentBranchInvalid) {
+    throw new ContractError('Either name, description or deploymentBranch should be present.')
   }
 
   const repo = state.repos[payload.id]
@@ -222,7 +250,7 @@ export async function updateRepositoryDetails(
     throw new ContractError('Error: Only repo owner can update repo details.')
   }
 
-  if (payload.name) {
+  if (!isNameInvalid) {
     const newName = payload.name
     if (!/^[a-zA-Z0-9._-]+$/.test(newName)) {
       throw new ContractError(
@@ -242,11 +270,11 @@ export async function updateRepositoryDetails(
     callerRepos[newNameLowercased] = repo.id
   }
 
-  if (payload.description) {
+  if (!isDescriptionInvalid) {
     repo.description = payload.description
   }
 
-  if (typeof payload.deploymentBranch === 'string') {
+  if (!isDeploymentBranchInvalid) {
     repo.deploymentBranch = payload.deploymentBranch
   }
 
@@ -258,7 +286,11 @@ export async function addContributor(
   { input: { payload }, caller }: RepositoryAction
 ): Promise<ContractResult<ContractState>> {
   // validate payload
-  if (!payload.id || !payload.contributor) {
+  if (
+    isInvalidInput(payload, 'object') ||
+    isInvalidInput(payload.contributor, 'arweave-address') ||
+    isInvalidInput(payload.id, 'uuid')
+  ) {
     throw new ContractError('Invalid inputs supplied.')
   }
 
@@ -288,7 +320,14 @@ export async function addDeployment(
   { input: { payload }, caller }: RepositoryAction
 ): Promise<ContractResult<ContractState>> {
   // validate payload
-  if (!payload.id || !payload.deployment) {
+  if (
+    isInvalidInput(payload, 'object') ||
+    isInvalidInput(payload.id, 'uuid') ||
+    isInvalidInput(payload.deployment, 'object') ||
+    isInvalidInput(payload.deployment.txId, 'arweave-address') ||
+    isInvalidInput(payload.deployment.commitOid, 'string') ||
+    isInvalidInput(payload.deployment.commitMessage, 'string')
+  ) {
     throw new ContractError('Invalid inputs supplied.')
   }
 
@@ -314,7 +353,7 @@ export async function addDeployment(
     deployedBy: caller,
     commitOid: payload.deployment.commitOid,
     commitMessage: payload.deployment.commitMessage,
-    timestamp: SmartWeave.block.timestamp * 1000
+    timestamp: getBlockTimeStamp()
   }
 
   repo.deployments.push(deployment)
@@ -327,7 +366,14 @@ export async function addDomain(
   { input: { payload }, caller }: RepositoryAction
 ): Promise<ContractResult<ContractState>> {
   // validate payload
-  if (!payload.id || !payload.domain) {
+  if (
+    isInvalidInput(payload, 'object') ||
+    isInvalidInput(payload.id, 'uuid') ||
+    isInvalidInput(payload.domain, 'object') ||
+    isInvalidInput(payload.domain.txId, 'arweave-address') ||
+    isInvalidInput(payload.domain.contractTxId, 'arweave-address') ||
+    isInvalidInput(payload.domain.name, 'string')
+  ) {
     throw new ContractError('Invalid inputs supplied.')
   }
 
@@ -365,7 +411,13 @@ export async function updateDomain(
   { input: { payload }, caller }: RepositoryAction
 ): Promise<ContractResult<ContractState>> {
   // validate payload
-  if (!payload.id || !payload.domain) {
+  if (
+    isInvalidInput(payload, 'object') ||
+    isInvalidInput(payload.id, 'uuid') ||
+    isInvalidInput(payload.domain, 'object') ||
+    isInvalidInput(payload.domain.txId, 'arweave-address') ||
+    (isInvalidInput(payload.domain.name, 'string') && isInvalidInput(payload.domain.contractTxId, 'arweave-address'))
+  ) {
     throw new ContractError('Invalid inputs supplied.')
   }
 
@@ -402,7 +454,11 @@ export async function inviteContributor(
   { input: { payload }, caller }: RepositoryAction
 ): Promise<ContractResult<ContractState>> {
   // validate payload
-  if (!payload.id || !payload.contributor) {
+  if (
+    isInvalidInput(payload, 'object') ||
+    isInvalidInput(payload.id, 'uuid') ||
+    isInvalidInput(payload.contributor, 'arweave-address')
+  ) {
     throw new ContractError('Invalid inputs supplied.')
   }
 
@@ -446,7 +502,11 @@ export async function acceptContributorInvite(
   { input: { payload }, caller }: RepositoryAction
 ): Promise<ContractResult<ContractState>> {
   // validate payload
-  if (!payload.id || !payload.visibility) {
+  if (
+    isInvalidInput(payload, 'object') ||
+    isInvalidInput(payload.id, 'uuid') ||
+    isInvalidInput(payload.visibility, 'string')
+  ) {
     throw new ContractError('Invalid inputs supplied.')
   }
 
@@ -493,7 +553,7 @@ export async function rejectContributorInvite(
   state: ContractState,
   { input: { payload }, caller }: RepositoryAction
 ): Promise<ContractResult<ContractState>> {
-  if (!payload.id) {
+  if (isInvalidInput(payload, 'object') || isInvalidInput(payload.id, 'uuid')) {
     throw new ContractError('Invalid inputs supplied.')
   }
 
@@ -532,7 +592,11 @@ export async function cancelContributorInvite(
   state: ContractState,
   { input: { payload }, caller }: RepositoryAction
 ): Promise<ContractResult<ContractState>> {
-  if (!payload.id || !payload.contributor) {
+  if (
+    isInvalidInput(payload, 'object') ||
+    isInvalidInput(payload.id, 'uuid') ||
+    isInvalidInput(payload.contributor, 'arweave-address')
+  ) {
     throw new ContractError('Invalid inputs supplied.')
   }
 
@@ -572,7 +636,11 @@ export async function updatePrivateStateTx(
   { input: { payload }, caller }: RepositoryAction
 ): Promise<ContractResult<ContractState>> {
   // validate payload
-  if (!payload.privateStateTxId || !payload.id) {
+  if (
+    isInvalidInput(payload, 'object') ||
+    isInvalidInput(payload.id, 'uuid') ||
+    isInvalidInput(payload.privateStateTxId, 'arweave-address')
+  ) {
     throw new ContractError('Invalid inputs supplied.')
   }
 
@@ -597,7 +665,7 @@ export async function isRepositoryNameAvailable(
   state: ContractState,
   { caller, input: { payload } }: RepositoryAction
 ): Promise<ContractResult<boolean>> {
-  if (!payload.name) {
+  if (isInvalidInput(payload, 'object') || isInvalidInput(payload.name, 'string')) {
     throw new ContractError('Repository name not supplied.')
   }
 
