@@ -11,10 +11,11 @@ import IconForkOutline from '@/assets/icons/fork-outline.svg'
 import IconStarOutline from '@/assets/icons/star-outline.svg'
 import LogoLight from '@/assets/pl-logo-light.svg'
 import { PL_REPO_ID } from '@/helpers/constants'
+import TableHead from '@/pages/repository/components/tabs/code-tab/TableHead'
 
 import AddFilesButton from './AddFilesButton'
 import BranchButton from './BranchButton'
-import { files, tabs } from './config'
+import { commit, files, tabs } from './config'
 import RepoStats from './RepoStats'
 import RepoTabs from './RepoTabs'
 import Row from './Row'
@@ -48,14 +49,14 @@ export function InteractiveRepo() {
   }
 
   return (
-    <div className="xl:px-[60px] w-full">
+    <div className="xl:px-[70px] w-full">
       <div className="w-full bg-gray-50 rounded-3xl border border-primary-800 flex-col justify-start items-center flex">
         <div className="self-stretch px-5 py-3 border-b border-gray-200 justify-between items-center flex">
           <div className="justify-start items-center gap-1.5 flex cursor-pointer">
             <div className="w-4 h-6">
               <SVG className="w-full h-full text-primary-600" src={LogoLight} />
             </div>
-            <div className="text-primary-600 text-lg font-bold font-inter leading-normal">Protocol.Land</div>
+            <div className="text-primary-600 text-lg font-bold leading-normal">Protocol.Land</div>
           </div>
         </div>
         <div className="self-stretch h-full px-5 md:px-10 lg:px-20 pb-20 md:pb-52 flex-col justify-start items-center flex">
@@ -63,12 +64,10 @@ export function InteractiveRepo() {
             <div className="self-stretch justify-between items-start md:items-center flex flex-col md:flex-row gap-3 md:gap-0">
               <div className="justify-start items-center gap-3 flex">
                 <div className="w-9 h-9 p-1.5 bg-white rounded-full border border-gray-300 flex-col justify-center items-center gap-1.5 flex">
-                  <div className="text-slate-700 text-base font-bold font-inter leading-snug">PL</div>
+                  <div className="text-slate-700 text-base font-bold leading-snug">PL</div>
                 </div>
                 <div className="flex-col justify-start items-start flex">
-                  <div className="text-gray-900 text-sm md:text-base font-bold font-inter leading-snug">
-                    protocol-land
-                  </div>
+                  <div className="text-gray-900 text-sm md:text-base font-bold leading-snug">protocol-land</div>
                   <TransactionId className="hidden xl:block" />
                 </div>
               </div>
@@ -108,7 +107,7 @@ export function InteractiveRepo() {
                   </div>
                 </div>
                 {showCloneDropdown && (
-                  <div className="px-4 py-2 z-10 divide-y divide-gray-200 divide-opacity-60 rounded-lg absolute w-96 bg-white right-0 origin-top-right border-[1px] mt-2 top-12 border-gray-300 shadow-[0px_2px_4px_0px_rgba(0,0,0,0.10)]">
+                  <div className="px-4 py-2 z-10 divide-y divide-gray-200 divide-opacity-60 rounded-lg absolute w-96 bg-white left-0 md:right-0 origin-top-right border-[1px] mt-2 top-12 border-gray-300 shadow-[0px_2px_4px_0px_rgba(0,0,0,0.10)]">
                     <div className="flex flex-col w-full gap-1 py-2">
                       <h3 className="font-medium text-gray-900">Clone</h3>
                       <div className="flex w-full px-2 py-1 gap-1 justify-start items-center border-[0.5px] border-gray-300 bg-gray-200 rounded-md overflow-hidden">
@@ -148,16 +147,8 @@ export function InteractiveRepo() {
               <AddFilesButton />
             </div>
             <div className="self-stretch h-full rounded-md border border-gray-300 flex-col justify-start items-start flex">
-              <div className="self-stretch px-3 py-2 bg-gray-200 border-b border-gray-300 justify-center items-start gap-3 flex">
-                <div className="grow shrink basis-0 text-gray-900 text-xs md:text-sm font-medium font-inter leading-none">
-                  File/Folder Name
-                </div>
-                <div className="grow shrink basis-0 hidden md:block text-gray-900 text-xs md:text-sm font-medium font-inter leading-none">
-                  Description
-                </div>
-                <div className="grow shrink basis-0 text-gray-900 text-xs md:text-sm font-medium font-inter leading-none">
-                  Date
-                </div>
+              <div className="self-stretch">
+                <TableHead commit={commit as any} />
               </div>
               {files.map((file, idx) => (
                 <Row key={`file-${idx}`} item={file} />

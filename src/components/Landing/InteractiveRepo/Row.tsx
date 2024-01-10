@@ -26,7 +26,9 @@ export default function Row({ item }: { item: any }) {
       </div>
       <div className="grow shrink basis-0">{item.name}</div>
       <div className="grow shrink basis-0 hidden md:block">{item.description}</div>
-      <div className="grow shrink basis-0">{item.date}</div>
+      <div>
+        <div className="grow shrink basis-0">{item.date}</div>
+      </div>
     </div>
   )
 }

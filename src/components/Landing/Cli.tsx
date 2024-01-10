@@ -1,5 +1,6 @@
 import copyTextToClipboard from '@uiw/copy-to-clipboard'
 import { useState } from 'react'
+import toast from 'react-hot-toast'
 import { FiArrowUpRight } from 'react-icons/fi'
 import { IoCheckmarkSharp } from 'react-icons/io5'
 import { PiCopy } from 'react-icons/pi'
@@ -14,10 +15,13 @@ export default function Cli() {
     copyTextToClipboard('npm install --global @protocol.land/git-remote-helper', (_isCopied) => {
       if (_isCopied) {
         setIsCopied(_isCopied)
+        toast.success('Copied to clipboard')
         const timeout = setTimeout(() => {
           setIsCopied(false)
           clearTimeout(timeout)
         }, 1000)
+      } else {
+        toast.error('Copy to clipboard failed')
       }
     })
     trackGoogleAnalyticsEvent('Landing', 'Copy CLI install command button click', 'Copy CLI command Button')
@@ -53,9 +57,6 @@ export default function Cli() {
                       <PiCopy className="w-6 h-6" />
                     ) : (
                       <IoCheckmarkSharp className="w-6 h-6 text-green-600" />
-                    )}
-                    {isCopied && (
-                      <div className="absolute bg-gray-300 w-fit px-2 rounded right-10 md:left-10">Copied!</div>
                     )}
                   </div>
                 </div>

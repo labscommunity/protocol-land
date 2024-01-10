@@ -8,9 +8,9 @@ export const files = [
   { name: 'scripts', description: 'Bug fixes', date: '12 hours ago', isFolder: true },
   { name: 'src', description: 'Bug fixes', date: '12 hours ago', isFolder: true },
   { name: 'warp/protocol-land', description: 'Bug fixes', date: '12 hours ago', isFolder: true },
-  { name: '.gitignore', description: 'Add source files', date: '6 months ago', isFolder: false },
-  { name: 'LICENSE.txt', description: 'Add files via upload', date: '8 hours ago', isFolder: false },
-  { name: 'README.md', description: 'Update preview', date: '8 hours ago', isFolder: false },
+  { name: '.gitignore', description: 'Add source files', date: '1 month ago', isFolder: false },
+  { name: 'LICENSE.txt', description: 'Add files via upload', date: '10 hours ago', isFolder: false },
+  { name: 'README.md', description: 'Update preview', date: '10 hours ago', isFolder: false },
   { name: 'package.json', description: 'Bug fixes', date: '12 hours ago', isFolder: false }
 ]
 
@@ -47,3 +47,16 @@ export const tabs = [
     getPath: (id: string, _?: string) => `/repository/${id}/deployments`
   }
 ]
+
+export const commit = {
+  oid: '9c780bcfa198118c0ad04f959fc3bcbb93fe86b9',
+  commit: {
+    message: 'Add files via upload',
+    author: {
+      name: 'Sai Kranthi'
+    },
+    committer: {
+      timestamp: 1704826487
+    }
+  }
+}
