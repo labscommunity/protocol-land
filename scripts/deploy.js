@@ -20,7 +20,7 @@ const __dirname = path.resolve()
 // read contract source logic from 'handle.js' and encode it
 const state = fs.readFileSync(path.join(__dirname, 'warp/protocol-land/initial-state.json'), 'utf-8')
 const contractSource = fs.readFileSync(path.join(__dirname, 'contracts-dist/repository-contract.js'), 'utf-8')
-const contract = warp.contract('w5ZU15Y2cLzZlu3jewauIlnzbKw-OAxbN9G5TbuuiDQ').connect(key)
+const contract = warp.contract('EUAm8UUigTSsxlhDJPE6JY3erTuq73YcgVr63HlVpjE').connect(key)
 
 if (evolve) {
   const newSource = await warp.createSource({ src: contractSource }, new ArweaveSigner(key))

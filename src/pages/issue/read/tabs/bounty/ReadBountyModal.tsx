@@ -18,6 +18,13 @@ type NewBountyModalProps = {
   author: string
 }
 
+const STATUS_TO_TEXT = {
+  ACTIVE: '',
+  CLOSED: 'Closed',
+  EXPIRED: 'Expired',
+  CLAIMED: 'Completed'
+}
+
 export default function ReadBountyModal({ isOpen, setIsOpen, bounty, author }: NewBountyModalProps) {
   const [bountyComplete, setBountyComplete] = React.useState(false)
   const [payTxId, setPayTxId] = React.useState('')
@@ -161,6 +168,12 @@ export default function ReadBountyModal({ isOpen, setIsOpen, bounty, author }: N
                         {isSubmitting ? 'Processing...' : 'Close Bounty'}
                       </Button>
                     </div>
+                  </div>
+                )}
+                {bounty.status !== 'ACTIVE' && (
+                  <div className="py-2">
+                    <span>Status: </span>
+                    <span className="font-medium">{STATUS_TO_TEXT[bounty.status]}</span>
                   </div>
                 )}
               </Dialog.Panel>

@@ -344,6 +344,35 @@ const createPullRequestSlice: StateCreator<CombinedSlices, [['zustand/immer', ne
         })
       }
     },
+    expireBounty: async (issueId, bountyId) => {
+      const repo = get().repoCoreState.selectedRepo.repo
+
+      if (!repo) {
+        set((state) => (state.issuesState.status = 'ERROR'))
+
+        return
+      }
+
+      const { error, response } = await withAsync(() => closeBounty(repo.id, issueId, bountyId, 'EXPIRED'))
+
+      if (!error && response) {
+        const bounties = response?.bounties
+
+        if (!bounties || !Array.isArray(bounties)) return
+
+        set((state) => {
+          state.repoCoreState.selectedRepo.repo!.issues[issueId - 1].bounties = bounties
+        })
+
+        trackGoogleAnalyticsEvent('Repository', 'Expire bounty on issue', 'Expire issue bounty', {
+          repo_name: repo.name,
+          repo_id: repo.id,
+          issue_id: issueId,
+          bounty_id: bountyId,
+          result: 'SUCCESS'
+        })
+      }
+    },
     completeBounty: async (issueId, bountyId, paymentTxId) => {
       const repo = get().repoCoreState.selectedRepo.repo
 

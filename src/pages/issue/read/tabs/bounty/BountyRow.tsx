@@ -23,6 +23,13 @@ const STATUS_TO_ICON_MAP = {
   CLAIMED: () => <TbMoneybag className="w-5 h-5 text-purple-700" />
 }
 
+const STATUS_TO_TEXT = {
+  ACTIVE: '',
+  CLOSED: 'been closed',
+  EXPIRED: 'expired',
+  CLAIMED: 'been completed'
+}
+
 export default function BountyRow({ status, author, id, amount, expiry, timestamp, onClick }: Props) {
   const Icon = STATUS_TO_ICON_MAP[status]
 
@@ -50,7 +57,7 @@ export default function BountyRow({ status, author, id, amount, expiry, timestam
             <span className="font-medium">{differenceInDays(new Date(expiry * 1000), new Date())} Days</span>
           </>
         )}
-        {expiry && !isActive && <>and has expired!</>}
+        {expiry && !isActive && <>and has {STATUS_TO_TEXT[status]}!</>}
       </div>
     </div>
   )
