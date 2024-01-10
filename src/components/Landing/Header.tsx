@@ -1,11 +1,11 @@
 import SVG from 'react-inlinesvg'
 
 import SpiralArrowIcon from '@/assets/icons/spiral-arrow.svg'
-import Repo from '@/assets/images/Repo.svg'
 import { trackGoogleAnalyticsEvent } from '@/helpers/google-analytics'
 import useAuth from '@/helpers/hooks/useAuth'
 
 import { Button } from '../common/buttons'
+import { InteractiveRepo } from './InteractiveRepo'
 
 export default function Header() {
   const { handleConnectBtnClick } = useAuth()
@@ -47,8 +47,8 @@ export default function Header() {
         </div>
       </div>
 
-      <div className="relative drop-shadow-default">
-        <SVG src={Repo} className="w-full h-full" />
+      <div className="relative drop-shadow-default w-full h-full">
+        <InteractiveRepo />
       </div>
     </div>
   )
