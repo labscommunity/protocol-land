@@ -383,6 +383,10 @@ export async function updateBounty(
     throw new ContractError('Bounty not found.')
   }
 
+  if (bounty.status !== 'ACTIVE') {
+    throw new ContractError(`Bounty is not ACTIVE to set status to ${payload.status}`)
+  }
+
   bounty.status = payload.status
 
   if (payload.status === 'CLAIMED') {
