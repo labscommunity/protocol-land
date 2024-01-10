@@ -246,8 +246,15 @@ export async function updateRepositoryDetails(
     throw new ContractError('Repository not found.')
   }
 
-  if (caller !== repo.owner) {
-    throw new ContractError('Error: Only repo owner can update repo details.')
+  const isOwner = caller === repo.owner
+  const isContributor = repo.contributors.indexOf(caller) > -1
+
+  if (!isOwner && (!isNameInvalid || !isDescriptionInvalid)) {
+    throw new ContractError('Error: Only repo owner can update repo name and description.')
+  }
+
+  if (!(isOwner || isContributor) && !isDeploymentBranchInvalid) {
+    throw new ContractError('Error: Only repo owner or contributor can update deployment branch.')
   }
 
   if (!isNameInvalid) {
