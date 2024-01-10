@@ -27,7 +27,7 @@ export default function RepoTabs() {
 
   return (
     <>
-      <div className="w-full border-b border-gray-200 justify-start items-start hidden lg:flex">
+      <div className="w-full border-b border-gray-200 justify-start items-start hidden lg:flex gap-3 xl:gap-4">
         {tabs.map((tab, idx) => (
           <div
             key={`tab-${idx}`}
@@ -40,7 +40,7 @@ export default function RepoTabs() {
             <div className="w-4 h-4">
               <tab.Icon className="w-full h-full" />
             </div>
-            <div className="text-gray-900 text-sm md:text-base font-medium font-inter leading-normal">{tab.title}</div>
+            <div className="text-gray-900 text-sm xl:text-base font-medium font-inter leading-normal">{tab.title}</div>
           </div>
         ))}
       </div>
