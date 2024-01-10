@@ -107,7 +107,7 @@ export function InteractiveRepo() {
                   </div>
                 </div>
                 {showCloneDropdown && (
-                  <div className="px-4 py-2 z-10 divide-y divide-gray-200 divide-opacity-60 rounded-lg absolute w-96 bg-white left-0 md:right-0 origin-top-right border-[1px] mt-2 top-12 border-gray-300 shadow-[0px_2px_4px_0px_rgba(0,0,0,0.10)]">
+                  <div className="px-4 py-2 z-10 divide-y divide-gray-200 divide-opacity-60 rounded-lg absolute w-96 bg-white max-md:left-0 md:right-0 origin-top-right border-[1px] mt-2 top-12 border-gray-300 shadow-[0px_2px_4px_0px_rgba(0,0,0,0.10)]">
                     <div className="flex flex-col w-full gap-1 py-2">
                       <h3 className="font-medium text-gray-900">Clone</h3>
                       <div className="flex w-full px-2 py-1 gap-1 justify-start items-center border-[0.5px] border-gray-300 bg-gray-200 rounded-md overflow-hidden">
@@ -142,7 +142,7 @@ export function InteractiveRepo() {
             <RepoTabs />
           </div>
           <div className="self-stretch h-full flex-col justify-start items-center gap-5 flex">
-            <div className="self-stretch justify-between md:items-center flex md:flex-row flex-col gap-3">
+            <div className="self-stretch justify-between sm:items-center flex sm:flex-row flex-col gap-3">
               <BranchButton />
               <AddFilesButton />
             </div>
