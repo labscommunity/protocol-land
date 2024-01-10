@@ -2,7 +2,7 @@ import clsx from 'clsx'
 import { useState } from 'react'
 
 import CreateIssue from '@/assets/images/create-issues.gif'
-import PRCollaboration from '@/assets/images/pr-collaboration.gif'
+import DragonDeploy from '@/assets/images/dragon-deploy.gif'
 import RepoCreate from '@/assets/images/repo-create.gif'
 import useAuth from '@/helpers/hooks/useAuth'
 
@@ -18,9 +18,9 @@ const features = [
     image: CreateIssue
   },
   {
-    title: 'Straightforward design',
-    description: 'From a simple onboarding to cross-project collaboration',
-    image: PRCollaboration
+    title: 'Simple deployment',
+    description: 'Host a static web page from your repo via Dragon Deploy',
+    image: DragonDeploy
   }
 ]
 
@@ -78,7 +78,12 @@ export default function Builders() {
               </div>
             </div>
             <div className="flex items-center justify-center drop-shadow-default">
-              <img className="rounded-2xl shadow" src={features[selectedIndex].image} width={800} alt="" />
+              <img
+                className="rounded-2xl shadow min-h-[336px]"
+                src={features[selectedIndex].image}
+                width={800}
+                alt=""
+              />
             </div>
             <div className="pt-4 justify-center lg:hidden items-start gap-4 inline-flex">
               <div
