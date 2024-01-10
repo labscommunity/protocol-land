@@ -17,7 +17,7 @@ export default function WhitelistModal({ setIsOpen, isOpen }: WhitelistModalProp
   }
 
   function handleDiscordClick() {
-    window.open('https://discord.gg/5bgrgMvb', '_blank')
+    window.open('https://discord.com/invite/GqxX2vtwRj', '_blank')
   }
 
   return (

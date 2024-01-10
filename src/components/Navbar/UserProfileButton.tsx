@@ -1,7 +1,5 @@
-import { useActiveAddress, useConnection, useStrategy } from '@arweave-wallet-kit-beta/react'
 import { Menu, Transition } from '@headlessui/react'
-import { Fragment, useEffect, useRef } from 'react'
-import React from 'react'
+import { Fragment } from 'react'
 import { AiOutlineProfile } from 'react-icons/ai'
 import { BiLogOutCircle } from 'react-icons/bi'
 import { FaUser } from 'react-icons/fa'
@@ -9,72 +7,18 @@ import { FiChevronDown } from 'react-icons/fi'
 import { useNavigate } from 'react-router-dom'
 
 import { Button } from '@/components/common/buttons'
-import { trackGoogleAnalyticsEvent } from '@/helpers/google-analytics'
+import useAuth from '@/helpers/hooks/useAuth'
 import { shortenAddress } from '@/helpers/shortenAddress'
-import { useGlobalStore } from '@/stores/globalStore'
 
 import WhitelistModal from './WhitelistModal'
 
 export default function UserProfileButton() {
-  const [whitelistModalOpen, setWhitelistModalOpen] = React.useState(false)
   const navigate = useNavigate()
-  const [authState, login, logout] = useGlobalStore((state) => [
-    state.authState,
-    state.authActions.login,
-    state.authActions.logout
-  ])
-  const { connected, connect, disconnect } = useConnection()
-  const address = useActiveAddress()
-  const strategy = useStrategy()
-
-  const connectedRef = useRef(false)
-
-  useEffect(() => {
-    if (connected && address && strategy) {
-      handleLogin(address, strategy)
-    }
-  }, [connected, address, strategy])
+  const { authState, whitelistModalOpen, setWhitelistModalOpen, handleConnectBtnClick, handleLogoutBtnClick } =
+    useAuth()
 
   function openProfileModal() {
     navigate(`/user/${authState.address}`)
-  }
-
-  async function handleConnectBtnClick() {
-    connect()
-
-    trackGoogleAnalyticsEvent('Auth', 'Connect button click', 'Connect Button')
-  }
-
-  async function handleLogin(address: string, strategy: string) {
-    const loggedIn = await login({
-      isLoggedIn: true,
-      address,
-      method: strategy
-    })
-
-    if (!loggedIn) {
-      await disconnect()
-
-      setWhitelistModalOpen(true)
-
-      trackGoogleAnalyticsEvent('Auth', 'Post connect button click', 'Not whitelisted')
-    }
-
-    connectedRef.current = true
-
-    trackGoogleAnalyticsEvent('Auth', 'Post connect button click', 'Login', { address, strategy })
-  }
-
-  async function handleLogoutBtnClick() {
-    trackGoogleAnalyticsEvent('Auth', 'Logout button click', 'Logout Button')
-
-    await disconnect()
-
-    trackGoogleAnalyticsEvent('Auth', 'Post logout button click', 'Logout')
-
-    logout()
-
-    connectedRef.current = false
   }
 
   if (!authState.isLoggedIn || !authState.address)

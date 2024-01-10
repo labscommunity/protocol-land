@@ -5,6 +5,7 @@ import { useNavigate } from 'react-router-dom'
 
 import { Button } from '@/components/common/buttons'
 import CreateProfileModal from '@/components/CreateProfileModal/CreateProfileModal'
+import Landing from '@/components/Landing/Landing'
 import { PL_REPO_ID } from '@/helpers/constants'
 import { trackGoogleAnalyticsEvent, trackGoogleAnalyticsPageView } from '@/helpers/google-analytics'
 import { useGlobalStore } from '@/stores/globalStore'
@@ -21,10 +22,13 @@ export default function Home() {
   const [isCreateProfileModalOpen, setIsCreateProfileModalOpen] = React.useState(false)
   const { connect } = useConnection()
   const navigate = useNavigate()
+  const strategy = React.useMemo(() => localStorage.getItem('wallet_kit_strategy_id'), [authState.isLoggedIn])
 
   React.useEffect(() => {
-    trackGoogleAnalyticsPageView('pageview', '/', 'Home Page Visit')
-  }, [])
+    if (strategy) {
+      trackGoogleAnalyticsPageView('pageview', '/', 'Home Page Visit')
+    }
+  }, [strategy])
 
   React.useEffect(() => {
     if (authState.isLoggedIn) {
@@ -48,7 +52,7 @@ export default function Home() {
   }
 
   async function handleInstallButtonClick() {
-    const NPM_URL = 'https://www.npmjs.com/package/@7i7o/git-remote-proland'
+    const NPM_URL = 'https://www.npmjs.com/package/@protocol.land/git-remote-helper'
 
     trackGoogleAnalyticsEvent('CLI', 'Install Git remote CLI button click', 'Git CLI')
 
@@ -57,6 +61,10 @@ export default function Home() {
 
   function handleExploreClick() {
     navigate(`/repository/${PL_REPO_ID}`)
+  }
+
+  if (!strategy) {
+    return <Landing />
   }
 
   return (
