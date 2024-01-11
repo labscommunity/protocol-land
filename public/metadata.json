@@ -2,15 +2,15 @@
   "blog": [
     {
       "id": 1,
-      "title": "Introducing Protocol.Land",
-      "status": "draft",
-      "href": "/blog/introducing-protocol-land",
-      "file": "/blog/introducting-protocol-land.md",
+      "title": "Protocol.Land is now open to all",
+      "status": "published",
+      "href": "/blog/protocol-land-is-now-open-to-all",
+      "file": "/blog/protocol-land-is-now-open-to-all.md",
       "featured": true,
       "category": "ANNOUNCEMENT",
-      "description": "ArConnect integrates ar.io''s Wayfinder, revolutionizing access to information on Arweave. This collaboration ensures optimal, uninterrupted user connectivity by intelligently selecting the best gateways based on user requests.",
-      "coverImage": "/blog/images/wayfinder-final-v2-k5ND.png",
-      "publishedAt": "2023-10-31T17:22:52.571Z"
+      "description": "Protocol.Land announces its public launch, extending the benefits of decentralized code collaboration to everyone. Checkout what's in store and how to get started.",
+      "coverImage": "/blog/images/protocol-land-is-open-to-all.png",
+      "publishedAt": "2024-01-11"
     }
   ]
 }
