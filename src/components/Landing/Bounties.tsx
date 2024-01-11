@@ -53,7 +53,7 @@ export default function Bounties() {
               background: 'linear-gradient(180deg, rgba(56, 124, 158, 0.20) 0%, rgba(0, 0, 0, 0.20) 100%)'
             }}
           >
-            <div className="text-center text-white text-xl md:text-2xl font-bold font-inter flex-1 xl:leading-loose">
+            <div className="text-center text-white text-xl md:text-2xl font-bold font-inter flex-1 leading-[1.2]">
               {item.title}
             </div>
 
