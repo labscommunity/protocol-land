@@ -8,6 +8,8 @@ import Line from '@/assets/images/line.svg'
 import { trackGoogleAnalyticsEvent } from '@/helpers/google-analytics'
 import { openInNewTab } from '@/helpers/openInNewTab'
 
+import { Button } from '../common/buttons'
+
 const features = [
   {
     title: 'Simple back-up',
@@ -107,12 +109,9 @@ export default function BackedByArweave() {
         </div>
       </div>
 
-      <div
-        className="w-40 h-11 px-4 py-2.5 bg-[#397D9E] hover:bg-[#285E7B] hover:text-gray-300 rounded-lg shadow justify-center items-center gap-2 inline-flex text-white text-base font-medium font-inter leading-normal cursor-pointer"
-        onClick={handleExploreArweaveBtnClick}
-      >
+      <Button variant="gradient-dark" className="h-11 px-4 py-2.5" onClick={handleExploreArweaveBtnClick}>
         Explore Arweave
-      </div>
+      </Button>
     </div>
   )
 }
