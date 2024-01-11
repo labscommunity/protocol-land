@@ -59,6 +59,22 @@ export async function addAssigneeToIssue(repoId: string, issueId: number, assign
       assignees
     }
   })
+
+  const {
+    cachedValue: {
+      state: { repos }
+    }
+  } = await contract.readState()
+
+  const issues = repos[repoId]?.issues
+
+  if (!issues) return
+
+  const issue = issues[issueId - 1]
+
+  if (!issue) return
+
+  return issue
 }
 
 export async function addCommentToIssue(repoId: string, issueId: number, comment: string) {

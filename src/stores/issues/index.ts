@@ -215,11 +215,17 @@ const createPullRequestSlice: StateCreator<CombinedSlices, [['zustand/immer', ne
         return
       }
 
-      const { error } = await withAsync(() => addAssigneeToIssue(repo.id, id, assignees))
+      const { error, response } = await withAsync(() => addAssigneeToIssue(repo.id, id, assignees))
 
-      if (!error) {
+      if (!error && response) {
+        const activities = response?.activities
+
+        if (!activities || !Array.isArray(activities)) return
+
         set((state) => {
-          state.repoCoreState.selectedRepo.repo!.issues[id - 1].assignees.push(...assignees)
+          const issue = state.repoCoreState.selectedRepo.repo!.issues[id - 1]
+          issue.assignees.push(...assignees)
+          issue.activities = activities
         })
 
         trackGoogleAnalyticsEvent('Repository', 'Add or update assignee to issue', 'Modify issue assignee', {

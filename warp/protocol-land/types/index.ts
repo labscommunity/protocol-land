@@ -138,7 +138,8 @@ export type BaseActivity = {
 }
 
 export interface IssueActivityStatus extends BaseActivity {
-  status: IssueStatus | 'REOPEN'
+  status: IssueStatus | 'REOPEN' | 'ASSIGNED'
+  assignees?: Array<string>
 }
 
 export interface PullRequestActivityStatus extends BaseActivity {
