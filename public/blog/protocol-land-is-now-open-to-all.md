@@ -39,8 +39,8 @@ Your code isn't just archived; it's a living repository on Protocol.Land. Every 
 Deploy and perpetually host your frontends on the most distributed and decentralized network, all at zero upkeep cost. Protocol.Land also enables user-friendly aliases for these deployments using the Arweave Name System (ArNS).
 
 ## Embark on a new era with Protocol.Land
-As Protocol.Land opens its doors to everyone, we enter a new chapter in the world of code collaboration. To get started head over to Protocol.Land now by clicking here. 
+As Protocol.Land opens its doors to everyone, we enter a new chapter in the world of code collaboration. To get started head over to Protocol.Land now by clicking [here](https://protocol.land/?utm_source=Protocol.Land+Blog&utm_medium=Post&utm_campaign=Protocol.Land+is+now+open+to+all&utm_id=Protocol.Land+is+now+open+to+all). 
 
-For guidance and support, checkout our comprehensive documentation and join our Community Discord.
+For guidance and support, checkout our [comprehensive documentation](https://docs.protocol.land/?utm_source=Protocol.Land+Blog&utm_medium=Post&utm_campaign=Protocol.Land+is+now+open+to+all&utm_id=Protocol.Land+is+now+open+to+all) and join our [Community Discord](https://discord.gg/8zabdz59).
 
 Over the next few weeks we will keep shipping updates that further enhance the developer experience with features like a dark mode, Google logins and CI/CD. If you’re interested in contributing, reach out!
