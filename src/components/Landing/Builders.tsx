@@ -40,7 +40,7 @@ export default function Builders() {
                   <span className="text-primary-400 leading-10">Built </span>
                   <span className="text-white leading-10">for builders</span>
                 </div>
-                <div className="text-white text-lg font-normal font-inter leading-relaxed">
+                <div className="text-white text-base font-normal font-inter leading-relaxed">
                   Protocol.land is the go-to decentralized infrastructure whether you're a solo developer, a startup
                   team, or a thriving community
                 </div>
