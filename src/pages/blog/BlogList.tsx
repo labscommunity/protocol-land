@@ -46,7 +46,7 @@ export default function BlogList() {
     <div className="absolute bg-[#001d39] z-0 w-full">
       <div className="md:px-16 lg:px-20 xl:px-24 2xl:px-48 min-h-screen">
         <Navbar />
-        <div className="w-full px-[100px] max-[809px]:px-[20px] max-[809px]:py-[50px] pt-[80px] pb-[100px] flex flex-col gap-[100px]">
+        <div className="w-full px-[20px] lg:px-[40px] xl:px-[100px] max-[809px]:py-[50px] pt-[80px] pb-[100px] flex flex-col gap-[100px]">
           <div className="w-full flex justify-center flex-col items-center gap-5">
             <h1 className="text-7xl max-[809px]:text-[40px] font-bold font-lekton text-primary-400">Blog</h1>
             <p className="text-2xl max-[809px]:text-lg text-white font-inter text-center leading-9">
@@ -57,10 +57,10 @@ export default function BlogList() {
 
           {featuredBlog && (
             <>
-              <div className="w-full justify-center min-[810px]:flex hidden">
+              <div className="w-full justify-center lg:flex hidden">
                 <FeaturedBlogCard createBlogClickHandler={createBlogClickHandler} data={featuredBlog} />
               </div>
-              <div className="w-full justify-center max-[810px]:flex hidden">
+              <div className="w-full justify-center max-lg:flex hidden">
                 <BlogCard createBlogClickHandler={createBlogClickHandler} data={featuredBlog} />
               </div>
             </>
