@@ -142,7 +142,7 @@ export default function OverviewTab() {
         <div className="flex flex-col gap-8">
           <ol className="relative border-s-2 border-gray-300 ms-5">
             <li className="mb-10 -ms-5">
-              <PrDescription issueOrPr={PR!} />
+              <PrDescription isIssue={false} issueOrPr={PR!} isContributor={contributor} />
             </li>
             {PR.activities &&
               PR.activities.map((activity, activityId) => {
@@ -150,7 +150,13 @@ export default function OverviewTab() {
                 if (activity.type === 'COMMENT') {
                   return (
                     <li className="mb-10 -ms-5">
-                      <Comment isIssue={false} issueOrPRId={PR.id} commentId={activityId} item={commentActivity} />
+                      <Comment
+                        isIssue={false}
+                        issueOrPRId={PR.id}
+                        commentId={activityId}
+                        item={commentActivity}
+                        isContributor={contributor}
+                      />
                     </li>
                   )
                 } else {

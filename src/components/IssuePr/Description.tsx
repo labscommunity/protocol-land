@@ -2,10 +2,12 @@ import { Issue, PullRequest } from '@/types/repository'
 
 import Comment from './Comment'
 
-export default function Description({ issueOrPr }: { issueOrPr: Issue | PullRequest }) {
-  if (!issueOrPr) return null
+interface DescriptionProps {
+  isIssue: boolean
+  issueOrPr: Issue | PullRequest
+  isContributor: boolean
+}
 
-  const isIssue = 'assignees' in issueOrPr
-
-  return <Comment isIssue={isIssue} item={issueOrPr} issueOrPRId={issueOrPr.id} />
+export default function Description({ issueOrPr, isContributor, isIssue }: DescriptionProps) {
+  return <Comment isIssue={isIssue} item={issueOrPr} issueOrPRId={issueOrPr.id} isContributor={isContributor} />
 }

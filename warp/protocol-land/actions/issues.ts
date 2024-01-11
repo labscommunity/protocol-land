@@ -312,7 +312,7 @@ export async function updateIssueComment(
     isInvalidInput(payload.issueId, ['number', 'string']) ||
     isInvalidInput(payload.comment, 'object') ||
     isInvalidInput(payload.comment.id, 'number') ||
-    isInvalidInput(payload.comment.description, 'string', true)
+    isInvalidInput(payload.comment.description, 'string')
   ) {
     throw new ContractError('Invalid inputs supplied.')
   }

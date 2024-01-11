@@ -2,6 +2,7 @@ import { Menu, Transition } from '@headlessui/react'
 import MDEditor from '@uiw/react-md-editor'
 import { formatDistanceToNow } from 'date-fns'
 import React, { Fragment, useEffect } from 'react'
+import toast from 'react-hot-toast'
 import { useNavigate } from 'react-router-dom'
 
 import { Button } from '@/components/common/buttons'
@@ -14,28 +15,33 @@ interface CommentProps {
   issueOrPRId: number
   commentId?: number
   item: Issue | PullRequest | IssueActivityComment | PullRequestActivityComment
+  isContributor: boolean
 }
 
-export default function Comment({ isIssue, issueOrPRId, commentId, item }: CommentProps) {
+export default function Comment({ isIssue, issueOrPRId, commentId, item, isContributor }: CommentProps) {
   const [isEditing, setIsEditing] = React.useState(false)
   const [isSubmittingDescription, setIsSubmittingDescription] = React.useState(false)
   const [description, setDescription] = React.useState('')
-  const [isContributor, updateIssueComment, updatePRComment, updateIssueDetails, updatePullRequestDetails] =
-    useGlobalStore((state) => [
-      state.repoCoreActions.isContributor,
+  const [updateIssueComment, updatePRComment, updateIssueDetails, updatePullRequestDetails] = useGlobalStore(
+    (state) => [
       state.issuesActions.updateComment,
       state.pullRequestActions.updateComment,
       state.issuesActions.updateIssueDetails,
       state.pullRequestActions.updatePullRequestDetails
-    ])
+    ]
+  )
   const navigate = useNavigate()
-  const contributor = isContributor()
 
   async function handleUpdateDescription() {
     setIsSubmittingDescription(true)
 
     if (item.description !== description) {
       if (typeof commentId === 'number') {
+        if (description.trim().length === 0) {
+          toast.error('Comment cannot be blank')
+          setIsSubmittingDescription(false)
+          return
+        }
         if (isIssue) {
           await updateIssueComment(issueOrPRId, { id: commentId, description })
         } else {
@@ -56,6 +62,7 @@ export default function Comment({ isIssue, issueOrPRId, commentId, item }: Comme
 
   function handleOnCancelDescription() {
     setIsEditing(false)
+    setDescription(item.description)
   }
 
   useEffect(() => {
@@ -69,20 +76,17 @@ export default function Comment({ isIssue, issueOrPRId, commentId, item }: Comme
       <div
         className={`flex justify-between items-center gap-3 bg-gray-200 text-gray-900 px-4 py-2 border-b-[1px] border-gray-300`}
       >
-        {isIssue ? (
-          <div className="flex flex-auto justify-between">
-            <span
-              className="hover:underline hover:text-primary-700 cursor-pointer font-medium"
-              onClick={() => navigate(`/user/${item.author}`)}
-            >
-              {shortenAddress(item.author)}
-            </span>
-            <span> {formatDistanceToNow(new Date(item.timestamp), { addSuffix: true })}</span>
-          </div>
-        ) : (
-          <div className="font-medium">Description</div>
-        )}
-        {contributor && (
+        <div className="flex flex-auto justify-between">
+          <span
+            className="hover:underline hover:text-primary-700 cursor-pointer font-medium"
+            onClick={() => navigate(`/user/${item.author}`)}
+          >
+            {shortenAddress(item.author)}
+          </span>
+          <span> {formatDistanceToNow(new Date(item.timestamp), { addSuffix: true })}</span>
+        </div>
+
+        {isContributor && (
           <Menu as="div" className="relative inline-block text-left">
             <Menu.Button className="inline-flex gap-[2px] w-full justify-center items-center rounded-md px-4 text-sm font-black">
               <span>.</span>

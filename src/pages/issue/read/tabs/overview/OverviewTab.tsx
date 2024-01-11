@@ -90,7 +90,7 @@ export default function OverviewTab() {
         <div className="flex flex-col gap-8">
           <ol className="relative border-s-2 border-gray-300 ms-5">
             <li className="mb-10 -ms-5">
-              <IssueDescription issueOrPr={selectedIssue} />
+              <IssueDescription isIssue={true} issueOrPr={selectedIssue} isContributor={contributor} />
             </li>
             {selectedIssue.activities &&
               selectedIssue.activities.map((activity, activityId) => {
@@ -103,6 +103,7 @@ export default function OverviewTab() {
                         issueOrPRId={selectedIssue.id}
                         commentId={activityId}
                         item={commentActivity}
+                        isContributor={contributor}
                       />
                     </li>
                   )
