@@ -11,6 +11,7 @@ import { VscGitMerge, VscGitPullRequest, VscGitPullRequestClosed } from 'react-i
 import { useNavigate, useParams } from 'react-router-dom'
 
 import { Button } from '@/components/common/buttons'
+import Comment from '@/components/IssuePr/Comment'
 import PrDescription from '@/components/IssuePr/Description'
 import { shortenAddress } from '@/helpers/shortenAddress'
 import { withAsync } from '@/helpers/withAsync'
@@ -144,25 +145,12 @@ export default function OverviewTab() {
               <PrDescription issueOrPr={PR!} />
             </li>
             {PR.activities &&
-              PR.activities.map((activity) => {
+              PR.activities.map((activity, activityId) => {
                 const commentActivity = activity as PullRequestActivityComment
                 if (activity.type === 'COMMENT') {
                   return (
                     <li className="mb-10 -ms-5">
-                      <div className="flex flex-col border-[1px] border-gray-300 rounded-lg overflow-hidden">
-                        <div className="flex justify-between bg-gray-200 border-b-[1px] border-gray-300 text-gray-900 px-4 py-2">
-                          <span
-                            className="hover:underline hover:text-primary-700 cursor-pointer font-medium"
-                            onClick={() => navigate(`/user/${commentActivity.author}`)}
-                          >
-                            {shortenAddress(commentActivity.author)}
-                          </span>
-                          <span> {formatTimestamp(commentActivity.timestamp)}</span>
-                        </div>
-                        <div className="text-gray-900 p-4 bg-white">
-                          <MDEditor.Markdown source={commentActivity.description} />
-                        </div>
-                      </div>
+                      <Comment isIssue={false} issueOrPRId={PR.id} commentId={activityId} item={commentActivity} />
                     </li>
                   )
                 } else {

@@ -4,6 +4,7 @@ import {
   ContractState,
   Issue,
   IssueActivity,
+  IssueActivityComment,
   IssueActivityStatus,
   RepositoryAction
 } from '../types'
@@ -297,6 +298,50 @@ export async function addCommentToIssue(
   }
 
   issue.activities.push(comment)
+
+  return { state }
+}
+
+export async function updateIssueComment(
+  state: ContractState,
+  { caller, input: { payload } }: RepositoryAction
+): Promise<ContractResult<ContractState>> {
+  if (
+    isInvalidInput(payload, 'object') ||
+    isInvalidInput(payload.repoId, 'uuid') ||
+    isInvalidInput(payload.issueId, ['number', 'string']) ||
+    isInvalidInput(payload.comment, 'object') ||
+    isInvalidInput(payload.comment.id, 'number') ||
+    isInvalidInput(payload.comment.description, 'string', true)
+  ) {
+    throw new ContractError('Invalid inputs supplied.')
+  }
+
+  const repo = state.repos[payload.repoId]
+
+  if (!repo) {
+    throw new ContractError('Repo not found.')
+  }
+
+  const hasPermissions = caller === repo.owner || repo.contributors.indexOf(caller) > -1
+
+  if (!hasPermissions) {
+    throw new ContractError('Error: You dont have permissions for this operation.')
+  }
+
+  const issue = repo.issues[+payload.issueId - 1]
+
+  if (!issue) {
+    throw new ContractError('Issue not found.')
+  }
+
+  const commentActivity = issue.activities[payload.comment.id] as IssueActivityComment
+
+  if (!commentActivity || commentActivity?.type !== 'COMMENT') {
+    throw new ContractError('Comment not found.')
+  }
+
+  commentActivity.description = payload.comment.description
 
   return { state }
 }
