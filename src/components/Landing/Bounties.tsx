@@ -57,8 +57,8 @@ export default function Bounties() {
               {item.title}
             </div>
 
-            <div className="bg-white bg-opacity-20 rounded-lg">
-              <img className="bg-opacity-20 rounded-lg" src={item.image} alt="" />
+            <div className="bg-white bg-opacity-20 rounded-lg overflow-hidden">
+              <img className="bg-opacity-20 rounded-lg scale-[1.7]" src={item.image} alt="" />
             </div>
           </div>
         ))}
