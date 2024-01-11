@@ -38,9 +38,9 @@ export default function Article() {
 
     return (
       <div className="absolute bg-[#001d39] z-0 w-full">
-        <div className="px-5 md:px-16 lg:px-20 xl:px-24 2xl:px-48 min-h-screen">
+        <div className="md:px-16 lg:px-20 xl:px-24 2xl:px-48 min-h-screen">
           <Navbar />
-          <div className="w-full mx-auto max-w-[1200px] px-[50px] pt-[100px] pb-[50px] flex flex-col gap-[30px] items-center justify-start">
+          <div className="w-full mx-auto max-w-[1200px] max-[809px]:px-[20px] max-[809px]:pt-[100px] max-[809px]:pb-[50px] px-[50px] pt-[100px] pb-[50px] flex flex-col gap-[30px] items-center justify-start">
             <ArticleMeta frontMatter={frontMatter} />
             <div className="flex max-w-[700px] whitespace-pre-wrap break-words w-full outline-none flex-col justify-start">
               {component}
