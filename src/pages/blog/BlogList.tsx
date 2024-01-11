@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom'
 import Footer from '@/components/Landing/Footer'
 import Navbar from '@/components/Landing/Navbar'
 import { Seo } from '@/components/Seo'
+import { trackGoogleAnalyticsPageView } from '@/helpers/google-analytics'
 import { defaultMetaTagsData } from '@/helpers/seoUtils'
 import { withAsync } from '@/helpers/withAsync'
 import { IBlog } from '@/types/blog'
@@ -20,6 +21,7 @@ export default function BlogList() {
 
   React.useEffect(() => {
     getAllBlogs()
+    trackGoogleAnalyticsPageView('pageview', '/', 'Blog Page Visit')
   }, [])
 
   async function getAllBlogs() {
