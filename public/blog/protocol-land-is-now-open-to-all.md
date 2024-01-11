@@ -17,14 +17,14 @@ publishedAt: '2024-01-11'
 ## Protocol.Land: where decentralized protocols roam
 Last November, Protocol.Land launched in beta as a decentralized code collaboration platform. This launch marked a shift towards a future where transparency and permanence are embedded in every line of code. Since then, we’ve added features like encrypted private repositories, static page deployments, and aliases for these deployments. We've also introduced built-in bounties for code contributions, further incentivizing collaborative development.
 
-At Protocol.Land, we are on a mission to empower developers by ensuring the preservation and evolution of their work. This ensures  future builders and even future generations can build upon a legacy of shared knowledge.
+At Protocol.Land, we are on a mission to empower developers by ensuring the preservation and evolution of their work. This ensures future builders and even future generations can build upon a legacy of shared knowledge.
 
 Today, we're excited to announce the public launch of Protocol.Land, extending the benefits of decentralized code collaboration to everyone!
 
 Here’s what Protocol.Land has in store:
 
 ### In sync with Git
-Protocol.Land integrates seamlessly with Git, keeping your typical workflow from repository creation to pushing changes remains intact, blending the new with the familiar in a streamlined experience.
+Protocol.Land integrates seamlessly with Git, keeping your typical workflow from repository creation to pushing changes intact, blending the new with the familiar in a streamlined experience.
 
 ### Rewarding contributions
 Protocol.Land introduces an incentivized programming environment. You can assign bounties to issues, rewarding contributors for their efforts and acknowledging the hard work poured into every line of open source code.
