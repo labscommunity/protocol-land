@@ -6,6 +6,7 @@ import { useLocation } from 'react-router-dom'
 import Footer from '@/components/Landing/Footer'
 import Navbar from '@/components/Landing/Navbar'
 import { Seo } from '@/components/Seo'
+import { trackGoogleAnalyticsPageView } from '@/helpers/google-analytics'
 import { withAsync } from '@/helpers/withAsync'
 
 import ArticleMeta from './components/ArticleMeta'
@@ -20,6 +21,7 @@ export default function Article() {
 
   React.useEffect(() => {
     loadBlogs()
+    trackGoogleAnalyticsPageView('pageview', location.pathname, 'Article Page Visit')
   }, [])
 
   async function loadBlogs() {
