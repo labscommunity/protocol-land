@@ -2,6 +2,7 @@ import { InjectedArweaveSigner } from 'warp-contracts-plugin-signature'
 
 import { CONTRACT_TX_ID } from '@/helpers/constants'
 import getWarpContract from '@/helpers/getWrapContract'
+import { isInvalidInput } from '@/helpers/isInvalidInput'
 import { postIssueStatDataTxToArweave } from '@/lib/user'
 import { Issue } from '@/types/repository'
 
@@ -166,11 +167,11 @@ export async function updateIssueDetails(repoId: string, issueId: number, issue:
     issueId
   } as any
 
-  if (issue.title) {
+  if (!isInvalidInput(issue.title, 'string')) {
     payload = { ...payload, title: issue.title }
   }
 
-  if (issue.description) {
+  if (!isInvalidInput(issue.description, 'string', true)) {
     payload = { ...payload, description: issue.description }
   }
 

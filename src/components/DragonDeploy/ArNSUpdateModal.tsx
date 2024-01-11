@@ -198,6 +198,7 @@ export default function ArNSDomainModal() {
                           </div>
                           {!updateNeeded && !isUpdated && isOnline && <span>Update in progress...</span>}
                           {updateNeeded && <span>Update to latest deployment?</span>}
+                          {!isOnline && <span className='text-sm text-gray-600'>Note: It might take ~30 minutes for the domain to go live.</span>}
                         </div>
                         <div className="flex flex-col gap-3 justify-center mt-6">
                           <div className="flex gap-2">

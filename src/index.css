@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter&family=Lekton&family=Manrope&display=swap');
+
 .wmde-markdown ol,
 .wmde-markdown ul,
 .wmde-markdown menu,
@@ -22,6 +24,26 @@
 
   .has-tooltip:hover .tooltip {
     @apply visible z-50;
+  }
+
+  .underlined {
+    position: relative;
+    margin-right: 1rem;
+  }
+
+  .underlined:after {
+    content: '';
+    position: absolute;
+    bottom: -40px;
+    z-index: -1;
+    left: 0;
+    width: 100%;
+    height: 50px;
+    border: solid 4px white;
+    border-color: white transparent transparent transparent;
+    border-radius: 50%;
+    clip-path: inset(0 0 50% 0);
+    rotate: -2deg;
   }
 
   input[type='number']::-webkit-inner-spin-button,

@@ -7,7 +7,16 @@ import { defineConfig } from 'vite'
 
 // https://vitejs.dev/config/
 export default defineConfig({
-  plugins: [react()],
+  plugins: [
+    react({
+      include: '**/*.tsx'
+    })
+  ],
+  server: {
+    watch: {
+      usePolling: true
+    }
+  },
   optimizeDeps: {
     esbuildOptions: {
       // Node.js global to browser globalThis
@@ -26,7 +35,7 @@ export default defineConfig({
   resolve: {
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url)),
-      '@codemirror': path.resolve(__dirname, 'node_modules/@codemirror/'),
+      '@codemirror': path.resolve(__dirname, 'node_modules/@codemirror/')
     }
   },
   build: {

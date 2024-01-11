@@ -10,13 +10,13 @@ import IconCommitOutline from '@/assets/icons/commit-outline.svg'
 import IconDriveOutline from '@/assets/icons/drive-outline.svg'
 import IconForkOutline from '@/assets/icons/fork-outline.svg'
 import IconStarOutline from '@/assets/icons/star-outline.svg'
-import IconTagOutline from '@/assets/icons/tag-outline.svg'
 import { Button } from '@/components/common/buttons'
 import { trackGoogleAnalyticsPageView } from '@/helpers/google-analytics'
 import { shortenAddress } from '@/helpers/shortenAddress'
 import { Repo } from '@/types/repository'
 
 import useRepository from '../hooks/useRepository'
+import { useRepoHeaderStore } from '../store/repoHeader'
 import ActivityGraph from './ActivityGraph'
 import ForkModal from './ForkModal'
 import RepoHeaderLoading from './RepoHeaderLoading'
@@ -35,6 +35,8 @@ export default function RepoHeader({ repo, isLoading, owner, parentRepo }: Props
   const location = useLocation()
   const navigate = useNavigate()
   const { downloadRepository } = useRepository(repo?.id, repo?.name)
+
+  const [repoHeaderState] = useRepoHeaderStore((state) => [state.repoHeaderState])
 
   React.useEffect(() => {
     if (repo && repo?.name) {
@@ -121,19 +123,17 @@ export default function RepoHeader({ repo, isLoading, owner, parentRepo }: Props
           <div className="flex gap-3 items-center text-gray-900">
             <div className="flex gap-1 items-center px-4 py-1 bg-gray-200 rounded-[4px] cursor-default">
               <SVG src={IconCommitOutline} />
-              <p>100 Commit</p>
+              <p>
+                {repoHeaderState.commits} {repoHeaderState.commits === 1 ? 'Commit' : 'Commits'}
+              </p>
             </div>
             <div className="flex gap-1 items-center px-4 py-1 bg-gray-200 rounded-[4px] cursor-default">
               <SVG src={IconForkOutline} />
-              <p>100 Branches</p>
-            </div>
-            <div className="flex gap-1 items-center px-4 py-1 bg-gray-200 rounded-[4px] cursor-default">
-              <SVG src={IconTagOutline} />
-              <p>100 Tags</p>
+              <p>{repoHeaderState.branches} {repoHeaderState.branches === 1 ? 'Branch' : 'Branches'}</p>
             </div>
             <div className="flex gap-1 items-center px-4 py-1 bg-gray-200 rounded-[4px] cursor-default">
               <SVG src={IconDriveOutline} />
-              <p>1.1 MB</p>
+              <p>{repoHeaderState.repoSize}</p>
             </div>
           </div>
           <div>
@@ -144,7 +144,7 @@ export default function RepoHeader({ repo, isLoading, owner, parentRepo }: Props
           <div className="flex mb-4 items-center justify-start gap-4">
             <Button className="rounded-[20px] flex gap-2 items-center" variant="secondary" onClick={handleComingSoon}>
               <SVG className="w-5 h-5" src={IconStarOutline} />
-              <span className="text-gray-900 font-medium">10</span>
+              <span className="text-gray-900 font-medium">0</span>
             </Button>
             <Button
               className="rounded-[20px] flex px-0 items-center"

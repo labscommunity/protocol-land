@@ -18,6 +18,8 @@ import { postCommitStatDataTxToArweave } from '@/lib/user'
 import { useGlobalStore } from '@/stores/globalStore'
 import { CommitResult } from '@/types/commit'
 
+import { useRepoHeaderStore } from '../store/repoHeader'
+
 type AddFilesOptions = {
   name: string
   files: FileWithPath[]
@@ -83,11 +85,16 @@ export default function useCommit() {
 
     const isPrivate = selectedRepo.repo?.private || false
     const privateStateTxId = selectedRepo.repo?.privateStateTxId
-    const { error, response } = await withAsync(() => postUpdatedRepo({ fs, dir, owner, id, isPrivate, privateStateTxId }))
+    const { error, response } = await withAsync(() =>
+      postUpdatedRepo({ fs, dir, owner, id, isPrivate, privateStateTxId })
+    )
 
     if (error) throw trackAndThrowError('Failed to update repository', name, id)
 
     if (response) {
+      const commitsCount = useRepoHeaderStore.getState().repoHeaderState.commits
+      useRepoHeaderStore.getState().setCommits(commitsCount + 1)
+
       trackGoogleAnalyticsEvent('Repository', 'Add files to repo', 'Add files', {
         repo_name: name,
         repo_id: id,

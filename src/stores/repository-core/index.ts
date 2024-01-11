@@ -13,11 +13,13 @@ import {
   updateRepoDescription,
   updateRepoName
 } from '@/lib/git'
+import { useRepoHeaderStore } from '@/pages/repository/store/repoHeader'
 import { Deployment, Domain } from '@/types/repository'
 
-import { changeBranch, getCurrentActiveBranch } from '../branch/actions'
+import { changeBranch, getBranchList, getCurrentActiveBranch } from '../branch/actions'
 import { CombinedSlices } from '../types'
 import {
+  countCommits,
   getFileContentFromOid,
   getFilesFromOid,
   getOidOfHeadRef,
@@ -517,7 +519,7 @@ const createRepoCoreSlice: StateCreator<CombinedSlices, [['zustand/immer', never
         }
 
         // Always checkout default master branch if available
-        if (!repoFetchError && repoFetchResponse) {
+        if (!repoFetchError && repoFetchResponse && repoFetchResponse.success) {
           const { error: branchError, result: currentBranch } = await getCurrentActiveBranch(repoId)
           if (!branchError && currentBranch && branchName && currentBranch !== branchName) {
             const { error: changeError } = await changeBranch(repoId, branchName)
@@ -527,9 +529,23 @@ const createRepoCoreSlice: StateCreator<CombinedSlices, [['zustand/immer', never
           }
         }
 
-        if (repoFetchError || !repoFetchResponse) {
+        if (repoFetchError || !repoFetchResponse || !repoFetchResponse.success) {
           throw new Error('Error loading the repository.')
         }
+
+        const { error: branchListError, response: branchListResponse } = await withAsync(() => getBranchList(repoId))
+
+        if (branchListResponse && !branchListError && branchListResponse.length > 0) {
+          useRepoHeaderStore.getState().setBranches(branchListResponse.length)
+        }
+
+        const commitsCount = await countCommits(repoId)
+
+        if (commitsCount && commitsCount > 0) {
+          useRepoHeaderStore.getState().setCommits(commitsCount)
+        }
+
+        useRepoHeaderStore.getState().setRepoSize(repoFetchResponse.repoSize)
 
         set((state) => {
           state.repoCoreState.selectedRepo.status = 'SUCCESS'
@@ -558,7 +574,7 @@ const createRepoCoreSlice: StateCreator<CombinedSlices, [['zustand/immer', never
         })
       }
 
-      if (repoFetchResponse) {
+      if (repoFetchResponse && repoFetchResponse.success) {
         set((state) => {
           state.repoCoreState.parentRepo.repo = repo
           state.repoCoreState.parentRepo.status = 'SUCCESS'
@@ -591,7 +607,7 @@ const createRepoCoreSlice: StateCreator<CombinedSlices, [['zustand/immer', never
           })
         }
 
-        if (repoFetchResponse) {
+        if (repoFetchResponse && repoFetchResponse.success) {
           set((state) => {
             state.repoCoreState.forkRepo.repo = metaResponse.result
             state.repoCoreState.forkRepo.status = 'SUCCESS'

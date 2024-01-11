@@ -1,8 +1,11 @@
 import Arweave from 'arweave'
+import toast from 'react-hot-toast'
 
+import { getArrayBufSize } from '@/helpers/getArrayBufSize'
 import { waitFor } from '@/helpers/waitFor'
 import { withAsync } from '@/helpers/withAsync'
 import { importRepoFromBlob, unmountRepoFromBrowser } from '@/lib/git'
+import { getAllCommits } from '@/lib/git/commit'
 import { fsWithName } from '@/lib/git/helpers/fsWithName'
 import { getOidFromRef, readFileFromOid, readFilesFromOid } from '@/lib/git/helpers/oid'
 import { packGitRepo } from '@/lib/git/helpers/zipUtils'
@@ -66,11 +69,13 @@ export async function loadRepository(id: string, dataTxId: string, privateStateT
   const fs = fsWithName(id)
   const dir = `/${id}`
 
+  const repoSize = getArrayBufSize(repoArrayBuf)
+
   const success = await importRepoFromBlob(fs, dir, new Blob([repoArrayBuf]))
 
   await waitFor(1000)
 
-  return success
+  return { success, repoSize }
 }
 
 export async function renameRepoDir(id: string, currentName: string, newName: string) {
@@ -118,4 +123,23 @@ export async function decryptRepo(repoArrayBuf: ArrayBuffer, privateStateTxId: s
   const decryptedRepo = await decryptFileWithAesGcm(repoArrayBuf, aesKey, ivArrBuff)
 
   return decryptedRepo
+}
+
+export async function countCommits(id: string) {
+  const fs = fsWithName(id)
+  const dir = `/${id}`
+
+  for (let attempt = 0; attempt < 3; attempt++) {
+    const { response, error } = await withAsync(() => getAllCommits({ fs, dir }))
+    if (response && !error) {
+      return response.length
+    } else {
+      console.warn(`Failed to fetch commits (attempt ${attempt + 1} / 3). Retrying...`)
+      continue
+    }
+  }
+
+  toast.error('Failed to count commits from repo. Refresh the page and try again.')
+
+  return 0
 }
