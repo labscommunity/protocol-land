@@ -9,7 +9,6 @@ import Logo from '@/assets/images/p-logo.svg'
 import useAuth from '@/helpers/hooks/useAuth'
 
 import { Button } from '../common/buttons'
-import WhitelistModal from '../Navbar/WhitelistModal'
 
 const NAV_ITEMS = [
   {
@@ -28,7 +27,7 @@ const NAV_ITEMS = [
 ]
 
 export default function Navbar() {
-  const { connected, address, whitelistModalOpen, setWhitelistModalOpen, handleConnectBtnClick } = useAuth()
+  const { connected, address, handleConnectBtnClick } = useAuth()
   const [isMobileNavOpen, setIsMobileNavOpen] = React.useState(false)
   const navigate = useNavigate()
 
@@ -79,7 +78,6 @@ export default function Navbar() {
           >
             Connect Wallet
           </Button>
-          <WhitelistModal isOpen={whitelistModalOpen} setIsOpen={setWhitelistModalOpen} />
         </div>
       </div>
       <div
@@ -107,7 +105,6 @@ export default function Navbar() {
         >
           Connect Wallet
         </Button>
-        <WhitelistModal isOpen={whitelistModalOpen} setIsOpen={setWhitelistModalOpen} />
       </div>
     </>
   )

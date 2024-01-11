@@ -10,12 +10,9 @@ import { Button } from '@/components/common/buttons'
 import useAuth from '@/helpers/hooks/useAuth'
 import { shortenAddress } from '@/helpers/shortenAddress'
 
-import WhitelistModal from './WhitelistModal'
-
 export default function UserProfileButton() {
   const navigate = useNavigate()
-  const { authState, whitelistModalOpen, setWhitelistModalOpen, handleConnectBtnClick, handleLogoutBtnClick } =
-    useAuth()
+  const { authState, handleConnectBtnClick, handleLogoutBtnClick } = useAuth()
 
   function openProfileModal() {
     navigate(`/user/${authState.address}`)
@@ -31,7 +28,6 @@ export default function UserProfileButton() {
         >
           Connect
         </Button>
-        <WhitelistModal isOpen={whitelistModalOpen} setIsOpen={setWhitelistModalOpen} />
       </>
     )
 

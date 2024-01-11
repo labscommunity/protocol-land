@@ -25,19 +25,11 @@ export default function useAuth() {
   }, [connected, address, strategy])
 
   async function handleLogin(address: string, strategy: string) {
-    const loggedIn = await login({
+    await login({
       isLoggedIn: true,
       address,
       method: strategy
     })
-
-    if (!loggedIn) {
-      await disconnect()
-
-      setWhitelistModalOpen(true)
-
-      trackGoogleAnalyticsEvent('Auth', 'Post connect button click', 'Not whitelisted')
-    }
 
     connectedRef.current = true
 
