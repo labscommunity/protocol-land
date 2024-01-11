@@ -20,8 +20,8 @@ export default function Landing() {
 
   return (
     <div className="absolute bg-[#001d39] z-0">
+      <Navbar />
       <div className="px-5 md:px-16 lg:px-20 xl:px-24 2xl:px-48">
-        <Navbar />
         <Header />
         <Features />
         <Cli />

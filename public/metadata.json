@@ -1,0 +1,16 @@
+{
+  "blog": [
+    {
+      "id": 1,
+      "title": "Introducing Protocol.Land",
+      "status": "draft",
+      "href": "/blog/introducing-protocol-land",
+      "file": "/blog/introducting-protocol-land.md",
+      "featured": true,
+      "category": "ANNOUNCEMENT",
+      "description": "ArConnect integrates ar.io''s Wayfinder, revolutionizing access to information on Arweave. This collaboration ensures optimal, uninterrupted user connectivity by intelligently selecting the best gateways based on user requests.",
+      "coverImage": "/blog/images/wayfinder-final-v2-k5ND.png",
+      "publishedAt": "2023-10-31T17:22:52.571Z"
+    }
+  ]
+}

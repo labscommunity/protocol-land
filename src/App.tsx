@@ -2,6 +2,8 @@ import { Toaster } from 'react-hot-toast'
 import { HashRouter, Route, Routes } from 'react-router-dom'
 
 import AppLayout from './layouts/AppLayout'
+import Article from './pages/blog/Article'
+import Blog from './pages/blog/BlogList'
 import Home from './pages/home/Home'
 import { CreateIssuePage, ReadIssuePage } from './pages/issue'
 import Profile from './pages/profile/Profile'
@@ -20,15 +22,20 @@ const repositoryRoutes = [
 function App() {
   return (
     <HashRouter>
-      <AppLayout>
-        <Routes>
-          <Route index path="/" element={<Home />} />
-          <Route index path="/user/:id" element={<Profile />} />
-          {repositoryRoutes.map(({ path, element }, index) => (
-            <Route key={index} path={path} element={<RepositoryWrapper element={element} />} />
-          ))}
-        </Routes>
-      </AppLayout>
+      <Routes>
+        <Route index path="/" element={<AppLayout Component={Home} />} />
+        <Route path="/blog" element={<Blog />} />
+        <Route path="/blog/:slug" element={<Article />} />
+        <Route path="/user/:id" element={<AppLayout Component={Profile} />} />
+        {repositoryRoutes.map(({ path, element }, index) => (
+          <Route
+            key={index}
+            path={path}
+            element={<AppLayout Component={() => <RepositoryWrapper element={element} />} />}
+          />
+        ))}
+      </Routes>
+
       <Toaster position="bottom-center" />
     </HashRouter>
   )
