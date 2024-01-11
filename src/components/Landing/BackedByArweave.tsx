@@ -58,7 +58,7 @@ export default function BackedByArweave() {
 
         <div className="absolute top-0 border-dotted h-[140px] -z-10 border-2 border-sky-500 border-b-0 border-l-0"></div>
 
-        <div className="hidden lg:block absolute top-10 border-dotted w-[90%] h-[100px] -z-10 border-2 border-sky-500 border-b-0">
+        <div className="hidden min-[1300px]:block absolute top-10 border-dotted w-[90%] h-[100px] -z-10 border-2 border-sky-500 border-b-0">
           <div className="relative w-full h-full">
             <div className="absolute flex right-[20%] -top-[3px]">
               <SVG src={Line} />
@@ -82,11 +82,11 @@ export default function BackedByArweave() {
           </div>
         </div>
 
-        <div className="flex lg:flex-row flex-col">
+        <div className="flex min-[1300px]:flex-row flex-col">
           {features.map((feature, index) => (
-            <div key={`backed-feature-${index}`} className="flex flex-col lg:flex-row">
+            <div key={`backed-feature-${index}`} className="flex flex-col min-[1300px]:flex-row">
               <div
-                className="flex flex-col p-5 lg:p-10 gap-4 lg:gap-6 flex-1 self-stretch rounded-2xl border-2 border-[#387C9E]"
+                className="flex flex-col p-5 min-[1300px]:p-10 gap-4 min-[1300px]:gap-6 flex-1 self-stretch rounded-2xl border-2 border-[#387C9E]"
                 style={{
                   background: 'linear-gradient(180deg, rgba(56, 124, 158, 0.20) 0%, rgba(0, 0, 0, 0.20) 100%)'
                 }}
@@ -95,14 +95,14 @@ export default function BackedByArweave() {
                   <div className="w-10 h-10 p-2.5 bg-gray-50 rounded-lg border border-gray-200 justify-start items-center gap-2 inline-flex">
                     <SVG className="w-5 h-5" src={feature.icon} />
                   </div>
-                  <div className="text-white text-base lg:text-xl font-bold font-lekton leading-7">{feature.title}</div>
+                  <div className="text-white text-xl font-bold font-lekton">{feature.title}</div>
                 </div>
-                <div className="text-white text-xl lg:text-3xl font-medium font-inter leading-9">
+                <div className="text-white text-[1.5rem] leading-[1.2] font-medium font-inter">
                   {feature.description}
                 </div>
               </div>
               {index < features.length - 1 && (
-                <div className="h-7 w-px lg:w-[3vw] lg:h-px border-[3px] lg:border-t-0 border-l-0 border-dotted border-[#56ADD8] m-auto"></div>
+                <div className="h-7 w-px min-[1300px]:w-[3vw] min-[1300px]:h-px border-[3px] min-[1300px]:border-t-0 border-l-0 border-dotted border-[#56ADD8] m-auto"></div>
               )}
             </div>
           ))}
