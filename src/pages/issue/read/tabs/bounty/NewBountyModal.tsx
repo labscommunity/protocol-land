@@ -154,6 +154,7 @@ export default function NewBountyModal({ isOpen, setIsOpen }: NewBountyModalProp
                     className="w-full justify-center font-medium"
                     onClick={handleSubmit(handleAddButtonClick)}
                     variant="primary-solid"
+                    isLoading={isSubmitting}
                   >
                     Add Bounty
                   </Button>

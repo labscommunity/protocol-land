@@ -24,5 +24,6 @@ export type IssuesActions = {
   addComment: (id: number, comment: string) => Promise<void>
   addBounty: (id: number, amount: number, expiry: number) => Promise<void>
   closeBounty: (issueId: number, bountyId: number) => Promise<void>
+  expireBounty: (issueId: number, bountyId: number) => Promise<void>
   completeBounty: (issueId: number, bountyId: number, paymentTxId: string) => Promise<void>
 }

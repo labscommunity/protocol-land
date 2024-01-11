@@ -70,7 +70,7 @@ export async function createNewPullRequest(
     status: 'OPEN',
     reviewers: [],
     activities: [],
-    timestamp: Date.now(),
+    timestamp: getBlockTimeStamp(),
     baseRepo: pickKeys(payload.baseRepo, ['repoId', 'repoName']),
     compareRepo: pickKeys(payload.compareRepo, ['repoId', 'repoName'])
   }

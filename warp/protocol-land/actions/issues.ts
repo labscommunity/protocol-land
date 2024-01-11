@@ -1,4 +1,5 @@
 import { Bounty, ContractResult, ContractState, Issue, IssueActivity, RepositoryAction } from '../types'
+import { getBlockTimeStamp } from '../utils/getBlockTimeStamp'
 import { isInvalidInput } from '../utils/isInvalidInput'
 
 declare const ContractError
@@ -33,7 +34,7 @@ export async function createNewIssue(
     assignees: [],
     activities: [],
     bounties: [],
-    timestamp: Date.now()
+    timestamp: getBlockTimeStamp()
   }
 
   const issuesCount = repo.issues.length
@@ -136,7 +137,7 @@ export async function updateIssueStatus(
   const activity: IssueActivity = {
     type: 'STATUS',
     author: caller,
-    timestamp: Date.now(),
+    timestamp: getBlockTimeStamp(),
     status: payload.status
   }
 
@@ -144,7 +145,7 @@ export async function updateIssueStatus(
   issue.activities.push(activity)
 
   if (issue.status === 'COMPLETED') {
-    issue.completedTimestamp = Date.now()
+    issue.completedTimestamp = getBlockTimeStamp()
   }
 
   return { state }
@@ -275,7 +276,7 @@ export async function addCommentToIssue(
     type: 'COMMENT',
     author: caller,
     description: payload.comment,
-    timestamp: Date.now()
+    timestamp: getBlockTimeStamp()
   }
 
   issue.activities.push(comment)
@@ -319,7 +320,7 @@ export async function createNewBounty(
     expiry: payload.expiry,
     paymentTxId: null,
     status: 'ACTIVE',
-    timestamp: Date.now()
+    timestamp: getBlockTimeStamp()
   }
 
   if (!issue?.bounties) {
@@ -380,6 +381,10 @@ export async function updateBounty(
 
   if (!bounty) {
     throw new ContractError('Bounty not found.')
+  }
+
+  if (bounty.status !== 'ACTIVE') {
+    throw new ContractError(`Bounty is not ACTIVE to set status to ${payload.status}`)
   }
 
   bounty.status = payload.status

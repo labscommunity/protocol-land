@@ -14,9 +14,14 @@ export default function BountyTab() {
   const [selectedIssue, setSelectedIssue] = React.useState<null | Issue>(null)
   const [view, setView] = React.useState<'OPEN' | 'CLOSED'>('OPEN')
   const [bountiesList, setBountiesList] = React.useState<Bounty[]>([])
-  const [repo] = useGlobalStore((state) => [state.repoCoreState.selectedRepo.repo])
+  const [repo, connectedAddress, expireBounty] = useGlobalStore((state) => [
+    state.repoCoreState.selectedRepo.repo,
+    state.authState.address,
+    state.issuesActions.expireBounty
+  ])
   const [isViewBountyOpen, setViewBountyOpen] = React.useState(false)
   const [selectedBounty, setSelectedBounty] = React.useState<null | Bounty>(null)
+  const [isProcessingExpired, setIsProcessingExpired] = React.useState(false)
 
   React.useEffect(() => {
     if (repo) {
@@ -31,20 +36,53 @@ export default function BountyTab() {
   React.useEffect(() => {
     if (selectedIssue && repo) {
       let filteredBounties: Bounty[] = []
+      const currentTimestamp = new Date().getTime()
 
       if (view === 'OPEN') {
-        filteredBounties = selectedIssue?.bounties?.filter((bounty) => bounty.status === 'ACTIVE')
+        filteredBounties = (selectedIssue?.bounties || []).filter(
+          (bounty) => bounty.expiry * 1000 > currentTimestamp && bounty.status === 'ACTIVE'
+        )
       }
 
       if (view === 'CLOSED') {
-        filteredBounties = selectedIssue?.bounties?.filter((bounty) =>
-          ['EXPIRED', 'CLOSED', 'CLAIMED'].includes(bounty.status)
-        )
+        filteredBounties = (selectedIssue?.bounties || [])
+          .map((bounty) => {
+            if (isActiveBountyExpired(bounty, currentTimestamp)) {
+              bounty = { ...bounty, status: 'EXPIRED' }
+            }
+            return bounty
+          })
+          .filter((bounty) => ['EXPIRED', 'CLOSED', 'CLAIMED'].includes(bounty.status))
       }
 
       setBountiesList(filteredBounties || [])
     }
   }, [selectedIssue, view])
+
+  React.useEffect(() => {
+    if (selectedIssue && repo && selectedIssue.author === connectedAddress) {
+      checkBounties()
+    }
+  }, [selectedIssue?.id, repo?.id, connectedAddress])
+
+  function isActiveBountyExpired(bounty: Bounty, currentTimestamp: number) {
+    return bounty.expiry * 1000 < currentTimestamp && bounty.status === 'ACTIVE'
+  }
+
+  async function checkBounties() {
+    if (selectedIssue && repo && !isProcessingExpired) {
+      setIsProcessingExpired(true)
+      const currentTimestamp = new Date().getTime()
+      const expiredBounties = selectedIssue.bounties.filter((bounty) => isActiveBountyExpired(bounty, currentTimestamp))
+      if (expiredBounties.length > 0) {
+        const promises = expiredBounties.map(async (bounty) => {
+          await expireBounty(+issueId!, bounty.id)
+        })
+        await Promise.all(promises).catch((err) => console.log(err))
+      }
+      setIsProcessingExpired(true)
+    }
+  }
 
   function handleRowClick(bounty: Bounty) {
     setSelectedBounty(bounty)
