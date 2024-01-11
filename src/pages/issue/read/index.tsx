@@ -6,7 +6,9 @@ import { useLocation, useParams } from 'react-router-dom'
 import loadingFilesAnimation from '@/assets/searching-files.json'
 import PageNotFound from '@/components/PageNotFound'
 import ScrollToTop from '@/components/ScrollToTop'
+import { Seo } from '@/components/Seo'
 import { trackGoogleAnalyticsPageView } from '@/helpers/google-analytics'
+import { defaultMetaTagsData } from '@/helpers/seoUtils'
 import { useGlobalStore } from '@/stores/globalStore'
 
 import IssueHeader from './components/IssueHeader'
@@ -80,32 +82,40 @@ export default function ReadIssuePage() {
   }
 
   return (
-    <div className="h-full flex-1 flex flex-col max-w-[1280px] px-8 mx-auto w-full mt-6 gap-8 pb-16">
-      {selectedIssue && <IssueHeader issue={selectedIssue} />}
-      <div className="flex flex-col flex-1">
-        <Tab.Group>
-          <Tab.List className="flex text-gray-500 text-lg gap-10 border-b-[1px] border-gray-200">
-            {rootTabConfig.map((tab) => (
-              <Tab className="focus-visible:outline-none">
-                {({ selected }) => (
-                  <div className={`flex items-center gap-2 py-2 px-2 justify-center ${selected ? activeClasses : ''}`}>
-                    <tab.Icon className="w-5 h-5" />
-                    {tab.title}
-                  </div>
-                )}
-              </Tab>
-            ))}
-          </Tab.List>
-          <Tab.Panels className={'mt-4 px-2 flex flex-col flex-1'}>
-            {rootTabConfig.map((TabItem) => (
-              <Tab.Panel className={'flex flex-col flex-1'}>
-                <TabItem.Component />
-              </Tab.Panel>
-            ))}
-          </Tab.Panels>
-        </Tab.Group>
+    <>
+      <Seo
+        {...defaultMetaTagsData}
+        title={selectedIssue ? `Protocol.Land | Issue | ${selectedIssue.title}` : `Protocol.Land | Issue`}
+      />
+      <div className="h-full flex-1 flex flex-col max-w-[1280px] px-8 mx-auto w-full mt-6 gap-8 pb-16">
+        {selectedIssue && <IssueHeader issue={selectedIssue} />}
+        <div className="flex flex-col flex-1">
+          <Tab.Group>
+            <Tab.List className="flex text-gray-500 text-lg gap-10 border-b-[1px] border-gray-200">
+              {rootTabConfig.map((tab) => (
+                <Tab className="focus-visible:outline-none">
+                  {({ selected }) => (
+                    <div
+                      className={`flex items-center gap-2 py-2 px-2 justify-center ${selected ? activeClasses : ''}`}
+                    >
+                      <tab.Icon className="w-5 h-5" />
+                      {tab.title}
+                    </div>
+                  )}
+                </Tab>
+              ))}
+            </Tab.List>
+            <Tab.Panels className={'mt-4 px-2 flex flex-col flex-1'}>
+              {rootTabConfig.map((TabItem) => (
+                <Tab.Panel className={'flex flex-col flex-1'}>
+                  <TabItem.Component />
+                </Tab.Panel>
+              ))}
+            </Tab.Panels>
+          </Tab.Group>
+        </div>
+        <ScrollToTop />
       </div>
-      <ScrollToTop />
-    </div>
+    </>
   )
 }

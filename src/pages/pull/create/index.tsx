@@ -5,7 +5,9 @@ import { useLocation, useNavigate, useParams } from 'react-router-dom'
 
 import { Button } from '@/components/common/buttons'
 import PageNotFound from '@/components/PageNotFound'
+import { Seo } from '@/components/Seo'
 import { trackGoogleAnalyticsPageView } from '@/helpers/google-analytics'
+import { defaultMetaTagsData } from '@/helpers/seoUtils'
 import { useGlobalStore } from '@/stores/globalStore'
 import { PullRequest, Repo } from '@/types/repository'
 
@@ -152,64 +154,72 @@ export default function CreatePullRequest() {
   }
 
   return (
-    <div className="h-full flex-1 flex flex-col max-w-[1200px] mx-auto w-full mt-6 gap-8">
-      <div className="flex flex-col gap-4">
-        <div>
-          <Button onClick={goBack} variant="primary-solid">
-            <FaArrowLeft className="h-4 w-4 text-white" />
-          </Button>
-        </div>
-        <div className="flex flex-col gap-1 border-b-[1px] border-gray-200 pb-2 text-gray-900">
-          <h1 className="text-3xl ">Create a new pull request</h1>
-          <p className="text-lg text-gray-500">
-            Choose two branches to see what's changed and start a new pull request.
-          </p>
-        </div>
-        {!isBranchReady && <BranchLoading />}
-        {isBranchReady && (
-          <div className="flex gap-10 items-center justify-center py-8 bg-primary-100 border-[1px] border-gray-300 rounded-md">
-            <div className="flex gap-4">
-              <RepoDropdown label="Repo" items={repoList.base} selectedItem={baseRepo!} setSelectedItem={setBaseRepo} />
-              <BranchDropdown
-                label="Base"
-                items={branchList}
-                selectedItem={baseBranch}
-                setSelectedItem={setBaseBranch}
-              />
-            </div>
-            <div className="h-full flex items-center">
-              <BiGitCompare className="w-6 h-6 text-gray-600" />
-            </div>
-            <div className="flex gap-4">
-              <RepoDropdown
-                label="Repo"
-                items={repoList.compare}
-                selectedItem={compareRepo!}
-                setSelectedItem={setCompareRepo}
-                disabled
-              />
-              <BranchDropdown
-                label="Compare"
-                items={branchList}
-                selectedItem={compareBranch}
-                setSelectedItem={setCompareBranch}
-              />
-            </div>
+    <>
+      <Seo {...defaultMetaTagsData} title="Protocol.Land | Create Pull Request" />
+      <div className="h-full flex-1 flex flex-col max-w-[1200px] mx-auto w-full mt-6 gap-8">
+        <div className="flex flex-col gap-4">
+          <div>
+            <Button onClick={goBack} variant="primary-solid">
+              <FaArrowLeft className="h-4 w-4 text-white" />
+            </Button>
           </div>
+          <div className="flex flex-col gap-1 border-b-[1px] border-gray-200 pb-2 text-gray-900">
+            <h1 className="text-3xl ">Create a new pull request</h1>
+            <p className="text-lg text-gray-500">
+              Choose two branches to see what's changed and start a new pull request.
+            </p>
+          </div>
+          {!isBranchReady && <BranchLoading />}
+          {isBranchReady && (
+            <div className="flex gap-10 items-center justify-center py-8 bg-primary-100 border-[1px] border-gray-300 rounded-md">
+              <div className="flex gap-4">
+                <RepoDropdown
+                  label="Repo"
+                  items={repoList.base}
+                  selectedItem={baseRepo!}
+                  setSelectedItem={setBaseRepo}
+                />
+                <BranchDropdown
+                  label="Base"
+                  items={branchList}
+                  selectedItem={baseBranch}
+                  setSelectedItem={setBaseBranch}
+                />
+              </div>
+              <div className="h-full flex items-center">
+                <BiGitCompare className="w-6 h-6 text-gray-600" />
+              </div>
+              <div className="flex gap-4">
+                <RepoDropdown
+                  label="Repo"
+                  items={repoList.compare}
+                  selectedItem={compareRepo!}
+                  setSelectedItem={setCompareRepo}
+                  disabled
+                />
+                <BranchDropdown
+                  label="Compare"
+                  items={branchList}
+                  selectedItem={compareBranch}
+                  setSelectedItem={setCompareBranch}
+                />
+              </div>
+            </div>
+          )}
+        </div>
+        {!isDiffReady && <CommitsDiffLoading />}
+        {isDiffReady && openPR && <ShowSimilarPr PR={openPR} />}
+        {isDiffReady && commits.length > 0 && !openPR && (
+          <NewPRForm
+            baseRepo={baseRepo}
+            compareRepo={compareRepo}
+            repoId={baseRepo?.id || ''}
+            baseBranch={baseBranch}
+            compareBranch={compareBranch}
+          />
         )}
+        {isDiffReady && <CommitsDiff commits={commits} />}
       </div>
-      {!isDiffReady && <CommitsDiffLoading />}
-      {isDiffReady && openPR && <ShowSimilarPr PR={openPR} />}
-      {isDiffReady && commits.length > 0 && !openPR && (
-        <NewPRForm
-          baseRepo={baseRepo}
-          compareRepo={compareRepo}
-          repoId={baseRepo?.id || ''}
-          baseBranch={baseBranch}
-          compareBranch={compareBranch}
-        />
-      )}
-      {isDiffReady && <CommitsDiff commits={commits} />}
-    </div>
+    </>
   )
 }
