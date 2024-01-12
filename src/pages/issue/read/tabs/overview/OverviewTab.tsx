@@ -3,6 +3,7 @@ import clsx from 'clsx'
 import { formatDistanceToNow } from 'date-fns'
 import React from 'react'
 import { GoIssueClosed } from 'react-icons/go'
+import { GoPerson } from 'react-icons/go'
 import { VscIssueReopened } from 'react-icons/vsc'
 import { useNavigate } from 'react-router-dom'
 
@@ -13,6 +14,20 @@ import { useGlobalStore } from '@/stores/globalStore'
 import { IssueActivityComment, IssueActivityStatus } from '@/types/repository'
 
 import Sidebar from '../../components/Sidebar'
+
+const StatusColorMap = {
+  OPEN: '',
+  REOPEN: 'bg-[#38a457]',
+  COMPLETED: 'bg-purple-700',
+  ASSIGNED: 'bg-gray-300'
+}
+
+const StatusLogoMap = {
+  OPEN: () => <></>,
+  REOPEN: () => <VscIssueReopened className="h-5 w-5 text-white" />,
+  COMPLETED: () => <GoIssueClosed className="h-5 w-5 text-white" />,
+  ASSIGNED: () => <GoPerson className="h-5 w-5 text-black" />
+}
 
 export default function OverviewTab() {
   const [isSubmittingClose, setIsSubmittingClose] = React.useState(false)
@@ -60,6 +75,10 @@ export default function OverviewTab() {
     }
   }
 
+  function getSeperator(currentIndex: number, array: Array<string>) {
+    return currentIndex < array.length - 2 ? ', ' : currentIndex === array.length - 2 ? ' and ' : ''
+  }
+
   if (!selectedIssue) return null
 
   const isOpen = selectedIssue.status === 'OPEN'
@@ -95,33 +114,48 @@ export default function OverviewTab() {
                     </li>
                   )
                 } else {
-                  const statusActivity = activity as IssueActivityStatus
+                  const { status, author, timestamp, assignees } = activity as IssueActivityStatus
+                  const Icon = StatusLogoMap[status]
                   return (
                     <li className="mb-10 ms-6">
                       <span className="absolute flex items-center justify-center rounded-full -start-4">
-                        <div
-                          className={clsx(
-                            'rounded-full p-1',
-                            statusActivity.status === 'REOPEN' ? 'bg-[#38a457]' : 'bg-purple-700'
-                          )}
-                        >
-                          {statusActivity.status === 'REOPEN' ? (
-                            <VscIssueReopened className="h-5 w-5 text-white" />
-                          ) : (
-                            <GoIssueClosed className="h-5 w-5 text-white" />
-                          )}
+                        <div className={clsx('rounded-full p-1', StatusColorMap[status])}>
+                          <Icon />
                         </div>
                       </span>
                       <div className="flex gap-1">
                         <span
                           className="font-medium hover:underline cursor-pointer hover:text-primary-700"
-                          onClick={() => navigate(`/user/${statusActivity.author}`)}
+                          onClick={() => navigate(`/user/${author}`)}
                         >
-                          {shortenAddress(statusActivity.author)}
+                          {shortenAddress(author)}
                         </span>
                         <span className="text-gray-500">
-                          {statusActivity.status === 'COMPLETED' ? 'closed this as completed' : 'reopened this'}{' '}
-                          {formatDistanceToNow(new Date(statusActivity.timestamp), { addSuffix: true })}
+                          {status === 'COMPLETED' ? (
+                            'closed this as completed '
+                          ) : status === 'REOPEN' ? (
+                            'reopened this '
+                          ) : (
+                            <div className="inline-block mr-1">
+                              {assignees?.length === 1 && author === assignees[0] ? 'self-assigned ' : 'assigned '}
+                              {assignees &&
+                                ((assignees?.length === 1 && author !== assignees[0]) || assignees.length > 1) &&
+                                assignees?.map((assignee, index) => (
+                                  <>
+                                    <a
+                                      id={`assignee-${index}`}
+                                      className="text-black font-medium hover:underline cursor-pointer hover:text-primary-700"
+                                      href={`/#/user/${assignee}`}
+                                    >
+                                      {shortenAddress(assignee)}
+                                    </a>
+                                    {getSeperator(index, assignees!)}
+                                  </>
+                                ))}{' '}
+                              this
+                            </div>
+                          )}
+                          {formatDistanceToNow(new Date(timestamp), { addSuffix: true })}
                         </span>
                       </div>
                     </li>
