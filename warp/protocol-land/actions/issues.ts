@@ -1,4 +1,12 @@
-import { Bounty, ContractResult, ContractState, Issue, IssueActivity, RepositoryAction } from '../types'
+import {
+  Bounty,
+  ContractResult,
+  ContractState,
+  Issue,
+  IssueActivity,
+  IssueActivityStatus,
+  RepositoryAction
+} from '../types'
 import { getBlockTimeStamp } from '../utils/getBlockTimeStamp'
 import { isInvalidInput } from '../utils/isInvalidInput'
 
@@ -236,7 +244,16 @@ export async function addAssigneeToIssue(
     throw new ContractError('No new assignees to add.')
   }
 
+  const issueAssignActivity: IssueActivityStatus = {
+    type: 'STATUS',
+    author: caller,
+    status: 'ASSIGNED',
+    timestamp: getBlockTimeStamp(),
+    assignees: newAssignees
+  }
+
   issue.assignees.push(...newAssignees)
+  issue.activities.push(issueAssignActivity)
 
   return { state }
 }

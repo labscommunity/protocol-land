@@ -12,6 +12,7 @@ export default function Header() {
 
   function handleSeeDocsBtnClick() {
     trackGoogleAnalyticsEvent('Landing', 'See docs button click', 'See docs Button')
+    window.open('https://docs.protocol.land', '_blank')
   }
 
   return (

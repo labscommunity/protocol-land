@@ -10,6 +10,8 @@ import ProfilePage from '@/assets/images/profile-page.png'
 import { trackGoogleAnalyticsEvent } from '@/helpers/google-analytics'
 import { openInNewTab } from '@/helpers/openInNewTab'
 
+import { Button } from '../common/buttons'
+
 const developers = [Developer1, Developer2, Developer3, Developer4]
 
 export default function DeveloperCommunity() {
@@ -73,12 +75,9 @@ export default function DeveloperCommunity() {
             </div>
           </div>
           <div className="hidden xl:block">
-            <div
-              className="w-40 h-11 px-4 py-2.5 bg-[#397D9E] hover:bg-[#285E7B] rounded-lg shadow text-white text-base font-medium font-inter leading-normal cursor-pointer"
-              onClick={handleDiscordBtnClick}
-            >
+            <Button className="h-11 px-4 py-2.5" variant="gradient-dark" onClick={handleDiscordBtnClick}>
               Join the Discord
-            </div>
+            </Button>
           </div>
         </div>
         <div>
@@ -131,12 +130,9 @@ export default function DeveloperCommunity() {
         </div>
       </div>
       <div className="flex justify-center pt-12 xl:hidden">
-        <div
-          className="w-40 h-11 px-4 py-2.5 bg-[#397D9E] hover:bg-[#285E7B] hover:text-gray-300 rounded-lg shadow text-white text-base font-medium font-inter leading-normal cursor-pointer"
-          onClick={handleDiscordBtnClick}
-        >
+        <Button className="h-11 px-4 py-2.5" variant="gradient-dark" onClick={handleDiscordBtnClick}>
           Join the Discord
-        </div>
+        </Button>
       </div>
     </div>
   )

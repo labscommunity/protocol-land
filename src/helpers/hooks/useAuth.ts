@@ -1,11 +1,14 @@
 import { useActiveAddress, useConnection, useStrategy } from '@arweave-wallet-kit-beta/react'
 import { useEffect, useRef } from 'react'
 import React from 'react'
+import { useLocation, useNavigate } from 'react-router-dom'
 
 import { trackGoogleAnalyticsEvent } from '@/helpers/google-analytics'
 import { useGlobalStore } from '@/stores/globalStore'
 
 export default function useAuth() {
+  const location = useLocation()
+  const navigate = useNavigate()
   const [whitelistModalOpen, setWhitelistModalOpen] = React.useState(false)
   const [authState, login, logout] = useGlobalStore((state) => [
     state.authState,
@@ -37,7 +40,11 @@ export default function useAuth() {
   }
 
   async function handleConnectBtnClick() {
-    connect()
+    connect().then(() => {
+      if (location.pathname === '/blog' || location.pathname.startsWith('/blog/')) {
+        navigate('/')
+      }
+    })
 
     trackGoogleAnalyticsEvent('Auth', 'Connect button click', 'Connect Button')
   }
