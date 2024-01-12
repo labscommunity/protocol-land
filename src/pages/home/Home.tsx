@@ -1,6 +1,5 @@
 import { useConnection } from '@arweave-wallet-kit-beta/react'
 import React from 'react'
-import toast from 'react-hot-toast'
 import { useNavigate } from 'react-router-dom'
 
 import { Button } from '@/components/common/buttons'
@@ -49,8 +48,9 @@ export default function Home() {
   }
 
   async function handleImportButton() {
-    toast.success('This feature is coming soon.')
     trackGoogleAnalyticsEvent('Repository', 'Import Repository button click', 'Import new repo')
+
+    window.open('https://docs.protocol.land/working-with-repositories/import-a-repository-from-github', '_blank')
   }
 
   async function handleInstallButtonClick() {
