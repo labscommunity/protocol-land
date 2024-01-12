@@ -31,6 +31,7 @@ export default function Bounties() {
 
   function handleLearnMoreBtnClick() {
     trackGoogleAnalyticsEvent('Landing', 'Learn more button click', 'Learn more Button')
+    window.open('https://docs.protocol.land/working-with-issues/create-a-new-bounty', '_blank')
   }
 
   return (

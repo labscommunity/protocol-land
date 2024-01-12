@@ -10,15 +10,28 @@ import { Button } from '@/components/common/buttons'
 import useAuth from '@/helpers/hooks/useAuth'
 import { shortenAddress } from '@/helpers/shortenAddress'
 
-export default function UserProfileButton() {
+export default function UserProfileButton({ isOfLandingPage = false }: { isOfLandingPage?: boolean }) {
   const navigate = useNavigate()
-  const { authState, handleConnectBtnClick, handleLogoutBtnClick } = useAuth()
+  const { address, connected, authState, handleConnectBtnClick, handleLogoutBtnClick } = useAuth()
 
   function openProfileModal() {
     navigate(`/user/${authState.address}`)
   }
 
-  if (!authState.isLoggedIn || !authState.address)
+  if (!authState.isLoggedIn || !authState.address) {
+    if (isOfLandingPage) {
+      return (
+        <Button
+          className="h-11 px-4 py-2.5"
+          onClick={handleConnectBtnClick}
+          variant="gradient-dark"
+          isLoading={connected || !!address}
+          loadingText="Connecting..."
+        >
+          Connect Wallet
+        </Button>
+      )
+    }
     return (
       <>
         <Button
@@ -30,6 +43,7 @@ export default function UserProfileButton() {
         </Button>
       </>
     )
+  }
 
   return (
     <Menu as="div" className="relative inline-block text-left">

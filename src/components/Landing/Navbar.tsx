@@ -6,9 +6,8 @@ import SVG from 'react-inlinesvg'
 import { useNavigate } from 'react-router-dom'
 
 import Logo from '@/assets/images/p-logo.svg'
-import useAuth from '@/helpers/hooks/useAuth'
 
-import { Button } from '../common/buttons'
+import UserProfileButton from '../Navbar/UserProfileButton'
 
 const NAV_ITEMS = [
   {
@@ -27,7 +26,6 @@ const NAV_ITEMS = [
 ]
 
 export default function Navbar() {
-  const { connected, address, handleConnectBtnClick } = useAuth()
   const [isMobileNavOpen, setIsMobileNavOpen] = React.useState(false)
   const navigate = useNavigate()
 
@@ -69,15 +67,7 @@ export default function Navbar() {
           {isMobileNavOpen && <AiOutlineClose onClick={toggleMobileNavOpen} className="text-white h-8 w-8" />}
         </div>
         <div className="hidden justify-end items-center gap-4 sm:flex">
-          <Button
-            className="h-11 px-4 py-2.5"
-            onClick={handleConnectBtnClick}
-            variant="gradient-dark"
-            isLoading={connected || !!address}
-            loadingText="Connecting..."
-          >
-            Connect Wallet
-          </Button>
+          <UserProfileButton isOfLandingPage={true} />
         </div>
       </div>
       <div
@@ -96,15 +86,7 @@ export default function Navbar() {
             </span>
           ))}
         </div>
-        <Button
-          className="h-11 px-4 py-2.5"
-          onClick={handleConnectBtnClick}
-          variant="gradient-dark"
-          isLoading={connected || !!address}
-          loadingText="Connecting..."
-        >
-          Connect Wallet
-        </Button>
+        <UserProfileButton isOfLandingPage={true} />
       </div>
     </>
   )

@@ -19,8 +19,8 @@ export default function BranchButton() {
   return (
     <div className="flex items-center gap-4">
       <Listbox value={'development'} onChange={handleClick}>
-        <div className="relative">
-          <Listbox.Button className="relative h-10 w-[320px] flex justify-between items-center cursor-default rounded-lg bg-white hover:bg-primary-50 hover:shadow-[0px_2px_4px_0px_rgba(0,0,0,0.10)] text-gray-500 border-[1px] border-gray-300 py-[10px] px-3 text-left focus:outline-none text-md font-medium">
+        <div className="relative w-full">
+          <Listbox.Button className="relative h-10 w-full max-w-[320px] sm:w-[320px] flex justify-between items-center cursor-default rounded-lg bg-white hover:bg-primary-50 hover:shadow-[0px_2px_4px_0px_rgba(0,0,0,0.10)] text-gray-500 border-[1px] border-gray-300 py-[10px] px-3 text-left focus:outline-none text-md font-medium">
             {({ open }) => (
               <>
                 <span className="block truncate">development</span>
