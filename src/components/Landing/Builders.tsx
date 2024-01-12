@@ -6,6 +6,8 @@ import DragonDeploy from '@/assets/images/dragon-deploy.gif'
 import RepoCreate from '@/assets/images/repo-create.gif'
 import useAuth from '@/helpers/hooks/useAuth'
 
+import { Button } from '../common/buttons'
+
 const features = [
   {
     title: 'Seamless Repository/Project Creation',
@@ -40,7 +42,7 @@ export default function Builders() {
                   <span className="text-primary-400 leading-10">Built </span>
                   <span className="text-white leading-10">for builders</span>
                 </div>
-                <div className="text-white text-lg font-normal font-inter leading-relaxed">
+                <div className="text-white text-base font-normal font-inter leading-relaxed">
                   Protocol.land is the go-to decentralized infrastructure whether you're a solo developer, a startup
                   team, or a thriving community
                 </div>
@@ -68,12 +70,9 @@ export default function Builders() {
                   ))}
                 </div>
                 <div className="pt-4 hidden lg:justify-start items-start gap-4 lg:inline-flex">
-                  <div
-                    className="px-4 py-2.5 bg-[#397D9E] rounded-lg shadow justify-center items-center gap-2 flex text-white text-base font-medium font-inter leading-normal cursor-pointer hover:bg-[#285E7B]"
-                    onClick={handleConnectBtnClick}
-                  >
+                  <Button variant="gradient-dark" className="px-4 py-2.5" onClick={handleConnectBtnClick}>
                     Jump In
-                  </div>
+                  </Button>
                 </div>
               </div>
             </div>
@@ -86,12 +85,9 @@ export default function Builders() {
               />
             </div>
             <div className="pt-4 justify-center lg:hidden items-start gap-4 inline-flex">
-              <div
-                className="px-4 py-2.5 bg-[#397D9E] hover:bg-[#285E7B] hover:text-gray-300 rounded-lg shadow justify-center items-center gap-2 flex text-white text-base font-medium font-inter leading-normal cursor-pointer"
-                onClick={handleConnectBtnClick}
-              >
+              <Button variant="gradient-dark" className="px-4 py-2.5" onClick={handleConnectBtnClick}>
                 Jump In
-              </div>
+              </Button>
             </div>
           </div>
         </div>
