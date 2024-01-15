@@ -70,6 +70,7 @@ export type PullRequest = {
   status: PullRequestStatus
   reviewers: Reviewer[]
   activities: PullRequestActivity[]
+  linkedIssueId?: number
   timestamp: number
   mergedTimestamp?: number
   baseRepo: {
@@ -94,6 +95,7 @@ export type Issue = {
   assignees: string[]
   activities: IssueActivity[]
   bounties: Bounty[]
+  linkedPRIds?: number[]
 }
 
 export type Bounty = {

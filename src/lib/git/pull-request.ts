@@ -40,7 +40,8 @@ export async function postNewPullRequest({
   compareBranch,
   repoId,
   baseRepo,
-  compareRepo
+  compareRepo,
+  linkedIssueId
 }: PostNewPROptions) {
   const address = useGlobalStore.getState().authState.address
 
@@ -63,6 +64,7 @@ export async function postNewPullRequest({
       baseBranch,
       compareBranch,
       baseBranchOid: oid,
+      linkedIssueId,
       baseRepo,
       compareRepo
     }
@@ -398,6 +400,38 @@ export async function addCommentToPR(repoId: string, prId: number, comment: stri
   return PR
 }
 
+export async function linkIssueToPR(repoId: string, prId: number, issueId: number) {
+  const userSigner = new InjectedArweaveSigner(window.arweaveWallet)
+  await userSigner.setPublicKey()
+
+  const contract = getWarpContract(CONTRACT_TX_ID, userSigner)
+
+  await contract.writeInteraction({
+    function: 'linkIssueToPR',
+    payload: {
+      repoId,
+      prId,
+      linkedIssueId: issueId
+    }
+  })
+
+  const {
+    cachedValue: {
+      state: { repos }
+    }
+  } = await contract.readState()
+
+  const PRs = repos[repoId]?.pullRequests
+
+  if (!PRs) return
+
+  const PR = PRs[prId - 1]
+
+  if (!PR) return
+
+  return PR
+}
+
 type ApprovePROptions = {
   repoId: string
   prId: number
@@ -417,6 +451,7 @@ type PostNewPROptions = {
   baseBranch: string
   compareBranch: string
   repoId: string
+  linkedIssueId?: number
 }
 
 type PRSide = {

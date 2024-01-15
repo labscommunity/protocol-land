@@ -93,6 +93,7 @@ export type PullRequest = {
   status: PullRequestStatus
   reviewers: Reviewer[]
   activities: PullRequestActivity[]
+  linkedIssueId?: number
   timestamp: number
   mergedTimestamp?: number
   baseRepo: PRSide
@@ -116,6 +117,7 @@ export type Issue = {
   assignees: string[]
   activities: IssueActivity[]
   bounties: Bounty[]
+  linkedPRIds?: number[]
 }
 
 export type Bounty = {
@@ -210,6 +212,7 @@ const repoFnList = [
   'rejectContributorInvite',
   'addReviewersToPR',
   'approvePR',
+  'linkIssueToPR',
   'createIssue',
   'updateIssueStatus',
   'updateIssueDetails',
