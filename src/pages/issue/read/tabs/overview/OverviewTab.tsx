@@ -160,7 +160,7 @@ export default function OverviewTab() {
         </div>
 
         <div className="border-t-[1px] border-gray-200">
-          {isLoggedIn && contributor && (
+          {isLoggedIn && (
             <div className="flex flex-col pt-4">
               {isOpen && (
                 <MDEditor height={180} preview="edit" value={commentVal} onChange={(val) => setCommentVal(val!)} />
@@ -169,7 +169,7 @@ export default function OverviewTab() {
                 <div className="flex w-full justify-center gap-4 py-4">
                   <Button
                     isLoading={isSubmittingClose}
-                    disabled={isSubmittingClose}
+                    disabled={isSubmittingClose || !contributor}
                     onClick={handleCloseButtonClick}
                     variant="secondary"
                     className="justify-center"

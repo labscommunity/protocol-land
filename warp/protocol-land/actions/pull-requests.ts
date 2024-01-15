@@ -395,7 +395,7 @@ export async function addCommentToPR(
     throw new ContractError('Repo not found.')
   }
 
-  const hasPermissions = caller === repo.owner || repo.contributors.indexOf(caller) > -1
+  const hasPermissions = repo.private ? caller === repo.owner || repo.contributors.indexOf(caller) > -1 : true
 
   if (!hasPermissions) {
     throw new ContractError('Error: You dont have permissions for this operation.')
@@ -495,12 +495,6 @@ export async function updatePRComment(
     throw new ContractError('Repo not found.')
   }
 
-  const hasPermissions = caller === repo.owner || repo.contributors.indexOf(caller) > -1
-
-  if (!hasPermissions) {
-    throw new ContractError('Error: You dont have permissions for this operation.')
-  }
-
   const PR = repo.pullRequests[+payload.prId - 1]
 
   if (!PR) {
@@ -511,6 +505,10 @@ export async function updatePRComment(
 
   if (!commentActivity || commentActivity?.type !== 'COMMENT') {
     throw new ContractError('Comment not found.')
+  }
+
+  if (commentActivity.author !== caller) {
+    throw new ContractError('Error: You dont have permissions for this operation.')
   }
 
   commentActivity.description = payload.comment.description

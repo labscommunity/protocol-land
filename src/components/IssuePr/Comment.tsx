@@ -22,14 +22,14 @@ export default function Comment({ isIssue, issueOrPRId, commentId, item, isContr
   const [isEditing, setIsEditing] = React.useState(false)
   const [isSubmittingDescription, setIsSubmittingDescription] = React.useState(false)
   const [description, setDescription] = React.useState('')
-  const [updateIssueComment, updatePRComment, updateIssueDetails, updatePullRequestDetails] = useGlobalStore(
-    (state) => [
+  const [connectedAddress, updateIssueComment, updatePRComment, updateIssueDetails, updatePullRequestDetails] =
+    useGlobalStore((state) => [
+      state.authState.address,
       state.issuesActions.updateComment,
       state.pullRequestActions.updateComment,
       state.issuesActions.updateIssueDetails,
       state.pullRequestActions.updatePullRequestDetails
-    ]
-  )
+    ])
   const navigate = useNavigate()
 
   async function handleUpdateDescription() {
@@ -86,7 +86,7 @@ export default function Comment({ isIssue, issueOrPRId, commentId, item, isContr
           <span> {formatDistanceToNow(new Date(item.timestamp), { addSuffix: true })}</span>
         </div>
 
-        {isContributor && (
+        {(typeof commentId === 'number' ? connectedAddress === item.author : isContributor) && (
           <Menu as="div" className="relative inline-block text-left">
             <Menu.Button className="inline-flex gap-[2px] w-full justify-center items-center rounded-md px-4 text-sm font-black">
               <span>.</span>

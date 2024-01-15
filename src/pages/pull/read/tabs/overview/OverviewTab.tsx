@@ -203,9 +203,9 @@ export default function OverviewTab() {
           </ol>
         </div>
         <div className="border-t-[1px] border-gray-200">
-          {isLoggedIn && contributor && (
+          {isLoggedIn && (
             <div className="flex flex-col pt-4">
-              {isOpen && (
+              {isOpen && contributor && (
                 <div className="mb-4 border p-4 flex justify-center items-center">
                   <Button
                     onClick={handleMergePullRequest}
@@ -231,7 +231,7 @@ export default function OverviewTab() {
                     onClick={handleClosePullRequest}
                     className="gap-2 justify-center font-medium"
                     variant="secondary"
-                    disabled={isSubmittingClose}
+                    disabled={isSubmittingClose || !contributor}
                     isLoading={isSubmittingClose}
                   >
                     <AiFillCloseCircle className="w-4 h-4" />
@@ -253,7 +253,7 @@ export default function OverviewTab() {
                 <div className="flex w-full justify-center gap-4 py-4">
                   <Button
                     isLoading={isSubmittingClose}
-                    disabled={isSubmittingClose}
+                    disabled={isSubmittingClose || !contributor}
                     onClick={handleReopenPullRequest}
                     variant="primary-solid"
                   >
