@@ -41,6 +41,7 @@ export type PullRequestActions = {
   addReviewers: (id: number, reviewers: string[]) => Promise<void>
   addComment: (id: number, comment: string) => Promise<void>
   approvePR: (id: number) => Promise<void>
+  linkIssue: (id: number, issueId: number) => Promise<void>
 }
 
 export type PRSide = {

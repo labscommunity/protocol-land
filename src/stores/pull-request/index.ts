@@ -7,6 +7,7 @@ import {
   addReviewersToPR,
   approvePR,
   closePullRequest,
+  linkIssueToPR,
   reopenPullRequest,
   updatePullRequestDetails
 } from '@/lib/git/pull-request'
@@ -507,6 +508,46 @@ const createPullRequestSlice: StateCreator<CombinedSlices, [['zustand/immer', ne
           repo_name: repo.name,
           repo_id: repo.id,
           pr_id: id,
+          result: 'FAILED'
+        })
+        throw error
+      }
+    },
+    linkIssue: async (id, issueId) => {
+      const repo = get().repoCoreState.selectedRepo.repo
+
+      if (!repo) {
+        set((state) => (state.pullRequestState.status = 'ERROR'))
+
+        return
+      }
+
+      const { error, response } = await withAsync(() => linkIssueToPR(repo.id, id, issueId))
+
+      if (!error && response) {
+        const activities = response?.activities
+
+        if (!activities || !Array.isArray(activities)) return
+
+        set((state) => {
+          state.repoCoreState.selectedRepo.repo!.pullRequests[id - 1].linkedIssueId = issueId
+        })
+
+        trackGoogleAnalyticsEvent('Repository', 'Link issue to PR', 'Link issue to PR', {
+          repo_name: repo.name,
+          repo_id: repo.id,
+          pr_id: id,
+          issue_id: issueId,
+          result: 'SUCCESS'
+        })
+      }
+
+      if (error) {
+        trackGoogleAnalyticsEvent('Repository', 'Link issue to PR', 'Link issue to PR', {
+          repo_name: repo.name,
+          repo_id: repo.id,
+          pr_id: id,
+          issue_id: issueId,
           result: 'FAILED'
         })
         throw error

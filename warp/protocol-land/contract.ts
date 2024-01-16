@@ -13,6 +13,7 @@ import {
   addReviewersToPR,
   approvePR,
   createNewPullRequest,
+  linkIssueToPR,
   updatePullRequestDetails,
   updatePullRequestStatus
 } from './actions/pull-requests'
@@ -90,6 +91,8 @@ export async function handle(state: ContractState, action: RepositoryAction | Ev
       return await addCommentToPR(state, action as RepositoryAction)
     case 'approvePR':
       return await approvePR(state, action as RepositoryAction)
+    case 'linkIssueToPR':
+      return await linkIssueToPR(state, action as RepositoryAction)
     case 'createIssue':
       return await createNewIssue(state, action as RepositoryAction)
     case 'updateIssueStatus':

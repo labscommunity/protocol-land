@@ -81,6 +81,17 @@ export async function createNewPullRequest(
     pullRequest.id = pullRequestsCount + 1
   }
 
+  if (!isInvalidInput(payload.linkedIssueId, 'number')) {
+    const issue = repo.issues[payload.linkedIssueId - 1]
+    if (issue) {
+      pullRequest.linkedIssueId = payload.linkedIssueId
+      if (!Array.isArray(issue.linkedPRIds)) {
+        issue.linkedPRIds = []
+      }
+      issue.linkedPRIds.push(pullRequest.id)
+    }
+  }
+
   repo.pullRequests.push(pullRequest)
 
   return { state }
@@ -408,6 +419,57 @@ export async function addCommentToPR(
   }
 
   PR.activities.push(comment)
+
+  return { state }
+}
+
+export async function linkIssueToPR(
+  state: ContractState,
+  { caller, input: { payload } }: RepositoryAction
+): Promise<ContractResult<ContractState>> {
+  if (
+    isInvalidInput(payload, 'object') ||
+    isInvalidInput(payload.repoId, 'uuid') ||
+    isInvalidInput(payload.prId, ['number', 'string']) ||
+    isInvalidInput(payload.linkedIssueId, 'number')
+  ) {
+    throw new ContractError('Invalid inputs supplied.')
+  }
+
+  const repo = state.repos[payload.repoId]
+
+  if (!repo) {
+    throw new ContractError('Repository not found.')
+  }
+
+  const PR = repo.pullRequests[+payload.prId - 1]
+
+  if (!PR) {
+    throw new ContractError('Pull Request not found.')
+  }
+
+  const hasPermissions = caller === repo.owner || repo.contributors.indexOf(caller) > -1 || caller === PR.author
+
+  if (!hasPermissions) {
+    throw new ContractError('Error: You dont have permissions for this operation.')
+  }
+
+  const issue = repo.issues[payload.linkedIssueId - 1]
+
+  if (!issue) {
+    throw new ContractError('Issue not found.')
+  }
+
+  if (!isInvalidInput(PR.linkedIssueId, 'number')) {
+    throw new ContractError('Pull Request already linked to issue.')
+  }
+
+  PR.linkedIssueId = payload.linkedIssueId
+
+  if (!Array.isArray(issue.linkedPRIds)) {
+    issue.linkedPRIds = []
+  }
+  issue.linkedPRIds.push(PR.id)
 
   return { state }
 }
