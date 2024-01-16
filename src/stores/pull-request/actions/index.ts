@@ -63,7 +63,14 @@ export async function traverseAndCopyForkObjects(id: string, commits: CommitResu
 
   const packResult = await createPackFile({ fs, dir, oids: oidsToPack })
 
-  await createNewBranch({ fs: targetFs, dir: targetDir, name: `tmp-stage` })
+  try {
+    await createNewBranch({ fs: targetFs, dir: targetDir, name: `tmp-stage` })
+  } catch (error: any) {
+    if (error.code !== 'AlreadyExistsError') {
+      throw new Error(error)
+    }
+  }
+
   await checkoutBranch({ fs: targetFs, dir: targetDir, name: `tmp-stage` })
   const { result: currentBranch, error: currentBranchError } = await getCurrentBranch({ fs: targetFs, dir: targetDir })
 
