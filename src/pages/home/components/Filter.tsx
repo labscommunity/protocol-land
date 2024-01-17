@@ -19,16 +19,16 @@ export default function Filter({ selectedFilters, setSelectedFilters }: FilterPr
   }
 
   return (
-    <div className="w-full max-w-sm px-4">
+    <div className="w-full max-w-sm">
       <Popover className="relative">
         {({ open }) => (
           <>
             <Popover.Button
               className={`
                 ${open ? 'text-white' : 'text-white/90'}
-                group inline-flex items-center rounded-md bg-primary-700 px-3 py-2 text-base font-medium hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-white/75`}
+                group inline-flex items-center rounded-md bg-primary-700 px-[10px] py-2 text-base font-medium hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-white/75`}
             >
-              <FiFilter />
+              <FiFilter className="w-[14px] h-[14px]" />
             </Popover.Button>
             <Transition
               as={Fragment}
@@ -41,7 +41,7 @@ export default function Filter({ selectedFilters, setSelectedFilters }: FilterPr
             >
               <Popover.Panel className="absolute left-1/2 z-10 mt-3 w-screen max-w-xs -translate-x-1/2 transform px-4 sm:px-0">
                 <div className="overflow-hidden rounded-lg shadow-lg ring-1 ring-black/5">
-                  <div className="px-7 py-2 font-medium bg-gray-100">Filter</div>
+                  <div className="px-7 py-2 font-medium bg-gray-100">Filter By</div>
                   <div className="relative gap-5 flex flex-col bg-white px-7 pb-7 pt-5">
                     {Object.entries(selectedFilters).map(([key, value]) => (
                       <div

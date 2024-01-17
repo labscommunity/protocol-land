@@ -295,7 +295,7 @@ export default function Activities({ filters }: ActivitiesProps) {
   }, [filters])
 
   return (
-    <div className="w-full mt-10">
+    <div className="w-full">
       <div className="flex flex-col gap-8">
         {activities.map((activity, index) => {
           if (activity.type === 'REPOSITORY') {
