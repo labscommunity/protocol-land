@@ -33,7 +33,7 @@ export default function PullRequestActivity({ activity, setIsForkModalOpen, setR
           className="text-base font-medium flex gap-2"
         >
           <span>{pullRequest?.title ?? ''}</span>
-          <span className="text-gray-400">#{pullRequest?.id}</span>
+          {pullRequest?.id && <span className="text-gray-400">#{pullRequest?.id}</span>}
         </Link>
         <div className="flex gap-1 flex-shrink-0 items-center text-sm">
           <div
