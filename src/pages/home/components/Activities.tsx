@@ -174,7 +174,12 @@ export default function Activities({ filters }: ActivitiesProps) {
           return {
             type: 'ISSUE',
             repo,
-            issue,
+            issue: {
+              ...issue,
+              timestamp: interaction.timestamp * 1000,
+              author: interaction.owner,
+              status: payload.status === 'REOPEN' ? 'OPEN' : 'COMPLETED'
+            },
             created,
             timestamp: interaction.timestamp
           } as IssueActivityType

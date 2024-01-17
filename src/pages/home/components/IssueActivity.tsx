@@ -39,14 +39,13 @@ export default function IssueActivity({ activity, setIsForkModalOpen, setRepo }:
         <div className="flex gap-1 flex-shrink-0 items-center text-sm">
           <div className={clsx('h-2 w-2 rounded-full', isOpen ? 'bg-[#38a457]' : 'bg-purple-700')}></div>
           Issue
-          {isOpen && <span>opened</span>}
+          {isOpen ? <span>{activity.created ? 'opened' : 'reopened'}</span> : <span>was closed</span>}
           <span>
             by{' '}
             <Link className="text-primary-600 hover:text-primary-700" to={`/user/${issue.author}`}>
               {shortenAddress(issue.author)}
             </Link>
           </span>
-          {!isOpen && <span>was closed</span>}
           {isOpen && issue.timestamp && (
             <span>{formatDistanceToNow(new Date(issue.timestamp), { addSuffix: true })}</span>
           )}
