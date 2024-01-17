@@ -71,7 +71,7 @@ export default function Home() {
         <Sidebar repos={userRepos} isLoading={fetchUserReposStatus === 'PENDING'} setIsRepoModalOpen={setIsOpen} />
         <MainContent>
           <div className="w-[70%] lg:w-[85%] xl:w-[80%] 2xl:w-[70%] py-8 flex flex-col gap-8">
-            <div className="flex gap-4 w-full">
+            <div className="flex gap-8 w-full">
               <div
                 className={
                   'bg-primary-100 p-6 min-h-[200px] w-full flex flex-col items-center gap-4 justify-center rounded-2xl border-[1px] border-primary-200'
