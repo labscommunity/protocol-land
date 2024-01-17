@@ -1,0 +1,357 @@
+import { useEffect, useState } from 'react'
+
+import { Button } from '@/components/common/buttons'
+import { CONTRACT_TX_ID } from '@/helpers/constants'
+import { withAsync } from '@/helpers/withAsync'
+import ForkModal from '@/pages/repository/components/ForkModal'
+import { ActivitiesProps, ActivityInteraction, Interactions, Paging, ValidityResponse } from '@/types/explore'
+import { ActivityType, Repo } from '@/types/repository'
+
+import BountyActivity from './BountyActivity'
+import DeploymentActivity from './DeploymentActivity'
+import IssueActivity from './IssueActivity'
+import PullRequestActivity from './PullRequestActivity'
+import RepositoryActivity from './RepositoryActivity'
+
+const repositoryInteractionFunctions = [
+  'initialize',
+  'forkRepository',
+  'acceptContributorInvite',
+  'addContributor',
+  'cancelContributorInvite',
+  'inviteContributor',
+  'rejectContributorInvite',
+  'updatePrivateStateTx',
+  'updateRepositoryDetails',
+  'updateRepositoryTxId'
+]
+
+const deploymentInteractionFunctions = ['addDeployment']
+
+const domainInteractionFunctions = ['addDomain', 'updateDomain']
+
+const issueInteractionFunctions = [
+  'createIssue',
+  // 'addAssigneeToIssue',
+  // 'addCommentToIssue',
+  // 'updateIssueDetails',
+  'updateIssueStatus'
+]
+
+const pullRequestInteractionFunctions = [
+  // 'addCommentToPR',
+  // 'addReviewersToPR',
+  // 'approvePR',
+  'createPullRequest',
+  // 'linkIssueToPR',
+  // 'updatePullRequestDetails',
+  'updatePullRequestStatus'
+]
+
+const bountyInteractionFunctions = ['createNewBounty', 'updateBounty']
+
+export default function Activities({ filters }: ActivitiesProps) {
+  const [currentPage, setCurrentPage] = useState(1)
+  const [hasNextPage, setHasNextPage] = useState(true)
+  const [isLoading, setIsLoading] = useState(false)
+  const [interactions, setInteractions] = useState<ActivityInteraction[]>([])
+  const [repo, setRepo] = useState<Repo>()
+  const [isForkModalOpen, setIsForkModalOpen] = useState(false)
+
+  function getValueFromTags(tags: Array<{ name: string; value: string }>, name: string) {
+    const tag = tags.find((tag) => tag.name === name)
+
+    return tag ? tag.value : ''
+  }
+
+  async function fetchInteractions() {
+    setIsLoading(true)
+    const { error, response } = await withAsync(() =>
+      fetch(
+        `https://gw.warp.cc/sonar/gateway/interactions-sonar?contractId=${CONTRACT_TX_ID}&limit=15&totalCount=true&page=${currentPage}`
+      )
+    )
+
+    if (error || !response) {
+      setIsLoading(false)
+      return
+    }
+
+    const { paging, interactions } = (await response.json()) as { paging: Paging; interactions: Interactions }
+
+    const { response: validityResponse, error: validityError } = await withAsync(() =>
+      fetch(
+        `https://dre-1.warp.cc/contract?id=${CONTRACT_TX_ID}&validity=true&errorMessages=true&limit=15&page=${currentPage}`
+      )
+    )
+
+    if (validityError || !validityResponse) {
+      setIsLoading(false)
+      return
+    }
+
+    setHasNextPage(paging.pages !== currentPage)
+
+    const { validity, state } = (await validityResponse.json()) as ValidityResponse
+    const validInteractions = interactions
+      .filter(({ interaction }) => validity[interaction.id])
+      .map(({ interaction }) => ({
+        timestamp: +interaction.block.timestamp,
+        owner: interaction.owner.address,
+        input: JSON.parse(getValueFromTags(interaction.tags, 'Input'))
+      }))
+
+    let allInteractions = [] as ActivityInteraction[]
+
+    if (filters.Repositories) {
+      const repositoryInteractions = validInteractions
+        .filter((interaction) => repositoryInteractionFunctions.includes(interaction.input.function))
+        .map((interaction) => {
+          const { payload } = interaction.input
+          const created = ['forkRepository', 'initialize'].includes(interaction.input.function)
+          return {
+            type: 'REPOSITORY' as ActivityType,
+            repo: state.repos[payload.id ?? payload.repoId],
+            created,
+            timestamp: interaction.timestamp
+          } as unknown as ActivityInteraction
+        })
+      allInteractions = [...allInteractions, ...repositoryInteractions]
+    }
+
+    if (filters.Issues) {
+      const issueInteractions = validInteractions
+        .filter((interaction) => issueInteractionFunctions.includes(interaction.input.function))
+        .map((interaction) => {
+          const { payload } = interaction.input
+          const repo = state.repos[payload.repoId]
+          const created = interaction.input.function === 'createIssue'
+          const issue = created
+            ? {
+                id: '',
+                repoId: repo.id,
+                title: payload.title,
+                description: payload.description ?? '',
+                author: interaction.owner,
+                status: 'OPEN',
+                timestamp: interaction.timestamp * 1000,
+                assignees: [],
+                activities: [],
+                bounties: [],
+                linkedPRIds: []
+              }
+            : repo.issues[+payload.issueId - 1]
+          return {
+            type: 'ISSUE' as ActivityType,
+            repo,
+            issue,
+            created,
+            timestamp: interaction.timestamp
+          } as unknown as ActivityInteraction
+        })
+      allInteractions = [...allInteractions, ...issueInteractions]
+    }
+
+    if (filters['Pull Requests']) {
+      const pullRequestInteractions = validInteractions
+        .filter((interaction) => pullRequestInteractionFunctions.includes(interaction.input.function))
+        .map((interaction) => {
+          const { payload } = interaction.input
+          const repo = state.repos[payload.repoId]
+          const created = interaction.input.function === 'createPullRequest'
+          const pullRequest = created
+            ? {
+                id: '',
+                repoId: payload.repoId,
+                title: payload.title,
+                description: payload.description ?? '',
+                baseBranch: payload.baseBranch,
+                compareBranch: payload.compareBranch,
+                baseBranchOid: payload.baseBranchOid,
+                author: interaction.owner,
+                status: 'OPEN',
+                reviewers: [],
+                activities: [],
+                timestamp: interaction.timestamp * 1000,
+                baseRepo: payload.baseRepo,
+                compareRepo: payload.compareRepo
+              }
+            : repo.pullRequests[+payload.prId - 1]
+          return {
+            type: 'PULL_REQUEST' as ActivityType,
+            repo,
+            pullRequest,
+            created,
+            timestamp: interaction.timestamp
+          } as unknown as ActivityInteraction
+        })
+      allInteractions = [...allInteractions, ...pullRequestInteractions]
+    }
+
+    if (filters.Bounties) {
+      const bountiesInteractions = validInteractions
+        .filter((interaction) => bountyInteractionFunctions.includes(interaction.input.function))
+        .map((interaction) => {
+          const { payload } = interaction.input
+          const repo = state.repos[payload.repoId]
+          const issue = repo.issues[+payload.issueId - 1]
+          const created = interaction.input.function === 'createNewBounty'
+          const bounty = created
+            ? {
+                id: '',
+                amount: payload.amount,
+                expiry: payload.expiry,
+                paymentTxId: null,
+                status: 'ACTIVE',
+                timestamp: interaction.timestamp * 1000
+              }
+            : issue.bounties[+payload.bountyId - 1]
+          return {
+            type: 'BOUNTY' as ActivityType,
+            repo,
+            bounty,
+            issue,
+            created,
+            timestamp: interaction.timestamp
+          } as unknown as ActivityInteraction
+        })
+
+      allInteractions = [...allInteractions, ...bountiesInteractions]
+    }
+
+    if (filters.Deployments) {
+      const deploymentInteractions = validInteractions
+        .filter((interaction) => deploymentInteractionFunctions.includes(interaction.input.function))
+        .map((interaction) => {
+          const { payload } = interaction.input
+          const repo = state.repos[payload.id]
+          const created = interaction.input.function === 'addDeployment'
+          const deployment = {
+            txId: payload.deployment.txId,
+            branch: repo.deploymentBranch,
+            deployedBy: interaction.owner,
+            commitOid: payload.deployment.commitOid,
+            commitMessage: payload.deployment.commitMessage,
+            timestamp: interaction.timestamp * 1000
+          }
+
+          return {
+            type: 'DEPLOYMENT' as ActivityType,
+            repo,
+            deployment,
+            created,
+            timestamp: interaction.timestamp
+          } as unknown as ActivityInteraction
+        })
+      allInteractions = [...allInteractions, ...deploymentInteractions]
+    }
+
+    if (filters.Domains) {
+      const domainInteractions = validInteractions
+        .filter((interaction) => domainInteractionFunctions.includes(interaction.input.function))
+        .map((interaction) => {
+          const { payload } = interaction.input
+          const repo = state.repos[payload.repoId]
+          const created = interaction.input.function === 'addDomain'
+          const domain = created
+            ? {
+                txId: payload.domain.txId,
+                name: payload.domain.name,
+                contractTxId: payload.domain.contractTxId,
+                controller: interaction.owner,
+                timestamp: interaction.timestamp * 1000
+              }
+            : repo.domains.find((d) => d.name === payload.domain.name || d.contractTxId === payload.domain.contractTxId)
+
+          return {
+            type: 'DOMAIN' as ActivityType,
+            repo,
+            domain,
+            created,
+            timestamp: interaction.timestamp
+          } as unknown as ActivityInteraction
+        })
+      allInteractions = [...allInteractions, ...domainInteractions]
+    }
+
+    setInteractions((previousInteractions) =>
+      [...previousInteractions, ...allInteractions].sort((a, b) => b.timestamp - a.timestamp)
+    )
+
+    setCurrentPage((page) => page + 1)
+    setIsLoading(false)
+  }
+
+  useEffect(() => {
+    // fetchInteractions()
+  }, [])
+
+  return (
+    <div className="w-full mt-10">
+      <div className="flex flex-col gap-8">
+        {interactions.map((interaction, index) => {
+          if (interaction.type === 'REPOSITORY') {
+            return (
+              <RepositoryActivity
+                key={`interaction-${index}`}
+                activity={interaction}
+                setIsForkModalOpen={setIsForkModalOpen}
+                setRepo={setRepo}
+              />
+            )
+          } else if (interaction.type === 'ISSUE') {
+            return (
+              <IssueActivity
+                key={`interaction-${index}`}
+                activity={interaction}
+                setIsForkModalOpen={setIsForkModalOpen}
+                setRepo={setRepo}
+              />
+            )
+          } else if (interaction.type === 'PULL_REQUEST') {
+            return (
+              <PullRequestActivity
+                key={`interaction-${index}`}
+                activity={interaction}
+                setIsForkModalOpen={setIsForkModalOpen}
+                setRepo={setRepo}
+              />
+            )
+          } else if (interaction.type === 'BOUNTY') {
+            return (
+              <BountyActivity
+                key={`interaction-${index}`}
+                activity={interaction}
+                setIsForkModalOpen={setIsForkModalOpen}
+                setRepo={setRepo}
+              />
+            )
+          } else if (interaction.type === 'DEPLOYMENT') {
+            return (
+              <DeploymentActivity
+                key={`interaction-${index}`}
+                activity={interaction}
+                setIsForkModalOpen={setIsForkModalOpen}
+                setRepo={setRepo}
+              />
+            )
+          }
+          return null
+        })}
+      </div>
+      {hasNextPage && (
+        <div className="w-full flex mt-4 justify-center" onClick={fetchInteractions}>
+          <Button
+            variant="primary-outline"
+            loadingText={interactions.length === 0 ? 'Loading' : 'Loading more'}
+            isLoading={isLoading}
+            disabled={isLoading || !hasNextPage}
+          >
+            Load more
+          </Button>
+        </div>
+      )}
+      {repo && <ForkModal isOpen={isForkModalOpen} setIsOpen={setIsForkModalOpen} repo={repo} />}
+    </div>
+  )
+}

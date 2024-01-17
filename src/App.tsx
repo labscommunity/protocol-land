@@ -4,6 +4,7 @@ import { HashRouter, Route, Routes } from 'react-router-dom'
 import AppLayout from './layouts/AppLayout'
 import Article from './pages/blog/Article'
 import Blog from './pages/blog/BlogList'
+import Explore from './pages/explore/Explore'
 import Home from './pages/home/Home'
 import { CreateIssuePage, ReadIssuePage } from './pages/issue'
 import Profile from './pages/profile/Profile'
@@ -24,6 +25,7 @@ function App() {
     <HashRouter>
       <Routes>
         <Route index path="/" element={<AppLayout Component={Home} />} />
+        <Route path="/explore" element={<AppLayout Component={Explore} />} />
         <Route path="/blog" element={<Blog />} />
         <Route path="/blog/:slug" element={<Article />} />
         <Route path="/user/:id" element={<AppLayout Component={Profile} />} />
