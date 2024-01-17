@@ -4,7 +4,7 @@ import { Button } from '@/components/common/buttons'
 import { CONTRACT_TX_ID } from '@/helpers/constants'
 import { withAsync } from '@/helpers/withAsync'
 import ForkModal from '@/pages/repository/components/ForkModal'
-import { ActivitiesProps, ActivityInteraction, Interactions, Paging, ValidityResponse } from '@/types/explore'
+import { Activity, Filters, Interactions, Paging, ValidityResponse } from '@/types/explore'
 import { ActivityType, Repo } from '@/types/repository'
 
 import BountyActivity from './BountyActivity'
@@ -50,11 +50,15 @@ const pullRequestInteractionFunctions = [
 
 const bountyInteractionFunctions = ['createNewBounty', 'updateBounty']
 
+interface ActivitiesProps {
+  filters: Filters
+}
+
 export default function Activities({ filters }: ActivitiesProps) {
   const [currentPage, setCurrentPage] = useState(1)
   const [hasNextPage, setHasNextPage] = useState(true)
   const [isLoading, setIsLoading] = useState(false)
-  const [interactions, setInteractions] = useState<ActivityInteraction[]>([])
+  const [activities, setActivities] = useState<Activity[]>([])
   const [repo, setRepo] = useState<Repo>()
   const [isForkModalOpen, setIsForkModalOpen] = useState(false)
 
@@ -64,7 +68,7 @@ export default function Activities({ filters }: ActivitiesProps) {
     return tag ? tag.value : ''
   }
 
-  async function fetchInteractions() {
+  async function fetchActivities() {
     setIsLoading(true)
     const { error, response } = await withAsync(() =>
       fetch(
@@ -101,10 +105,10 @@ export default function Activities({ filters }: ActivitiesProps) {
         input: JSON.parse(getValueFromTags(interaction.tags, 'Input'))
       }))
 
-    let allInteractions = [] as ActivityInteraction[]
+    let allActivities = [] as Activity[]
 
     if (filters.Repositories) {
-      const repositoryInteractions = validInteractions
+      const repositoryActivities = validInteractions
         .filter((interaction) => repositoryInteractionFunctions.includes(interaction.input.function))
         .map((interaction) => {
           const { payload } = interaction.input
@@ -114,13 +118,13 @@ export default function Activities({ filters }: ActivitiesProps) {
             repo: state.repos[payload.id ?? payload.repoId],
             created,
             timestamp: interaction.timestamp
-          } as unknown as ActivityInteraction
+          } as unknown as Activity
         })
-      allInteractions = [...allInteractions, ...repositoryInteractions]
+      allActivities = [...allActivities, ...repositoryActivities]
     }
 
     if (filters.Issues) {
-      const issueInteractions = validInteractions
+      const issueActivities = validInteractions
         .filter((interaction) => issueInteractionFunctions.includes(interaction.input.function))
         .map((interaction) => {
           const { payload } = interaction.input
@@ -147,13 +151,13 @@ export default function Activities({ filters }: ActivitiesProps) {
             issue,
             created,
             timestamp: interaction.timestamp
-          } as unknown as ActivityInteraction
+          } as unknown as Activity
         })
-      allInteractions = [...allInteractions, ...issueInteractions]
+      allActivities = [...allActivities, ...issueActivities]
     }
 
     if (filters['Pull Requests']) {
-      const pullRequestInteractions = validInteractions
+      const pullRequestActivities = validInteractions
         .filter((interaction) => pullRequestInteractionFunctions.includes(interaction.input.function))
         .map((interaction) => {
           const { payload } = interaction.input
@@ -183,13 +187,13 @@ export default function Activities({ filters }: ActivitiesProps) {
             pullRequest,
             created,
             timestamp: interaction.timestamp
-          } as unknown as ActivityInteraction
+          } as unknown as Activity
         })
-      allInteractions = [...allInteractions, ...pullRequestInteractions]
+      allActivities = [...allActivities, ...pullRequestActivities]
     }
 
     if (filters.Bounties) {
-      const bountiesInteractions = validInteractions
+      const bountiesActivities = validInteractions
         .filter((interaction) => bountyInteractionFunctions.includes(interaction.input.function))
         .map((interaction) => {
           const { payload } = interaction.input
@@ -213,14 +217,14 @@ export default function Activities({ filters }: ActivitiesProps) {
             issue,
             created,
             timestamp: interaction.timestamp
-          } as unknown as ActivityInteraction
+          } as unknown as Activity
         })
 
-      allInteractions = [...allInteractions, ...bountiesInteractions]
+      allActivities = [...allActivities, ...bountiesActivities]
     }
 
     if (filters.Deployments) {
-      const deploymentInteractions = validInteractions
+      const deploymentActivities = validInteractions
         .filter((interaction) => deploymentInteractionFunctions.includes(interaction.input.function))
         .map((interaction) => {
           const { payload } = interaction.input
@@ -241,13 +245,13 @@ export default function Activities({ filters }: ActivitiesProps) {
             deployment,
             created,
             timestamp: interaction.timestamp
-          } as unknown as ActivityInteraction
+          } as unknown as Activity
         })
-      allInteractions = [...allInteractions, ...deploymentInteractions]
+      allActivities = [...allActivities, ...deploymentActivities]
     }
 
     if (filters.Domains) {
-      const domainInteractions = validInteractions
+      const domainActivities = validInteractions
         .filter((interaction) => domainInteractionFunctions.includes(interaction.input.function))
         .map((interaction) => {
           const { payload } = interaction.input
@@ -269,13 +273,13 @@ export default function Activities({ filters }: ActivitiesProps) {
             domain,
             created,
             timestamp: interaction.timestamp
-          } as unknown as ActivityInteraction
+          } as unknown as Activity
         })
-      allInteractions = [...allInteractions, ...domainInteractions]
+      allActivities = [...allActivities, ...domainActivities]
     }
 
-    setInteractions((previousInteractions) =>
-      [...previousInteractions, ...allInteractions].sort((a, b) => b.timestamp - a.timestamp)
+    setActivities((previousActivities) =>
+      [...previousActivities, ...allActivities].sort((a, b) => b.timestamp - a.timestamp)
     )
 
     setCurrentPage((page) => page + 1)
@@ -285,55 +289,55 @@ export default function Activities({ filters }: ActivitiesProps) {
   useEffect(() => {
     setCurrentPage(1)
     setHasNextPage(true)
-    setInteractions([])
-    fetchInteractions()
+    setActivities([])
+    fetchActivities()
   }, [filters])
 
   return (
     <div className="w-full mt-10">
       <div className="flex flex-col gap-8">
-        {interactions.map((interaction, index) => {
-          if (interaction.type === 'REPOSITORY') {
+        {activities.map((activity, index) => {
+          if (activity.type === 'REPOSITORY') {
             return (
               <RepositoryActivity
-                key={`interaction-${index}`}
-                activity={interaction}
+                key={`activity-${index}`}
+                activity={activity}
                 setIsForkModalOpen={setIsForkModalOpen}
                 setRepo={setRepo}
               />
             )
-          } else if (interaction.type === 'ISSUE') {
+          } else if (activity.type === 'ISSUE') {
             return (
               <IssueActivity
-                key={`interaction-${index}`}
-                activity={interaction}
+                key={`activity-${index}`}
+                activity={activity}
                 setIsForkModalOpen={setIsForkModalOpen}
                 setRepo={setRepo}
               />
             )
-          } else if (interaction.type === 'PULL_REQUEST') {
+          } else if (activity.type === 'PULL_REQUEST') {
             return (
               <PullRequestActivity
-                key={`interaction-${index}`}
-                activity={interaction}
+                key={`activity-${index}`}
+                activity={activity}
                 setIsForkModalOpen={setIsForkModalOpen}
                 setRepo={setRepo}
               />
             )
-          } else if (interaction.type === 'BOUNTY') {
+          } else if (activity.type === 'BOUNTY') {
             return (
               <BountyActivity
-                key={`interaction-${index}`}
-                activity={interaction}
+                key={`activity-${index}`}
+                activity={activity}
                 setIsForkModalOpen={setIsForkModalOpen}
                 setRepo={setRepo}
               />
             )
-          } else if (interaction.type === 'DEPLOYMENT') {
+          } else if (activity.type === 'DEPLOYMENT') {
             return (
               <DeploymentActivity
-                key={`interaction-${index}`}
-                activity={interaction}
+                key={`activity-${index}`}
+                activity={activity}
                 setIsForkModalOpen={setIsForkModalOpen}
                 setRepo={setRepo}
               />
@@ -343,10 +347,10 @@ export default function Activities({ filters }: ActivitiesProps) {
         })}
       </div>
       {hasNextPage && (
-        <div className="w-full flex mt-4 justify-center" onClick={fetchInteractions}>
+        <div className="w-full flex mt-4 justify-center" onClick={fetchActivities}>
           <Button
             variant="primary-outline"
-            loadingText={interactions.length === 0 ? 'Loading' : 'Loading more'}
+            loadingText={activities.length === 0 ? 'Loading' : 'Loading more'}
             isLoading={isLoading}
             disabled={isLoading || !hasNextPage}
           >

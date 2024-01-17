@@ -1,20 +1,12 @@
 import { formatDistanceToNow } from 'date-fns'
-import { Dispatch, SetStateAction } from 'react'
 import { Link } from 'react-router-dom'
 
 import { shortenAddress } from '@/helpers/shortenAddress'
-import { ActivityInteraction } from '@/types/explore'
-import { Repo } from '@/types/repository'
+import { ActivityProps } from '@/types/explore'
 
 import ForkButton from './ForkButton'
 
-interface RepositoryActivityProps {
-  activity: ActivityInteraction
-  setIsForkModalOpen: Dispatch<SetStateAction<boolean>>
-  setRepo: Dispatch<SetStateAction<Repo | undefined>>
-}
-
-export default function RepositoryActivity({ activity, setIsForkModalOpen, setRepo }: RepositoryActivityProps) {
+export default function RepositoryActivity({ activity, setIsForkModalOpen, setRepo }: ActivityProps) {
   return (
     <div className="w-full flex justify-between items-start border border-primary-500 rounded-md p-4">
       <div className="flex flex-col gap-1">

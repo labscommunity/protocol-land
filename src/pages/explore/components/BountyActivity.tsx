@@ -1,19 +1,11 @@
 import { formatDistanceToNow } from 'date-fns'
-import { Dispatch, SetStateAction } from 'react'
 import { TbMoneybag } from 'react-icons/tb'
 import { Link } from 'react-router-dom'
 
 import { shortenAddress } from '@/helpers/shortenAddress'
-import { ActivityInteraction } from '@/types/explore'
-import { Repo } from '@/types/repository'
+import { ActivityProps } from '@/types/explore'
 
 import ForkButton from './ForkButton'
-
-interface BountyActivityProps {
-  activity: ActivityInteraction
-  setIsForkModalOpen: Dispatch<SetStateAction<boolean>>
-  setRepo: Dispatch<SetStateAction<Repo | undefined>>
-}
 
 const STATUS_TO_ICON_MAP = {
   ACTIVE: () => <TbMoneybag className="w-4 h-4 text-green-700" />,
@@ -22,7 +14,7 @@ const STATUS_TO_ICON_MAP = {
   CLAIMED: () => <TbMoneybag className="w-4 h-4 text-purple-700" />
 }
 
-export default function BountyActivity({ activity, setIsForkModalOpen, setRepo }: BountyActivityProps) {
+export default function BountyActivity({ activity, setIsForkModalOpen, setRepo }: ActivityProps) {
   const bounty = activity.bounty!
   const isActive = new Date().getTime() < bounty.expiry * 1000 && activity.bounty?.status === 'ACTIVE'
 

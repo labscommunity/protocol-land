@@ -4,11 +4,11 @@ import { FaCodeFork } from 'react-icons/fa6'
 
 import { Button } from '@/components/common/buttons'
 import { useGlobalStore } from '@/stores/globalStore'
-import { ActivityInteraction } from '@/types/explore'
+import { Activity } from '@/types/explore'
 import { Repo } from '@/types/repository'
 
 interface ForkButtonProps {
-  activity: ActivityInteraction
+  activity: Activity
   setIsForkModalOpen: Dispatch<SetStateAction<boolean>>
   setRepo: Dispatch<SetStateAction<Repo | undefined>>
 }

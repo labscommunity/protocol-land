@@ -1,21 +1,13 @@
 import clsx from 'clsx'
 import { formatDistanceToNow } from 'date-fns'
-import { Dispatch, SetStateAction } from 'react'
 import { Link } from 'react-router-dom'
 
 import { shortenAddress } from '@/helpers/shortenAddress'
-import { ActivityInteraction } from '@/types/explore'
-import { Repo } from '@/types/repository'
+import { ActivityProps } from '@/types/explore'
 
 import ForkButton from './ForkButton'
 
-interface PullRequestActivityProps {
-  activity: ActivityInteraction
-  setIsForkModalOpen: Dispatch<SetStateAction<boolean>>
-  setRepo: Dispatch<SetStateAction<Repo | undefined>>
-}
-
-export default function PullRequestActivity({ activity, setIsForkModalOpen, setRepo }: PullRequestActivityProps) {
+export default function PullRequestActivity({ activity, setIsForkModalOpen, setRepo }: ActivityProps) {
   const pullRequest = activity.pullRequest!
 
   return (

@@ -3,18 +3,11 @@ import { Dispatch, SetStateAction } from 'react'
 import { Link } from 'react-router-dom'
 
 import { shortenAddress } from '@/helpers/shortenAddress'
-import { ActivityInteraction } from '@/types/explore'
-import { Repo } from '@/types/repository'
+import { ActivityProps } from '@/types/explore'
 
 import ForkButton from './ForkButton'
 
-interface DeploymentActivityProps {
-  activity: ActivityInteraction
-  setIsForkModalOpen: Dispatch<SetStateAction<boolean>>
-  setRepo: Dispatch<SetStateAction<Repo | undefined>>
-}
-
-export default function DeploymentActivity({ activity, setIsForkModalOpen, setRepo }: DeploymentActivityProps) {
+export default function DeploymentActivity({ activity, setIsForkModalOpen, setRepo }: ActivityProps) {
   const deployment = activity.deployment!
 
   return (

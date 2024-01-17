@@ -1,3 +1,4 @@
+import { Dispatch, SetStateAction } from 'react'
 import { Tag } from 'warp-contracts/web'
 
 import { Bounty, Deployment, Domain, Issue, PullRequest, Repo } from '@/types/repository'
@@ -34,10 +35,6 @@ export interface ValidityResponse {
   }
 }
 
-export interface ActivitiesProps {
-  filters: Filters
-}
-
 export type Filters = {
   Repositories: boolean
   'Pull Requests': boolean
@@ -47,7 +44,7 @@ export type Filters = {
   Deployments: boolean
 }
 
-export type ActivityInteraction = {
+export type Activity = {
   type: ActivityType
   repo: Repo
   timestamp: number
@@ -57,4 +54,10 @@ export type ActivityInteraction = {
   bounty?: Bounty
   deployment?: Deployment
   domain?: Domain
+}
+
+export interface ActivityProps {
+  activity: Activity
+  setIsForkModalOpen: Dispatch<SetStateAction<boolean>>
+  setRepo: Dispatch<SetStateAction<Repo | undefined>>
 }
