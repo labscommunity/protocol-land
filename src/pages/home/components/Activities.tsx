@@ -304,6 +304,9 @@ export default function Activities({ filters }: ActivitiesProps) {
       allActivities = [...allActivities, ...domainActivities]
     }
 
+    // Filter out all private repos activities
+    allActivities = allActivities.filter((activity) => !activity?.repo?.private)
+
     setActivities((previousActivities) =>
       [...previousActivities, ...allActivities].sort((a, b) => b.timestamp - a.timestamp)
     )
