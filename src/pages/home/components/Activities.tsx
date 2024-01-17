@@ -69,11 +69,13 @@ export default function Activities({ filters }: ActivitiesProps) {
     return tag ? tag.value : ''
   }
 
-  async function fetchActivities() {
+  async function fetchActivities(page?: number) {
     setIsLoading(true)
     const { error, response } = await withAsync(() =>
       fetch(
-        `https://gw.warp.cc/sonar/gateway/interactions-sonar?contractId=${CONTRACT_TX_ID}&limit=15&totalCount=true&page=${currentPage}`
+        `https://gw.warp.cc/sonar/gateway/interactions-sonar?contractId=${CONTRACT_TX_ID}&limit=15&totalCount=true&page=${
+          page ?? currentPage
+        }`
       )
     )
 
@@ -86,7 +88,9 @@ export default function Activities({ filters }: ActivitiesProps) {
 
     const { response: validityResponse, error: validityError } = await withAsync(() =>
       fetch(
-        `https://dre-1.warp.cc/contract?id=${CONTRACT_TX_ID}&validity=true&errorMessages=true&limit=15&page=${currentPage}`
+        `https://dre-1.warp.cc/contract?id=${CONTRACT_TX_ID}&validity=true&errorMessages=true&limit=15&page=${
+          page ?? currentPage
+        }`
       )
     )
 
@@ -291,7 +295,7 @@ export default function Activities({ filters }: ActivitiesProps) {
     setCurrentPage(1)
     setHasNextPage(true)
     setActivities([])
-    fetchActivities()
+    fetchActivities(1)
   }, [filters])
 
   return (
@@ -357,7 +361,7 @@ export default function Activities({ filters }: ActivitiesProps) {
         })}
       </div>
       {hasNextPage && (
-        <div className="w-full flex mt-4 justify-center" onClick={fetchActivities}>
+        <div className="w-full flex mt-4 justify-center" onClick={() => fetchActivities()}>
           <Button
             variant="primary-outline"
             loadingText={activities.length === 0 ? 'Loading' : 'Loading more'}
