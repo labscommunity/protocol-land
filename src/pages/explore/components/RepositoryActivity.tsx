@@ -11,7 +11,7 @@ import ForkButton from './ForkButton'
 interface RepositoryActivityProps {
   activity: ActivityInteraction
   setIsForkModalOpen: Dispatch<SetStateAction<boolean>>
-  setRepo: Dispatch<SetStateAction<Repo>>
+  setRepo: Dispatch<SetStateAction<Repo | undefined>>
 }
 
 export default function RepositoryActivity({ activity, setIsForkModalOpen, setRepo }: RepositoryActivityProps) {

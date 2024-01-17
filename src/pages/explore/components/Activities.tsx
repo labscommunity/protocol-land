@@ -251,7 +251,7 @@ export default function Activities({ filters }: ActivitiesProps) {
         .filter((interaction) => domainInteractionFunctions.includes(interaction.input.function))
         .map((interaction) => {
           const { payload } = interaction.input
-          const repo = state.repos[payload.repoId]
+          const repo = state.repos[payload.id]
           const created = interaction.input.function === 'addDomain'
           const domain = created
             ? {
@@ -283,8 +283,11 @@ export default function Activities({ filters }: ActivitiesProps) {
   }
 
   useEffect(() => {
-    // fetchInteractions()
-  }, [])
+    setCurrentPage(1)
+    setHasNextPage(true)
+    setInteractions([])
+    fetchInteractions()
+  }, [filters])
 
   return (
     <div className="w-full mt-10">

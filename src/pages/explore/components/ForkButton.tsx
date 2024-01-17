@@ -10,7 +10,7 @@ import { Repo } from '@/types/repository'
 interface ForkButtonProps {
   activity: ActivityInteraction
   setIsForkModalOpen: Dispatch<SetStateAction<boolean>>
-  setRepo: Dispatch<SetStateAction<Repo>>
+  setRepo: Dispatch<SetStateAction<Repo | undefined>>
 }
 
 export default function ForkButton({ activity, setIsForkModalOpen, setRepo }: ForkButtonProps) {

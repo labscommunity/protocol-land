@@ -12,7 +12,7 @@ import ForkButton from './ForkButton'
 interface BountyActivityProps {
   activity: ActivityInteraction
   setIsForkModalOpen: Dispatch<SetStateAction<boolean>>
-  setRepo: Dispatch<SetStateAction<Repo>>
+  setRepo: Dispatch<SetStateAction<Repo | undefined>>
 }
 
 const STATUS_TO_ICON_MAP = {

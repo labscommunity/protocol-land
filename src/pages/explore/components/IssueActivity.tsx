@@ -12,7 +12,7 @@ import ForkButton from './ForkButton'
 interface IssueActivityProps {
   activity: ActivityInteraction
   setIsForkModalOpen: Dispatch<SetStateAction<boolean>>
-  setRepo: Dispatch<SetStateAction<Repo>>
+  setRepo: Dispatch<SetStateAction<Repo | undefined>>
 }
 
 export default function IssueActivity({ activity, setIsForkModalOpen, setRepo }: IssueActivityProps) {
