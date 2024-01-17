@@ -51,6 +51,15 @@ const pullRequestInteractionFunctions = [
 
 const bountyInteractionFunctions = ['createNewBounty', 'updateBounty']
 
+const ACTIVITY_TO_COMPONENT = {
+  REPOSITORY: RepositoryActivity,
+  ISSUE: IssueActivity,
+  PULL_REQUEST: PullRequestActivity,
+  BOUNTY: BountyActivity,
+  DEPLOYMENT: DeploymentActivity,
+  DOMAIN: DomainActivity
+}
+
 interface ActivitiesProps {
   filters: Filters
 }
@@ -302,62 +311,15 @@ export default function Activities({ filters }: ActivitiesProps) {
     <div className="w-full">
       <div className="flex flex-col gap-8">
         {activities.map((activity, index) => {
-          if (activity.type === 'REPOSITORY') {
-            return (
-              <RepositoryActivity
-                key={`activity-${index}`}
-                activity={activity}
-                setIsForkModalOpen={setIsForkModalOpen}
-                setRepo={setRepo}
-              />
-            )
-          } else if (activity.type === 'ISSUE') {
-            return (
-              <IssueActivity
-                key={`activity-${index}`}
-                activity={activity}
-                setIsForkModalOpen={setIsForkModalOpen}
-                setRepo={setRepo}
-              />
-            )
-          } else if (activity.type === 'PULL_REQUEST') {
-            return (
-              <PullRequestActivity
-                key={`activity-${index}`}
-                activity={activity}
-                setIsForkModalOpen={setIsForkModalOpen}
-                setRepo={setRepo}
-              />
-            )
-          } else if (activity.type === 'BOUNTY') {
-            return (
-              <BountyActivity
-                key={`activity-${index}`}
-                activity={activity}
-                setIsForkModalOpen={setIsForkModalOpen}
-                setRepo={setRepo}
-              />
-            )
-          } else if (activity.type === 'DEPLOYMENT') {
-            return (
-              <DeploymentActivity
-                key={`activity-${index}`}
-                activity={activity}
-                setIsForkModalOpen={setIsForkModalOpen}
-                setRepo={setRepo}
-              />
-            )
-          } else if (activity.type === 'DOMAIN') {
-            return (
-              <DomainActivity
-                key={`activity-${index}`}
-                activity={activity}
-                setIsForkModalOpen={setIsForkModalOpen}
-                setRepo={setRepo}
-              />
-            )
-          }
-          return null
+          const ActivityComponent = ACTIVITY_TO_COMPONENT[activity.type]
+          return (
+            <ActivityComponent
+              key={`activity-${index}`}
+              activity={activity}
+              setIsForkModalOpen={setIsForkModalOpen}
+              setRepo={setRepo}
+            />
+          )
         })}
       </div>
       {hasNextPage && (
