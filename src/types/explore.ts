@@ -1,5 +1,5 @@
+import { Tag } from 'arweave/web/lib/transaction'
 import { Dispatch, SetStateAction } from 'react'
-import { Tag } from 'warp-contracts/web'
 
 import { Bounty, Deployment, Domain, Issue, PullRequest, Repo } from '@/types/repository'
 
