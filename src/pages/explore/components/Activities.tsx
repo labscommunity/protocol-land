@@ -9,6 +9,7 @@ import { ActivityType, Repo } from '@/types/repository'
 
 import BountyActivity from './BountyActivity'
 import DeploymentActivity from './DeploymentActivity'
+import DomainActivity from './DomainActivity'
 import IssueActivity from './IssueActivity'
 import PullRequestActivity from './PullRequestActivity'
 import RepositoryActivity from './RepositoryActivity'
@@ -336,6 +337,15 @@ export default function Activities({ filters }: ActivitiesProps) {
           } else if (activity.type === 'DEPLOYMENT') {
             return (
               <DeploymentActivity
+                key={`activity-${index}`}
+                activity={activity}
+                setIsForkModalOpen={setIsForkModalOpen}
+                setRepo={setRepo}
+              />
+            )
+          } else if (activity.type === 'DOMAIN') {
+            return (
+              <DomainActivity
                 key={`activity-${index}`}
                 activity={activity}
                 setIsForkModalOpen={setIsForkModalOpen}
