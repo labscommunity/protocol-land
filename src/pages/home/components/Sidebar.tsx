@@ -1,17 +1,43 @@
+import { useConnection } from '@arweave-wallet-kit-beta/react'
+import { Dispatch, SetStateAction } from 'react'
+import { FaPlus } from 'react-icons/fa6'
 import { RiGitRepositoryFill } from 'react-icons/ri'
 import { Link } from 'react-router-dom'
 
 import { Button } from '@/components/common/buttons'
+import { trackGoogleAnalyticsEvent } from '@/helpers/google-analytics'
 import { useGlobalStore } from '@/stores/globalStore'
 import { Repo } from '@/types/repository'
 
-export default function Sidebar({ repos, isLoading }: { repos: Repo[]; isLoading: boolean }) {
+interface SidebarProps {
+  repos: Repo[]
+  isLoading: boolean
+  setIsRepoModalOpen: Dispatch<SetStateAction<boolean>>
+}
+
+export default function Sidebar({ repos, isLoading, setIsRepoModalOpen }: SidebarProps) {
   const [isLoggedIn] = useGlobalStore((state) => [state.authState.isLoggedIn])
   const hasRepos = repos.length > 0
+  const { connect } = useConnection()
+
+  async function handleNewRepoBtnClick() {
+    if (!isLoggedIn) {
+      connect()
+    } else {
+      setIsRepoModalOpen(true)
+    }
+
+    trackGoogleAnalyticsEvent('Repository', 'Create Repository button click', 'Create new repo')
+  }
 
   return (
     <div className="w-[20%] py-8 px-6 border-r-[1px] border-gray-200 flex flex-col gap-2">
-      <h1 className="text-xl font-medium text-center text-gray-900">Repositories</h1>
+      <div className="flex justify-between">
+        <h1 className="text-xl font-medium text-center text-gray-900">Repositories</h1>
+        <Button className="!py-0 !px-2" variant="primary-outline" onClick={handleNewRepoBtnClick}>
+          <FaPlus className="mr-1 w-[14px] h-[14px]" /> New
+        </Button>
+      </div>
 
       {!isLoggedIn && (
         <div className="w-full text-center py-4">

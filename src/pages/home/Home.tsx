@@ -68,7 +68,7 @@ export default function Home() {
     <>
       <Seo {...defaultMetaTagsData} title="Protocol.Land | App homepage" />
       <div className="h-full flex flex-1">
-        <Sidebar repos={userRepos} isLoading={fetchUserReposStatus === 'PENDING'} />
+        <Sidebar repos={userRepos} isLoading={fetchUserReposStatus === 'PENDING'} setIsRepoModalOpen={setIsOpen} />
         <MainContent>
           <div className="w-[70%] lg:w-[85%] xl:w-[80%] 2xl:w-[70%] py-8 flex flex-col gap-8">
             <div className="flex gap-4 w-full">
@@ -84,7 +84,7 @@ export default function Home() {
                   </p>
                 </div>
                 <Button onClick={handleNewRepoBtnClick} variant="primary-solid">
-                  Create Repository
+                  Create
                 </Button>
               </div>
               <div
@@ -99,7 +99,7 @@ export default function Home() {
                   </p>
                 </div>
                 <Button onClick={handleImportButton} variant="primary-solid">
-                  Import Repository
+                  Import
                 </Button>
               </div>
             </div>
