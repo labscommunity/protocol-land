@@ -51,22 +51,17 @@ export default function PullRequestActivity({
             )}
           ></div>
           Pull Request
-          {pullRequest.status !== 'MERGED' ? (
-            <span>
-              opened by{' '}
-              <Link className="text-primary-600 hover:text-primary-700" to={`/user/${pullRequest.author}`}>
-                {shortenAddress(pullRequest.author)}
-              </Link>
-            </span>
-          ) : (
-            <span>
-              by{' '}
-              <Link className="text-primary-600 hover:text-primary-700" to={`/user/${pullRequest.author}`}>
-                {shortenAddress(pullRequest.author)}
-              </Link>{' '}
-              was merged
-            </span>
-          )}
+          <span>
+            {pullRequest.status === 'OPEN'
+              ? activity.created
+                ? 'opened'
+                : 'reopened'
+              : pullRequest.status.toLowerCase()}{' '}
+            by{' '}
+            <Link className="text-primary-600 hover:text-primary-700" to={`/user/${pullRequest.author}`}>
+              {shortenAddress(pullRequest.author)}
+            </Link>
+          </span>
           {pullRequest.status !== 'MERGED' && pullRequest.timestamp && (
             <span> {formatDistanceToNow(new Date(pullRequest.timestamp), { addSuffix: true })}</span>
           )}
