@@ -1,6 +1,5 @@
 import clsx from 'clsx'
 import { formatDistanceToNow } from 'date-fns'
-import { Dispatch, SetStateAction } from 'react'
 import { Link } from 'react-router-dom'
 
 import { shortenAddress } from '@/helpers/shortenAddress'

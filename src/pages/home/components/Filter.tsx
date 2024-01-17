@@ -1,7 +1,8 @@
 import { Popover, Transition } from '@headlessui/react'
-import { Dispatch, Fragment, SetStateAction } from 'react'
+import { Dispatch, Fragment, SetStateAction, useState } from 'react'
 import { FiFilter } from 'react-icons/fi'
 
+import { Button } from '@/components/common/buttons'
 import { Filters } from '@/types/explore'
 
 interface FilterProps {
@@ -10,12 +11,22 @@ interface FilterProps {
 }
 
 export default function Filter({ selectedFilters, setSelectedFilters }: FilterProps) {
+  const [filters, setFilters] = useState(selectedFilters)
+
   function handleClickCheckbox(key: string) {
-    setSelectedFilters((oldFilters) => ({
+    setFilters((oldFilters) => ({
       ...oldFilters,
       // @ts-ignore
       [key]: !oldFilters[key]
     }))
+  }
+
+  function handleSaveButton() {
+    setSelectedFilters(filters)
+  }
+
+  function handleCancelButton() {
+    setFilters(selectedFilters)
   }
 
   return (
@@ -24,9 +35,14 @@ export default function Filter({ selectedFilters, setSelectedFilters }: FilterPr
         {({ open }) => (
           <>
             <Popover.Button
+              onClick={() => {
+                if (!open) {
+                  handleCancelButton()
+                }
+              }}
               className={`
                 ${open ? 'text-white' : 'text-white/90'}
-                group inline-flex items-center rounded-md bg-primary-700 px-[10px] py-2 text-base font-medium hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-white/75`}
+                group inline-flex items-center rounded-md bg-primary-700 p-[5px] text-base font-medium hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-white/75`}
             >
               <FiFilter className="w-[14px] h-[14px]" />
             </Popover.Button>
@@ -43,7 +59,7 @@ export default function Filter({ selectedFilters, setSelectedFilters }: FilterPr
                 <div className="overflow-hidden rounded-lg shadow-lg ring-1 ring-black/5">
                   <div className="px-7 py-2 font-medium bg-gray-100">Filter By</div>
                   <div className="relative gap-5 flex flex-col bg-white px-7 pb-7 pt-5">
-                    {Object.entries(selectedFilters).map(([key, value]) => (
+                    {Object.entries(filters).map(([key, value]) => (
                       <div
                         key={key}
                         className="-m-3 gap-3 flex items-center rounded-lg p-2 transition duration-150 ease-in-out hover:bg-gray-50 focus:outline-none focus-visible:ring focus-visible:ring-orange-500/50 cursor-pointer"
@@ -59,6 +75,24 @@ export default function Filter({ selectedFilters, setSelectedFilters }: FilterPr
                         <p className="text-sm font-medium text-gray-900">{key}</p>
                       </div>
                     ))}
+                  </div>
+                  <div className="flex gap-2 justify-end px-3 py-2 font-medium bg-gray-100">
+                    <Button
+                      as={Popover.Button}
+                      className="!px-3 !py-1"
+                      variant="primary-outline"
+                      onClick={handleCancelButton}
+                    >
+                      Cancel
+                    </Button>
+                    <Button
+                      as={Popover.Button}
+                      className="!px-3 !py-1"
+                      variant="primary-solid"
+                      onClick={() => handleSaveButton()}
+                    >
+                      Save
+                    </Button>
                   </div>
                 </div>
               </Popover.Panel>
