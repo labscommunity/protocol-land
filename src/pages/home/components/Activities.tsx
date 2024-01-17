@@ -4,8 +4,20 @@ import { Button } from '@/components/common/buttons'
 import { CONTRACT_TX_ID } from '@/helpers/constants'
 import { withAsync } from '@/helpers/withAsync'
 import ForkModal from '@/pages/repository/components/ForkModal'
-import { Activity, Filters, Interactions, Paging, ValidityResponse } from '@/types/explore'
-import { ActivityType, Repo } from '@/types/repository'
+import {
+  Activity,
+  BountyActivityType,
+  DeploymentActivityType,
+  DomainActivityType,
+  Filters,
+  Interactions,
+  IssueActivityType,
+  Paging,
+  PullRequestActivityType,
+  RepositoryActivityType,
+  ValidityResponse
+} from '@/types/explore'
+import { Repo } from '@/types/repository'
 
 import BountyActivity from './BountyActivity'
 import DeploymentActivity from './DeploymentActivity'
@@ -119,7 +131,7 @@ export default function Activities({ filters }: ActivitiesProps) {
         input: JSON.parse(getValueFromTags(interaction.tags, 'Input'))
       }))
 
-    let allActivities = [] as Activity[]
+    let allActivities: Activity[] = []
 
     if (filters.Repositories) {
       const repositoryActivities = validInteractions
@@ -128,11 +140,11 @@ export default function Activities({ filters }: ActivitiesProps) {
           const { payload } = interaction.input
           const created = ['forkRepository', 'initialize'].includes(interaction.input.function)
           return {
-            type: 'REPOSITORY' as ActivityType,
+            type: 'REPOSITORY',
             repo: state.repos[payload.id ?? payload.repoId],
             created,
             timestamp: interaction.timestamp
-          } as unknown as Activity
+          } as RepositoryActivityType
         })
       allActivities = [...allActivities, ...repositoryActivities]
     }
@@ -160,12 +172,12 @@ export default function Activities({ filters }: ActivitiesProps) {
               }
             : repo.issues[+payload.issueId - 1]
           return {
-            type: 'ISSUE' as ActivityType,
+            type: 'ISSUE',
             repo,
             issue,
             created,
             timestamp: interaction.timestamp
-          } as unknown as Activity
+          } as IssueActivityType
         })
       allActivities = [...allActivities, ...issueActivities]
     }
@@ -196,12 +208,12 @@ export default function Activities({ filters }: ActivitiesProps) {
               }
             : repo.pullRequests[+payload.prId - 1]
           return {
-            type: 'PULL_REQUEST' as ActivityType,
+            type: 'PULL_REQUEST',
             repo,
             pullRequest,
             created,
             timestamp: interaction.timestamp
-          } as unknown as Activity
+          } as PullRequestActivityType
         })
       allActivities = [...allActivities, ...pullRequestActivities]
     }
@@ -225,13 +237,13 @@ export default function Activities({ filters }: ActivitiesProps) {
               }
             : issue.bounties[+payload.bountyId - 1]
           return {
-            type: 'BOUNTY' as ActivityType,
+            type: 'BOUNTY',
             repo,
             bounty,
             issue,
             created,
             timestamp: interaction.timestamp
-          } as unknown as Activity
+          } as BountyActivityType
         })
 
       allActivities = [...allActivities, ...bountiesActivities]
@@ -254,12 +266,12 @@ export default function Activities({ filters }: ActivitiesProps) {
           }
 
           return {
-            type: 'DEPLOYMENT' as ActivityType,
+            type: 'DEPLOYMENT',
             repo,
             deployment,
             created,
             timestamp: interaction.timestamp
-          } as unknown as Activity
+          } as DeploymentActivityType
         })
       allActivities = [...allActivities, ...deploymentActivities]
     }
@@ -282,12 +294,12 @@ export default function Activities({ filters }: ActivitiesProps) {
             : repo.domains.find((d) => d.name === payload.domain.name || d.contractTxId === payload.domain.contractTxId)
 
           return {
-            type: 'DOMAIN' as ActivityType,
+            type: 'DOMAIN',
             repo,
             domain,
             created,
             timestamp: interaction.timestamp
-          } as unknown as Activity
+          } as DomainActivityType
         })
       allActivities = [...allActivities, ...domainActivities]
     }
@@ -315,6 +327,7 @@ export default function Activities({ filters }: ActivitiesProps) {
           return (
             <ActivityComponent
               key={`activity-${index}`}
+              // @ts-ignore
               activity={activity}
               setIsForkModalOpen={setIsForkModalOpen}
               setRepo={setRepo}

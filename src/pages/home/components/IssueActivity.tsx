@@ -3,11 +3,11 @@ import { formatDistanceToNow } from 'date-fns'
 import { Link } from 'react-router-dom'
 
 import { shortenAddress } from '@/helpers/shortenAddress'
-import { ActivityProps } from '@/types/explore'
+import { ActivityProps, IssueActivityType } from '@/types/explore'
 
 import ForkButton from './ForkButton'
 
-export default function IssueActivity({ activity, setIsForkModalOpen, setRepo }: ActivityProps) {
+export default function IssueActivity({ activity, setIsForkModalOpen, setRepo }: ActivityProps<IssueActivityType>) {
   const issue = activity.issue!
   const isOpen = issue.status === 'OPEN'
 

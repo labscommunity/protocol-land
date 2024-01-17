@@ -2,11 +2,15 @@ import { formatDistanceToNow } from 'date-fns'
 import { Link } from 'react-router-dom'
 
 import { shortenAddress } from '@/helpers/shortenAddress'
-import { ActivityProps } from '@/types/explore'
+import { ActivityProps, DeploymentActivityType } from '@/types/explore'
 
 import ForkButton from './ForkButton'
 
-export default function DeploymentActivity({ activity, setIsForkModalOpen, setRepo }: ActivityProps) {
+export default function DeploymentActivity({
+  activity,
+  setIsForkModalOpen,
+  setRepo
+}: ActivityProps<DeploymentActivityType>) {
   const deployment = activity.deployment!
 
   return (

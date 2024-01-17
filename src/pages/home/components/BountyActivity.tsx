@@ -3,7 +3,7 @@ import { TbMoneybag } from 'react-icons/tb'
 import { Link } from 'react-router-dom'
 
 import { shortenAddress } from '@/helpers/shortenAddress'
-import { ActivityProps } from '@/types/explore'
+import { ActivityProps, BountyActivityType } from '@/types/explore'
 
 import ForkButton from './ForkButton'
 
@@ -14,7 +14,7 @@ const STATUS_TO_ICON_MAP = {
   CLAIMED: () => <TbMoneybag className="w-4 h-4 text-purple-700" />
 }
 
-export default function BountyActivity({ activity, setIsForkModalOpen, setRepo }: ActivityProps) {
+export default function BountyActivity({ activity, setIsForkModalOpen, setRepo }: ActivityProps<BountyActivityType>) {
   const bounty = activity.bounty!
   const isActive = new Date().getTime() < bounty.expiry * 1000 && activity.bounty?.status === 'ACTIVE'
 

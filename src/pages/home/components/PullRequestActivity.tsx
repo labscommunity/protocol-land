@@ -3,11 +3,15 @@ import { formatDistanceToNow } from 'date-fns'
 import { Link } from 'react-router-dom'
 
 import { shortenAddress } from '@/helpers/shortenAddress'
-import { ActivityProps } from '@/types/explore'
+import { ActivityProps, PullRequestActivityType } from '@/types/explore'
 
 import ForkButton from './ForkButton'
 
-export default function PullRequestActivity({ activity, setIsForkModalOpen, setRepo }: ActivityProps) {
+export default function PullRequestActivity({
+  activity,
+  setIsForkModalOpen,
+  setRepo
+}: ActivityProps<PullRequestActivityType>) {
   const pullRequest = activity.pullRequest!
 
   return (

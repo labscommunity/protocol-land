@@ -2,11 +2,11 @@ import { formatDistanceToNow } from 'date-fns'
 import { Link } from 'react-router-dom'
 
 import { shortenAddress } from '@/helpers/shortenAddress'
-import { ActivityProps } from '@/types/explore'
+import { ActivityProps, DomainActivityType } from '@/types/explore'
 
 import ForkButton from './ForkButton'
 
-export default function DomainActivity({ activity, setIsForkModalOpen, setRepo }: ActivityProps) {
+export default function DomainActivity({ activity, setIsForkModalOpen, setRepo }: ActivityProps<DomainActivityType>) {
   const domain = activity.domain!
 
   return (

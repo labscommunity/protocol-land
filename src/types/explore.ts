@@ -44,20 +44,53 @@ export type Filters = {
   Deployments: boolean
 }
 
-export type Activity = {
+export type ActivityBase = {
   type: ActivityType
   repo: Repo
   timestamp: number
   created: boolean
-  issue?: Issue
-  pullRequest?: PullRequest
-  bounty?: Bounty
-  deployment?: Deployment
-  domain?: Domain
 }
 
-export interface ActivityProps {
-  activity: Activity
+export interface RepositoryActivityType extends ActivityBase {
+  type: 'REPOSITORY'
+}
+
+export interface IssueActivityType extends ActivityBase {
+  type: 'ISSUE'
+  issue: Issue
+}
+
+export interface PullRequestActivityType extends ActivityBase {
+  type: 'PULL_REQUEST'
+  pullRequest: PullRequest
+}
+
+export interface BountyActivityType extends ActivityBase {
+  type: 'BOUNTY'
+  issue: Issue
+  bounty: Bounty
+}
+
+export interface DeploymentActivityType extends ActivityBase {
+  type: 'DEPLOYMENT'
+  deployment: Deployment
+}
+
+export interface DomainActivityType extends ActivityBase {
+  type: 'DOMAIN'
+  domain: Domain
+}
+
+export type Activity =
+  | RepositoryActivityType
+  | IssueActivityType
+  | PullRequestActivityType
+  | BountyActivityType
+  | DeploymentActivityType
+  | DomainActivityType
+
+export interface ActivityProps<T> {
+  activity: T
   setIsForkModalOpen: Dispatch<SetStateAction<boolean>>
   setRepo: Dispatch<SetStateAction<Repo | undefined>>
 }

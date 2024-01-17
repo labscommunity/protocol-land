@@ -2,11 +2,15 @@ import { formatDistanceToNow } from 'date-fns'
 import { Link } from 'react-router-dom'
 
 import { shortenAddress } from '@/helpers/shortenAddress'
-import { ActivityProps } from '@/types/explore'
+import { ActivityProps, RepositoryActivityType } from '@/types/explore'
 
 import ForkButton from './ForkButton'
 
-export default function RepositoryActivity({ activity, setIsForkModalOpen, setRepo }: ActivityProps) {
+export default function RepositoryActivity({
+  activity,
+  setIsForkModalOpen,
+  setRepo
+}: ActivityProps<RepositoryActivityType>) {
   return (
     <div className="w-full flex justify-between items-start border border-primary-500 rounded-md p-4">
       <div className="flex flex-col gap-1">
