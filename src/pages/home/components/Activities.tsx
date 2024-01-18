@@ -25,6 +25,7 @@ import DomainActivity from './DomainActivity'
 import IssueActivity from './IssueActivity'
 import PullRequestActivity from './PullRequestActivity'
 import RepositoryActivity from './RepositoryActivity'
+import SkeletonLoader from './SkeletonLoader'
 
 const repositoryInteractionFunctions = [
   'initialize',
@@ -335,18 +336,20 @@ export default function Activities({ filters }: ActivitiesProps) {
   return (
     <div className="w-full">
       <div className="flex flex-col gap-8">
-        {activities.map((activity, index) => {
-          const ActivityComponent = ACTIVITY_TO_COMPONENT[activity.type]
-          return (
-            <ActivityComponent
-              key={`activity-${index}`}
-              // @ts-ignore
-              activity={activity}
-              setIsForkModalOpen={setIsForkModalOpen}
-              setRepo={setRepo}
-            />
-          )
-        })}
+        {activities.length > 1
+          ? activities.map((activity, index) => {
+              const ActivityComponent = ACTIVITY_TO_COMPONENT[activity.type]
+              return (
+                <ActivityComponent
+                  key={`activity-${index}`}
+                  // @ts-ignore
+                  activity={activity}
+                  setIsForkModalOpen={setIsForkModalOpen}
+                  setRepo={setRepo}
+                />
+              )
+            })
+          : Array.from({ length: 10 }, (_, index) => <SkeletonLoader key={`skeleton-${index}`} />)}
       </div>
       {hasNextPage && (
         <div className="w-full flex mt-4 justify-center" onClick={() => fetchActivities()}>

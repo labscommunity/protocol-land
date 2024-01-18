@@ -11055,26 +11055,26 @@ warp-arbundles@^1.0.4:
     buffer "^6.0.3"
     warp-isomorphic "^1.0.7"
 
-warp-contracts-plugin-deploy@1.0.9:
+warp-contracts-plugin-deploy@^1.0.9:
   version "1.0.9"
-  resolved "https://registry.npmjs.org/warp-contracts-plugin-deploy/-/warp-contracts-plugin-deploy-1.0.9.tgz#9db6d3f19dd2dc28f40f1e7345b3ea93472365e9"
+  resolved "https://registry.yarnpkg.com/warp-contracts-plugin-deploy/-/warp-contracts-plugin-deploy-1.0.9.tgz#9db6d3f19dd2dc28f40f1e7345b3ea93472365e9"
   integrity sha512-KuG8WK+5IR000jq2miAJ1/CbzBNDfxNvC6DEZdJ2uM6b8yNFu12aSGq5XpcWJhPe3v7hrMwdaOjBukYJ1vQ9TQ==
   dependencies:
     arbundles "^0.7.3"
     arlocal "^1.1.59"
     node-stdlib-browser "^1.2.0"
 
-warp-contracts-plugin-signature@1.0.16:
+warp-contracts-plugin-signature@^1.0.16:
   version "1.0.16"
-  resolved "https://registry.npmjs.org/warp-contracts-plugin-signature/-/warp-contracts-plugin-signature-1.0.16.tgz#7ba9ad9651ae20e679e76daaffe6836686ebf00d"
+  resolved "https://registry.yarnpkg.com/warp-contracts-plugin-signature/-/warp-contracts-plugin-signature-1.0.16.tgz#7ba9ad9651ae20e679e76daaffe6836686ebf00d"
   integrity sha512-sYrL/bCj7iqjUk7nPSnNpdkcvRPA0yQlNqBN0iyUQ9GQuyskwLDEeQUfe+T1oDwHaznqqABqBtItB+3TsUULLw==
   dependencies:
     arbundles "^0.9.8"
     arweave "^1.13.1"
 
-warp-contracts@1.4.16:
+warp-contracts@^1.4.16:
   version "1.4.16"
-  resolved "https://registry.npmjs.org/warp-contracts/-/warp-contracts-1.4.16.tgz#e21c7f664c1540efd4362c735507f1f6dc37fe92"
+  resolved "https://registry.yarnpkg.com/warp-contracts/-/warp-contracts-1.4.16.tgz#e21c7f664c1540efd4362c735507f1f6dc37fe92"
   integrity sha512-LSCQOThN9jj5c3SERmXa9tgIvNo0miF+Bn/yVCtXwXLGlmEmjGl5PCpGngDE93Dr5bKnilXqmO16TFHnCJbuwg==
   dependencies:
     archiver "^5.3.0"
