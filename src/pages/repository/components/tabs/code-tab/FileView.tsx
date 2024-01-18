@@ -11,6 +11,7 @@ import CodeMirrorMerge from 'react-codemirror-merge'
 import { FileWithPath } from 'react-dropzone'
 import { FiArrowLeft } from 'react-icons/fi'
 import { MdOutlineEdit } from 'react-icons/md'
+import Sticky from 'react-stickynode'
 
 import { Button } from '@/components/common/buttons'
 import { isImage, isMarkdown } from '@/pages/repository/helpers/filenameHelper'
@@ -36,6 +37,7 @@ export default function FileView({ fileContent, setFileContent, filename, setFil
   const [isEditMode, setIsEditMode] = React.useState(false)
   const [isPreviewMode, setIsPreviewMode] = React.useState(false)
   const [isFileCommited, setIsFileCommitted] = React.useState(false)
+  const [isSticky, setIsSticky] = React.useState(false)
   const [files, setFiles] = React.useState<FileWithPath[]>([])
 
   const contributor = isContributor()
@@ -69,44 +71,48 @@ export default function FileView({ fileContent, setFileContent, filename, setFil
     setIsCommitModalOpen(true)
   }
 
+  const handleStateChange = (status: Sticky.Status) => {
+    setIsSticky(status.status === Sticky.STATUS_FIXED)
+  }
+
   return (
-    <div className="flex flex-col gap-2 w-full h-full">
-      <div className="flex w-full justify-between h-10">
-        <Button onClick={onGoBackClick} className="gap-2 font-medium" variant="primary-outline">
-          <FiArrowLeft className="w-5 h-5 text-[inherit]" /> Go back
-        </Button>
-        {contributor && isEditMode && (
-          <div className="flex gap-2">
-            <Button
-              onClick={() => {
-                setFileContent({ original: fileContent.original, modified: fileContent.original })
-                setIsEditMode(false)
-                setIsPreviewMode(false)
-              }}
-              variant="primary-outline"
-            >
-              Cancel changes
+    <div className="flex flex-col w-full h-full">
+      <Sticky top={0} innerActiveClass="z-20" onStateChange={handleStateChange}>
+        <div className={clsx('flex gap-2 flex-col bg-gray-50', isSticky && 'pt-2')}>
+          <div className="flex w-full justify-between h-10">
+            <Button onClick={onGoBackClick} className="gap-2 font-medium" variant="primary-outline">
+              <FiArrowLeft className="w-5 h-5 text-[inherit]" /> Go back
             </Button>
-            <Button
-              isLoading={isSubmitting}
-              onClick={handleCommitChangesClick}
-              variant="primary-solid"
-              disabled={fileContent.original === fileContent.modified || isSubmitting}
-            >
-              Commit changes
-            </Button>
-            <CommitFilesModal
-              setIsCommited={setIsFileCommitted}
-              setIsOpen={setIsCommitModalOpen}
-              isOpen={isCommitModalOpen}
-              files={files}
-            />
+            {contributor && isEditMode && (
+              <div className="flex gap-2">
+                <Button
+                  onClick={() => {
+                    setFileContent({ original: fileContent.original, modified: fileContent.original })
+                    setIsEditMode(false)
+                    setIsPreviewMode(false)
+                  }}
+                  variant="primary-outline"
+                >
+                  Cancel changes
+                </Button>
+                <Button
+                  isLoading={isSubmitting}
+                  onClick={handleCommitChangesClick}
+                  variant="primary-solid"
+                  disabled={fileContent.original === fileContent.modified || isSubmitting}
+                >
+                  Commit changes
+                </Button>
+                <CommitFilesModal
+                  setIsCommited={setIsFileCommitted}
+                  setIsOpen={setIsCommitModalOpen}
+                  isOpen={isCommitModalOpen}
+                  files={files}
+                />
+              </div>
+            )}
           </div>
-        )}
-      </div>
-      <div className="flex w-full h-full mb-4">
-        <div className="w-full flex flex-col border-gray-300 border-[1px] rounded-lg bg-white overflow-hidden">
-          <div className="rounded-t-lg flex justify-between bg-gray-200 border-b-[1px] border-gray-300 items-center gap-2 py-2 px-4 text-gray-900 font-medium h-10">
+          <div className="sticky top-12 z-20 rounded-t-lg flex justify-between bg-gray-200 border-[1px] border-gray-300 items-center gap-2 py-2 px-4 text-gray-900 font-medium h-10">
             <span className="order-2">{filename}</span>
             {isEditMode ? (
               <div className="flex items-center p-1 bg-gray-100 border-[1px] border-gray-300 rounded-lg gap-1 h-8 order-1">
@@ -144,8 +150,12 @@ export default function FileView({ fileContent, setFileContent, filename, setFil
               )
             )}
           </div>
+        </div>
+      </Sticky>
+      <div className="flex w-full h-full mb-4">
+        <div className="w-full flex flex-col border-gray-300 border-[1px] rounded-b-lg">
           {isImageFile ? (
-            <div className="h-full w-full bg-white flex items-center justify-center p-8">
+            <div className="h-full w-full bg-white flex items-center justify-center p-8 rounded-b-lg overflow-hidden">
               <img
                 src={fileContent.original}
                 alt="Image"
@@ -154,7 +164,7 @@ export default function FileView({ fileContent, setFileContent, filename, setFil
             </div>
           ) : isPreviewMode ? (
             !isMarkdownFile ? (
-              <CodeMirrorMerge orientation="a-b" theme={githubLight}>
+              <CodeMirrorMerge orientation="a-b" theme={githubLight} className="rounded-b-lg overflow-hidden">
                 <CodeMirrorMerge.Original
                   extensions={[
                     langs.javascript({ jsx: true }),
@@ -173,11 +183,11 @@ export default function FileView({ fileContent, setFileContent, filename, setFil
                 />
               </CodeMirrorMerge>
             ) : (
-              <MDEditor minHeight={200} preview={'preview'} hideToolbar={true} value={fileContent.modified} />
+              <MDEditor.Markdown className="p-8 !min-h-[200px] rounded-b-lg" source={fileContent.modified} />
             )
           ) : !isMarkdownFile ? (
             <CodeMirror
-              className="w-full"
+              className="w-full rounded-b-lg overflow-hidden"
               value={isEditMode ? fileContent.modified : fileContent.original}
               minHeight="200px"
               height="100%"
@@ -187,14 +197,17 @@ export default function FileView({ fileContent, setFileContent, filename, setFil
               onChange={(value) => setFileContent((content) => ({ ...content, modified: value }))}
               editable={isEditMode}
             />
-          ) : (
+          ) : isEditMode ? (
             <MDEditor
               minHeight={200}
-              preview={isEditMode ? 'edit' : 'preview'}
-              hideToolbar={isEditMode === false}
+              height="100%"
+              visibleDragbar={false}
+              preview="edit"
               value={fileContent.modified}
               onChange={(value) => setFileContent((content) => ({ ...content, modified: value! }))}
             />
+          ) : (
+            <MDEditor.Markdown className="p-8 !min-h-[200px] rounded-b-lg" source={fileContent.modified} />
           )}
         </div>
       </div>
