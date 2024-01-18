@@ -9,9 +9,15 @@
   list-style: revert;
 }
 
-.w-md-editor-toolbar {
+#file-view-editor .w-md-editor-toolbar {
   position: sticky;
   top: 92px;
+  z-index: 10;
+}
+
+#new-file-editor .w-md-editor-toolbar {
+  position: sticky;
+  top: 96px;
   z-index: 10;
 }
 
