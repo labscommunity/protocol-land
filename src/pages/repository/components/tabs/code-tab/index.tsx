@@ -29,7 +29,7 @@ export default function CodeTab({ repoName = '', id = '' }: Props) {
   ])
   const readmeFileObject = React.useMemo(
     () => git.fileObjects.find((file) => file.path.toLowerCase() === 'readme.md'),
-    [git.currentOid]
+    [git.fileObjects]
   )
   const [fileContent, setFileContent] = React.useState({ original: '', modified: '' })
   const [filename, setFilename] = React.useState('')
