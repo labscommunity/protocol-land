@@ -5,7 +5,6 @@ import { shortenAddress } from '@/helpers/shortenAddress'
 import { ActivityProps, DomainActivityType } from '@/types/explore'
 
 import ActivityHeader from './ActivityHeader'
-import ForkButton from './ForkButton'
 
 export default function DomainActivity({ activity, setIsForkModalOpen, setRepo }: ActivityProps<DomainActivityType>) {
   const domain = activity.domain!
@@ -13,10 +12,7 @@ export default function DomainActivity({ activity, setIsForkModalOpen, setRepo }
   return (
     <div className="w-full flex justify-between items-start border border-primary-500 rounded-md p-4">
       <div className="flex w-full flex-col gap-1">
-        <div className="w-full flex justify-between">
-          <ActivityHeader repo={activity.repo} />
-          <ForkButton activity={activity} setIsForkModalOpen={setIsForkModalOpen} setRepo={setRepo} />
-        </div>
+        <ActivityHeader activity={activity} setIsForkModalOpen={setIsForkModalOpen} setRepo={setRepo} />
 
         <Link className="text-base font-medium" to={`/repository/${activity.repo.id}/deployments`}>
           {domain.name}

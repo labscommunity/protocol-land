@@ -5,7 +5,6 @@ import { ActivityProps, RepositoryActivityType } from '@/types/explore'
 
 import { getRepoContributionsCount } from '../utils'
 import ActivityHeader from './ActivityHeader'
-import ForkButton from './ForkButton'
 
 export default function RepositoryActivity({
   activity,
@@ -25,10 +24,8 @@ export default function RepositoryActivity({
   return (
     <div className="w-full flex justify-between items-start border border-primary-500 rounded-md p-4">
       <div className="w-full flex flex-col gap-1">
-        <div className="w-full flex justify-between">
-          <ActivityHeader repo={activity.repo} />
-          <ForkButton activity={activity} setIsForkModalOpen={setIsForkModalOpen} setRepo={setRepo} />
-        </div>
+        <ActivityHeader activity={activity} setIsForkModalOpen={setIsForkModalOpen} setRepo={setRepo} />
+
         <div className="text-sm">{activity.repo.description}</div>
         <div className="flex gap-3 items-center text-sm">
           <span>

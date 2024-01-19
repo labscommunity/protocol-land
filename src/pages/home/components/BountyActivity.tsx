@@ -5,7 +5,6 @@ import { Link } from 'react-router-dom'
 import { ActivityProps, BountyActivityType } from '@/types/explore'
 
 import ActivityHeader from './ActivityHeader'
-import ForkButton from './ForkButton'
 
 const STATUS_TO_ICON_MAP = {
   ACTIVE: () => <TbMoneybag className="w-4 h-4 text-green-700" />,
@@ -29,10 +28,8 @@ export default function BountyActivity({ activity, setIsForkModalOpen, setRepo }
   return (
     <div className="w-full flex justify-between items-start border border-primary-500 rounded-md p-4">
       <div className="flex w-full flex-col gap-1">
-        <div className="w-full flex justify-between">
-          <ActivityHeader repo={activity.repo} />
-          <ForkButton activity={activity} setIsForkModalOpen={setIsForkModalOpen} setRepo={setRepo} />
-        </div>
+        <ActivityHeader activity={activity} setIsForkModalOpen={setIsForkModalOpen} setRepo={setRepo} />
+
         <Link to={`/repository/${activity.repo.id}/issue/${activity.issue?.id}`} className="text-base font-medium">
           <>{activity.bounty?.amount ?? ''} AR</>
         </Link>

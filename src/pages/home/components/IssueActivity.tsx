@@ -6,7 +6,6 @@ import { shortenAddress } from '@/helpers/shortenAddress'
 import { ActivityProps, IssueActivityType } from '@/types/explore'
 
 import ActivityHeader from './ActivityHeader'
-import ForkButton from './ForkButton'
 
 export default function IssueActivity({ activity, setIsForkModalOpen, setRepo }: ActivityProps<IssueActivityType>) {
   const issue = activity.issue!
@@ -16,10 +15,8 @@ export default function IssueActivity({ activity, setIsForkModalOpen, setRepo }:
   return (
     <div className="w-full flex justify-between items-start border border-primary-500 rounded-md p-4">
       <div className="flex w-full flex-col gap-1">
-        <div className="w-full flex justify-between">
-          <ActivityHeader repo={activity.repo} />
-          <ForkButton activity={activity} setIsForkModalOpen={setIsForkModalOpen} setRepo={setRepo} />
-        </div>
+        <ActivityHeader activity={activity} setIsForkModalOpen={setIsForkModalOpen} setRepo={setRepo} />
+
         <Link
           to={`/repository/${activity.repo.id}/${issue?.id ? `issue/${issue.id}` : `issues`}`}
           className="text-base font-medium flex gap-2"
