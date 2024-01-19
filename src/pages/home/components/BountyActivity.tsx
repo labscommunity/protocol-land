@@ -2,9 +2,9 @@ import { formatDistanceToNow } from 'date-fns'
 import { TbMoneybag } from 'react-icons/tb'
 import { Link } from 'react-router-dom'
 
-import { shortenAddress } from '@/helpers/shortenAddress'
 import { ActivityProps, BountyActivityType } from '@/types/explore'
 
+import ActivityHeader from './ActivityHeader'
 import ForkButton from './ForkButton'
 
 const STATUS_TO_ICON_MAP = {
@@ -17,6 +17,9 @@ const STATUS_TO_ICON_MAP = {
 export default function BountyActivity({ activity, setIsForkModalOpen, setRepo }: ActivityProps<BountyActivityType>) {
   const bounty = activity.bounty!
   const isActive = new Date().getTime() < bounty.expiry * 1000 && activity.bounty?.status === 'ACTIVE'
+  const activeBountiesCount = activity.issue.bounties.filter(
+    (bnty) => new Date().getTime() < bnty.expiry * 1000 && bnty?.status === 'ACTIVE'
+  ).length
 
   if (!isActive && bounty.status === 'ACTIVE') {
     bounty.status = 'EXPIRED'
@@ -25,35 +28,27 @@ export default function BountyActivity({ activity, setIsForkModalOpen, setRepo }
 
   return (
     <div className="w-full flex justify-between items-start border border-primary-500 rounded-md p-4">
-      <div className="flex flex-col gap-1">
-        <div className="flex gap-2">
-          <Link
-            className="font-medium text-lg hover:underline text-primary-600 hover:text-primary-700 cursor-pointer"
-            to={`/user/${activity.repo.owner}`}
-          >
-            {shortenAddress(activity.repo.owner)}
-          </Link>
-          <span className="text-gray-400">/</span>
-          <Link
-            className="font-medium text-lg hover:underline text-primary-600 hover:text-primary-700 cursor-pointer"
-            to={`/repository/${activity.repo.id}`}
-          >
-            {activity.repo.name}
-          </Link>
+      <div className="flex w-full flex-col gap-1">
+        <div className="w-full flex justify-between">
+          <ActivityHeader repo={activity.repo} />
+          <ForkButton activity={activity} setIsForkModalOpen={setIsForkModalOpen} setRepo={setRepo} />
         </div>
         <Link to={`/repository/${activity.repo.id}/issue/${activity.issue?.id}`} className="text-base font-medium">
           <>{activity.bounty?.amount ?? ''} AR</>
         </Link>
         <div className="text-sm">{activity.issue?.title ?? ''} AR</div>
-        <div className="flex items-center gap-1 text-sm">
-          <Icon />
-          <span>
-            {isActive ? 'Bounty expires in' : `Bounty ${bounty.status.toLowerCase()}`}{' '}
-            {formatDistanceToNow(new Date(activity.timestamp * 1000), { addSuffix: true })}
-          </span>
+        <div className="flex gap-3 text-sm items-center">
+          <div className="flex items-center gap-1">
+            <Icon />
+            <span>
+              {isActive ? 'Bounty expires in' : `Bounty ${bounty.status.toLowerCase()}`}{' '}
+              {formatDistanceToNow(new Date(activity.timestamp * 1000), { addSuffix: true })}
+            </span>
+          </div>
+          <div className="h-1 w-1 rounded-full bg-gray-400"></div>
+          <div>{activeBountiesCount} Active Bounties </div>
         </div>
       </div>
-      <ForkButton activity={activity} setIsForkModalOpen={setIsForkModalOpen} setRepo={setRepo} />
     </div>
   )
 }

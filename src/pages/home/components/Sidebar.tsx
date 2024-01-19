@@ -32,10 +32,10 @@ export default function Sidebar({ repos, isLoading, setIsRepoModalOpen }: Sideba
 
   return (
     <div className="overflow-y-auto max-h-screen sticky top-0 w-[20%] py-8 px-6 border-r-[1px] border-gray-200 flex flex-col gap-2">
-      <div className="flex justify-between">
+      <div className="flex w-full justify-between">
         <h1 className="text-xl font-medium text-center text-gray-900">Repositories</h1>
         <Button className="!py-0 !px-2" variant="primary-outline" onClick={handleNewRepoBtnClick}>
-          <FaPlus className="mr-1 w-[14px] h-[14px]" /> New
+          <FaPlus className="xl:mr-1 w-[14px] h-[14px]" /> <span className="hidden xl:block">New</span>
         </Button>
       </div>
 
