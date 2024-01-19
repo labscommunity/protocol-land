@@ -86,7 +86,7 @@ export async function postNewPullRequest({
   if (!PR || !PR.id) return
 
   if (address) {
-    await postPRStatDataTxToArweave(address, baseRepo.repoName, PR)
+    await postPRStatDataTxToArweave(address, baseRepo.repoName, baseRepo.repoId, PR)
   }
 
   trackGoogleAnalyticsEvent('Repository', 'Successfully create a new PR', 'Create PR', {

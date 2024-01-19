@@ -137,6 +137,7 @@ export async function computeContributionsFromRepo(
               { name: 'User', value: authorEmail },
               { name: 'Type', value: 'stats-commit' },
               { name: 'Repo', value: name },
+              { name: 'Repo-Id', value: id },
               { name: 'Email', value: commitObj.commit.author.email },
               { name: 'Timestamp', value: commitObj.commit.committer.timestamp.toString() },
               { name: 'Timezone-Offset', value: commitObj.commit.committer.timezoneOffset.toString() },
@@ -177,6 +178,7 @@ export async function computeContributionsFromRepo(
             { name: 'User', value: address },
             { name: 'Type', value: 'stats-pullrequest' },
             { name: 'Repo', value: name },
+            { name: 'Repo-Id', value: id },
             { name: 'Timestamp', value: PR.timestamp.toString() },
             { name: 'Author', value: PR.author.toString() }
           ]
@@ -207,6 +209,7 @@ export async function computeContributionsFromRepo(
             { name: 'User', value: address },
             { name: 'Type', value: 'stats-issue' },
             { name: 'Repo', value: name },
+            { name: 'Repo-Id', value: id },
             { name: 'Timestamp', value: issue.timestamp.toString() },
             { name: 'Author', value: issue.author.toString() }
           ]
@@ -340,6 +343,7 @@ export function getCurrentContributionStreak(contributions: FormattedContributio
 
 export async function postCommitStatDataTxToArweave({
   repoName,
+  repoId,
   commit,
   version = '1'
 }: PostStatDataTxToArweaveOptions) {
@@ -348,6 +352,7 @@ export async function postCommitStatDataTxToArweave({
     { name: 'User', value: commit.author.email },
     { name: 'Type', value: 'stats-commit' },
     { name: 'Repo', value: repoName },
+    { name: 'Repo-Id', value: repoId },
     { name: 'Email', value: commit.author.email },
     { name: 'Timestamp', value: commit.committer.timestamp.toString() },
     { name: 'Timezone-Offset', value: commit.committer.timezoneOffset.toString() },
@@ -369,12 +374,13 @@ export async function postCommitStatDataTxToArweave({
   return true
 }
 
-export async function postPRStatDataTxToArweave(address: string, name: string, PR: PullRequest) {
+export async function postPRStatDataTxToArweave(address: string, name: string, id: string, PR: PullRequest) {
   const inputTags = [
     { name: 'App-Name', value: 'Protocol.Land' },
     { name: 'User', value: address },
     { name: 'Type', value: 'stats-pullrequest' },
     { name: 'Repo', value: name },
+    { name: 'Repo-Id', value: id },
     { name: 'Timestamp', value: PR.timestamp.toString() },
     { name: 'Author', value: PR.author.toString() }
   ]
@@ -394,12 +400,13 @@ export async function postPRStatDataTxToArweave(address: string, name: string, P
   return true
 }
 
-export async function postIssueStatDataTxToArweave(address: string, name: string, issue: Issue) {
+export async function postIssueStatDataTxToArweave(address: string, name: string, id: string, issue: Issue) {
   const inputTags = [
     { name: 'App-Name', value: 'Protocol.Land' },
     { name: 'User', value: address },
     { name: 'Type', value: 'stats-issue' },
     { name: 'Repo', value: name },
+    { name: 'Repo-Id', value: id },
     { name: 'Timestamp', value: issue.timestamp.toString() },
     { name: 'Author', value: issue.author.toString() }
   ]
@@ -601,6 +608,7 @@ export type ContributionStreak = {
 
 export type PostStatDataTxToArweaveOptions = {
   repoName: string
+  repoId: string
   commit: CommitObject
   version?: string
 }
