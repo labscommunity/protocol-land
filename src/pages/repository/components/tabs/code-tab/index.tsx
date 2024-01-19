@@ -9,6 +9,7 @@ import { useGlobalStore } from '@/stores/globalStore'
 import FileView from './FileView'
 import Header from './header/Header'
 import NewFile from './NewFile'
+import Readme from './Readme'
 import RepoError from './RepoError'
 import RepoLoading from './RepoLoading'
 import Row from './Row'
@@ -26,6 +27,10 @@ export default function CodeTab({ repoName = '', id = '' }: Props) {
     state.repoCoreActions.git,
     state.branchState.currentBranch
   ])
+  const readmeFileObject = React.useMemo(
+    () => git.fileObjects.find((file) => file.path.toLowerCase() === 'readme.md'),
+    [git.fileObjects]
+  )
   const [fileContent, setFileContent] = React.useState({ original: '', modified: '' })
   const [filename, setFilename] = React.useState('')
   const [filePath, setFilePath] = React.useState('')
@@ -102,35 +107,38 @@ export default function CodeTab({ repoName = '', id = '' }: Props) {
   }
 
   return (
-    <div className="flex flex-col gap-6 w-full">
-      <Header />
-      <div className="flex w-full">
-        <div className="border-gray-300 border-[1px] w-full rounded-lg bg-white overflow-hidden">
-          <TableHead commit={repoCommitsG[0]} />
-          {!git.fileObjects.length && (
-            <div className="py-6 flex gap-2 justify-center items-center">
-              <FiCode className="w-8 h-8 text-liberty-dark-100" />
-              <h1 className="text-lg text-liberty-dark-100">Get started by adding some files</h1>
-            </div>
-          )}
-          {git.rootOid !== git.currentOid && (
-            <div
-              onClick={gitActions.goBack}
-              className="flex cursor-pointer hover:bg-liberty-light-300 items-center gap-2 py-2 px-4 border-b-[1px] border-liberty-light-600"
-            >
-              <span>...</span>
-            </div>
-          )}
-          {git.fileObjects.map((file: any) => (
-            <Row
-              onFolderClick={handleFolderClick}
-              onFileClick={handleFileClick}
-              item={file}
-              isFolder={file.type === 'folder'}
-            />
-          ))}
+    <div className="flex flex-col gap-4 w-full">
+      <div className="flex flex-col gap-6 w-full">
+        <Header />
+        <div className="flex w-full">
+          <div className="border-gray-300 border-[1px] w-full rounded-lg bg-white overflow-hidden">
+            <TableHead commit={repoCommitsG[0]} />
+            {!git.fileObjects.length && (
+              <div className="py-6 flex gap-2 justify-center items-center">
+                <FiCode className="w-8 h-8 text-liberty-dark-100" />
+                <h1 className="text-lg text-liberty-dark-100">Get started by adding some files</h1>
+              </div>
+            )}
+            {git.rootOid !== git.currentOid && (
+              <div
+                onClick={gitActions.goBack}
+                className="flex cursor-pointer hover:bg-liberty-light-300 items-center gap-2 py-2 px-4 border-b-[1px] border-liberty-light-600"
+              >
+                <span>...</span>
+              </div>
+            )}
+            {git.fileObjects.map((file: any) => (
+              <Row
+                onFolderClick={handleFolderClick}
+                onFileClick={handleFileClick}
+                item={file}
+                isFolder={file.type === 'folder'}
+              />
+            ))}
+          </div>
         </div>
       </div>
+      <Readme fileObject={readmeFileObject} />
     </div>
   )
 }
