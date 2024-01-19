@@ -30,12 +30,12 @@ import SkeletonLoader from './SkeletonLoader'
 const repositoryInteractionFunctions = [
   'initialize',
   'forkRepository',
-  'acceptContributorInvite',
-  'addContributor',
-  'cancelContributorInvite',
-  'inviteContributor',
-  'rejectContributorInvite',
-  'updatePrivateStateTx',
+  // 'acceptContributorInvite',
+  // 'addContributor',
+  // 'cancelContributorInvite',
+  // 'inviteContributor',
+  // 'rejectContributorInvite',
+  // 'updatePrivateStateTx',
   'updateRepositoryDetails',
   'updateRepositoryTxId'
 ]
