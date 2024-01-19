@@ -80,6 +80,7 @@ interface ActivitiesProps {
 export default function Activities({ filters }: ActivitiesProps) {
   const [currentPage, setCurrentPage] = useState(1)
   const [hasNextPage, setHasNextPage] = useState(true)
+  const [currentFetchCount, setCurrentFetchCount] = useState(0)
   const [isLoading, setIsLoading] = useState(false)
   const [activities, setActivities] = useState<Activity[]>([])
   const [repo, setRepo] = useState<Repo>()
@@ -91,13 +92,13 @@ export default function Activities({ filters }: ActivitiesProps) {
     return tag ? tag.value : ''
   }
 
-  async function fetchActivities(page?: number) {
+  async function fetchActivities({ page, limit }: { page?: number; limit?: number }) {
     setIsLoading(true)
     const { error, response } = await withAsync(() =>
       fetch(
-        `https://gw.warp.cc/sonar/gateway/interactions-sonar?contractId=${CONTRACT_TX_ID}&limit=15&totalCount=true&page=${
-          page ?? currentPage
-        }`
+        `https://gw.warp.cc/sonar/gateway/interactions-sonar?contractId=${CONTRACT_TX_ID}&limit=${
+          limit ?? 30
+        }&totalCount=true&page=${page ?? currentPage}`
       )
     )
 
@@ -110,9 +111,9 @@ export default function Activities({ filters }: ActivitiesProps) {
 
     const { response: validityResponse, error: validityError } = await withAsync(() =>
       fetch(
-        `https://dre-1.warp.cc/contract?id=${CONTRACT_TX_ID}&validity=true&errorMessages=true&limit=15&page=${
-          page ?? currentPage
-        }`
+        `https://dre-1.warp.cc/contract?id=${CONTRACT_TX_ID}&validity=true&errorMessages=true&limit=${
+          limit ?? 30
+        }&page=${page ?? currentPage}`
       )
     )
 
@@ -318,6 +319,8 @@ export default function Activities({ filters }: ActivitiesProps) {
     // Filter out all private repos activities
     allActivities = allActivities.filter((activity) => !activity?.repo?.private)
 
+    setCurrentFetchCount(allActivities.length)
+
     setActivities((previousActivities) =>
       [...previousActivities, ...allActivities].sort((a, b) => b.timestamp - a.timestamp)
     )
@@ -330,13 +333,19 @@ export default function Activities({ filters }: ActivitiesProps) {
     setCurrentPage(1)
     setHasNextPage(true)
     setActivities([])
-    fetchActivities(1)
+    fetchActivities({ page: 1 })
   }, [filters])
+
+  useEffect(() => {
+    if (currentPage > 1 && hasNextPage && currentFetchCount === 0) {
+      fetchActivities({ limit: 30 })
+    }
+  }, [currentPage])
 
   return (
     <div className="w-full">
       <div className="flex flex-col gap-8">
-        {activities.length > 1
+        {activities.length > 0
           ? activities.map((activity, index) => {
               const ActivityComponent = ACTIVITY_TO_COMPONENT[activity.type]
               return (
@@ -352,7 +361,7 @@ export default function Activities({ filters }: ActivitiesProps) {
           : Array.from({ length: 10 }, (_, index) => <SkeletonLoader key={`skeleton-${index}`} />)}
       </div>
       {hasNextPage && (
-        <div className="w-full flex mt-4 justify-center" onClick={() => fetchActivities()}>
+        <div className="w-full flex mt-4 justify-center" onClick={() => fetchActivities({})}>
           <Button
             variant="primary-outline"
             loadingText={activities.length === 0 ? 'Loading' : 'Loading more'}

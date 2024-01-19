@@ -1,5 +1,6 @@
 import { Popover, Transition } from '@headlessui/react'
 import { Dispatch, Fragment, SetStateAction, useState } from 'react'
+import toast from 'react-hot-toast'
 import { FiFilter } from 'react-icons/fi'
 
 import { Button } from '@/components/common/buttons'
@@ -21,8 +22,14 @@ export default function Filter({ selectedFilters, setSelectedFilters }: FilterPr
     }))
   }
 
-  function handleSaveButton() {
+  function handleSaveButton(close: () => void) {
+    const isOneFilterSelected = Object.values(filters).some((value) => value)
+    if (!isOneFilterSelected) {
+      toast.error('Please select at least one filter to save')
+      return
+    }
     setSelectedFilters(filters)
+    close()
   }
 
   function handleCancelButton() {
@@ -32,7 +39,7 @@ export default function Filter({ selectedFilters, setSelectedFilters }: FilterPr
   return (
     <div className="w-full max-w-sm">
       <Popover className="relative">
-        {({ open }) => (
+        {({ open, close }) => (
           <>
             <Popover.Button
               onClick={() => {
@@ -85,12 +92,7 @@ export default function Filter({ selectedFilters, setSelectedFilters }: FilterPr
                     >
                       Cancel
                     </Button>
-                    <Button
-                      as={Popover.Button}
-                      className="!px-3 !py-1"
-                      variant="primary-solid"
-                      onClick={() => handleSaveButton()}
-                    >
+                    <Button className="!px-3 !py-1" variant="primary-solid" onClick={() => handleSaveButton(close)}>
                       Save
                     </Button>
                   </div>
