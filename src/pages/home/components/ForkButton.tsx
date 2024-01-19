@@ -21,7 +21,7 @@ export default function ForkButton({ activity, setIsForkModalOpen, setRepo }: Fo
   return (
     <div>
       <Button
-        className="!px-3 !py-0 flex gap-2"
+        className="!px-3 !py-0 flex gap-2 rounded-md"
         variant="primary-outline"
         onClick={() => {
           setRepo(activity.repo)

@@ -5,20 +5,20 @@ import { Repo } from '@/types/repository'
 
 export default function ActivityHeader({ repo }: { repo: Repo }) {
   return (
-    <div className="flex flex-col">
+    <div className="flex items-center gap-3">
       <Link
-        to={`/repository/${repo.id}`}
-        className="font-medium text-lg hover:underline text-primary-600 hover:text-primary-700 cursor-pointer"
+        className="font-normal text-base hover:underline text-primary-600 hover:text-primary-700 cursor-pointer"
+        to={`/user/${repo.owner}`}
       >
-        {repo.name}
+        {shortenAddress(repo.owner)}
       </Link>
-      <div className="text-sm">
-        <span>Owner: </span>
+      <span className="text-gray-400">/</span>
+      <div className="flex items-center">
         <Link
-          to={`/user/${repo.owner}`}
-          className="font-medium hover:underline text-primary-600 hover:text-primary-700 cursor-pointer"
+          className="font-semibold text-lg hover:underline text-primary-800 hover:text-primary-900 cursor-pointer"
+          to={`/repository/${repo.id}`}
         >
-          {shortenAddress(repo.owner)}
+          {repo.name}
         </Link>
       </div>
     </div>
