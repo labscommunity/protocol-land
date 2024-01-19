@@ -15,12 +15,12 @@ export async function getRepoContributionsCount(repoName: string) {
       .appName('Protocol.Land')
       .tags([
         { name: 'Repo', values: [repoName] },
-        { name: 'Type', values: ['repo-create', 'stats-commit'] }
+        { name: 'Type', values: ['stats-commit'] }
       ])
       .findAll()
-
-    return txs.length
+    // +1 for repo-create
+    return txs.length + 1
   } catch (err) {
-    return 0
+    return 1
   }
 }
