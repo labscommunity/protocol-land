@@ -8,6 +8,7 @@ import { VscIssueReopened } from 'react-icons/vsc'
 import { useNavigate } from 'react-router-dom'
 
 import { Button } from '@/components/common/buttons'
+import Comment from '@/components/IssuePr/Comment'
 import IssueDescription from '@/components/IssuePr/Description'
 import { shortenAddress } from '@/helpers/shortenAddress'
 import { useGlobalStore } from '@/stores/globalStore'
@@ -89,28 +90,21 @@ export default function OverviewTab() {
         <div className="flex flex-col gap-8">
           <ol className="relative border-s-2 border-gray-300 ms-5">
             <li className="mb-10 -ms-5">
-              <IssueDescription issueOrPr={selectedIssue} />
+              <IssueDescription isIssue={true} issueOrPr={selectedIssue} isContributor={contributor} />
             </li>
             {selectedIssue.activities &&
-              selectedIssue.activities.map((activity) => {
+              selectedIssue.activities.map((activity, activityId) => {
                 const commentActivity = activity as IssueActivityComment
                 if (activity.type === 'COMMENT') {
                   return (
                     <li className="mb-10 -ms-5">
-                      <div className="flex flex-col border-[1px] border-gray-300 rounded-lg overflow-hidden">
-                        <div className="flex justify-between bg-gray-200 border-b-[1px] border-gray-300 text-gray-900 px-4 py-2">
-                          <span
-                            className="hover:underline hover:text-primary-700 cursor-pointer font-medium"
-                            onClick={() => navigate(`/user/${commentActivity.author}`)}
-                          >
-                            {shortenAddress(commentActivity.author)}
-                          </span>
-                          <span> {formatDistanceToNow(new Date(commentActivity.timestamp), { addSuffix: true })}</span>
-                        </div>
-                        <div className="text-gray-900 p-4 bg-white">
-                          <MDEditor.Markdown source={commentActivity.description} />
-                        </div>
-                      </div>
+                      <Comment
+                        isIssue={true}
+                        issueOrPRId={selectedIssue.id}
+                        commentId={activityId}
+                        item={commentActivity}
+                        isContributor={contributor}
+                      />
                     </li>
                   )
                 } else {
@@ -166,7 +160,7 @@ export default function OverviewTab() {
         </div>
 
         <div className="border-t-[1px] border-gray-200">
-          {isLoggedIn && contributor && (
+          {isLoggedIn && (
             <div className="flex flex-col pt-4">
               {isOpen && (
                 <MDEditor height={180} preview="edit" value={commentVal} onChange={(val) => setCommentVal(val!)} />
@@ -175,7 +169,7 @@ export default function OverviewTab() {
                 <div className="flex w-full justify-center gap-4 py-4">
                   <Button
                     isLoading={isSubmittingClose}
-                    disabled={isSubmittingClose}
+                    disabled={isSubmittingClose || !contributor}
                     onClick={handleCloseButtonClick}
                     variant="secondary"
                     className="justify-center"

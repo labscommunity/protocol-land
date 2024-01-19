@@ -395,7 +395,7 @@ export async function addCommentToPR(
     throw new ContractError('Repo not found.')
   }
 
-  const hasPermissions = caller === repo.owner || repo.contributors.indexOf(caller) > -1
+  const hasPermissions = repo.private ? caller === repo.owner || repo.contributors.indexOf(caller) > -1 : true
 
   if (!hasPermissions) {
     throw new ContractError('Error: You dont have permissions for this operation.')
@@ -470,6 +470,48 @@ export async function linkIssueToPR(
     issue.linkedPRIds = []
   }
   issue.linkedPRIds.push(PR.id)
+
+  return { state }
+}
+
+export async function updatePRComment(
+  state: ContractState,
+  { caller, input: { payload } }: RepositoryAction
+): Promise<ContractResult<ContractState>> {
+  if (
+    isInvalidInput(payload, 'object') ||
+    isInvalidInput(payload.repoId, 'uuid') ||
+    isInvalidInput(payload.prId, ['number', 'string']) ||
+    isInvalidInput(payload.comment, 'object') ||
+    isInvalidInput(payload.comment.id, 'number') ||
+    isInvalidInput(payload.comment.description, 'string')
+  ) {
+    throw new ContractError('Invalid inputs supplied.')
+  }
+
+  const repo = state.repos[payload.repoId]
+
+  if (!repo) {
+    throw new ContractError('Repo not found.')
+  }
+
+  const PR = repo.pullRequests[+payload.prId - 1]
+
+  if (!PR) {
+    throw new ContractError('Pull Request not found.')
+  }
+
+  const commentActivity = PR.activities[payload.comment.id] as PullRequestActivityComment
+
+  if (!commentActivity || commentActivity?.type !== 'COMMENT') {
+    throw new ContractError('Comment not found.')
+  }
+
+  if (commentActivity.author !== caller) {
+    throw new ContractError('Error: You dont have permissions for this operation.')
+  }
+
+  commentActivity.description = payload.comment.description
 
   return { state }
 }

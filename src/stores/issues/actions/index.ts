@@ -101,6 +101,38 @@ export async function addCommentToIssue(repoId: string, issueId: number, comment
   return issue
 }
 
+export async function updateIssueComment(repoId: string, issueId: number, comment: object) {
+  const userSigner = new InjectedArweaveSigner(window.arweaveWallet)
+  await userSigner.setPublicKey()
+
+  const contract = getWarpContract(CONTRACT_TX_ID, userSigner)
+
+  await contract.writeInteraction({
+    function: 'updateIssueComment',
+    payload: {
+      repoId,
+      issueId,
+      comment
+    }
+  })
+
+  const {
+    cachedValue: {
+      state: { repos }
+    }
+  } = await contract.readState()
+
+  const issues = repos[repoId]?.issues
+
+  if (!issues) return
+
+  const issue = issues[issueId - 1]
+
+  if (!issue) return
+
+  return issue
+}
+
 export async function closeIssue(repoId: string, issueId: number) {
   const contract = await getContract()
 

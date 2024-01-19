@@ -9,6 +9,7 @@ import {
   closePullRequest,
   linkIssueToPR,
   reopenPullRequest,
+  updatePRComment,
   updatePullRequestDetails
 } from '@/lib/git/pull-request'
 import { PullRequest } from '@/types/repository'
@@ -464,6 +465,46 @@ const createPullRequestSlice: StateCreator<CombinedSlices, [['zustand/immer', ne
           repo_name: repo.name,
           repo_id: repo.id,
           pr_id: id,
+          result: 'FAILED'
+        })
+        throw error
+      }
+    },
+    updateComment: async (id, comment) => {
+      const repo = get().repoCoreState.selectedRepo.repo
+
+      if (!repo) {
+        set((state) => (state.pullRequestState.status = 'ERROR'))
+
+        return
+      }
+
+      const { error, response } = await withAsync(() => updatePRComment(repo.id, id, comment))
+
+      if (!error && response) {
+        const activities = response?.activities
+
+        if (!activities || !Array.isArray(activities)) return
+
+        set((state) => {
+          state.repoCoreState.selectedRepo.repo!.pullRequests[id - 1].activities = activities
+        })
+
+        trackGoogleAnalyticsEvent('Repository', 'Update comment to PR', 'Update Comment on PR', {
+          repo_name: repo.name,
+          repo_id: repo.id,
+          pr_id: id,
+          comment_id: comment.id,
+          result: 'SUCCESS'
+        })
+      }
+
+      if (error) {
+        trackGoogleAnalyticsEvent('Repository', 'Update comment to PR', 'Comment on PR', {
+          repo_name: repo.name,
+          repo_id: repo.id,
+          pr_id: id,
+          comment_id: comment.id,
           result: 'FAILED'
         })
         throw error

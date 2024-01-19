@@ -400,6 +400,38 @@ export async function addCommentToPR(repoId: string, prId: number, comment: stri
   return PR
 }
 
+export async function updatePRComment(repoId: string, prId: number, comment: object) {
+  const userSigner = new InjectedArweaveSigner(window.arweaveWallet)
+  await userSigner.setPublicKey()
+
+  const contract = getWarpContract(CONTRACT_TX_ID, userSigner)
+
+  await contract.writeInteraction({
+    function: 'updatePRComment',
+    payload: {
+      repoId,
+      prId,
+      comment
+    }
+  })
+
+  const {
+    cachedValue: {
+      state: { repos }
+    }
+  } = await contract.readState()
+
+  const PRs = repos[repoId]?.pullRequests
+
+  if (!PRs) return
+
+  const PR = PRs[prId - 1]
+
+  if (!PR) return
+
+  return PR
+}
+
 export async function linkIssueToPR(repoId: string, prId: number, issueId: number) {
   const userSigner = new InjectedArweaveSigner(window.arweaveWallet)
   await userSigner.setPublicKey()

@@ -5,6 +5,7 @@ import {
   createNewBounty,
   createNewIssue,
   updateBounty,
+  updateIssueComment,
   updateIssueDetails,
   updateIssueStatus
 } from './actions/issues'
@@ -14,6 +15,7 @@ import {
   approvePR,
   createNewPullRequest,
   linkIssueToPR,
+  updatePRComment,
   updatePullRequestDetails,
   updatePullRequestStatus
 } from './actions/pull-requests'
@@ -89,6 +91,8 @@ export async function handle(state: ContractState, action: RepositoryAction | Ev
       return await addReviewersToPR(state, action as RepositoryAction)
     case 'addCommentToPR':
       return await addCommentToPR(state, action as RepositoryAction)
+    case 'updatePRComment':
+      return await updatePRComment(state, action as RepositoryAction)
     case 'approvePR':
       return await approvePR(state, action as RepositoryAction)
     case 'linkIssueToPR':
@@ -103,6 +107,8 @@ export async function handle(state: ContractState, action: RepositoryAction | Ev
       return await addAssigneeToIssue(state, action as RepositoryAction)
     case 'addCommentToIssue':
       return await addCommentToIssue(state, action as RepositoryAction)
+    case 'updateIssueComment':
+      return await updateIssueComment(state, action as RepositoryAction)
     case 'createNewBounty':
       return await createNewBounty(state, action as RepositoryAction)
     case 'updateBounty':
