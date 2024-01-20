@@ -22,8 +22,8 @@ export async function updateProfileDetails(
   // Validate each property of the payload against its expected type
   if (
     isInvalidInput(payload, 'object') ||
-    (payload.fullName !== undefined && isInvalidInput(payload.fullName, 'string', true)) ||
-    (payload.userName !== undefined && isInvalidInput(payload.userName, 'string', true)) ||
+    (payload.fullname !== undefined && isInvalidInput(payload.fullname, 'string', true)) ||
+    (payload.username !== undefined && isInvalidInput(payload.username, 'string', true)) ||
     (payload.avatar !== undefined && isInvalidInput(payload.avatar, 'arweave-address')) ||
     (payload.bio !== undefined && isInvalidInput(payload.bio, 'string', true)) ||
     (payload.timezone !== undefined && isInvalidTimezone(payload.timezone)) ||
@@ -38,8 +38,8 @@ export async function updateProfileDetails(
 
   // Filter the payload to only include allowed keys
   const filteredPayload = pickKeys(payload, [
-    'fullName',
-    'userName',
+    'fullname',
+    'username',
     'avatar',
     'bio',
     'timezone',

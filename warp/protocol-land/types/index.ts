@@ -8,8 +8,8 @@ export type ContractState = {
 }
 
 export type User = {
-  fullName?: string
-  userName?: string
+  fullname?: string
+  username?: string
   avatar?: string
   bio?: string
   timezone?: Timezone
