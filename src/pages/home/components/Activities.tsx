@@ -92,13 +92,14 @@ export default function Activities({ filters }: ActivitiesProps) {
     return tag ? tag.value : ''
   }
 
-  async function fetchActivities({ page, limit }: { page?: number; limit?: number }) {
+  async function fetchActivities({ page }: { page?: number }) {
     setIsLoading(true)
+    // const limit  = baseLimit + ((numberOfTotalFilters - numberOfFilters) * 14)
+    const limit = 30 + (Object.keys(filters).length - Object.values(filters).filter(Boolean).length) * 14
+    page = page ?? currentPage
     const { error, response } = await withAsync(() =>
       fetch(
-        `https://gw.warp.cc/sonar/gateway/interactions-sonar?contractId=${CONTRACT_TX_ID}&limit=${
-          limit ?? 30
-        }&totalCount=true&page=${page ?? currentPage}`
+        `https://gw.warp.cc/sonar/gateway/interactions-sonar?contractId=${CONTRACT_TX_ID}&limit=${limit}&totalCount=true&page=${page}`
       )
     )
 
@@ -111,9 +112,7 @@ export default function Activities({ filters }: ActivitiesProps) {
 
     const { response: validityResponse, error: validityError } = await withAsync(() =>
       fetch(
-        `https://dre-1.warp.cc/contract?id=${CONTRACT_TX_ID}&validity=true&errorMessages=true&limit=${
-          limit ?? 30
-        }&page=${page ?? currentPage}`
+        `https://dre-1.warp.cc/contract?id=${CONTRACT_TX_ID}&validity=true&errorMessages=true&limit=${limit}&page=${page}`
       )
     )
 
@@ -347,7 +346,7 @@ export default function Activities({ filters }: ActivitiesProps) {
 
   useEffect(() => {
     if (currentPage > 1 && hasNextPage && currentFetchCount === 0) {
-      fetchActivities({ limit: 30 })
+      fetchActivities({})
     }
   }, [currentPage])
 
