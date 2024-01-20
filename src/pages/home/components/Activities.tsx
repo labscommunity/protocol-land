@@ -136,18 +136,27 @@ export default function Activities({ filters }: ActivitiesProps) {
     let allActivities: Activity[] = []
 
     if (filters.Repositories) {
-      const repositoryActivities = validInteractions
-        .filter((interaction) => repositoryInteractionFunctions.includes(interaction.input.function))
-        .map((interaction) => {
-          const { payload } = interaction.input
-          const created = ['forkRepository', 'initialize'].includes(interaction.input.function)
-          return {
-            type: 'REPOSITORY',
-            repo: state.repos[payload.id ?? payload.repoId],
-            created,
-            timestamp: interaction.timestamp
-          } as RepositoryActivityType
-        })
+      const repositoryActivities = validInteractions.reduce((accumulator, interaction) => {
+        const { payload } = interaction.input
+
+        if (repositoryInteractionFunctions.includes(interaction.input.function)) {
+          const repoId = payload.id ?? payload.repoId
+          const existingActivity = accumulator.find((activity) => activity.repo.id === repoId && !activity.created)
+
+          if (!existingActivity) {
+            const created = ['forkRepository', 'initialize'].includes(interaction.input.function)
+            accumulator.push({
+              type: 'REPOSITORY',
+              repo: state.repos[repoId],
+              created,
+              timestamp: interaction.timestamp
+            })
+          }
+        }
+
+        return accumulator
+      }, [] as RepositoryActivityType[])
+
       allActivities = [...allActivities, ...repositoryActivities]
     }
 
