@@ -6,6 +6,17 @@ import { withAsync } from '@/helpers/withAsync'
 import { Repo } from '@/types/repository'
 import { User } from '@/types/user'
 
+export const getUserAddressToUserMap = async () => {
+  const userMap = new Map<string, User>()
+  const contract = getWarpContract(CONTRACT_TX_ID)
+  const state = (await contract.readState()).cachedValue.state
+  const users = state.users
+  Object.entries(users).forEach(([address, user]) => {
+    userMap.set(address, user as User)
+  })
+  return userMap
+}
+
 export const getUserDetailsFromContract = async (): Promise<{ result: User }> => {
   const userSigner = new InjectedArweaveSigner(window.arweaveWallet)
   await userSigner.setPublicKey()
