@@ -1,23 +1,13 @@
 import { formatDistanceToNow } from 'date-fns'
 import { FiGitBranch, FiGitCommit } from 'react-icons/fi'
-import { useNavigate } from 'react-router-dom'
+import { Link } from 'react-router-dom'
 
 import { resolveUsernameOrShorten } from '@/helpers/resolveUsername'
 import { useGlobalStore } from '@/stores/globalStore'
-import { ForkMetaData } from '@/types/repository'
 
 export default function ForksTab() {
-  const navigate = useNavigate()
   const [userRepo] = useGlobalStore((state) => [state.repoCoreState.selectedRepo.repo])
   const forks = userRepo?.forks ?? {}
-
-  function handleForkClick(fork: ForkMetaData) {
-    navigate(`/repository/${fork.id}`)
-  }
-
-  function handleUserClick(fork: ForkMetaData) {
-    navigate(`/user/${fork.owner}`)
-  }
 
   if (Object.values(forks).length === 0) {
     return (
@@ -47,25 +37,25 @@ export default function ForksTab() {
             <FiGitCommit className="h-5 w-5 text-gray-400" />
           </div>
           <div className="flex justify-between flex-1 border-[1px] border-gray-300 bg-gray-200 rounded-lg w-full px-4 py-2">
-            <div className="flex gap-6">
-              <span
-                onClick={() => handleUserClick(fork)}
-                className="text-gray-900 cursor-pointer hover:underline hover:text-primary-700"
-              >
-                {resolveUsernameOrShorten(fork.owner)}
-              </span>
-              <div className="w-[1px] h-full bg-gray-400" />
-              <span
-                onClick={() => handleForkClick(fork)}
+            <div className="flex flex-col">
+              <Link
+                to={`/repository/${fork.id}`}
                 className="text-gray-900 font-medium cursor-pointer hover:underline hover:text-primary-700"
               >
                 {fork.id}/{fork.name}
-              </span>
-            </div>
-            <div className="flex gap-6">
-              <span className="text-gray-900">
-                {formatDistanceToNow(new Date(fork.timestamp), { addSuffix: true })}
-              </span>
+              </Link>
+              <div className="inline-block text-gray-600">
+                <Link
+                  to={`/user/${fork.owner}`}
+                  className="font-medium cursor-pointer hover:underline hover:text-primary-700"
+                >
+                  {resolveUsernameOrShorten(fork.owner)}
+                </Link>
+                <span> created a fork </span>
+                <span className="font-medium">
+                  {formatDistanceToNow(new Date(fork.timestamp), { addSuffix: true })}
+                </span>
+              </div>
             </div>
           </div>
         </div>
