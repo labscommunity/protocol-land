@@ -9,12 +9,16 @@ export default function CommitRow({ commit }: { commit: CommitResult }) {
     <div className="flex justify-between flex-1 border-[1px] border-gray-300 bg-gray-200 rounded-lg w-full px-4 py-2">
       <div className="flex flex-col">
         <span className="text-gray-900 font-medium">{commit.commit.message}</span>
-        <div className="flex flex-row text-gray-600 hover:text-gray-900 gap-1">
-          <Link className="hover:underline" to={`/user/${commit.commit.author.name}`}>
+        <div className="inline-block text-gray-600 hover:text-gray-900">
+          <Link
+            className="hover:underline hover:text-primary-700 font-medium"
+            to={`/user/${commit.commit.author.name}`}
+          >
             {resolveUsernameOrShorten(commit.commit.author.name)}
           </Link>
-          <span>
-            committed {formatDistanceToNow(new Date(commit.commit.committer.timestamp * 1000), { addSuffix: true })}
+          <span> committed </span>
+          <span className="font-medium">
+            {formatDistanceToNow(new Date(commit.commit.committer.timestamp * 1000), { addSuffix: true })}
           </span>
         </div>
       </div>
