@@ -51,14 +51,18 @@ export default function UserProfileButton({ isOfLandingPage = false }: { isOfLan
         <>
           <div>
             <Menu.Button
-              className={`border-[1.5px] border-primary-600 rounded-[8px] shadow-[0px_2px_4px_0px_rgba(0,0,0,0.05)] inline-flex w-full justify-between items-center px-4 h-10 ${
+              className={`w-[178px] border-[1.5px] border-primary-600 rounded-[8px] shadow-[0px_2px_4px_0px_rgba(0,0,0,0.05)] inline-flex justify-between items-center px-4 h-10 ${
                 open ? 'bg-primary-50' : 'bg-white'
               } tracking-wide text-primary-700  font-medium focus:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-opacity-75`}
             >
-              <FaUser className="h-4 w-4" />
-              <span className="ml-2">{shortenAddress(authState.address!, 4)}</span>
-              {open && <FiChevronDown className="ml-2 -mr-1 h-5 w-5 rotate-180" aria-hidden="true" />}
-              {!open && <FiChevronDown className="ml-2 -mr-1 h-5 w-5" aria-hidden="true" />}
+              <div>
+                <FaUser className="h-4 w-4" />
+              </div>
+              <span className="ml-2 truncate">{shortenAddress(authState.address!, 4)}</span>
+              <div>
+                {open && <FiChevronDown className="ml-2 -mr-1 h-5 w-5 rotate-180" aria-hidden="true" />}
+                {!open && <FiChevronDown className="ml-2 -mr-1 h-5 w-5" aria-hidden="true" />}
+              </div>
             </Menu.Button>
           </div>
           <Transition

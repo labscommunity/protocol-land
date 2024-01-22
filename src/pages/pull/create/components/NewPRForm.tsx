@@ -115,9 +115,10 @@ export default function NewPRForm({ baseBranch, compareBranch, baseRepo, compare
             onClick={handlePRSubmit(handleCreateButtonClick)}
             variant="primary-solid"
             className="font-medium"
+            isLoading={isSubmitting}
             disabled={Object.keys(errors).length > 0 || isSubmitting}
           >
-            {isSubmitting ? 'Processing...' : 'Create Pull request'}
+            Create Pull request
           </Button>
         </div>
       </div>
