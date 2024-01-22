@@ -67,7 +67,7 @@ const createUserSlice: StateCreator<CombinedSlices, [['zustand/immer', never], n
       })
     },
     saveUserDetails: async (details, address: string) => {
-      const { response } = await withAsync(() => saveUserDetails(details, address))
+      const { response, error } = await withAsync(() => saveUserDetails(details, address))
 
       if (response) {
         const userDetails = response.result
@@ -80,6 +80,10 @@ const createUserSlice: StateCreator<CombinedSlices, [['zustand/immer', never], n
           ...details,
           result: 'SUCCESS'
         })
+      }
+
+      if (error) {
+        throw error
       }
     },
     updateAllUsers: async () => {
