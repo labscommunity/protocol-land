@@ -2,7 +2,7 @@ import { formatDistanceToNow } from 'date-fns'
 import { FiGitBranch, FiGitCommit } from 'react-icons/fi'
 import { useNavigate } from 'react-router-dom'
 
-import { shortenAddress } from '@/helpers/shortenAddress'
+import { resolveUsernameOrShorten } from '@/helpers/resolveUsername'
 import { useGlobalStore } from '@/stores/globalStore'
 import { ForkMetaData } from '@/types/repository'
 
@@ -52,7 +52,7 @@ export default function ForksTab() {
                 onClick={() => handleUserClick(fork)}
                 className="text-gray-900 cursor-pointer hover:underline hover:text-primary-700"
               >
-                {shortenAddress(fork.owner)}
+                {resolveUsernameOrShorten(fork.owner)}
               </span>
               <div className="w-[1px] h-full bg-gray-400" />
               <span

@@ -11,6 +11,7 @@ import * as yup from 'yup'
 
 import { Button } from '@/components/common/buttons'
 import { isInvalidInput } from '@/helpers/isInvalidInput'
+import { resolveUsernameOrShorten } from '@/helpers/resolveUsername'
 import { shortenAddress } from '@/helpers/shortenAddress'
 import { withAsync } from '@/helpers/withAsync'
 import { uploadUserAvatar } from '@/lib/user'
@@ -183,7 +184,7 @@ export default function Sidebar({
             />
             {errors.username && <p className="text-red-500 text-sm italic mt-2">{errors.username?.message}</p>}
           </div>
-          <h3 className="font-medium text-gray-600 text-md">{shortenAddress(id!, 9)}</h3>
+          <h3 className="font-medium text-gray-600 text-md">{resolveUsernameOrShorten(id!, 9)}</h3>
         </div>
         <div className="flex flex-col gap-2  w-full">
           <div className="flex gap-2 items-center text-gray-900">

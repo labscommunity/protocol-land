@@ -8,7 +8,7 @@ import { useNavigate } from 'react-router-dom'
 
 import { Button } from '@/components/common/buttons'
 import useAuth from '@/helpers/hooks/useAuth'
-import { shortenAddress } from '@/helpers/shortenAddress'
+import { resolveUsernameOrShorten } from '@/helpers/resolveUsername'
 
 export default function UserProfileButton({ isOfLandingPage = false }: { isOfLandingPage?: boolean }) {
   const navigate = useNavigate()
@@ -58,7 +58,7 @@ export default function UserProfileButton({ isOfLandingPage = false }: { isOfLan
               <div>
                 <FaUser className="h-4 w-4" />
               </div>
-              <span className="ml-2 truncate">{shortenAddress(authState.address!, 4)}</span>
+              <span className="ml-2 truncate">{resolveUsernameOrShorten(authState.address!, 4)}</span>
               <div>
                 {open && <FiChevronDown className="ml-2 -mr-1 h-5 w-5 rotate-180" aria-hidden="true" />}
                 {!open && <FiChevronDown className="ml-2 -mr-1 h-5 w-5" aria-hidden="true" />}

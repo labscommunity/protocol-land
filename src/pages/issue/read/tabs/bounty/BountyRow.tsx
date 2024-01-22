@@ -3,7 +3,7 @@ import { TbMoneybag } from 'react-icons/tb'
 import SVG from 'react-inlinesvg'
 
 import ArweaveLogo from '@/assets/arweave.svg'
-import { shortenAddress } from '@/helpers/shortenAddress'
+import { resolveUsernameOrShorten } from '@/helpers/resolveUsername'
 import { BountyStatus } from '@/types/repository'
 
 type Props = {
@@ -49,7 +49,7 @@ export default function BountyRow({ status, author, id, amount, expiry, timestam
       </div>
       <div className="flex gap-3 text-gray-900">
         <span className="font-semibold">Reward#{id}</span>
-        <span>opened by {shortenAddress(author)}</span>
+        <span>opened by {resolveUsernameOrShorten(author)}</span>
         {timestamp && <span> {formatDistanceToNow(new Date(timestamp), { addSuffix: true })}</span>}
         {expiry && isActive && (
           <>

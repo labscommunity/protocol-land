@@ -9,7 +9,7 @@ import Sticky from 'react-stickynode'
 
 import { Button } from '@/components/common/buttons'
 import PrTitle from '@/components/IssuePr/Title'
-import { shortenAddress } from '@/helpers/shortenAddress'
+import { resolveUsernameOrShorten } from '@/helpers/resolveUsername'
 import { rootTabConfig } from '@/pages/repository/config/rootTabConfig'
 import { useGlobalStore } from '@/stores/globalStore'
 import { PullRequest, PullRequestStatus, Repo } from '@/types/repository'
@@ -101,22 +101,24 @@ export default function PullRequestHeader({
                     onClick={() => gotoUser(PR.status === 'MERGED' ? lastActivity?.author : PR?.author)}
                   >
                     {PR.status === 'MERGED'
-                      ? lastActivity?.author && shortenAddress(lastActivity?.author)
-                      : PR?.author && shortenAddress(PR?.author)}
+                      ? lastActivity?.author && resolveUsernameOrShorten(lastActivity?.author)
+                      : PR?.author && resolveUsernameOrShorten(PR?.author)}
                   </span>{' '}
                   {PR.status !== 'MERGED' ? 'wants to merge' : 'merged'}{' '}
                   <span
                     className="text-primary-600 bg-primary-200 px-1 cursor-pointer"
                     onClick={() => gotoBranch(PR.compareRepo.repoId, PR?.compareBranch)}
                   >
-                    {isMergeInSameRepo ? PR?.compareBranch : `${shortenAddress(compareRepoOwner)}:${PR?.compareBranch}`}
+                    {isMergeInSameRepo
+                      ? PR?.compareBranch
+                      : `${resolveUsernameOrShorten(compareRepoOwner)}:${PR?.compareBranch}`}
                   </span>{' '}
                   into{' '}
                   <span
                     className="text-primary-600 bg-primary-200 px-1 cursor-pointer"
                     onClick={() => gotoBranch(PR.baseRepo.repoId, PR?.baseBranch)}
                   >
-                    {isMergeInSameRepo ? PR?.baseBranch : `${shortenAddress(repo.owner)}:${PR?.baseBranch}`}
+                    {isMergeInSameRepo ? PR?.baseBranch : `${resolveUsernameOrShorten(repo.owner)}:${PR?.baseBranch}`}
                   </span>{' '}
                   {PR.status === 'MERGED' &&
                     PR.mergedTimestamp &&

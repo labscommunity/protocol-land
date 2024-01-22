@@ -1,6 +1,6 @@
 import { PiDotDuotone } from 'react-icons/pi'
 
-import { shortenAddress } from '@/helpers/shortenAddress'
+import { resolveUsernameOrShorten } from '@/helpers/resolveUsername'
 import { useGlobalStore } from '@/stores/globalStore'
 
 import AssigneeAdd from './AssigneeAdd'
@@ -29,7 +29,7 @@ export default function Sidebar() {
           selectedIssue.assignees.map((assignee) => (
             <div className="flex items-center gap-1 text-gray-600">
               <PiDotDuotone className="min-w-[24px] h-6 !text-yellow-500" />
-              <span className="truncate">{shortenAddress(assignee, 6)}</span>
+              <span className="truncate">{resolveUsernameOrShorten(assignee, 6)}</span>
             </div>
           ))}
       </div>

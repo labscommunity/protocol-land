@@ -5,7 +5,7 @@ import { VscIssues } from 'react-icons/vsc'
 import { useParams } from 'react-router-dom'
 import { useNavigate } from 'react-router-dom'
 
-import { shortenAddress } from '@/helpers/shortenAddress'
+import { resolveUsernameOrShorten } from '@/helpers/resolveUsername'
 
 type Props = {
   status: 'OPEN' | 'COMPLETED'
@@ -49,7 +49,7 @@ export default function IssueRow({ status, author, id, title, timestamp, complet
         {/* #1 by pawanpaudel93 was closed 41 minutes ago */}
         <span className="font-semibold">#{id}</span>
         {isOpen && <span>opened</span>}
-        <span>by {shortenAddress(author)}</span>
+        <span>by {resolveUsernameOrShorten(author)}</span>
         {!isOpen && <span>was closed</span>}
         {isOpen && timestamp && <span>{formatDistanceToNow(new Date(timestamp), { addSuffix: true })}</span>}
         {!isOpen && completedTimestamp && (

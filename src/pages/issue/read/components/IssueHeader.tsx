@@ -9,7 +9,7 @@ import Sticky from 'react-stickynode'
 
 import { Button } from '@/components/common/buttons'
 import IssueTitle from '@/components/IssuePr/Title'
-import { shortenAddress } from '@/helpers/shortenAddress'
+import { resolveUsernameOrShorten } from '@/helpers/resolveUsername'
 import { useGlobalStore } from '@/stores/globalStore'
 import { Issue, IssueStatus } from '@/types/repository'
 
@@ -71,7 +71,7 @@ export default function IssueHeader({ issue }: { issue: Issue }) {
               <div className={clsx('text-gray-600', isSticky && 'truncate')}>
                 {isSticky && <IssueTitle issueOrPr={issue} showEdit={false} />}
                 <span className={clsx(isSticky && 'text-sm')}>
-                  {shortenAddress(issue.author)} has opened this issue{' '}
+                  {resolveUsernameOrShorten(issue.author)} has opened this issue{' '}
                   {formatDistanceToNow(new Date(issue.timestamp), { addSuffix: true })}
                 </span>
               </div>

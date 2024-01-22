@@ -2,7 +2,7 @@ import { Listbox, Transition } from '@headlessui/react'
 import { Fragment } from 'react'
 import { AiOutlineCaretDown } from 'react-icons/ai'
 
-import { shortenAddress } from '@/helpers/shortenAddress'
+import { resolveUsernameOrShorten } from '@/helpers/resolveUsername'
 import { Repo } from '@/types/repository'
 
 type Props = {
@@ -15,7 +15,7 @@ type Props = {
 
 export default function RepoDropdown({ selectedItem, setSelectedItem, items, label, disabled = false }: Props) {
   function repoObjToRepoName(repo: Repo) {
-    return `${shortenAddress(repo?.owner || '', 5)}/${repo?.name || ''}`
+    return `${resolveUsernameOrShorten(repo?.owner || '', 5)}/${repo?.name || ''}`
   }
 
   return (

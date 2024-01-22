@@ -10,7 +10,7 @@ import { useNavigate } from 'react-router-dom'
 import { Button } from '@/components/common/buttons'
 import Comment from '@/components/IssuePr/Comment'
 import IssueDescription from '@/components/IssuePr/Description'
-import { shortenAddress } from '@/helpers/shortenAddress'
+import { resolveUsernameOrShorten } from '@/helpers/resolveUsername'
 import { useGlobalStore } from '@/stores/globalStore'
 import { IssueActivityComment, IssueActivityStatus } from '@/types/repository'
 
@@ -122,7 +122,7 @@ export default function OverviewTab() {
                           className="font-medium hover:underline cursor-pointer hover:text-primary-700"
                           onClick={() => navigate(`/user/${author}`)}
                         >
-                          {shortenAddress(author)}
+                          {resolveUsernameOrShorten(author)}
                         </span>
                         <span className="text-gray-500">
                           {status === 'COMPLETED' ? (
@@ -141,7 +141,7 @@ export default function OverviewTab() {
                                       className="text-black font-medium hover:underline cursor-pointer hover:text-primary-700"
                                       href={`/#/user/${assignee}`}
                                     >
-                                      {shortenAddress(assignee)}
+                                      {resolveUsernameOrShorten(assignee)}
                                     </a>
                                     {getSeperator(index, assignees!)}
                                   </>

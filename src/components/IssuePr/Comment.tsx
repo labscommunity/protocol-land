@@ -6,7 +6,7 @@ import toast from 'react-hot-toast'
 import { useNavigate } from 'react-router-dom'
 
 import { Button } from '@/components/common/buttons'
-import { shortenAddress } from '@/helpers/shortenAddress'
+import { resolveUsernameOrShorten } from '@/helpers/resolveUsername'
 import { useGlobalStore } from '@/stores/globalStore'
 import { Issue, IssueActivityComment, PullRequest, PullRequestActivityComment } from '@/types/repository'
 
@@ -81,7 +81,7 @@ export default function Comment({ isIssue, issueOrPRId, commentId, item, isContr
             className="hover:underline hover:text-primary-700 cursor-pointer font-medium"
             onClick={() => navigate(`/user/${item.author}`)}
           >
-            {shortenAddress(item.author)}
+            {resolveUsernameOrShorten(item.author)}
           </span>
           <span> {formatDistanceToNow(new Date(item.timestamp), { addSuffix: true })}</span>
         </div>

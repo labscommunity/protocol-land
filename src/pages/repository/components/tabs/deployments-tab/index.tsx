@@ -4,7 +4,7 @@ import { GrDeploy } from 'react-icons/gr'
 import { IoIosCheckmarkCircle } from 'react-icons/io'
 import { useNavigate } from 'react-router-dom'
 
-import { shortenAddress } from '@/helpers/shortenAddress'
+import { resolveUsernameOrShorten } from '@/helpers/resolveUsername'
 import { useGlobalStore } from '@/stores/globalStore'
 
 export default function DeploymentsTab() {
@@ -62,7 +62,7 @@ export default function DeploymentsTab() {
                         className="hover:text-primary-700 cursor-pointer"
                         onClick={() => gotoUser(deployment.deployedBy)}
                       >
-                        {shortenAddress(deployment.deployedBy)}
+                        {resolveUsernameOrShorten(deployment.deployedBy)}
                       </span>
                     </div>
                   </div>

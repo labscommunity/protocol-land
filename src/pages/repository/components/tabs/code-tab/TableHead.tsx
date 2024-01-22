@@ -1,6 +1,6 @@
 import { formatDistanceToNow } from 'date-fns'
 
-import { shortenAddress } from '@/helpers/shortenAddress'
+import { resolveUsernameOrShorten } from '@/helpers/resolveUsername'
 import { CommitResult } from '@/types/commit'
 
 export default function TableHead({ commit }: { commit: CommitResult }) {
@@ -8,7 +8,7 @@ export default function TableHead({ commit }: { commit: CommitResult }) {
     <div className="flex justify-between bg-gray-200 text-gray-900 items-center gap-2 py-[10px] px-4 border-b-[1px] border-gray-300 text-sm font-medium">
       {commit && (
         <>
-          <span title={commit.commit.author.name}>{shortenAddress(commit.commit.author.name)}</span>
+          <span title={commit.commit.author.name}>{resolveUsernameOrShorten(commit.commit.author.name)}</span>
           <div className="gap-8 flex justify-between">
             <span className="hidden sm:block">{commit.commit.message}</span>
             <span>{commit.oid.slice(0, 7)}</span>
