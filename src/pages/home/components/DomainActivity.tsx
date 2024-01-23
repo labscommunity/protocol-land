@@ -18,7 +18,7 @@ export default function DomainActivity({ activity, setIsForkModalOpen, setRepo }
           {domain.name}
         </Link>
 
-        <div className="flex items-center gap-3 text-sm">
+        <div className="flex items-center gap-3 text-sm justify-between">
           <span>
             ArNS Domain {activity.created ? 'added' : 'updated'} by{' '}
             <Link className="text-primary-600 hover:text-primary-700" to={`/user/${domain.controller}`}>
@@ -26,7 +26,7 @@ export default function DomainActivity({ activity, setIsForkModalOpen, setRepo }
             </Link>{' '}
             {formatDistanceToNow(new Date(activity.timestamp * 1000), { addSuffix: true })}
           </span>
-          <div className="h-1 w-1 rounded-full bg-gray-400"></div>
+
           <span>1 Active Domain</span>
         </div>
       </div>

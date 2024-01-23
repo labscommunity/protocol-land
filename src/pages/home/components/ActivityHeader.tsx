@@ -17,19 +17,21 @@ export default function ActivityHeader({ activity, setIsForkModalOpen, setRepo }
   return (
     <div className="w-full flex justify-between items-center">
       <div className="flex items-center gap-3">
-        <Link
-          className="font-normal text-base hover:underline text-primary-600 hover:text-primary-700 cursor-pointer"
-          to={`/user/${activity.repo.owner}`}
-        >
-          {shortenAddress(activity.repo.owner)}
-        </Link>
-        <span className="text-gray-400">/</span>
         <div className="flex items-center">
           <Link
-            className="font-semibold text-lg hover:underline text-primary-800 hover:text-primary-900 cursor-pointer"
+            className="font-semibold text-lg hover:underline text-primary-700 hover:text-primary-800 cursor-pointer"
             to={`/repository/${activity.repo.id}`}
           >
             {activity.repo.name}
+          </Link>
+        </div>
+        <div className="bg-gray-200 border text-sm px-2 rounded-md">
+          Owner:{' '}
+          <Link
+            className="font-normal hover:underline text-primary-600 hover:text-primary-700 cursor-pointer"
+            to={`/user/${activity.repo.owner}`}
+          >
+            {shortenAddress(activity.repo.owner)}
           </Link>
         </div>
       </div>

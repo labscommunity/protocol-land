@@ -128,7 +128,7 @@ export default function Activities({ filters }: ActivitiesProps) {
       .filter(({ interaction }) => validity[interaction.id])
       .map(({ interaction }) => ({
         timestamp: +interaction.block.timestamp,
-        owner: interaction.owner.address,
+        author: interaction.owner.address,
         input: JSON.parse(getValueFromTags(interaction.tags, 'Input'))
       }))
 
@@ -148,7 +148,8 @@ export default function Activities({ filters }: ActivitiesProps) {
               type: 'REPOSITORY',
               repo: state.repos[repoId],
               created,
-              timestamp: interaction.timestamp
+              timestamp: interaction.timestamp,
+              author: interaction.author
             })
           }
         }
@@ -172,7 +173,7 @@ export default function Activities({ filters }: ActivitiesProps) {
                 repoId: repo.id,
                 title: payload.title,
                 description: payload.description ?? '',
-                author: interaction.owner,
+                author: interaction.author,
                 status: 'OPEN',
                 timestamp: interaction.timestamp * 1000,
                 assignees: [],
@@ -187,7 +188,7 @@ export default function Activities({ filters }: ActivitiesProps) {
             issue: {
               ...issue,
               timestamp: interaction.timestamp * 1000,
-              author: interaction.owner,
+              author: interaction.author,
               status: created || payload.status === 'REOPEN' ? 'OPEN' : 'COMPLETED'
             },
             created,
@@ -213,7 +214,7 @@ export default function Activities({ filters }: ActivitiesProps) {
                 baseBranch: payload.baseBranch,
                 compareBranch: payload.compareBranch,
                 baseBranchOid: payload.baseBranchOid,
-                author: interaction.owner,
+                author: interaction.author,
                 status: 'OPEN',
                 reviewers: [],
                 activities: [],
@@ -228,7 +229,7 @@ export default function Activities({ filters }: ActivitiesProps) {
             pullRequest: {
               ...pullRequest,
               timestamp: interaction.timestamp * 1000,
-              author: interaction.owner,
+              author: interaction.author,
               status: created || payload.status === 'REOPEN' ? 'OPEN' : payload.status
             },
             created,
@@ -279,7 +280,7 @@ export default function Activities({ filters }: ActivitiesProps) {
           const deployment = {
             txId: payload.deployment.txId,
             branch: repo.deploymentBranch,
-            deployedBy: interaction.owner,
+            deployedBy: interaction.author,
             commitOid: payload.deployment.commitOid,
             commitMessage: payload.deployment.commitMessage,
             timestamp: interaction.timestamp * 1000
@@ -308,7 +309,7 @@ export default function Activities({ filters }: ActivitiesProps) {
                 txId: payload.domain.txId,
                 name: payload.domain.name,
                 contractTxId: payload.domain.contractTxId,
-                controller: interaction.owner,
+                controller: interaction.author,
                 timestamp: interaction.timestamp * 1000
               }
             : repo.domains.find((d) => d.name === payload.domain.name || d.contractTxId === payload.domain.contractTxId)

@@ -34,7 +34,7 @@ export default function BountyActivity({ activity, setIsForkModalOpen, setRepo }
           <>{activity.bounty?.amount ?? ''} AR</>
         </Link>
         <div className="text-sm">{activity.issue?.title ?? ''} AR</div>
-        <div className="flex gap-3 text-sm items-center">
+        <div className="flex gap-3 text-sm items-center justify-between">
           <div className="flex items-center gap-1">
             <Icon />
             <span>
@@ -42,7 +42,6 @@ export default function BountyActivity({ activity, setIsForkModalOpen, setRepo }
               {formatDistanceToNow(new Date(activity.timestamp * 1000), { addSuffix: true })}
             </span>
           </div>
-          <div className="h-1 w-1 rounded-full bg-gray-400"></div>
           <div>{activeBountiesCount} Active Bounties </div>
         </div>
       </div>

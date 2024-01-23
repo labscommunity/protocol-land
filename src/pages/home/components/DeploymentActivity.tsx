@@ -23,7 +23,7 @@ export default function DeploymentActivity({
           {deployment.commitMessage}
         </Link>
 
-        <div className="flex items-center gap-3 text-sm">
+        <div className="flex items-center gap-3 text-sm justify-between">
           <span>
             Deployment done by{' '}
             <Link className="text-primary-600 hover:text-primary-700" to={`/user/${deployment.deployedBy}`}>
@@ -31,7 +31,7 @@ export default function DeploymentActivity({
             </Link>{' '}
             {formatDistanceToNow(new Date(activity.timestamp * 1000), { addSuffix: true })}
           </span>
-          <div className="h-1 w-1 rounded-full bg-gray-400"></div>
+
           <span>{deploymentsCount} Deployments</span>
         </div>
       </div>

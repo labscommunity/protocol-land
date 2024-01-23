@@ -24,7 +24,7 @@ export default function IssueActivity({ activity, setIsForkModalOpen, setRepo }:
           <span>{issue?.title ?? ''}</span>
           {issue?.id && <span className="text-gray-400">#{issue?.id}</span>}
         </Link>
-        <div className="flex gap-3 flex-shrink-0 items-center text-sm">
+        <div className="flex gap-3 flex-shrink-0 items-center text-sm justify-between">
           <div className="flex gap-1 items-center">
             <div className={clsx('h-2 w-2 rounded-full', isOpen ? 'bg-[#38a457]' : 'bg-purple-700')}></div>
             <div>
@@ -43,7 +43,6 @@ export default function IssueActivity({ activity, setIsForkModalOpen, setRepo }:
               )}
             </div>
           </div>
-          <div className="h-1 w-1 rounded-full bg-gray-400"></div>
           <div>{commentsCount} Comments</div>
         </div>
       </div>

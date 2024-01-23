@@ -27,7 +27,7 @@ export default function PullRequestActivity({
           <span>{pullRequest?.title ?? ''}</span>
           {pullRequest?.id && <span className="text-gray-400">#{pullRequest?.id}</span>}
         </Link>
-        <div className="flex gap-3 flex-shrink-0 items-center text-sm">
+        <div className="flex gap-3 flex-shrink-0 items-center text-sm justify-between">
           <div className="flex gap-1 items-center">
             <div
               className={clsx(
@@ -58,7 +58,6 @@ export default function PullRequestActivity({
               <span> {formatDistanceToNow(new Date(pullRequest.mergedTimestamp), { addSuffix: true })}</span>
             )}
           </div>
-          <div className="h-1 w-1 rounded-full bg-gray-400"></div>
           <div>{commentsCount} Comments</div>
         </div>
       </div>

@@ -53,6 +53,7 @@ export type ActivityBase = {
 
 export interface RepositoryActivityType extends ActivityBase {
   type: 'REPOSITORY'
+  author: string
 }
 
 export interface IssueActivityType extends ActivityBase {
