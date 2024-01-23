@@ -1,6 +1,6 @@
 import clsx from 'clsx'
 import { formatDistanceToNow } from 'date-fns'
-import React from 'react'
+import React, { useMemo } from 'react'
 import { FaArrowLeft } from 'react-icons/fa'
 import { GoIssueClosed } from 'react-icons/go'
 import { VscIssues } from 'react-icons/vsc'
@@ -31,7 +31,11 @@ const statusMap = {
 export default function IssueHeader({ issue }: { issue: Issue }) {
   const navigate = useNavigate()
   const [isSticky, setIsSticky] = React.useState(false)
-  const contributorOrIssueAuthor = useGlobalStore((state) => state.issuesActions.isContributorOrIssueAuthor)()
+  const [connectedAddress, isContributorOrIssueAuthor] = useGlobalStore((state) => [
+    state.authState.address,
+    state.issuesActions.isContributorOrIssueAuthor
+  ])
+  const contributorOrIssueAuthor = useMemo(() => isContributorOrIssueAuthor(), [connectedAddress])
 
   const StatusComponent = statusMap[issue.status]
 
