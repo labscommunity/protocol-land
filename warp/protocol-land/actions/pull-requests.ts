@@ -42,6 +42,22 @@ export async function createNewPullRequest(
     throw new ContractError('Repository not found.')
   }
 
+  if (repo.private) {
+    const hasPermissions = caller === repo.owner || repo.contributors.indexOf(caller) > -1
+
+    if (!hasPermissions) {
+      throw new ContractError('Error: You dont have permissions for this operation.')
+    }
+  }
+
+  if (!state.repos[payload.baseRepo.repoId]) {
+    throw new ContractError('Base repository not found.')
+  }
+
+  if (!state.repos[payload.compareRepo.repoId]) {
+    throw new ContractError('Compare repository not found.')
+  }
+
   const isSimilarPrOpen =
     repo.pullRequests.findIndex(
       (pr) =>

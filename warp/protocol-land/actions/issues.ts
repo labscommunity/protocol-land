@@ -31,6 +31,14 @@ export async function createNewIssue(
     throw new ContractError('Repository not found.')
   }
 
+  if (repo.private) {
+    const hasPermissions = caller === repo.owner || repo.contributors.indexOf(caller) > -1
+
+    if (!hasPermissions) {
+      throw new ContractError('Error: You dont have permissions for this operation.')
+    }
+  }
+
   const description = isInvalidInput(payload.description, 'string', true) ? '' : payload.description
 
   const issue: Issue = {
