@@ -55,7 +55,7 @@ export default function IssueHeader({ issue }: { issue: Issue }) {
                     <FaArrowLeft className="h-4 w-4 text-white" />
                   </Button>
                 </div>
-                <IssueTitle issueOrPr={issue} />
+                <IssueTitle issueOrPr={issue} canEdit={contributorOrIssueAuthor} />
               </>
             )}
 
@@ -69,7 +69,7 @@ export default function IssueHeader({ issue }: { issue: Issue }) {
               )}
               {issue && <StatusComponent status={issue!.status} />}
               <div className={clsx('text-gray-600', isSticky && 'truncate')}>
-                {isSticky && <IssueTitle issueOrPr={issue} showEdit={false} />}
+                {isSticky && <IssueTitle issueOrPr={issue} isSticky={true} />}
                 <span className={clsx(isSticky && 'text-sm')}>
                   {shortenAddress(issue.author)} has opened this issue{' '}
                   {formatDistanceToNow(new Date(issue.timestamp), { addSuffix: true })}

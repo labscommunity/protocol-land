@@ -24,6 +24,7 @@ export default function IssueTab() {
 
   const PR = selectedRepo && selectedRepo.pullRequests[+pullId! - 1]
   const linkedIssue = PR && selectedRepo?.issues.find((issue) => issue.id === PR.linkedIssueId)
+  const contributorOrPRAuthor = contributor || PR?.author === authState.address
 
   async function handleLinkIssue() {
     if (PR && selectedIssue) {
@@ -50,7 +51,7 @@ export default function IssueTab() {
         <Button
           className={isLinking ? '' : 'w-28'}
           variant="primary-solid"
-          disabled={!!linkedIssue || !contributor || PR?.author !== authState.address || isLinking || !selectedIssue}
+          disabled={!!linkedIssue || !contributorOrPRAuthor || isLinking || !selectedIssue}
           isLoading={isLinking}
           onClick={handleLinkIssue}
         >

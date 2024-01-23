@@ -174,25 +174,32 @@ export async function updatePullRequestStatus(
     throw new ContractError('Repository not found.')
   }
 
-  const hasPermissions = caller === repo.owner || repo.contributors.indexOf(caller) > -1
-
-  if (!hasPermissions) {
-    throw new ContractError('Error: You dont have permissions for this operation.')
-  }
-
   const PR = repo.pullRequests[+payload.prId - 1]
 
   if (!PR) {
     throw new ContractError('Pull Request not found.')
   }
 
+  const isOwnerOrContributor = caller === repo.owner || repo.contributors.indexOf(caller) > -1
+  const isPRAuthor = caller === PR.author
+
+  const hasPermissions = isOwnerOrContributor || isPRAuthor
+
+  if (!hasPermissions) {
+    throw new ContractError('Error: You dont have permissions for this operation.')
+  }
+
   if (PR.status === 'MERGED') {
-    throw new Error('Pull Request already merged')
+    throw new ContractError('Pull Request already merged')
   }
 
   const validStatusValues = ['REOPEN', 'CLOSED', 'MERGED']
   if (!validStatusValues.includes(payload.status)) {
     throw new ContractError('Invalid Pull Request status specified. Must be one of: ' + validStatusValues.join(', '))
+  }
+
+  if (PR.status === 'OPEN' && payload.status === 'MERGED' && isPRAuthor && !isOwnerOrContributor) {
+    throw new ContractError('Error: You dont have permissions for this operation.')
   }
 
   if (PR.status === payload.status) {
@@ -204,7 +211,7 @@ export async function updatePullRequestStatus(
   }
 
   if (PR.status === 'CLOSED' && payload.status === 'MERGED') {
-    throw new Error('Pull Request is closed; Reopen to merge')
+    throw new ContractError('Pull Request is closed; Reopen to merge')
   }
 
   const activity: PullRequestActivity = {

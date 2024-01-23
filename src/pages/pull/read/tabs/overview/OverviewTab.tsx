@@ -53,15 +53,17 @@ export default function OverviewTab() {
   const [isSubmittingComment, setIsSubmittingComment] = useState(false)
   const [commentVal, setCommentVal] = useState('')
   const { pullId } = useParams()
-  const [isLoggedIn, selectedRepo, mergePR, closePR, reopenPR, addComment, isContributor] = useGlobalStore((state) => [
-    state.authState.isLoggedIn,
-    state.repoCoreState.selectedRepo.repo,
-    state.pullRequestActions.mergePullRequest,
-    state.pullRequestActions.closePullRequest,
-    state.pullRequestActions.reopenPullRequest,
-    state.pullRequestActions.addComment,
-    state.repoCoreActions.isContributor
-  ])
+  const [connectedAddress, isLoggedIn, selectedRepo, mergePR, closePR, reopenPR, addComment, isContributor] =
+    useGlobalStore((state) => [
+      state.authState.address,
+      state.authState.isLoggedIn,
+      state.repoCoreState.selectedRepo.repo,
+      state.pullRequestActions.mergePullRequest,
+      state.pullRequestActions.closePullRequest,
+      state.pullRequestActions.reopenPullRequest,
+      state.pullRequestActions.addComment,
+      state.repoCoreActions.isContributor
+    ])
   const navigate = useNavigate()
 
   const PR = selectedRepo && selectedRepo.pullRequests[+pullId! - 1]
@@ -133,6 +135,7 @@ export default function OverviewTab() {
   if (!PR) return null
 
   const contributor = isContributor()
+  const contributorOrPRAuthor = contributor || connectedAddress === PR.author
   const isOpen = PR.status === 'OPEN'
   const isMerged = PR.status === 'MERGED'
 
@@ -142,7 +145,7 @@ export default function OverviewTab() {
         <div className="flex flex-col gap-8">
           <ol className="relative border-s-2 border-gray-300 ms-5">
             <li className="mb-10 -ms-5">
-              <PrDescription isIssue={false} issueOrPr={PR!} isContributor={contributor} />
+              <PrDescription isIssue={false} issueOrPr={PR!} isContributor={contributorOrPRAuthor} />
             </li>
             {PR.activities &&
               PR.activities.map((activity, activityId) => {
@@ -155,7 +158,7 @@ export default function OverviewTab() {
                         issueOrPRId={PR.id}
                         commentId={activityId}
                         item={commentActivity}
-                        isContributor={contributor}
+                        isContributor={contributorOrPRAuthor}
                       />
                     </li>
                   )
@@ -231,7 +234,7 @@ export default function OverviewTab() {
                     onClick={handleClosePullRequest}
                     className="gap-2 justify-center font-medium"
                     variant="secondary"
-                    disabled={isSubmittingClose || !contributor}
+                    disabled={isSubmittingClose || !contributorOrPRAuthor}
                     isLoading={isSubmittingClose}
                   >
                     <AiFillCloseCircle className="w-4 h-4" />
@@ -253,7 +256,7 @@ export default function OverviewTab() {
                 <div className="flex w-full justify-center gap-4 py-4">
                   <Button
                     isLoading={isSubmittingClose}
-                    disabled={isSubmittingClose || !contributor}
+                    disabled={isSubmittingClose || !contributorOrPRAuthor}
                     onClick={handleReopenPullRequest}
                     variant="primary-solid"
                   >
