@@ -126,16 +126,16 @@ export async function updateIssueStatus(
     throw new ContractError('Repository not found.')
   }
 
-  const hasPermissions = caller === repo.owner || repo.contributors.indexOf(caller) > -1
-
-  if (!hasPermissions) {
-    throw new ContractError('Error: You dont have permissions for this operation.')
-  }
-
   const issue = repo.issues[+payload.issueId - 1]
 
   if (!issue) {
     throw new ContractError('Issue not found.')
+  }
+
+  const hasPermissions = caller === repo.owner || repo.contributors.indexOf(caller) > -1 || caller === issue.author
+
+  if (!hasPermissions) {
+    throw new ContractError('Error: You dont have permissions for this operation.')
   }
 
   const validStatusValues = ['COMPLETED', 'REOPEN']
@@ -193,16 +193,16 @@ export async function updateIssueDetails(
     throw new ContractError('Repository not found.')
   }
 
-  const hasPermissions = caller === repo.owner || repo.contributors.indexOf(caller) > -1
-
-  if (!hasPermissions) {
-    throw new ContractError('Error: You dont have permissions for this operation.')
-  }
-
   const issue = repo.issues[+payload.issueId - 1]
 
   if (!issue) {
     throw new ContractError('Issue not found.')
+  }
+
+  const hasPermissions = caller === repo.owner || repo.contributors.indexOf(caller) > -1 || caller === issue.author
+
+  if (!hasPermissions) {
+    throw new ContractError('Error: You dont have permissions for this operation.')
   }
 
   if (!isTitleInvalid) {
@@ -378,8 +378,13 @@ export async function createNewBounty(
     throw new ContractError('Issue not found.')
   }
 
-  if (caller !== issue.author) {
-    throw new ContractError('Only author of this issue can create bounties.')
+  // if (caller !== issue.author) {
+  //   throw new ContractError('Only author of this issue can create bounties.')
+  // }
+  const hasPermissions = caller === repo.owner || repo.contributors.indexOf(caller) > -1 || caller === issue.author
+
+  if (!hasPermissions) {
+    throw new ContractError('Error: You dont have permissions for this operation.')
   }
 
   const bounty: Bounty = {

@@ -17,12 +17,12 @@ const issuesSchema = yup
 export default function Title({ issueOrPr, showEdit = true }: { issueOrPr: Issue | PullRequest; showEdit?: boolean }) {
   const [isEditing, setIsEditing] = React.useState(false)
   const [isSubmitting, setIsSubmitting] = React.useState(false)
-  const [isContributor, updateIssueDetails, updatePullRequestDetails] = useGlobalStore((state) => [
-    state.repoCoreActions.isContributor,
+  const [isContributorOrIssueAuthor, updateIssueDetails, updatePullRequestDetails] = useGlobalStore((state) => [
+    state.issuesActions.isContributorOrIssueAuthor,
     state.issuesActions.updateIssueDetails,
     state.pullRequestActions.updatePullRequestDetails
   ])
-  const contributor = isContributor()
+  const contributor = isContributorOrIssueAuthor()
 
   async function updateTitle(data: yup.InferType<typeof issuesSchema>) {
     setIsSubmitting(true)

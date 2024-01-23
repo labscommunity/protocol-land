@@ -36,6 +36,21 @@ const createPullRequestSlice: StateCreator<CombinedSlices, [['zustand/immer', ne
         state.issuesState = initialIssuesState
       })
     },
+    isContributorOrIssueAuthor: () => {
+      const { repoCoreState, authState, issuesState } = get()
+      const { repo } = repoCoreState.selectedRepo
+      const userAddress = authState.address
+
+      if (!repo || !userAddress) {
+        return false
+      }
+
+      return (
+        repo.owner === userAddress ||
+        repo.contributors.includes(userAddress) ||
+        userAddress === issuesState.selectedIssue?.author
+      )
+    },
     setSelectedIssue: (issue: Issue) => {
       set((state) => {
         state.issuesState.selectedIssue = issue

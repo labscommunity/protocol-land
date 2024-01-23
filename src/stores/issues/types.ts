@@ -14,6 +14,7 @@ export type IssuesState = {
 
 export type IssuesActions = {
   reset: () => void
+  isContributorOrIssueAuthor: () => boolean
   setSelectedIssue: (issue: Issue) => void
   createIssue: (title: string, description: string) => Promise<undefined | Issue>
   reopenIssue: (id: number) => Promise<void>

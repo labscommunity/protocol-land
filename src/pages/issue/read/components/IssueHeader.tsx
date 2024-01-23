@@ -31,7 +31,7 @@ const statusMap = {
 export default function IssueHeader({ issue }: { issue: Issue }) {
   const navigate = useNavigate()
   const [isSticky, setIsSticky] = React.useState(false)
-  const isContributor = useGlobalStore((state) => state.repoCoreActions.isContributor)()
+  const contributorOrIssueAuthor = useGlobalStore((state) => state.issuesActions.isContributorOrIssueAuthor)()
 
   const StatusComponent = statusMap[issue.status]
 
@@ -47,7 +47,7 @@ export default function IssueHeader({ issue }: { issue: Issue }) {
     <Sticky top={0} innerActiveClass="z-10 left-0 !w-full" onStateChange={handleStateChange}>
       <div className={clsx('border-b-[1px] bg-gray-50 border-gray-200', isSticky ? 'py-2 shadow' : 'pb-4')}>
         <div className={clsx('flex justify-between gap-2 w-full', { 'max-w-[1280px] mx-auto': isSticky })}>
-          <div className={clsx('flex flex-col gap-2', isSticky && isContributor ? 'w-[90%]' : 'w-full')}>
+          <div className={clsx('flex flex-col gap-2', isSticky && contributorOrIssueAuthor ? 'w-[90%]' : 'w-full')}>
             {!isSticky && (
               <>
                 <div>
@@ -77,9 +77,9 @@ export default function IssueHeader({ issue }: { issue: Issue }) {
               </div>
             </div>
           </div>
-          {isSticky && isContributor && (
+          {isSticky && contributorOrIssueAuthor && (
             <div className="flex items-center">
-              <ActionButton isContributor={isContributor} />
+              <ActionButton />
             </div>
           )}
         </div>
