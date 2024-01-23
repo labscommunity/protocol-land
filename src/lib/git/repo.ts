@@ -43,6 +43,7 @@ export async function postNewRepo({ id, title, description, file, owner, visibil
     { name: 'Creator', value: owner },
     { name: 'Title', value: title },
     { name: 'Description', value: description },
+    { name: 'Repo-Id', value: id },
     { name: 'Type', value: 'repo-create' },
     { name: 'Visibility', value: visibility }
   ]
@@ -179,6 +180,7 @@ export async function postUpdatedRepo({ fs, dir, owner, id, isPrivate, privateSt
     { name: 'App-Name', value: 'Protocol.Land' },
     { name: 'Content-Type', value: repoBlob.type },
     { name: 'Creator', value: owner },
+    { name: 'Repo-Id', value: id },
     { name: 'Type', value: 'repo-update' }
   ]
 

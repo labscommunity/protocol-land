@@ -108,7 +108,7 @@ export default function useCommit() {
       const { response: commit } = await withAsync(() => readCommit({ fs, dir, oid: commitSHA }))
 
       if (commit) {
-        await withAsync(() => postCommitStatDataTxToArweave({ repoName: name, commit }))
+        await withAsync(() => postCommitStatDataTxToArweave({ repoName: name, repoId: id, commit }))
       }
     }
 

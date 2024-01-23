@@ -61,7 +61,7 @@ export async function createNewIssue(title: string, description: string, repoId:
   if (!issue || !issue.id) return
 
   try {
-    await postIssueStatDataTxToArweave(address, repo.name, issue)
+    await postIssueStatDataTxToArweave(address, repo.name, repo.id, issue)
   } catch (error) {
     //silently ignore
   }
