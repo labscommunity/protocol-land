@@ -145,7 +145,7 @@ export default function OverviewTab() {
         <div className="flex flex-col gap-8">
           <ol className="relative border-s-2 border-gray-300 ms-5">
             <li className="mb-10 -ms-5">
-              <PrDescription isIssue={false} issueOrPr={PR!} isContributor={contributorOrPRAuthor} />
+              <PrDescription isIssue={false} issueOrPr={PR!} canEdit={contributorOrPRAuthor} />
             </li>
             {PR.activities &&
               PR.activities.map((activity, activityId) => {
@@ -158,7 +158,7 @@ export default function OverviewTab() {
                         issueOrPRId={PR.id}
                         commentId={activityId}
                         item={commentActivity}
-                        isContributor={contributorOrPRAuthor}
+                        canEdit={connectedAddress === commentActivity.author}
                       />
                     </li>
                   )
