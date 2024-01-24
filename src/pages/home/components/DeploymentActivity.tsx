@@ -23,7 +23,7 @@ export default function DeploymentActivity({
           {deployment.commitMessage}
         </Link>
 
-        <div className="flex items-center gap-3 text-sm justify-between">
+        <div className="flex items-center gap-1 text-sm justify-between flex-wrap">
           <span>
             Deployment done by{' '}
             <Link className="text-primary-600 hover:text-primary-700" to={`/user/${deployment.deployedBy}`}>

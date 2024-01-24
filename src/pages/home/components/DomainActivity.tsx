@@ -18,7 +18,7 @@ export default function DomainActivity({ activity, setIsForkModalOpen, setRepo }
           {domain.name}
         </Link>
 
-        <div className="flex items-center gap-3 text-sm justify-between">
+        <div className="flex items-center gap-1 text-sm justify-between flex-wrap">
           <span>
             ArNS Domain {activity.created ? 'added' : 'updated'} by{' '}
             <Link className="text-primary-600 hover:text-primary-700" to={`/user/${domain.controller}`}>

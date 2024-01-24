@@ -27,8 +27,8 @@ export default function PullRequestActivity({
           <span>{pullRequest?.title ?? ''}</span>
           {pullRequest?.id && <span className="text-gray-400">#{pullRequest?.id}</span>}
         </Link>
-        <div className="flex gap-3 flex-shrink-0 items-center text-sm justify-between">
-          <div className="flex gap-1 items-center">
+        <div className="flex gap-1 flex-shrink-0 items-center text-sm justify-between flex-wrap">
+          <div className="flex gap-1 flex-wrap items-center">
             <div
               className={clsx(
                 'h-2 w-2 rounded-full',

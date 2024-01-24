@@ -34,7 +34,7 @@ export default function BountyActivity({ activity, setIsForkModalOpen, setRepo }
           <>{activity.bounty?.amount ?? ''} AR</>
         </Link>
         <div className="text-sm">{activity.issue?.title ?? ''} AR</div>
-        <div className="flex gap-3 text-sm items-center justify-between">
+        <div className="flex gap-1 text-sm items-center justify-between flex-wrap">
           <div className="flex items-center gap-1">
             <Icon />
             <span>

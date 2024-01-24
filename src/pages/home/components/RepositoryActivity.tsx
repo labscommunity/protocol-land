@@ -29,7 +29,7 @@ export default function RepositoryActivity({
         <ActivityHeader activity={activity} setIsForkModalOpen={setIsForkModalOpen} setRepo={setRepo} />
 
         <div className="text-sm">{activity.repo.description}</div>
-        <div className="flex gap-3 items-center text-sm justify-between">
+        <div className="flex gap-1 items-center flex-wrap text-sm justify-between">
           <span>
             {activity.created ? (activity.repo.fork ? 'Forked' : 'Created') : 'Updated'} by{' '}
             <Link className="text-primary-600 hover:text-primary-70" to={`/user/${activity.author}`}>
