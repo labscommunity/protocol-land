@@ -172,7 +172,7 @@ export default function NewFile() {
               height="100%"
               placeholder="Enter file contents here"
               theme={githubLight}
-              extensions={[language as any]}
+              extensions={[language!]}
               onChange={(value) => setFileContent(value)}
               editable={true}
             />

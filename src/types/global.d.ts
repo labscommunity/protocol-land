@@ -14,4 +14,4 @@ declare module 'react-lottie'
 
 type ApiStatus = 'IDLE' | 'PENDING' | 'SUCCESS' | 'ERROR'
 
-declare module 'lang-map'
+declare module 'lang-exts-map'
