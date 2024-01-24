@@ -7485,6 +7485,18 @@ koa@^2.13.4:
     type-is "^1.6.16"
     vary "^1.1.2"
 
+lang-map@^0.4.0:
+  version "0.4.0"
+  resolved "https://registry.npmjs.org/lang-map/-/lang-map-0.4.0.tgz#de38b07783a0a7db0bc082c6c5ff69c56e354ab5"
+  integrity sha512-oiSqZIEUnWdFeDNsp4HId4tAxdFbx5iMBOwA3666Fn2L8Khj8NiD9xRvMsGmKXopPVkaDFtSv3CJOmXFUB0Hcg==
+  dependencies:
+    language-map "^1.1.0"
+
+language-map@^1.1.0:
+  version "1.5.0"
+  resolved "https://registry.npmjs.org/language-map/-/language-map-1.5.0.tgz#65c6d2c7493efa6708585386f0c2799d544fa367"
+  integrity sha512-n7gFZpe+DwEAX9cXVTw43i3wiudWDDtSn28RmdnS/HCPr284dQI/SztsamWanRr75oSlKSaGbV2nmWCTzGCoVg==
+
 lazystream@^1.0.0:
   version "1.0.1"
   resolved "https://registry.yarnpkg.com/lazystream/-/lazystream-1.0.1.tgz#494c831062f1f9408251ec44db1cba29242a2638"

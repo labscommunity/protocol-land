@@ -1,6 +1,5 @@
 import { EditorState } from '@codemirror/state'
 import { EditorView } from '@codemirror/view'
-import { langs } from '@uiw/codemirror-extensions-langs'
 import { githubLight } from '@uiw/codemirror-theme-github'
 import CodeMirror from '@uiw/react-codemirror'
 import MDEditor from '@uiw/react-md-editor'
@@ -15,6 +14,7 @@ import Sticky from 'react-stickynode'
 
 import { Button } from '@/components/common/buttons'
 import { isImage, isMarkdown } from '@/pages/repository/helpers/filenameHelper'
+import useLanguage from '@/pages/repository/hooks/useLanguage'
 import { useGlobalStore } from '@/stores/globalStore'
 
 import CommitFilesModal from './CommitFilesModal'
@@ -39,6 +39,7 @@ export default function FileView({ fileContent, setFileContent, filename, setFil
   const [isFileCommited, setIsFileCommitted] = React.useState(false)
   const [isSticky, setIsSticky] = React.useState(false)
   const [files, setFiles] = React.useState<FileWithPath[]>([])
+  const { language } = useLanguage(filename)
 
   const contributor = isContributor()
   const isMarkdownFile = isMarkdown(filename)
@@ -166,19 +167,11 @@ export default function FileView({ fileContent, setFileContent, filename, setFil
             !isMarkdownFile ? (
               <CodeMirrorMerge orientation="a-b" theme={githubLight} className="rounded-b-lg overflow-hidden">
                 <CodeMirrorMerge.Original
-                  extensions={[
-                    langs.javascript({ jsx: true }),
-                    EditorView.editable.of(false),
-                    EditorState.readOnly.of(true)
-                  ]}
+                  extensions={[language!, EditorView.editable.of(false), EditorState.readOnly.of(true)]}
                   value={fileContent.original}
                 />
                 <CodeMirrorMerge.Modified
-                  extensions={[
-                    langs.javascript({ jsx: true }),
-                    EditorView.editable.of(false),
-                    EditorState.readOnly.of(true)
-                  ]}
+                  extensions={[language!, EditorView.editable.of(false), EditorState.readOnly.of(true)]}
                   value={fileContent.modified}
                 />
               </CodeMirrorMerge>
@@ -193,7 +186,7 @@ export default function FileView({ fileContent, setFileContent, filename, setFil
               height="100%"
               theme={githubLight}
               placeholder="Enter file contents here"
-              extensions={[langs.javascript({ jsx: true })]}
+              extensions={[language!]}
               onChange={(value) => setFileContent((content) => ({ ...content, modified: value }))}
               editable={isEditMode}
             />
