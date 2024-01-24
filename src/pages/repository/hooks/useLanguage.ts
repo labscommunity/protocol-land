@@ -10,7 +10,7 @@ export default function useLanguage(filename: string) {
       const languageName = getLanguageName()
       const loadedLanguage = loadLanguage(languageName)
       if (loadedLanguage) {
-        return loadLanguage(languageName)
+        return loadedLanguage
       }
     }
     return langs.javascript({ jsx: true, typescript: true })
