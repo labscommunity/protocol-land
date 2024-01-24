@@ -14,15 +14,21 @@ const issuesSchema = yup
   })
   .required()
 
-export default function Title({ issueOrPr, showEdit = true }: { issueOrPr: Issue | PullRequest; showEdit?: boolean }) {
+export default function Title({
+  issueOrPr,
+  canEdit = false,
+  isSticky = false
+}: {
+  issueOrPr: Issue | PullRequest
+  canEdit?: boolean
+  isSticky?: boolean
+}) {
   const [isEditing, setIsEditing] = React.useState(false)
   const [isSubmitting, setIsSubmitting] = React.useState(false)
-  const [isContributor, updateIssueDetails, updatePullRequestDetails] = useGlobalStore((state) => [
-    state.repoCoreActions.isContributor,
+  const [updateIssueDetails, updatePullRequestDetails] = useGlobalStore((state) => [
     state.issuesActions.updateIssueDetails,
     state.pullRequestActions.updatePullRequestDetails
   ])
-  const contributor = isContributor()
 
   async function updateTitle(data: yup.InferType<typeof issuesSchema>) {
     setIsSubmitting(true)
@@ -74,7 +80,7 @@ export default function Title({ issueOrPr, showEdit = true }: { issueOrPr: Issue
               placeholder="Add new feature"
             />
           </div>
-        ) : showEdit ? (
+        ) : !isSticky ? (
           <h1 className="text-3xl text-gray-900">
             {issueOrPr?.title} <span className="text-primary-600 ml-2">#{issueOrPr?.id}</span>
           </h1>
@@ -84,8 +90,8 @@ export default function Title({ issueOrPr, showEdit = true }: { issueOrPr: Issue
             <span className="text-primary-600">#{issueOrPr?.id}</span>
           </div>
         )}
-        {showEdit &&
-          contributor &&
+        {!isSticky &&
+          canEdit &&
           (isEditing ? (
             <div className="flex gap-2">
               <Button

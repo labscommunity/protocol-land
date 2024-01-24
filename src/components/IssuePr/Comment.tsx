@@ -15,21 +15,21 @@ interface CommentProps {
   issueOrPRId: number
   commentId?: number
   item: Issue | PullRequest | IssueActivityComment | PullRequestActivityComment
-  isContributor: boolean
+  canEdit: boolean
 }
 
-export default function Comment({ isIssue, issueOrPRId, commentId, item, isContributor }: CommentProps) {
+export default function Comment({ isIssue, issueOrPRId, commentId, item, canEdit }: CommentProps) {
   const [isEditing, setIsEditing] = React.useState(false)
   const [isSubmittingDescription, setIsSubmittingDescription] = React.useState(false)
   const [description, setDescription] = React.useState('')
-  const [connectedAddress, updateIssueComment, updatePRComment, updateIssueDetails, updatePullRequestDetails] =
-    useGlobalStore((state) => [
-      state.authState.address,
+  const [updateIssueComment, updatePRComment, updateIssueDetails, updatePullRequestDetails] = useGlobalStore(
+    (state) => [
       state.issuesActions.updateComment,
       state.pullRequestActions.updateComment,
       state.issuesActions.updateIssueDetails,
       state.pullRequestActions.updatePullRequestDetails
-    ])
+    ]
+  )
   const navigate = useNavigate()
 
   async function handleUpdateDescription() {
@@ -86,7 +86,7 @@ export default function Comment({ isIssue, issueOrPRId, commentId, item, isContr
           <span> {formatDistanceToNow(new Date(item.timestamp), { addSuffix: true })}</span>
         </div>
 
-        {(typeof commentId === 'number' ? connectedAddress === item.author : isContributor) && (
+        {canEdit && (
           <Menu as="div" className="relative inline-block text-left">
             <Menu.Button className="inline-flex gap-[2px] w-full justify-center items-center rounded-md px-4 text-sm font-black">
               <span>.</span>
