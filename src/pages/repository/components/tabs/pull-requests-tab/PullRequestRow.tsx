@@ -4,7 +4,7 @@ import { RiGitClosePullRequestLine } from 'react-icons/ri'
 import { useParams } from 'react-router-dom'
 import { useNavigate } from 'react-router-dom'
 
-import { shortenAddress } from '@/helpers/shortenAddress'
+import { resolveUsernameOrShorten } from '@/helpers/resolveUsername'
 
 type Props = {
   status: 'OPEN' | 'CLOSED' | 'MERGED'
@@ -46,9 +46,9 @@ export default function PullRequestRow({ status, author, id, title, timestamp, m
       <div className="flex gap-1 flex-shrink-0">
         <span className="font-semibold">#{id}</span>
         {status !== 'MERGED' ? (
-          <span>opened by {shortenAddress(author)}</span>
+          <span>opened by {resolveUsernameOrShorten(author)}</span>
         ) : (
-          <span>by {shortenAddress(author)} was merged</span>
+          <span>by {resolveUsernameOrShorten(author)} was merged</span>
         )}
         {status !== 'MERGED' && timestamp && (
           <span> {formatDistanceToNow(new Date(timestamp), { addSuffix: true })}</span>

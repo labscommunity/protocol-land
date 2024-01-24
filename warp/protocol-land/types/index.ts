@@ -224,6 +224,7 @@ const repoFnList = [
   'updateBounty',
   'updateProfileDetails',
   'getUserDetails',
+  'isUsernameAvailable',
   'postEvolve',
   'updatePrivateStateTx',
   'cancelContributorInvite'

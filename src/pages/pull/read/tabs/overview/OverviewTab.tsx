@@ -13,7 +13,7 @@ import { useNavigate, useParams } from 'react-router-dom'
 import { Button } from '@/components/common/buttons'
 import Comment from '@/components/IssuePr/Comment'
 import PrDescription from '@/components/IssuePr/Description'
-import { shortenAddress } from '@/helpers/shortenAddress'
+import { resolveUsernameOrShorten } from '@/helpers/resolveUsername'
 import { withAsync } from '@/helpers/withAsync'
 import { useGlobalStore } from '@/stores/globalStore'
 import { PullRequestActivityComment, PullRequestActivityStatus } from '@/types/repository'
@@ -173,7 +173,7 @@ export default function OverviewTab() {
                           className="font-medium hover:underline cursor-pointer hover:text-primary-700"
                           onClick={() => navigate(`/user/${statusActivity.author}`)}
                         >
-                          {shortenAddress(statusActivity.author)}
+                          {resolveUsernameOrShorten(statusActivity.author)}
                         </span>
                         <span className="text-gray-500">
                           {StatusTextMap[statusActivity.status]}{' '}
@@ -188,7 +188,7 @@ export default function OverviewTab() {
                                   className="text-black font-medium hover:underline cursor-pointer hover:text-primary-700"
                                   onClick={() => navigate(`/user/${reviewer}`)}
                                 >
-                                  {shortenAddress(reviewer)}
+                                  {resolveUsernameOrShorten(reviewer)}
                                 </span>
                                 {getSeperator(index, statusActivity.reviewers!)}
                               </>

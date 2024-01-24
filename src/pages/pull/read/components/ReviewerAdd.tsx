@@ -5,7 +5,7 @@ import { FiCheck, FiPlus } from 'react-icons/fi'
 import { useParams } from 'react-router-dom'
 
 import { Button } from '@/components/common/buttons'
-import { shortenAddress } from '@/helpers/shortenAddress'
+import { resolveUsernameOrShorten } from '@/helpers/resolveUsername'
 import { withAsync } from '@/helpers/withAsync'
 import { useGlobalStore } from '@/stores/globalStore'
 
@@ -71,7 +71,7 @@ export default function ReviewerAdd() {
                                 reviewers.indexOf(address) > -1 ? 'opacity-100' : 'opacity-0'
                               }`}
                             />
-                            {shortenAddress(address, 6)}
+                            {resolveUsernameOrShorten(address, 6)}
                           </span>
                         </>
                       )

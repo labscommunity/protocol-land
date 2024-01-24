@@ -10,6 +10,7 @@ export interface UserSlice {
 export type UserState = {
   userRepos: Repo[]
   userDetails: User
+  allUsers: Map<string, User>
 }
 
 export type UserActions = {
@@ -19,4 +20,5 @@ export type UserActions = {
   fetchUserDetailsByAddress: (address: string) => Promise<User>
   saveUserDetails: (details: Partial<User>, address: string) => Promise<void>
   updateUserContributionStats: (data: UserContributionData) => Promise<void>
+  updateAllUsers: () => Promise<void>
 }

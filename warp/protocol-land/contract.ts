@@ -38,7 +38,7 @@ import {
   updateRepositoryDetails,
   updateRepositoryTxId
 } from './actions/repository'
-import { getUserDetails, updateProfileDetails } from './actions/user'
+import { getUserDetails, isUsernameAvailable, updateProfileDetails } from './actions/user'
 import { ContractState, EvolveAction, RepositoryAction } from './types'
 
 declare const ContractError
@@ -117,6 +117,8 @@ export async function handle(state: ContractState, action: RepositoryAction | Ev
       return await updateProfileDetails(state, action as RepositoryAction)
     case 'getUserDetails':
       return await getUserDetails(state, action as RepositoryAction)
+    case 'isUsernameAvailable':
+      return await isUsernameAvailable(state, action as RepositoryAction)
     case 'evolve':
       return await evolveContract(state, action as EvolveAction)
     default:

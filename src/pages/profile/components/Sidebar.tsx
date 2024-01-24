@@ -2,6 +2,7 @@ import { yupResolver } from '@hookform/resolvers/yup'
 import clsx from 'clsx'
 import React from 'react'
 import { useForm } from 'react-hook-form'
+import toast from 'react-hot-toast'
 import { AiOutlineTwitter, AiTwotoneMail } from 'react-icons/ai'
 import { BsGlobe } from 'react-icons/bs'
 import { TiLocation } from 'react-icons/ti'
@@ -37,9 +38,10 @@ const schema = yup.object().shape(
         then: (rule) =>
           rule
             .min(4, 'Username must be more than 3 characters.')
+            .max(39, 'Username must be at most 39 characters.')
             .matches(
-              /^[a-z\d](?:[a-z\d]|-(?=[a-z\d])){0,38}$/,
-              'Invalid username format. Use only lowercase letters, numbers, and hyphens. It must start with a letter or number and be at most 39 characters.'
+              /^[a-zA-Z\d](?:[a-zA-Z\d]|-(?=[a-zA-Z\d])){3,38}$/,
+              'Invalid username format. Use only letters, numbers, and hyphens. It must start with a letter or number and be at most 39 characters.'
             )
       }),
     location: yup.string().trim(),
@@ -114,7 +116,13 @@ export default function Sidebar({
     }
 
     if (Object.keys(updatedData).length > 0) {
-      await saveUserDetails(updatedData, id!)
+      try {
+        await saveUserDetails(updatedData, id!)
+      } catch (err: any) {
+        toast.error(err?.message || 'Error saving user details')
+        setIsSubmitting(false)
+        return
+      }
       setUserDetails({ ...userDetails, ...updatedData })
     }
 

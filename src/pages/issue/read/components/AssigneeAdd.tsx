@@ -5,8 +5,8 @@ import { FiCheck, FiPlus } from 'react-icons/fi'
 import { useParams } from 'react-router-dom'
 
 import { Button } from '@/components/common/buttons'
+import { resolveUsernameOrShorten } from '@/helpers/resolveUsername'
 import { useGlobalStore } from '@/stores/globalStore'
-import { shortenAddress } from '@/helpers/shortenAddress'
 
 export default function AssigneeAdd() {
   const { issueId } = useParams()
@@ -65,7 +65,7 @@ export default function AssigneeAdd() {
                                 assignees.indexOf(address) > -1 ? 'opacity-100' : 'opacity-0'
                               }`}
                             />
-                            {shortenAddress(address, 6)}
+                            {resolveUsernameOrShorten(address, 6)}
                           </span>
                         </>
                       )

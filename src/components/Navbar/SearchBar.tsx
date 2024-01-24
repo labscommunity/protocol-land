@@ -4,7 +4,7 @@ import { BiSearch } from 'react-icons/bi'
 import { RiCloseCircleLine, RiGitRepositoryFill } from 'react-icons/ri'
 import { useNavigate } from 'react-router-dom'
 
-import { shortenAddress } from '@/helpers/shortenAddress'
+import { resolveUsernameOrShorten } from '@/helpers/resolveUsername'
 import { withAsync } from '@/helpers/withAsync'
 import { debounce } from '@/helpers/withDebounce'
 import { searchRepositories } from '@/stores/repository-core/actions'
@@ -145,7 +145,7 @@ export default function SearchBar() {
                       <span className="text-gray-700">{repo.name}</span>
                     </div>
                     <div className="flex search-repo-item-meta">
-                      <span className="text-gray-700">Owner: {shortenAddress(repo.owner, 8)}</span>
+                      <span className="text-gray-700">Owner: {resolveUsernameOrShorten(repo.owner, 8)}</span>
                     </div>
                   </div>
                 ))}

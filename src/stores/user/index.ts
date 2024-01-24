@@ -2,9 +2,15 @@ import { StateCreator } from 'zustand'
 
 import { trackGoogleAnalyticsEvent } from '@/helpers/google-analytics'
 import { withAsync } from '@/helpers/withAsync'
+import { User } from '@/types/user'
 
 import { CombinedSlices } from '../types'
-import { getUserDetailsByAddressFromContract, getUserDetailsFromContract, saveUserDetails } from './actions'
+import {
+  getUserAddressToUserMap,
+  getUserDetailsByAddressFromContract,
+  getUserDetailsFromContract,
+  saveUserDetails
+} from './actions'
 import { UserSlice } from './types'
 
 const initialUserState = {
@@ -15,7 +21,8 @@ const initialUserState = {
       pullRequests: [],
       issues: []
     }
-  }
+  },
+  allUsers: new Map<string, User>()
 }
 
 const createUserSlice: StateCreator<CombinedSlices, [['zustand/immer', never], never], [], UserSlice> = (set, get) => ({
@@ -60,18 +67,32 @@ const createUserSlice: StateCreator<CombinedSlices, [['zustand/immer', never], n
       })
     },
     saveUserDetails: async (details, address: string) => {
-      const { response } = await withAsync(() => saveUserDetails(details, address))
+      const { response, error } = await withAsync(() => saveUserDetails(details, address))
 
       if (response) {
         const userDetails = response.result
 
         set((state) => {
           state.userState.userDetails = userDetails
+          const userState = state.userState.allUsers.get(address)
+          state.userState.allUsers.set(address, { ...userState, ...userDetails })
         })
 
         trackGoogleAnalyticsEvent('User', 'Update user details', 'User details update', {
           ...details,
           result: 'SUCCESS'
+        })
+      }
+
+      if (error) {
+        throw error
+      }
+    },
+    updateAllUsers: async () => {
+      const { response } = await withAsync(() => getUserAddressToUserMap())
+      if (response) {
+        set((state) => {
+          state.userState.allUsers = response
         })
       }
     }

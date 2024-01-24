@@ -2,7 +2,7 @@ import React from 'react'
 import { Link } from 'react-router-dom'
 
 import { Button } from '@/components/common/buttons'
-import { shortenAddress } from '@/helpers/shortenAddress'
+import { resolveUsernameOrShorten } from '@/helpers/resolveUsername'
 import { useGlobalStore } from '@/stores/globalStore'
 import { Repo } from '@/types/repository'
 
@@ -68,7 +68,7 @@ export default function AcceptInvite({ repo }: { repo: Repo | null }) {
           <p className="text-2xl text-gray-600 mb-8">
             You've been invited by{' '}
             <span className="text-primary-600 hover:underline">
-              <Link to={`/user/${repo.owner}`}>{shortenAddress(repo.owner, 6)}</Link>
+              <Link to={`/user/${repo.owner}`}>{resolveUsernameOrShorten(repo.owner, 6)}</Link>
             </span>{' '}
             to collaborate on{' '}
             <b>

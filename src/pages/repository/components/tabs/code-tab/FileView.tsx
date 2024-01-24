@@ -201,6 +201,7 @@ export default function FileView({ fileContent, setFileContent, filename, setFil
             <MDEditor
               minHeight={200}
               height="100%"
+              className="min-h-[200px]"
               visibleDragbar={false}
               preview="edit"
               value={fileContent.modified}
