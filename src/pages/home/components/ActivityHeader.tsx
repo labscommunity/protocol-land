@@ -1,7 +1,7 @@
 import { Dispatch, SetStateAction } from 'react'
 import { Link } from 'react-router-dom'
 
-import { shortenAddress } from '@/helpers/shortenAddress'
+import { resolveUsernameOrShorten } from '@/helpers/resolveUsername'
 import { Activity } from '@/types/explore'
 import { Repo } from '@/types/repository'
 
@@ -31,7 +31,7 @@ export default function ActivityHeader({ activity, setIsForkModalOpen, setRepo }
             className="font-normal hover:underline text-primary-600 hover:text-primary-700 cursor-pointer"
             to={`/user/${activity.repo.owner}`}
           >
-            {shortenAddress(activity.repo.owner)}
+            {resolveUsernameOrShorten(activity.repo.owner)}
           </Link>
         </div>
       </div>

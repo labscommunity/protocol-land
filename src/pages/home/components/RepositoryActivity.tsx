@@ -2,7 +2,7 @@ import { formatDistanceToNow } from 'date-fns'
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 
-import { shortenAddress } from '@/helpers/shortenAddress'
+import { resolveUsernameOrShorten } from '@/helpers/resolveUsername'
 import { ActivityProps, RepositoryActivityType } from '@/types/explore'
 
 import { getRepoContributionsCount } from '../utils'
@@ -33,7 +33,7 @@ export default function RepositoryActivity({
           <span>
             {activity.created ? (activity.repo.fork ? 'Forked' : 'Created') : 'Updated'} by{' '}
             <Link className="text-primary-600 hover:text-primary-70" to={`/user/${activity.author}`}>
-              {shortenAddress(activity.author)}
+              {resolveUsernameOrShorten(activity.author)}
             </Link>{' '}
             {formatDistanceToNow(new Date(activity.timestamp * 1000), { addSuffix: true })}
           </span>

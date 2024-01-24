@@ -2,7 +2,7 @@ import clsx from 'clsx'
 import { formatDistanceToNow } from 'date-fns'
 import { Link } from 'react-router-dom'
 
-import { shortenAddress } from '@/helpers/shortenAddress'
+import { resolveUsernameOrShorten } from '@/helpers/resolveUsername'
 import { ActivityProps, IssueActivityType } from '@/types/explore'
 
 import ActivityHeader from './ActivityHeader'
@@ -32,7 +32,7 @@ export default function IssueActivity({ activity, setIsForkModalOpen, setRepo }:
               <span>
                 by{' '}
                 <Link className="text-primary-600 hover:text-primary-700" to={`/user/${issue.author}`}>
-                  {shortenAddress(issue.author)}{' '}
+                  {resolveUsernameOrShorten(issue.author)}{' '}
                 </Link>
               </span>
               {isOpen && issue.timestamp && (

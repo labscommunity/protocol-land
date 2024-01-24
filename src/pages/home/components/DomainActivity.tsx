@@ -1,7 +1,7 @@
 import { formatDistanceToNow } from 'date-fns'
 import { Link } from 'react-router-dom'
 
-import { shortenAddress } from '@/helpers/shortenAddress'
+import { resolveUsernameOrShorten } from '@/helpers/resolveUsername'
 import { ActivityProps, DomainActivityType } from '@/types/explore'
 
 import ActivityHeader from './ActivityHeader'
@@ -22,7 +22,7 @@ export default function DomainActivity({ activity, setIsForkModalOpen, setRepo }
           <span>
             ArNS Domain {activity.created ? 'added' : 'updated'} by{' '}
             <Link className="text-primary-600 hover:text-primary-700" to={`/user/${domain.controller}`}>
-              {shortenAddress(domain.controller)}
+              {resolveUsernameOrShorten(domain.controller)}
             </Link>{' '}
             {formatDistanceToNow(new Date(activity.timestamp * 1000), { addSuffix: true })}
           </span>

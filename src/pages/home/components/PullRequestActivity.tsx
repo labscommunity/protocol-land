@@ -2,7 +2,7 @@ import clsx from 'clsx'
 import { formatDistanceToNow } from 'date-fns'
 import { Link } from 'react-router-dom'
 
-import { shortenAddress } from '@/helpers/shortenAddress'
+import { resolveUsernameOrShorten } from '@/helpers/resolveUsername'
 import { ActivityProps, PullRequestActivityType } from '@/types/explore'
 
 import ActivityHeader from './ActivityHeader'
@@ -48,7 +48,7 @@ export default function PullRequestActivity({
                 : pullRequest.status.toLowerCase()}{' '}
               by{' '}
               <Link className="text-primary-600 hover:text-primary-700" to={`/user/${pullRequest.author}`}>
-                {shortenAddress(pullRequest.author)}
+                {resolveUsernameOrShorten(pullRequest.author)}
               </Link>
             </span>
             {pullRequest.status !== 'MERGED' && pullRequest.timestamp && (
