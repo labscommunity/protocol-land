@@ -31,7 +31,7 @@ export default function RepositoryActivity({
         <div className="text-sm">{activity.repo.description}</div>
         <div className="flex gap-3 items-center text-sm justify-between">
           <span>
-            {activity.created ? 'Created' : 'Updated'} by{' '}
+            {activity.created ? (activity.repo.fork ? 'Forked' : 'Created') : 'Updated'} by{' '}
             <Link className="text-primary-600 hover:text-primary-70" to={`/user/${activity.author}`}>
               {shortenAddress(activity.author)}
             </Link>{' '}
