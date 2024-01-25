@@ -3,6 +3,7 @@ import toast from 'react-hot-toast'
 
 import { getArrayBufSize } from '@/helpers/getArrayBufSize'
 import { waitFor } from '@/helpers/waitFor'
+import { getActivePublicKey } from '@/helpers/wallet/getPublicKey'
 import { withAsync } from '@/helpers/withAsync'
 import { importRepoFromBlob, unmountRepoFromBrowser } from '@/lib/git'
 import { getAllCommits } from '@/lib/git/commit'
@@ -113,7 +114,7 @@ export async function decryptRepo(repoArrayBuf: ArrayBuffer, privateStateTxId: s
   const ivArrBuff = arweave.utils.b64UrlToBuffer(privateState.iv)
 
   //public key -> hash -> get the aes key from object
-  const pubKey = await window.arweaveWallet.getActivePublicKey()
+  const pubKey = await getActivePublicKey()
   const address = await deriveAddress(pubKey)
 
   const encAesKeyStr = privateState.encKeys[address]

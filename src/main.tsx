@@ -2,6 +2,7 @@ import './index.css'
 
 import ArConnectStrategy from '@arweave-wallet-kit-beta/arconnect-strategy'
 import BrowserWalletStrategy from '@arweave-wallet-kit-beta/browser-wallet-strategy'
+import OthentStrategy from '@arweave-wallet-kit-beta/othent-strategy'
 import { ArweaveWalletKit } from '@arweave-wallet-kit-beta/react'
 import ReactDOM from 'react-dom/client'
 import { HelmetProvider } from 'react-helmet-async'
@@ -14,7 +15,7 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
   <HelmetProvider>
     <ArweaveWalletKit
       config={{
-        strategies: [new ArConnectStrategy(), new BrowserWalletStrategy()],
+        strategies: [new ArConnectStrategy(), new BrowserWalletStrategy(), new OthentStrategy()],
         permissions: [
           'ACCESS_ADDRESS',
           'SIGN_TRANSACTION',

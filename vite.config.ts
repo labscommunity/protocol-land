@@ -23,19 +23,14 @@ export default defineConfig({
       define: {
         global: 'globalThis'
       },
-      // Enable esbuild polyfill plugins
-      plugins: [
-        NodeGlobalsPolyfillPlugin({
-          buffer: true,
-          process: true
-        })
-      ]
+      plugins: [NodeGlobalsPolyfillPlugin({ buffer: false, process: true })]
     }
   },
   resolve: {
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url)),
-      '@codemirror': path.resolve(__dirname, 'node_modules/@codemirror/')
+      '@codemirror': path.resolve(__dirname, 'node_modules/@codemirror/'),
+      // Buffer: path.resolve(__dirname, 'node_modules/buffer/')
     }
   },
   build: {

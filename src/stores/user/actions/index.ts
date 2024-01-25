@@ -1,7 +1,6 @@
-import { InjectedArweaveSigner } from 'warp-contracts-plugin-signature'
-
 import { CONTRACT_TX_ID } from '@/helpers/constants'
 import getWarpContract from '@/helpers/getWrapContract'
+import { getSigner } from '@/helpers/wallet/getSigner'
 import { withAsync } from '@/helpers/withAsync'
 import { useGlobalStore } from '@/stores/globalStore'
 import { Repo } from '@/types/repository'
@@ -19,9 +18,6 @@ export const getUserAddressToUserMap = async () => {
 }
 
 export const getUserDetailsFromContract = async (): Promise<{ result: User }> => {
-  const userSigner = new InjectedArweaveSigner(window.arweaveWallet)
-  await userSigner.setPublicKey()
-
   const contract = getWarpContract(CONTRACT_TX_ID)
 
   return contract.viewState({
@@ -55,8 +51,7 @@ export const getUserDetailsByAddressFromContract = async (address: string): Prom
 }
 
 export const saveUserDetails = async (details: Partial<User>, address: string): Promise<{ result: User }> => {
-  const userSigner = new InjectedArweaveSigner(window.arweaveWallet)
-  await userSigner.setPublicKey()
+  const userSigner = await getSigner()
   userSigner.getAddress = () => userSigner.signer.getActiveAddress()
 
   const contract = getWarpContract(CONTRACT_TX_ID, userSigner)

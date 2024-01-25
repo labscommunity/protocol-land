@@ -1,10 +1,12 @@
 import ArDB from 'ardb'
 import Arweave from 'arweave'
+import { Tag } from 'arweave/web/lib/transaction'
 import git, { WORKDIR } from 'isomorphic-git'
 import mime from 'mime'
 import type { Dispatch, SetStateAction } from 'react'
-import { InjectedArweaveSigner } from 'warp-contracts-plugin-signature'
 
+import { getSigner } from '@/helpers/wallet/getSigner'
+import { signAndSendTx } from '@/helpers/wallet/signAndSend'
 import { checkoutBranch } from '@/lib/git/branch'
 import { fsWithName } from '@/lib/git/helpers/fsWithName'
 import { Repo } from '@/types/repository'
@@ -134,8 +136,7 @@ export async function uploadFiles(
   branchToRestore: string,
   setUploadPercent: Dispatch<SetStateAction<number>>
 ) {
-  const userSigner = new InjectedArweaveSigner(window.arweaveWallet)
-  await userSigner.setPublicKey()
+  const userSigner = await getSigner()
 
   const manifest: Manifest = {
     manifest: 'arweave/paths',
@@ -170,8 +171,6 @@ export async function uploadFiles(
       if (txId) {
         manifest.paths[updatedFilePath] = { id: txId }
       } else {
-        const transaction = await arweave.createTransaction({ data })
-
         const mimeType = mime.getType(filePath) || 'application/octet-stream'
 
         const transactionTags = [
@@ -179,17 +178,15 @@ export async function uploadFiles(
           { name: 'App-Name', value: APP_NAME },
           { name: 'App-Version', value: APP_VERSION },
           { name: 'File-Hash', value: hash }
-        ]
-        transactionTags.forEach((tag) => transaction.addTag(tag.name, tag.value))
+        ] as Tag[]
 
-        const response = await window.arweaveWallet.dispatch(transaction)
-        manifest.paths[updatedFilePath] = { id: response.id }
+        const response = await signAndSendTx(data, transactionTags, userSigner)
+        manifest.paths[updatedFilePath] = { id: response }
         setUploadPercent((uploadPercent: number) => parseFloat((uploadPercent + incrementValue).toFixed(2)))
       }
     })
   )
 
-  const manifestTransaction = await arweave.createTransaction({ data: JSON.stringify(manifest) })
   const unixTimestamp = Math.floor(Date.now() / 1000)
   const manifestTags = [
     // Tags for Dragon Deploy
@@ -206,10 +203,9 @@ export async function uploadFiles(
     { name: 'Repo-Branch', value: repo.deploymentBranch },
     { name: 'Commit-Oid', value: commit.oid },
     { name: 'Commit-Message', value: commit.message }
-  ]
-  manifestTags.forEach((tag) => manifestTransaction.addTag(tag.name, tag.value))
+  ] as Tag[]
 
-  const response = await window.arweaveWallet.dispatch(manifestTransaction)
+  const response = await await signAndSendTx(JSON.stringify(manifest), manifestTags, userSigner)
   setUploadPercent(100)
 
   await restoreBranch(repo, branchToRestore)

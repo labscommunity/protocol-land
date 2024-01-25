@@ -473,7 +473,7 @@ const createRepoCoreSlice: StateCreator<CombinedSlices, [['zustand/immer', never
         const { id: repoId, dataTxId, fork, parent, privateStateTxId, contributorInvites } = metaResponse.result
 
         try {
-          const address = await window.arweaveWallet.getActiveAddress()
+          const address = get().authState.address
 
           if (address) {
             const invite = contributorInvites.find(

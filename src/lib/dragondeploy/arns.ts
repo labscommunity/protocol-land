@@ -3,6 +3,8 @@ import { WarpFactory } from 'warp-contracts'
 import { DeployPlugin } from 'warp-contracts-plugin-deploy'
 
 import getWarpContract from '@/helpers/getWrapContract'
+import { getSigner } from '@/helpers/wallet/getSigner'
+import { useGlobalStore } from '@/stores/globalStore'
 import { Domain } from '@/types/repository'
 
 const warp = WarpFactory.forMainnet().use(new DeployPlugin())
@@ -47,13 +49,15 @@ export async function registerArNSName({
   transactionId: string
 }) {
   name = name.toLowerCase()
-  const registry = getWarpPstContract(REGISTRY, window.arweaveWallet)
-  const owner = await window.arweaveWallet.getActiveAddress()
+
+  const signer = await getSigner()
+  const registry = getWarpPstContract(REGISTRY, signer)
+  const owner = useGlobalStore.getState().authState.address!
 
   // create ANT contract
   const ant = await warp.createContract.deployFromSourceTx(
     {
-      wallet: window.arweaveWallet,
+      wallet: signer,
       initState: JSON.stringify({
         ticker: `ANT-${name.toUpperCase()}`,
         name,
@@ -96,7 +100,8 @@ export async function updateArNSDomain({
   transactionId: string
   subDomain?: string
 }) {
-  const result = await getWarpContract(antContract, window.arweaveWallet).writeInteraction(
+  const userSigner = await getSigner()
+  const result = await getWarpContract(antContract, userSigner).writeInteraction(
     {
       function: 'setRecord',
       subDomain,
