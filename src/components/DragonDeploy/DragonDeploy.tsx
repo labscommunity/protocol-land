@@ -92,12 +92,12 @@ export default function DragonDeploy() {
       try {
         const response = await uploadFiles(files, commit, selectedRepo, branchToRestore, setUploadPercent)
         const deployment = await addDeployment({
-          txId: response.id,
+          txId: response,
           commitMessage: commit.message,
           commitOid: commit.oid
         })
         setCurrentDeployment(deployment)
-        setDeployedTxId(response.id)
+        setDeployedTxId(response)
         setBranchToRestore('')
         toast.success('Deployed successfully')
       } catch (err) {
