@@ -46,7 +46,7 @@ export default function Readme({ fileObject }: { fileObject?: FileObject }) {
       <Sticky top={0} innerActiveClass="z-10" onStateChange={handleStateChange}>
         <div
           className={clsx(
-            'z-10 h-[41px] flex items-center gap-2 bg-gray-200 border-gray-300 border-b px-4',
+            'h-[41px] flex items-center gap-2 bg-gray-200 border-gray-300 border-b px-4',
             !isSticky && 'rounded-t-lg'
           )}
         >
