@@ -28,7 +28,7 @@ export default function IssueActivity({ activity, setIsForkModalOpen, setRepo }:
           <div className="flex gap-1 items-center">
             <div className={clsx('h-2 w-2 rounded-full', isOpen ? 'bg-[#38a457]' : 'bg-purple-700')}></div>
             <div>
-              Issue {isOpen ? <span>{activity.created ? 'opened ' : 'reopened '}</span> : <span>was closed</span>}
+              Issue {isOpen ? <span>{activity.created ? 'opened ' : 'reopened '}</span> : <span>was closed </span>}
               <span>
                 by{' '}
                 <Link className="text-primary-600 hover:text-primary-700" to={`/user/${issue.author}`}>
