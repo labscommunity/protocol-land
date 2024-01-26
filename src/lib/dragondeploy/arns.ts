@@ -55,38 +55,32 @@ export async function registerArNSName({
   const owner = useGlobalStore.getState().authState.address!
 
   // create ANT contract
-  const ant = await warp.createContract.deployFromSourceTx(
-    {
-      wallet: signer,
-      initState: JSON.stringify({
-        ticker: `ANT-${name.toUpperCase()}`,
-        name,
-        owner,
-        controllers: [owner],
-        evolve: null,
-        records: {
-          ['@']: { transactionId, ttlSeconds: 900 }
-        },
-        balances: {
-          [owner]: 1
-        }
-      }),
-      srcTxId: ANT_SOURCE
-    },
-    true
-  )
+  const ant = await warp.createContract.deployFromSourceTx({
+    wallet: signer,
+    initState: JSON.stringify({
+      ticker: `ANT-${name.toUpperCase()}`,
+      name,
+      owner,
+      controllers: [owner],
+      evolve: null,
+      records: {
+        ['@']: { transactionId, ttlSeconds: 900 }
+      },
+      balances: {
+        [owner]: 1
+      }
+    }),
+    srcTxId: ANT_SOURCE
+  })
 
   // buy ArNS
-  await registry.writeInteraction(
-    {
-      function: 'buyRecord',
-      name,
-      contractTxId: ant.contractTxId,
-      tierNumber: 1,
-      years
-    },
-    { disableBundling: true }
-  )
+  await registry.writeInteraction({
+    function: 'buyRecord',
+    name,
+    contractTxId: ant.contractTxId,
+    tierNumber: 1,
+    years
+  })
 
   return { success: true, ant, message: `Successfully registered ${name}` }
 }
