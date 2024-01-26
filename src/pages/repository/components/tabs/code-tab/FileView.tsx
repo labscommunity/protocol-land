@@ -77,7 +77,7 @@ export default function FileView({ fileContent, setFileContent, filename, setFil
 
   return (
     <div className="flex flex-col w-full h-full" id="file-view-editor">
-      <Sticky top={0} innerActiveClass="z-20" onStateChange={handleStateChange}>
+      <Sticky top={0} innerActiveClass="z-10" onStateChange={handleStateChange}>
         <div className={clsx('flex gap-2 flex-col bg-gray-50', isSticky && 'pt-2')}>
           <div className="flex w-full justify-between h-10">
             <Button onClick={onGoBackClick} className="gap-2 font-medium" variant="primary-outline">
