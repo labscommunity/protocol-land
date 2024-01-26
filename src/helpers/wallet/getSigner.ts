@@ -8,7 +8,7 @@ export async function getSigner() {
   let wallet: any = window.arweaveWallet
 
   if (strategy === 'othent') {
-    wallet = othentSigner
+    wallet = Object.assign({}, othentSigner, { getActiveAddress: () => othentSigner.getActiveKey() })
   }
 
   const userSigner = new InjectedArweaveSigner(wallet)
