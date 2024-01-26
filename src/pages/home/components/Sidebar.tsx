@@ -48,7 +48,7 @@ export default function Sidebar({ repos, isLoading, setIsRepoModalOpen }: Sideba
         </Button>
       </div>
 
-      {isLoggedIn && (
+      {isLoggedIn && hasRepos && (
         <div className="mt-1">
           <input
             type="text"
