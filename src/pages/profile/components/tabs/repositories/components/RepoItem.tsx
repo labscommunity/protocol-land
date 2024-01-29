@@ -1,4 +1,3 @@
-import { IoIosArrowDroprightCircle } from 'react-icons/io'
 import { Link } from 'react-router-dom'
 
 import { resolveUsernameOrShorten } from '@/helpers/resolveUsername'

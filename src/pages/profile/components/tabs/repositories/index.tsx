@@ -56,7 +56,7 @@ export default function RepositoriesTab({ userRepos }: { userRepos: RepoWithPare
         {filteredRepos.length === 0 &&
           (filteredRepos.length === userRepos.length ? (
             <span className="text-center font-medium">
-              {resolveUsernameOrShorten(id!)} doesn't have any repositories yet.
+              {resolveUsernameOrShorten(userAddress!)} doesn't have any repositories yet.
             </span>
           ) : (
             <span className="text-center">
