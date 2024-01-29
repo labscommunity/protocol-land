@@ -1,4 +1,13 @@
-import { ContractResult, ContractState, ContributorInvite, Deployment, Domain, Repo, RepositoryAction } from '../types'
+import {
+  ContractResult,
+  ContractState,
+  ContributorInvite,
+  Deployment,
+  Domain,
+  Repo,
+  RepositoryAction,
+  RepoWithParent
+} from '../types'
 import { getBlockTimeStamp } from '../utils/getBlockTimeStamp'
 import { isInvalidInput } from '../utils/isInvalidInput'
 
@@ -194,14 +203,26 @@ export async function getRepository(
 export async function getAllRepositoriesByOwner(
   state: ContractState,
   { input: { payload } }: RepositoryAction
-): Promise<ContractResult<Repo[]>> {
+): Promise<ContractResult<RepoWithParent[]>> {
   // validate payload
   if (isInvalidInput(payload, 'object') || isInvalidInput(payload.owner, 'arweave-address')) {
     throw new ContractError('Invalid inputs supplied.')
   }
 
-  const repos = Object.values(state.repos)
-  const ownerRepos = repos.filter((repo) => repo.owner === payload.owner)
+  const repos = Object.values(state.repos) as RepoWithParent[]
+  const ownerRepos = repos
+    .filter((repo) => repo.owner === payload.owner)
+    .map((repo) => {
+      if (repo.parent) {
+        const parentRepo = state.repos[repo.parent]
+        repo.parentRepo = {
+          id: parentRepo.id,
+          name: parentRepo.name,
+          owner: parentRepo.owner
+        }
+      }
+      return repo
+    })
 
   return { result: ownerRepos }
 }
@@ -209,16 +230,26 @@ export async function getAllRepositoriesByOwner(
 export async function getAllRepositoriesByContributor(
   state: ContractState,
   { input: { payload } }: RepositoryAction
-): Promise<ContractResult<Repo[]>> {
+): Promise<ContractResult<RepoWithParent[]>> {
   // validate payload
   if (isInvalidInput(payload, 'object') || isInvalidInput(payload.contributor, 'arweave-address')) {
     throw new ContractError('Invalid inputs supplied.')
   }
 
-  const repos = Object.values(state.repos)
-  const contributorRepos = repos.filter((repo) =>
-    repo?.contributors ? repo.contributors.indexOf(payload.contributor) > -1 : false
-  )
+  const repos = Object.values(state.repos) as RepoWithParent[]
+  const contributorRepos = repos
+    .filter((repo) => (repo?.contributors ? repo.contributors.indexOf(payload.contributor) > -1 : false))
+    .map((repo) => {
+      if (repo.parent) {
+        const parentRepo = state.repos[repo.parent]
+        repo.parentRepo = {
+          id: parentRepo.id,
+          name: parentRepo.name,
+          owner: parentRepo.owner
+        }
+      }
+      return repo
+    })
 
   return { result: contributorRepos }
 }

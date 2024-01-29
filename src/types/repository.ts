@@ -29,6 +29,10 @@ export type Repo = {
   contributorInvites: ContributorInvite[]
 }
 
+export interface RepoWithParent extends Repo {
+  parentRepo?: Pick<Repo, 'id' | 'name' | 'owner'>
+}
+
 export type ContributorInvite = {
   address: string
   timestamp: number
