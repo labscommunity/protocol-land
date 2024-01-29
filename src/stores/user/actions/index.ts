@@ -3,7 +3,7 @@ import getWarpContract from '@/helpers/getWrapContract'
 import { getSigner } from '@/helpers/wallet/getSigner'
 import { withAsync } from '@/helpers/withAsync'
 import { useGlobalStore } from '@/stores/globalStore'
-import { Repo } from '@/types/repository'
+import { RepoWithParent } from '@/types/repository'
 import { User } from '@/types/user'
 
 export const getUserAddressToUserMap = async () => {
@@ -95,7 +95,7 @@ export const saveUserDetails = async (details: Partial<User>, address: string): 
 }
 
 export const fetchUserRepos = async (address: string) => {
-  let repos: Repo[] = []
+  let repos: RepoWithParent[] = []
 
   const contract = getWarpContract(CONTRACT_TX_ID)
 
