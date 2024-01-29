@@ -1,4 +1,3 @@
-import { langs } from '@uiw/codemirror-extensions-langs'
 import { githubLight } from '@uiw/codemirror-theme-github'
 import CodeMirror from '@uiw/react-codemirror'
 import MDEditor from '@uiw/react-md-editor'
@@ -14,6 +13,7 @@ import Sticky from 'react-stickynode'
 import { Button } from '@/components/common/buttons'
 import { rootTabConfig } from '@/pages/repository/config/rootTabConfig'
 import { isMarkdown } from '@/pages/repository/helpers/filenameHelper'
+import useLanguage from '@/pages/repository/hooks/useLanguage'
 import { useGlobalStore } from '@/stores/globalStore'
 
 import CommitFilesModal from './CommitFilesModal'
@@ -26,6 +26,7 @@ export default function NewFile() {
   const [isCommitModalOpen, setIsCommitModalOpen] = React.useState(false)
   const [isSubmitting, setIsSubmitting] = React.useState(false)
   const [isFileCommited, setIsFileCommitted] = React.useState(false)
+  const { language } = useLanguage(filename)
 
   const isMarkdownFile = useMemo(() => isMarkdown(filename), [filename])
 
@@ -171,7 +172,7 @@ export default function NewFile() {
               height="100%"
               placeholder="Enter file contents here"
               theme={githubLight}
-              extensions={[langs.javascript({ jsx: true })]}
+              extensions={[language!]}
               onChange={(value) => setFileContent(value)}
               editable={true}
             />

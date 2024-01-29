@@ -7628,6 +7628,11 @@ koa@^2.13.4:
     type-is "^1.6.16"
     vary "^1.1.2"
 
+lang-exts-map@^0.4.0:
+  version "0.4.0"
+  resolved "https://registry.npmjs.org/lang-exts-map/-/lang-exts-map-0.4.0.tgz#09b2d91bbea0ca3a16cdb25bb44dae32a207880d"
+  integrity sha512-hLtOdSkrCJW5uHQvvIbLq8nh/8nDGxJR/JmASbsgUSeCD0thlFh7XNjpLumBl0yDm8zkDKbOkV7VYKrO3P7OEA==
+
 lazystream@^1.0.0:
   version "1.0.1"
   resolved "https://registry.yarnpkg.com/lazystream/-/lazystream-1.0.1.tgz#494c831062f1f9408251ec44db1cba29242a2638"
