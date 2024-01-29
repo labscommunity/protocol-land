@@ -2,7 +2,7 @@ import clsx from 'clsx'
 import { formatDistanceToNow } from 'date-fns'
 import { Link } from 'react-router-dom'
 
-import { shortenAddress } from '@/helpers/shortenAddress'
+import { resolveUsernameOrShorten } from '@/helpers/resolveUsername'
 import { ActivityProps, IssueActivityType } from '@/types/explore'
 
 import ActivityHeader from './ActivityHeader'
@@ -24,15 +24,15 @@ export default function IssueActivity({ activity, setIsForkModalOpen, setRepo }:
           <span>{issue?.title ?? ''}</span>
           {issue?.id && <span className="text-gray-400">#{issue?.id}</span>}
         </Link>
-        <div className="flex gap-3 flex-shrink-0 items-center text-sm justify-between">
+        <div className="flex gap-1 flex-shrink-0 items-center text-sm justify-between flex-wrap">
           <div className="flex gap-1 items-center">
-            <div className={clsx('h-2 w-2 rounded-full', isOpen ? 'bg-[#38a457]' : 'bg-purple-700')}></div>
+            <div className={clsx('px-2 rounded-full text-white', isOpen ? 'bg-green-700' : 'bg-purple-700')}>Issue</div>
             <div>
-              Issue {isOpen ? <span>{activity.created ? 'opened ' : 'reopened '}</span> : <span>was closed</span>}
+              {isOpen ? <span>{activity.created ? 'opened ' : 'reopened '}</span> : <span>was closed </span>}
               <span>
                 by{' '}
                 <Link className="text-primary-600 hover:text-primary-700" to={`/user/${issue.author}`}>
-                  {shortenAddress(issue.author)}{' '}
+                  {resolveUsernameOrShorten(issue.author)}{' '}
                 </Link>
               </span>
               {isOpen && issue.timestamp && (

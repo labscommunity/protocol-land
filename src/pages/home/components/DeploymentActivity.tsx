@@ -1,7 +1,7 @@
 import { formatDistanceToNow } from 'date-fns'
 import { Link } from 'react-router-dom'
 
-import { shortenAddress } from '@/helpers/shortenAddress'
+import { resolveUsernameOrShorten } from '@/helpers/resolveUsername'
 import { ActivityProps, DeploymentActivityType } from '@/types/explore'
 
 import ActivityHeader from './ActivityHeader'
@@ -23,11 +23,11 @@ export default function DeploymentActivity({
           {deployment.commitMessage}
         </Link>
 
-        <div className="flex items-center gap-3 text-sm justify-between">
+        <div className="flex items-center gap-1 text-sm justify-between flex-wrap">
           <span>
             Deployment done by{' '}
             <Link className="text-primary-600 hover:text-primary-700" to={`/user/${deployment.deployedBy}`}>
-              {shortenAddress(deployment.deployedBy)}
+              {resolveUsernameOrShorten(deployment.deployedBy)}
             </Link>{' '}
             {formatDistanceToNow(new Date(activity.timestamp * 1000), { addSuffix: true })}
           </span>

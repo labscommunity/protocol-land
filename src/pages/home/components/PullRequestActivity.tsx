@@ -2,7 +2,7 @@ import clsx from 'clsx'
 import { formatDistanceToNow } from 'date-fns'
 import { Link } from 'react-router-dom'
 
-import { shortenAddress } from '@/helpers/shortenAddress'
+import { resolveUsernameOrShorten } from '@/helpers/resolveUsername'
 import { ActivityProps, PullRequestActivityType } from '@/types/explore'
 
 import ActivityHeader from './ActivityHeader'
@@ -27,19 +27,20 @@ export default function PullRequestActivity({
           <span>{pullRequest?.title ?? ''}</span>
           {pullRequest?.id && <span className="text-gray-400">#{pullRequest?.id}</span>}
         </Link>
-        <div className="flex gap-3 flex-shrink-0 items-center text-sm justify-between">
-          <div className="flex gap-1 items-center">
+        <div className="flex gap-1 flex-shrink-0 items-center text-sm justify-between flex-wrap">
+          <div className="flex gap-1 flex-wrap items-center">
             <div
               className={clsx(
-                'h-2 w-2 rounded-full',
+                'px-2 rounded-full text-white',
                 pullRequest.status === 'OPEN'
                   ? 'bg-green-700'
                   : pullRequest.status === 'CLOSED'
                   ? 'bg-red-700'
                   : 'bg-purple-700'
               )}
-            ></div>
-            Pull Request
+            >
+              Pull Request
+            </div>
             <span>
               {pullRequest.status === 'OPEN'
                 ? activity.created
@@ -48,7 +49,7 @@ export default function PullRequestActivity({
                 : pullRequest.status.toLowerCase()}{' '}
               by{' '}
               <Link className="text-primary-600 hover:text-primary-700" to={`/user/${pullRequest.author}`}>
-                {shortenAddress(pullRequest.author)}
+                {resolveUsernameOrShorten(pullRequest.author)}
               </Link>
             </span>
             {pullRequest.status !== 'MERGED' && pullRequest.timestamp && (
