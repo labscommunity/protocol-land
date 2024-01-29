@@ -3,6 +3,8 @@ import SVG from 'react-inlinesvg'
 import CLabsIcon from '@/assets/icons/CLabs.svg'
 import CLabsTextIcon from '@/assets/icons/CLabsText.svg'
 
+import Socials from './Socials'
+
 export default function Footer() {
   return (
     <div
@@ -30,6 +32,8 @@ export default function Footer() {
         <div className="w-1.5 h-1.5 bg-white rounded-full"></div>
         <SVG className="w-8 h-8" src={CLabsIcon} />
       </div>
+
+      <Socials />
 
       <div className="flex flex-col">
         <div className="text-center text-white text-xl font-extralight leading-loose flex flex-col gap-10">

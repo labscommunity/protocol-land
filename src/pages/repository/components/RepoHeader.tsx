@@ -101,11 +101,9 @@ export default function RepoHeader({ repo, isLoading, owner, parentRepo }: Props
             <div>
               <div className="flex items-center gap-4">
                 <h1 className="text-xl font-bold text-gray-900">{repo.name}</h1>
-                {parentRepo && (
-                  <span className={`border-[1px] border-primary-600 text-primary-600 rounded-full px-2 text-sm`}>
-                    Forked
-                  </span>
-                )}
+                <span className={`border-[1px] border-primary-600 text-primary-600 rounded-full px-2 text-sm`}>
+                  {repo.private ? 'Private' : 'Public'}
+                </span>
               </div>
               <p className="text-gray-900 text-base">
                 <span className="text-gray-600">Transaction ID:</span> {repo.dataTxId}
