@@ -1,20 +1,36 @@
 import clsx from 'clsx'
 import { useMemo, useState } from 'react'
+import { useParams } from 'react-router-dom'
 
+import { resolveUsernameOrShorten } from '@/helpers/resolveUsername'
 import { useGlobalStore } from '@/stores/globalStore'
 import { RepoWithParent } from '@/types/repository'
 
 import RepoItem from './components/RepoItem'
 
 export default function RepositoriesTab({ userRepos }: { userRepos: RepoWithParent[] }) {
+  const { id: userAddress } = useParams()
   const [connectedAddress] = useGlobalStore((state) => [state.authState.address])
   const [searchTerm, setSearchTerm] = useState('')
   const filteredRepos = useMemo(() => {
-    if (searchTerm && userRepos.length > 0) {
-      return userRepos.filter((repo) => repo.name.includes(searchTerm))
+    if (userRepos.length > 0) {
+      return userRepos.filter((repo) => {
+        if (repo.name.includes(searchTerm)) {
+          if (repo.private) {
+            const isContributor =
+              userAddress &&
+              connectedAddress &&
+              userAddress === connectedAddress &&
+              (userAddress === repo.owner || (repo.contributors ?? []).includes(userAddress))
+            if (!isContributor) return false
+          }
+          return true
+        }
+        return false
+      })
     }
     return userRepos
-  }, [userRepos, searchTerm])
+  }, [userRepos, searchTerm, connectedAddress])
 
   return (
     <div>
@@ -28,20 +44,25 @@ export default function RepositoriesTab({ userRepos }: { userRepos: RepoWithPare
         placeholder="Find a repository..."
       />
       <div className="flex flex-col w-full gap-3 mt-6">
-        {filteredRepos.map((repo) => {
-          const isContributor =
-            connectedAddress && (connectedAddress === repo.owner || repo.contributors.includes(connectedAddress))
-          if (repo.private && !isContributor) return null
-          return (
-            <RepoItem
-              id={repo.id}
-              title={repo.name}
-              description={repo.description}
-              parentRepo={repo.parentRepo}
-              isPrivate={repo.private}
-            />
-          )
-        })}
+        {filteredRepos.map((repo) => (
+          <RepoItem
+            id={repo.id}
+            title={repo.name}
+            description={repo.description}
+            parentRepo={repo.parentRepo}
+            isPrivate={repo.private}
+          />
+        ))}
+        {filteredRepos.length === 0 &&
+          (filteredRepos.length === userRepos.length ? (
+            <span className="text-center font-medium">
+              {resolveUsernameOrShorten(id!)} doesn't have any repositories yet.
+            </span>
+          ) : (
+            <span className="text-center">
+              <b>0</b> results for repositories matching <b>{searchTerm}</b>
+            </span>
+          ))}
       </div>
     </div>
   )
