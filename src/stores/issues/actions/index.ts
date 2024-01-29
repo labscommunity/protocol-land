@@ -1,14 +1,12 @@
-import { InjectedArweaveSigner } from 'warp-contracts-plugin-signature'
-
 import { CONTRACT_TX_ID } from '@/helpers/constants'
 import getWarpContract from '@/helpers/getWrapContract'
 import { isInvalidInput } from '@/helpers/isInvalidInput'
+import { getSigner } from '@/helpers/wallet/getSigner'
 import { postIssueStatDataTxToArweave } from '@/lib/user'
 import { Issue } from '@/types/repository'
 
 async function getContract() {
-  const userSigner = new InjectedArweaveSigner(window.arweaveWallet)
-  await userSigner.setPublicKey()
+  const userSigner = await getSigner()
 
   const contract = getWarpContract(CONTRACT_TX_ID, userSigner)
 
@@ -102,10 +100,7 @@ export async function addCommentToIssue(repoId: string, issueId: number, comment
 }
 
 export async function updateIssueComment(repoId: string, issueId: number, comment: object) {
-  const userSigner = new InjectedArweaveSigner(window.arweaveWallet)
-  await userSigner.setPublicKey()
-
-  const contract = getWarpContract(CONTRACT_TX_ID, userSigner)
+  const contract = await getContract()
 
   await contract.writeInteraction({
     function: 'updateIssueComment',

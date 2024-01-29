@@ -1,10 +1,12 @@
 import Arweave from 'arweave'
+import { Tag } from 'arweave/web/lib/transaction'
 import { add, format, fromUnixTime, isFuture, isToday, isYesterday } from 'date-fns'
-import { InjectedArweaveSigner } from 'warp-contracts-plugin-signature'
 
 import { trackGoogleAnalyticsEvent } from '@/helpers/google-analytics'
 import { toArrayBuffer } from '@/helpers/toArrayBuffer'
 import { waitFor } from '@/helpers/waitFor'
+import { getSigner } from '@/helpers/wallet/getSigner'
+import { signAndSendTx } from '@/helpers/wallet/signAndSend'
 import { withAsync } from '@/helpers/withAsync'
 import { useGlobalStore } from '@/stores/globalStore'
 import { CommitObject } from '@/types/commit'
@@ -22,8 +24,7 @@ const arweave = new Arweave({
 
 export async function uploadUserAvatar(avatar: File) {
   const address = useGlobalStore.getState().authState.address
-  const userSigner = new InjectedArweaveSigner(window.arweaveWallet)
-  await userSigner.setPublicKey()
+  const userSigner = await getSigner()
 
   const data = (await toArrayBuffer(avatar)) as ArrayBuffer
   await waitFor(500)
@@ -33,29 +34,22 @@ export async function uploadUserAvatar(avatar: File) {
     { name: 'Content-Type', value: avatar.type },
     { name: 'Creator', value: address || '' },
     { name: 'Type', value: 'avatar-update' }
-  ]
+  ] as Tag[]
 
-  const transaction = await arweave.createTransaction({
-    data
-  })
+  const dataTxResponse = await signAndSendTx(data, inputTags, userSigner)
 
-  inputTags.forEach((tag) => transaction.addTag(tag.name, tag.value))
-
-  const dataTxResponse = await window.arweaveWallet.dispatch(transaction)
-
-  if (!dataTxResponse.id) {
+  if (!dataTxResponse) {
     throw new Error('Failed to post avatar')
   }
 
-  return dataTxResponse.id
+  return dataTxResponse
 }
 
 export async function uploadUserReadMe(content: string) {
   const blob = new Blob([content], { type: 'text/plain;charset=utf-8' })
 
   const address = useGlobalStore.getState().authState.address
-  const userSigner = new InjectedArweaveSigner(window.arweaveWallet)
-  await userSigner.setPublicKey()
+  const userSigner = await getSigner()
 
   const data = (await toArrayBuffer(blob)) as ArrayBuffer
   await waitFor(500)
@@ -65,25 +59,19 @@ export async function uploadUserReadMe(content: string) {
     { name: 'Content-Type', value: blob.type },
     { name: 'Creator', value: address || '' },
     { name: 'Type', value: 'readme-update' }
-  ]
+  ] as Tag[]
 
-  const transaction = await arweave.createTransaction({
-    data
-  })
+  const dataTxResponse = await signAndSendTx(data, inputTags, userSigner)
 
-  inputTags.forEach((tag) => transaction.addTag(tag.name, tag.value))
-
-  const dataTxResponse = await window.arweaveWallet.dispatch(transaction)
-
-  if (!dataTxResponse.id) {
+  if (!dataTxResponse) {
     throw new Error('Failed to post user readme')
   }
 
   trackGoogleAnalyticsEvent('User', 'Update user readme', 'User readme update', {
-    readme_tx: dataTxResponse.id
+    readme_tx: dataTxResponse
   })
 
-  return dataTxResponse.id
+  return dataTxResponse
 }
 
 export async function computeContributionsFromRepo(
@@ -92,8 +80,7 @@ export async function computeContributionsFromRepo(
   address: string,
   version: string = '1'
 ): Promise<UserContributionData> {
-  const userSigner = new InjectedArweaveSigner(window.arweaveWallet)
-  await userSigner.setPublicKey()
+  const userSigner = await getSigner()
 
   const userCommits: UserCommit[] = []
   const userPRs: UserPROrIssue[] = []
@@ -142,7 +129,7 @@ export async function computeContributionsFromRepo(
               { name: 'Timestamp', value: commitObj.commit.committer.timestamp.toString() },
               { name: 'Timezone-Offset', value: commitObj.commit.committer.timezoneOffset.toString() },
               { name: 'Version', value: version }
-            ]
+            ] as Tag[]
 
             const userCommit: UserCommit = {
               email: commitObj.commit.author.email,
@@ -150,15 +137,9 @@ export async function computeContributionsFromRepo(
               timezoneOffset: commitObj.commit.committer.timezoneOffset
             }
 
-            const transaction = await arweave.createTransaction({
-              data: 'stats-commit'
-            })
+            const dataTxResponse = await signAndSendTx('stats-commit', inputTags, userSigner)
 
-            inputTags.forEach((tag) => transaction.addTag(tag.name, tag.value))
-
-            const dataTxResponse = await window.arweaveWallet.dispatch(transaction)
-
-            if (dataTxResponse.id) {
+            if (dataTxResponse) {
               userCommits.push(userCommit)
             }
           }
@@ -181,17 +162,11 @@ export async function computeContributionsFromRepo(
             { name: 'Repo-Id', value: id },
             { name: 'Timestamp', value: PR.timestamp.toString() },
             { name: 'Author', value: PR.author.toString() }
-          ]
+          ] as Tag[]
 
-          const transaction = await arweave.createTransaction({
-            data: 'stats-pullrequest'
-          })
+          const dataTxResponse = await signAndSendTx('stats-pullrequest', inputTags, userSigner)
 
-          inputTags.forEach((tag) => transaction.addTag(tag.name, tag.value))
-
-          const dataTxResponse = await window.arweaveWallet.dispatch(transaction)
-
-          if (dataTxResponse.id) {
+          if (dataTxResponse) {
             userPRs.push({
               author: PR.author,
               timestamp: PR.timestamp
@@ -212,17 +187,11 @@ export async function computeContributionsFromRepo(
             { name: 'Repo-Id', value: id },
             { name: 'Timestamp', value: issue.timestamp.toString() },
             { name: 'Author', value: issue.author.toString() }
-          ]
+          ] as Tag[]
 
-          const transaction = await arweave.createTransaction({
-            data: 'stats-issue'
-          })
+          const dataTxResponse = await signAndSendTx('stats-issue', inputTags, userSigner)
 
-          inputTags.forEach((tag) => transaction.addTag(tag.name, tag.value))
-
-          const dataTxResponse = await window.arweaveWallet.dispatch(transaction)
-
-          if (dataTxResponse.id) {
+          if (dataTxResponse) {
             userIssues.push({
               author: issue.author,
               timestamp: issue.timestamp
@@ -347,6 +316,8 @@ export async function postCommitStatDataTxToArweave({
   commit,
   version = '1'
 }: PostStatDataTxToArweaveOptions) {
+  const userSigner = await getSigner()
+
   const inputTags = [
     { name: 'App-Name', value: 'Protocol.Land' },
     { name: 'User', value: commit.author.email },
@@ -357,17 +328,11 @@ export async function postCommitStatDataTxToArweave({
     { name: 'Timestamp', value: commit.committer.timestamp.toString() },
     { name: 'Timezone-Offset', value: commit.committer.timezoneOffset.toString() },
     { name: 'Version', value: version }
-  ]
+  ] as Tag[]
 
-  const transaction = await arweave.createTransaction({
-    data: 'stats-commit'
-  })
+  const dataTxResponse = await signAndSendTx('stats-commit', inputTags, userSigner)
 
-  inputTags.forEach((tag) => transaction.addTag(tag.name, tag.value))
-
-  const dataTxResponse = await window.arweaveWallet.dispatch(transaction)
-
-  if (!dataTxResponse.id) {
+  if (!dataTxResponse) {
     return false
   }
 
@@ -375,6 +340,8 @@ export async function postCommitStatDataTxToArweave({
 }
 
 export async function postPRStatDataTxToArweave(address: string, name: string, id: string, PR: PullRequest) {
+  const userSigner = await getSigner()
+
   const inputTags = [
     { name: 'App-Name', value: 'Protocol.Land' },
     { name: 'User', value: address },
@@ -383,17 +350,11 @@ export async function postPRStatDataTxToArweave(address: string, name: string, i
     { name: 'Repo-Id', value: id },
     { name: 'Timestamp', value: PR.timestamp.toString() },
     { name: 'Author', value: PR.author.toString() }
-  ]
+  ] as Tag[]
 
-  const transaction = await arweave.createTransaction({
-    data: 'stats-pullrequest'
-  })
+  const dataTxResponse = await signAndSendTx('stats-pullrequest', inputTags, userSigner)
 
-  inputTags.forEach((tag) => transaction.addTag(tag.name, tag.value))
-
-  const dataTxResponse = await window.arweaveWallet.dispatch(transaction)
-
-  if (!dataTxResponse.id) {
+  if (!dataTxResponse) {
     return false
   }
 
@@ -401,6 +362,8 @@ export async function postPRStatDataTxToArweave(address: string, name: string, i
 }
 
 export async function postIssueStatDataTxToArweave(address: string, name: string, id: string, issue: Issue) {
+  const userSigner = await getSigner()
+
   const inputTags = [
     { name: 'App-Name', value: 'Protocol.Land' },
     { name: 'User', value: address },
@@ -409,17 +372,11 @@ export async function postIssueStatDataTxToArweave(address: string, name: string
     { name: 'Repo-Id', value: id },
     { name: 'Timestamp', value: issue.timestamp.toString() },
     { name: 'Author', value: issue.author.toString() }
-  ]
+  ] as Tag[]
 
-  const transaction = await arweave.createTransaction({
-    data: 'stats-issue'
-  })
+  const dataTxResponse = await signAndSendTx('stats-issue', inputTags, userSigner)
 
-  inputTags.forEach((tag) => transaction.addTag(tag.name, tag.value))
-
-  const dataTxResponse = await window.arweaveWallet.dispatch(transaction)
-
-  if (!dataTxResponse.id) {
+  if (!dataTxResponse) {
     return false
   }
 

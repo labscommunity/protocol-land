@@ -46,7 +46,7 @@ export default function ReadPullRequest() {
   }, [id])
 
   useEffect(() => {
-    if (selectedRepo.repo) {
+    if (selectedRepo.repo && selectedRepo.status === 'SUCCESS') {
       const PR = selectedRepo.repo.pullRequests[+pullId! - 1]
 
       if (!PR) return
@@ -97,7 +97,7 @@ export default function ReadPullRequest() {
         pr_status: PR.status
       })
     }
-  }, [selectedRepo.repo])
+  }, [selectedRepo.repo, selectedRepo.status])
 
   useEffect(() => {
     if (commits.length > 0 && forkRepo.repo && selectedRepo.repo) {
