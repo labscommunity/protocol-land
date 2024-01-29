@@ -15,7 +15,7 @@ interface ActivityHeaderProps {
 
 export default function ActivityHeader({ activity, setIsForkModalOpen, setRepo }: ActivityHeaderProps) {
   return (
-    <div className="w-full flex justify-between items-center">
+    <div className="w-full flex justify-between items-center gap-2">
       <div className="flex items-center gap-3">
         <div className="flex items-center">
           <Link
@@ -25,7 +25,7 @@ export default function ActivityHeader({ activity, setIsForkModalOpen, setRepo }
             {activity.repo.name}
           </Link>
         </div>
-        <div className="bg-gray-200 border text-sm px-2 rounded-md truncate">
+        <div className="border-primary-500 border text-sm px-2 rounded-md truncate">
           Owner:{' '}
           <Link
             className="font-normal hover:underline text-primary-600 hover:text-primary-700 cursor-pointer"

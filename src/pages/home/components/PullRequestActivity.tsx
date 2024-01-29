@@ -31,15 +31,16 @@ export default function PullRequestActivity({
           <div className="flex gap-1 flex-wrap items-center">
             <div
               className={clsx(
-                'h-2 w-2 rounded-full',
+                'px-2 rounded-full text-white',
                 pullRequest.status === 'OPEN'
                   ? 'bg-green-700'
                   : pullRequest.status === 'CLOSED'
                   ? 'bg-red-700'
                   : 'bg-purple-700'
               )}
-            ></div>
-            Pull Request
+            >
+              Pull Request
+            </div>
             <span>
               {pullRequest.status === 'OPEN'
                 ? activity.created
