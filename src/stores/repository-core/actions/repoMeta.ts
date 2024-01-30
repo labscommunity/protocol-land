@@ -1,7 +1,6 @@
-import { InjectedArweaveSigner } from 'warp-contracts-plugin-signature'
-
 import { CONTRACT_TX_ID } from '@/helpers/constants'
 import getWarpContract from '@/helpers/getWrapContract'
+import { getSigner } from '@/helpers/wallet/getSigner'
 import { Repo, WarpReadState } from '@/types/repository'
 // Repo Meta
 
@@ -49,8 +48,7 @@ export const searchRepositories = async (query: string): Promise<{ result: Repo[
 
 export const handleAcceptContributor = async (id: string, visibility: string, privateStateTxId: string | null) => {
   //rotate keys
-  const userSigner = new InjectedArweaveSigner(window.arweaveWallet)
-  await userSigner.setPublicKey()
+  const userSigner = await getSigner()
 
   const contract = getWarpContract(CONTRACT_TX_ID, userSigner)
 
@@ -72,8 +70,7 @@ export const handleAcceptContributor = async (id: string, visibility: string, pr
 
 export const handleRejectContributor = async (id: string) => {
   //rotate keys
-  const userSigner = new InjectedArweaveSigner(window.arweaveWallet)
-  await userSigner.setPublicKey()
+  const userSigner = await getSigner()
 
   const contract = getWarpContract(CONTRACT_TX_ID, userSigner)
 
@@ -95,8 +92,7 @@ export const handleRejectContributor = async (id: string) => {
 
 export const handleCancelContributorInvite = async (id: string, contributor: string) => {
   //rotate keys
-  const userSigner = new InjectedArweaveSigner(window.arweaveWallet)
-  await userSigner.setPublicKey()
+  const userSigner = await getSigner()
 
   const contract = getWarpContract(CONTRACT_TX_ID, userSigner)
 

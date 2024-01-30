@@ -13,6 +13,7 @@ import {
   closeIssue,
   createNewIssue,
   reopenIssue,
+  updateIssueComment,
   updateIssueDetails
 } from './actions'
 import { IssuesSlice, IssuesState } from './types'
@@ -34,6 +35,21 @@ const createPullRequestSlice: StateCreator<CombinedSlices, [['zustand/immer', ne
       set((state) => {
         state.issuesState = initialIssuesState
       })
+    },
+    isContributorOrIssueAuthor: () => {
+      const { repoCoreState, authState, issuesState } = get()
+      const { repo } = repoCoreState.selectedRepo
+      const userAddress = authState.address
+
+      if (!repo || !userAddress) {
+        return false
+      }
+
+      return (
+        repo.owner === userAddress ||
+        repo.contributors.includes(userAddress) ||
+        userAddress === issuesState.selectedIssue?.author
+      )
     },
     setSelectedIssue: (issue: Issue) => {
       set((state) => {
@@ -278,6 +294,45 @@ const createPullRequestSlice: StateCreator<CombinedSlices, [['zustand/immer', ne
           repo_name: repo.name,
           repo_id: repo.id,
           issue_id: id,
+          result: 'FAILED'
+        })
+      }
+    },
+    updateComment: async (id, comment) => {
+      const repo = get().repoCoreState.selectedRepo.repo
+
+      if (!repo) {
+        set((state) => (state.issuesState.status = 'ERROR'))
+
+        return
+      }
+
+      const { error, response } = await withAsync(() => updateIssueComment(repo.id, id, comment))
+
+      if (!error && response) {
+        const activities = response?.activities
+
+        if (!activities || !Array.isArray(activities)) return
+
+        set((state) => {
+          state.repoCoreState.selectedRepo.repo!.issues[id - 1].activities = activities
+        })
+
+        trackGoogleAnalyticsEvent('Repository', 'Update comment to issue', 'Update Comment on issue', {
+          repo_name: repo.name,
+          repo_id: repo.id,
+          issue_id: id,
+          comment_id: comment.id,
+          result: 'SUCCESS'
+        })
+      }
+
+      if (error) {
+        trackGoogleAnalyticsEvent('Repository', 'Update comment to issue', 'Update Comment on issue', {
+          repo_name: repo.name,
+          repo_id: repo.id,
+          issue_id: id,
+          comment_id: comment.id,
           result: 'FAILED'
         })
       }

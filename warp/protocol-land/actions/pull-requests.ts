@@ -42,6 +42,22 @@ export async function createNewPullRequest(
     throw new ContractError('Repository not found.')
   }
 
+  if (repo.private) {
+    const hasPermissions = caller === repo.owner || repo.contributors.indexOf(caller) > -1
+
+    if (!hasPermissions) {
+      throw new ContractError('Error: You dont have permissions for this operation.')
+    }
+  }
+
+  if (!state.repos[payload.baseRepo.repoId]) {
+    throw new ContractError('Base repository not found.')
+  }
+
+  if (!state.repos[payload.compareRepo.repoId]) {
+    throw new ContractError('Compare repository not found.')
+  }
+
   const isSimilarPrOpen =
     repo.pullRequests.findIndex(
       (pr) =>
@@ -79,6 +95,17 @@ export async function createNewPullRequest(
 
   if (pullRequestsCount > 0) {
     pullRequest.id = pullRequestsCount + 1
+  }
+
+  if (!isInvalidInput(payload.linkedIssueId, 'number')) {
+    const issue = repo.issues[payload.linkedIssueId - 1]
+    if (issue) {
+      pullRequest.linkedIssueId = payload.linkedIssueId
+      if (!Array.isArray(issue.linkedPRIds)) {
+        issue.linkedPRIds = []
+      }
+      issue.linkedPRIds.push(pullRequest.id)
+    }
   }
 
   repo.pullRequests.push(pullRequest)
@@ -147,25 +174,32 @@ export async function updatePullRequestStatus(
     throw new ContractError('Repository not found.')
   }
 
-  const hasPermissions = caller === repo.owner || repo.contributors.indexOf(caller) > -1
-
-  if (!hasPermissions) {
-    throw new ContractError('Error: You dont have permissions for this operation.')
-  }
-
   const PR = repo.pullRequests[+payload.prId - 1]
 
   if (!PR) {
     throw new ContractError('Pull Request not found.')
   }
 
+  const isOwnerOrContributor = caller === repo.owner || repo.contributors.indexOf(caller) > -1
+  const isPRAuthor = caller === PR.author
+
+  const hasPermissions = isOwnerOrContributor || isPRAuthor
+
+  if (!hasPermissions) {
+    throw new ContractError('Error: You dont have permissions for this operation.')
+  }
+
   if (PR.status === 'MERGED') {
-    throw new Error('Pull Request already merged')
+    throw new ContractError('Pull Request already merged')
   }
 
   const validStatusValues = ['REOPEN', 'CLOSED', 'MERGED']
   if (!validStatusValues.includes(payload.status)) {
     throw new ContractError('Invalid Pull Request status specified. Must be one of: ' + validStatusValues.join(', '))
+  }
+
+  if (PR.status === 'OPEN' && payload.status === 'MERGED' && isPRAuthor && !isOwnerOrContributor) {
+    throw new ContractError('Error: You dont have permissions for this operation.')
   }
 
   if (PR.status === payload.status) {
@@ -177,7 +211,7 @@ export async function updatePullRequestStatus(
   }
 
   if (PR.status === 'CLOSED' && payload.status === 'MERGED') {
-    throw new Error('Pull Request is closed; Reopen to merge')
+    throw new ContractError('Pull Request is closed; Reopen to merge')
   }
 
   const activity: PullRequestActivity = {
@@ -384,7 +418,7 @@ export async function addCommentToPR(
     throw new ContractError('Repo not found.')
   }
 
-  const hasPermissions = caller === repo.owner || repo.contributors.indexOf(caller) > -1
+  const hasPermissions = repo.private ? caller === repo.owner || repo.contributors.indexOf(caller) > -1 : true
 
   if (!hasPermissions) {
     throw new ContractError('Error: You dont have permissions for this operation.')
@@ -408,6 +442,99 @@ export async function addCommentToPR(
   }
 
   PR.activities.push(comment)
+
+  return { state }
+}
+
+export async function linkIssueToPR(
+  state: ContractState,
+  { caller, input: { payload } }: RepositoryAction
+): Promise<ContractResult<ContractState>> {
+  if (
+    isInvalidInput(payload, 'object') ||
+    isInvalidInput(payload.repoId, 'uuid') ||
+    isInvalidInput(payload.prId, ['number', 'string']) ||
+    isInvalidInput(payload.linkedIssueId, 'number')
+  ) {
+    throw new ContractError('Invalid inputs supplied.')
+  }
+
+  const repo = state.repos[payload.repoId]
+
+  if (!repo) {
+    throw new ContractError('Repository not found.')
+  }
+
+  const PR = repo.pullRequests[+payload.prId - 1]
+
+  if (!PR) {
+    throw new ContractError('Pull Request not found.')
+  }
+
+  const hasPermissions = caller === repo.owner || repo.contributors.indexOf(caller) > -1 || caller === PR.author
+
+  if (!hasPermissions) {
+    throw new ContractError('Error: You dont have permissions for this operation.')
+  }
+
+  const issue = repo.issues[payload.linkedIssueId - 1]
+
+  if (!issue) {
+    throw new ContractError('Issue not found.')
+  }
+
+  if (!isInvalidInput(PR.linkedIssueId, 'number')) {
+    throw new ContractError('Pull Request already linked to issue.')
+  }
+
+  PR.linkedIssueId = payload.linkedIssueId
+
+  if (!Array.isArray(issue.linkedPRIds)) {
+    issue.linkedPRIds = []
+  }
+  issue.linkedPRIds.push(PR.id)
+
+  return { state }
+}
+
+export async function updatePRComment(
+  state: ContractState,
+  { caller, input: { payload } }: RepositoryAction
+): Promise<ContractResult<ContractState>> {
+  if (
+    isInvalidInput(payload, 'object') ||
+    isInvalidInput(payload.repoId, 'uuid') ||
+    isInvalidInput(payload.prId, ['number', 'string']) ||
+    isInvalidInput(payload.comment, 'object') ||
+    isInvalidInput(payload.comment.id, 'number') ||
+    isInvalidInput(payload.comment.description, 'string')
+  ) {
+    throw new ContractError('Invalid inputs supplied.')
+  }
+
+  const repo = state.repos[payload.repoId]
+
+  if (!repo) {
+    throw new ContractError('Repo not found.')
+  }
+
+  const PR = repo.pullRequests[+payload.prId - 1]
+
+  if (!PR) {
+    throw new ContractError('Pull Request not found.')
+  }
+
+  const commentActivity = PR.activities[payload.comment.id] as PullRequestActivityComment
+
+  if (!commentActivity || commentActivity?.type !== 'COMMENT') {
+    throw new ContractError('Comment not found.')
+  }
+
+  if (commentActivity.author !== caller) {
+    throw new ContractError('Error: You dont have permissions for this operation.')
+  }
+
+  commentActivity.description = payload.comment.description
 
   return { state }
 }

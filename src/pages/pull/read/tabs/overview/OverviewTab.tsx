@@ -11,8 +11,9 @@ import { VscGitMerge, VscGitPullRequest, VscGitPullRequestClosed } from 'react-i
 import { useNavigate, useParams } from 'react-router-dom'
 
 import { Button } from '@/components/common/buttons'
+import Comment from '@/components/IssuePr/Comment'
 import PrDescription from '@/components/IssuePr/Description'
-import { shortenAddress } from '@/helpers/shortenAddress'
+import { resolveUsernameOrShorten } from '@/helpers/resolveUsername'
 import { withAsync } from '@/helpers/withAsync'
 import { useGlobalStore } from '@/stores/globalStore'
 import { PullRequestActivityComment, PullRequestActivityStatus } from '@/types/repository'
@@ -52,15 +53,17 @@ export default function OverviewTab() {
   const [isSubmittingComment, setIsSubmittingComment] = useState(false)
   const [commentVal, setCommentVal] = useState('')
   const { pullId } = useParams()
-  const [isLoggedIn, selectedRepo, mergePR, closePR, reopenPR, addComment, isContributor] = useGlobalStore((state) => [
-    state.authState.isLoggedIn,
-    state.repoCoreState.selectedRepo.repo,
-    state.pullRequestActions.mergePullRequest,
-    state.pullRequestActions.closePullRequest,
-    state.pullRequestActions.reopenPullRequest,
-    state.pullRequestActions.addComment,
-    state.repoCoreActions.isContributor
-  ])
+  const [connectedAddress, isLoggedIn, selectedRepo, mergePR, closePR, reopenPR, addComment, isContributor] =
+    useGlobalStore((state) => [
+      state.authState.address,
+      state.authState.isLoggedIn,
+      state.repoCoreState.selectedRepo.repo,
+      state.pullRequestActions.mergePullRequest,
+      state.pullRequestActions.closePullRequest,
+      state.pullRequestActions.reopenPullRequest,
+      state.pullRequestActions.addComment,
+      state.repoCoreActions.isContributor
+    ])
   const navigate = useNavigate()
 
   const PR = selectedRepo && selectedRepo.pullRequests[+pullId! - 1]
@@ -132,6 +135,7 @@ export default function OverviewTab() {
   if (!PR) return null
 
   const contributor = isContributor()
+  const contributorOrPRAuthor = contributor || connectedAddress === PR.author
   const isOpen = PR.status === 'OPEN'
   const isMerged = PR.status === 'MERGED'
 
@@ -141,28 +145,21 @@ export default function OverviewTab() {
         <div className="flex flex-col gap-8">
           <ol className="relative border-s-2 border-gray-300 ms-5">
             <li className="mb-10 -ms-5">
-              <PrDescription issueOrPr={PR!} />
+              <PrDescription isIssue={false} issueOrPr={PR!} canEdit={contributorOrPRAuthor} />
             </li>
             {PR.activities &&
-              PR.activities.map((activity) => {
+              PR.activities.map((activity, activityId) => {
                 const commentActivity = activity as PullRequestActivityComment
                 if (activity.type === 'COMMENT') {
                   return (
                     <li className="mb-10 -ms-5">
-                      <div className="flex flex-col border-[1px] border-gray-300 rounded-lg overflow-hidden">
-                        <div className="flex justify-between bg-gray-200 border-b-[1px] border-gray-300 text-gray-900 px-4 py-2">
-                          <span
-                            className="hover:underline hover:text-primary-700 cursor-pointer font-medium"
-                            onClick={() => navigate(`/user/${commentActivity.author}`)}
-                          >
-                            {shortenAddress(commentActivity.author)}
-                          </span>
-                          <span> {formatTimestamp(commentActivity.timestamp)}</span>
-                        </div>
-                        <div className="text-gray-900 p-4 bg-white">
-                          <MDEditor.Markdown source={commentActivity.description} />
-                        </div>
-                      </div>
+                      <Comment
+                        isIssue={false}
+                        issueOrPRId={PR.id}
+                        commentId={activityId}
+                        item={commentActivity}
+                        canEdit={connectedAddress === commentActivity.author}
+                      />
                     </li>
                   )
                 } else {
@@ -179,7 +176,7 @@ export default function OverviewTab() {
                           className="font-medium hover:underline cursor-pointer hover:text-primary-700"
                           onClick={() => navigate(`/user/${statusActivity.author}`)}
                         >
-                          {shortenAddress(statusActivity.author)}
+                          {resolveUsernameOrShorten(statusActivity.author)}
                         </span>
                         <span className="text-gray-500">
                           {StatusTextMap[statusActivity.status]}{' '}
@@ -194,7 +191,7 @@ export default function OverviewTab() {
                                   className="text-black font-medium hover:underline cursor-pointer hover:text-primary-700"
                                   onClick={() => navigate(`/user/${reviewer}`)}
                                 >
-                                  {shortenAddress(reviewer)}
+                                  {resolveUsernameOrShorten(reviewer)}
                                 </span>
                                 {getSeperator(index, statusActivity.reviewers!)}
                               </>
@@ -209,9 +206,9 @@ export default function OverviewTab() {
           </ol>
         </div>
         <div className="border-t-[1px] border-gray-200">
-          {isLoggedIn && contributor && (
+          {isLoggedIn && (
             <div className="flex flex-col pt-4">
-              {isOpen && (
+              {isOpen && contributor && (
                 <div className="mb-4 border p-4 flex justify-center items-center">
                   <Button
                     onClick={handleMergePullRequest}
@@ -237,7 +234,7 @@ export default function OverviewTab() {
                     onClick={handleClosePullRequest}
                     className="gap-2 justify-center font-medium"
                     variant="secondary"
-                    disabled={isSubmittingClose}
+                    disabled={isSubmittingClose || !contributorOrPRAuthor}
                     isLoading={isSubmittingClose}
                   >
                     <AiFillCloseCircle className="w-4 h-4" />
@@ -259,7 +256,7 @@ export default function OverviewTab() {
                 <div className="flex w-full justify-center gap-4 py-4">
                   <Button
                     isLoading={isSubmittingClose}
-                    disabled={isSubmittingClose}
+                    disabled={isSubmittingClose || !contributorOrPRAuthor}
                     onClick={handleReopenPullRequest}
                     variant="primary-solid"
                   >

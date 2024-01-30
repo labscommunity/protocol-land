@@ -88,7 +88,7 @@ export default function ReadIssuePage() {
         title={selectedIssue ? `Protocol.Land | Issue | ${selectedIssue.title}` : `Protocol.Land | Issue`}
       />
       <div className="h-full flex-1 flex flex-col max-w-[1280px] px-8 mx-auto w-full mt-6 gap-8 pb-16">
-        {selectedIssue && <IssueHeader issue={selectedIssue} />}
+        <IssueHeader issue={selectedIssue} />
         <div className="flex flex-col flex-1">
           <Tab.Group>
             <Tab.List className="flex text-gray-500 text-lg gap-10 border-b-[1px] border-gray-200">

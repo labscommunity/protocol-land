@@ -14,6 +14,7 @@ export type IssuesState = {
 
 export type IssuesActions = {
   reset: () => void
+  isContributorOrIssueAuthor: () => boolean
   setSelectedIssue: (issue: Issue) => void
   createIssue: (title: string, description: string) => Promise<undefined | Issue>
   reopenIssue: (id: number) => Promise<void>
@@ -22,6 +23,7 @@ export type IssuesActions = {
   getAssigneesList: (id: number) => string[]
   addAssignee: (id: number, assignees: string[]) => Promise<void>
   addComment: (id: number, comment: string) => Promise<void>
+  updateComment: (id: number, comment: { id: number; description: string }) => Promise<void>
   addBounty: (id: number, amount: number, expiry: number) => Promise<void>
   closeBounty: (issueId: number, bountyId: number) => Promise<void>
   expireBounty: (issueId: number, bountyId: number) => Promise<void>

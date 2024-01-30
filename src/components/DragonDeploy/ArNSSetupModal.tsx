@@ -2,24 +2,38 @@ import { Dialog, Tab, Transition } from '@headlessui/react'
 import clsx from 'clsx'
 import { useState } from 'react'
 import { Fragment } from 'react'
+import toast from 'react-hot-toast'
 import SVG from 'react-inlinesvg'
 
 import CloseCrossIcon from '@/assets/icons/close-cross.svg'
 import { Button } from '@/components/common/buttons'
+import { trackGoogleAnalyticsEvent } from '@/helpers/google-analytics'
+import { useGlobalStore } from '@/stores/globalStore'
 
 import ArNSAdd from './ArNSAdd'
 import ArNSRegister from './ArNSRegister'
 
 export default function ArNSRegisterModal() {
   const [isOpen, setIsOpen] = useState(false)
+  const isOthent = useGlobalStore((state) => state.authState.method === 'othent')
 
   function closeModal() {
     setIsOpen(false)
   }
 
+  function openModal() {
+    if (isOthent) {
+      toast.error('This feature is coming soon.')
+
+      trackGoogleAnalyticsEvent('Repo Settings', 'ArNS Setup Othent', 'ArNS Setup Button click')
+    } else {
+      setIsOpen(true)
+    }
+  }
+
   return (
     <>
-      <Button variant="primary-solid" onClick={() => setIsOpen(true)}>
+      <Button variant="primary-solid" onClick={openModal}>
         Setup ArNS
       </Button>
       <Transition appear show={isOpen} as={Fragment}>

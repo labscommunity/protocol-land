@@ -6,6 +6,7 @@ import toast from 'react-hot-toast'
 import * as yup from 'yup'
 
 import { Button } from '@/components/common/buttons'
+import { resolveUsername, resolveUsernameOrShorten } from '@/helpers/resolveUsername'
 import { rotateKeysAndUpdateRepo } from '@/lib/git'
 import { useGlobalStore } from '@/stores/globalStore'
 import { ContributorInvite } from '@/types/repository'
@@ -238,14 +239,14 @@ export default function Contributors() {
           </div>
           {repo && (
             <div className="flex bg-gray-50 cursor-pointer hover:bg-primary-50 text-gray-600 hover:text-gray-900 items-center gap-4 py-[10px] px-4 border-b-[1px] border-gray-300 last:border-b-0">
-              <div className="w-[50%]">{repo.owner}</div>
+              <div className="w-[50%]">{resolveUsernameOrShorten(repo.owner)}</div>
               <div className="w-[50%]">Owner</div>
             </div>
           )}
           {repo &&
             repo?.contributors?.map((address) => (
               <div className="flex bg-gray-50 cursor-pointer hover:bg-primary-50 text-gray-600 hover:text-gray-900 items-center gap-4 py-[10px] px-4 border-b-[1px] border-gray-300 last:border-b-0">
-                <div className="w-[50%]">{address}</div>
+                <div className="w-[50%]">{resolveUsernameOrShorten(address)}</div>
                 <div className="w-[50%]">Contributor</div>
               </div>
             ))}
@@ -269,7 +270,7 @@ export default function Contributors() {
                 inviteActionsMapForContributor[invite.status as keyof typeof inviteActionsMapForContributor]
               return (
                 <div className="flex bg-gray-50 cursor-pointer hover:bg-primary-50 text-gray-600 hover:text-gray-900 items-center gap-4 py-[10px] px-4 border-b-[1px] border-gray-300 last:border-b-0">
-                  <div className="w-[60%]">{invite.address}</div>
+                  <div className="w-[60%]">{resolveUsername(invite.address)}</div>
                   <div className="w-[25%] capitalize">{invite.status.toLowerCase()}</div>
                   <div className="w-[25%] capitalize">
                     {repoOwner && InviteActionComponent && <InviteActionComponent invite={invite} />}

@@ -5,7 +5,7 @@ import { PiDotDuotone } from 'react-icons/pi'
 import { useParams } from 'react-router-dom'
 
 import { Button } from '@/components/common/buttons'
-import { shortenAddress } from '@/helpers/shortenAddress'
+import { resolveUsernameOrShorten } from '@/helpers/resolveUsername'
 import { withAsync } from '@/helpers/withAsync'
 import { useGlobalStore } from '@/stores/globalStore'
 
@@ -69,7 +69,7 @@ export default function Sidebar() {
               ) : (
                 <PiDotDuotone className="min-w-[24px] h-6 !text-yellow-500" />
               )}
-              <span className="truncate">{shortenAddress(reviewer.address, 6)}</span>
+              <span className="truncate">{resolveUsernameOrShorten(reviewer.address, 6)}</span>
             </div>
           ))}
       </div>

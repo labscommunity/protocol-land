@@ -9,7 +9,7 @@ import Sticky from 'react-stickynode'
 
 import { Button } from '@/components/common/buttons'
 import PrTitle from '@/components/IssuePr/Title'
-import { shortenAddress } from '@/helpers/shortenAddress'
+import { resolveUsernameOrShorten } from '@/helpers/resolveUsername'
 import { rootTabConfig } from '@/pages/repository/config/rootTabConfig'
 import { useGlobalStore } from '@/stores/globalStore'
 import { PullRequest, PullRequestStatus, Repo } from '@/types/repository'
@@ -46,9 +46,14 @@ export default function PullRequestHeader({
   const StatusComponent = statusMap[PR.status]
   const navigate = useNavigate()
   const [isSticky, setIsSticky] = useState(false)
-  const isContributor = useGlobalStore((state) => state.repoCoreActions.isContributor)()
+  const [isContributor, connectedAddress] = useGlobalStore((state) => [
+    state.repoCoreActions.isContributor,
+    state.authState.address
+  ])
   const isMergeInSameRepo = PR.baseRepo.repoId === PR.compareRepo.repoId
   const lastActivity = PR.activities?.[(PR?.activities?.length ?? 0) - 1]
+  const contributor = isContributor()
+  const contributorOrPRAuthor = contributor || connectedAddress === PR.author
 
   function goBack() {
     navigate(`/repository/${PR.repoId}/pulls`)
@@ -72,7 +77,7 @@ export default function PullRequestHeader({
     <Sticky top={0} innerActiveClass="z-10 left-0 !w-full" onStateChange={handleStateChange}>
       <div className={clsx('border-b-[1px] bg-gray-50 border-gray-200', isSticky ? 'py-2 shadow' : 'pb-4')}>
         <div className={clsx('flex justify-between gap-2 w-full', { 'max-w-[1280px] mx-auto': isSticky })}>
-          <div className={clsx('flex flex-col gap-2', isSticky && isContributor ? 'w-[90%]' : 'w-full')}>
+          <div className={clsx('flex flex-col gap-2', isSticky && contributorOrPRAuthor ? 'w-[90%]' : 'w-full')}>
             {!isSticky && (
               <>
                 <div>
@@ -80,7 +85,7 @@ export default function PullRequestHeader({
                     <FaArrowLeft className="h-4 w-4 text-white" />
                   </Button>
                 </div>
-                <PrTitle issueOrPr={PR} />
+                <PrTitle issueOrPr={PR} canEdit={contributorOrPRAuthor} />
               </>
             )}
 
@@ -94,29 +99,31 @@ export default function PullRequestHeader({
               )}
               {PR && <StatusComponent status={PR!.status} />}
               <div className={clsx('text-gray-600', isSticky && 'truncate')}>
-                {isSticky && <PrTitle issueOrPr={PR} showEdit={false} />}
+                {isSticky && <PrTitle issueOrPr={PR} isSticky={true} />}
                 <span className={clsx(isSticky && 'text-sm')}>
                   <span
                     className="font-medium cursor-pointer hover:underline hover:text-primary-700"
                     onClick={() => gotoUser(PR.status === 'MERGED' ? lastActivity?.author : PR?.author)}
                   >
                     {PR.status === 'MERGED'
-                      ? lastActivity?.author && shortenAddress(lastActivity?.author)
-                      : PR?.author && shortenAddress(PR?.author)}
+                      ? lastActivity?.author && resolveUsernameOrShorten(lastActivity?.author)
+                      : PR?.author && resolveUsernameOrShorten(PR?.author)}
                   </span>{' '}
                   {PR.status !== 'MERGED' ? 'wants to merge' : 'merged'}{' '}
                   <span
                     className="text-primary-600 bg-primary-200 px-1 cursor-pointer"
                     onClick={() => gotoBranch(PR.compareRepo.repoId, PR?.compareBranch)}
                   >
-                    {isMergeInSameRepo ? PR?.compareBranch : `${shortenAddress(compareRepoOwner)}:${PR?.compareBranch}`}
+                    {isMergeInSameRepo
+                      ? PR?.compareBranch
+                      : `${resolveUsernameOrShorten(compareRepoOwner)}:${PR?.compareBranch}`}
                   </span>{' '}
                   into{' '}
                   <span
                     className="text-primary-600 bg-primary-200 px-1 cursor-pointer"
                     onClick={() => gotoBranch(PR.baseRepo.repoId, PR?.baseBranch)}
                   >
-                    {isMergeInSameRepo ? PR?.baseBranch : `${shortenAddress(repo.owner)}:${PR?.baseBranch}`}
+                    {isMergeInSameRepo ? PR?.baseBranch : `${resolveUsernameOrShorten(repo.owner)}:${PR?.baseBranch}`}
                   </span>{' '}
                   {PR.status === 'MERGED' &&
                     PR.mergedTimestamp &&
@@ -125,9 +132,9 @@ export default function PullRequestHeader({
               </div>
             </div>
           </div>
-          {isSticky && isContributor && (
+          {isSticky && contributorOrPRAuthor && (
             <div className="flex items-center">
-              <ActionButton isContributor={isContributor} />
+              <ActionButton isContributor={contributor} isPRAuthor={connectedAddress === PR.author} />
             </div>
           )}
         </div>

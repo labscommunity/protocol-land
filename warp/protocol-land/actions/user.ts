@@ -22,8 +22,8 @@ export async function updateProfileDetails(
   // Validate each property of the payload against its expected type
   if (
     isInvalidInput(payload, 'object') ||
-    (payload.fullName !== undefined && isInvalidInput(payload.fullName, 'string', true)) ||
-    (payload.userName !== undefined && isInvalidInput(payload.userName, 'string', true)) ||
+    (payload.fullname !== undefined && isInvalidInput(payload.fullname, 'string', true)) ||
+    (payload.username !== undefined && isInvalidInput(payload.username, 'username')) ||
     (payload.avatar !== undefined && isInvalidInput(payload.avatar, 'arweave-address')) ||
     (payload.bio !== undefined && isInvalidInput(payload.bio, 'string', true)) ||
     (payload.timezone !== undefined && isInvalidTimezone(payload.timezone)) ||
@@ -38,8 +38,8 @@ export async function updateProfileDetails(
 
   // Filter the payload to only include allowed keys
   const filteredPayload = pickKeys(payload, [
-    'fullName',
-    'userName',
+    'fullname',
+    'username',
     'avatar',
     'bio',
     'timezone',
@@ -56,9 +56,37 @@ export async function updateProfileDetails(
 
   const user: User = state.users[caller] ?? {}
 
+  if (payload.username !== undefined && user.username !== payload.username) {
+    const isUsernameTaken = Object.values(state.users).some(
+      (userState) => userState.username && userState.username.toLowerCase() === payload.username.toLowerCase()
+    )
+    if (isUsernameTaken) {
+      throw new ContractError(`Username ${payload.username} is not available`)
+    }
+  }
+
   state.users[caller] = { ...user, ...filteredPayload }
 
   return { state }
+}
+
+export async function isUsernameAvailable(
+  state: ContractState,
+  { input: { payload } }: RepositoryAction
+): Promise<ContractResult<boolean>> {
+  if (isInvalidInput(payload, 'object') || isInvalidInput(payload.username, 'string')) {
+    throw new ContractError('Username not supplied.')
+  }
+
+  if (isInvalidInput(payload.username, 'username')) {
+    return { result: false }
+  }
+
+  const isUsernameTaken = Object.values(state.users).some(
+    (userState) => userState.username && userState.username.toLowerCase() === payload.username.toLowerCase()
+  )
+
+  return { result: !isUsernameTaken }
 }
 
 export async function getUserDetails(

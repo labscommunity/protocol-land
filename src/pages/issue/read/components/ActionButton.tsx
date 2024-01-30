@@ -3,7 +3,7 @@ import React from 'react'
 import { Button } from '@/components/common/buttons'
 import { useGlobalStore } from '@/stores/globalStore'
 
-export default function ActionButton({ isContributor }: { isContributor: boolean }) {
+export default function ActionButton() {
   const [isSubmittingClose, setIsSubmittingClose] = React.useState(false)
   const [selectedIssue, closeIssue, reopenIssue] = useGlobalStore((state) => [
     state.issuesState.selectedIssue,
@@ -37,31 +37,29 @@ export default function ActionButton({ isContributor }: { isContributor: boolean
 
   return (
     <div className="flex">
-      {isContributor && (
-        <div className="flex w-full border-gray-200 justify-center h-10">
-          {isOpen ? (
-            <Button
-              isLoading={isSubmittingClose}
-              disabled={isSubmittingClose}
-              onClick={handleCloseButtonClick}
-              variant="secondary"
-              className="justify-center"
-            >
-              Close
-            </Button>
-          ) : (
-            <Button
-              className="break-keep hyphens-auto"
-              isLoading={isSubmittingClose}
-              disabled={isSubmittingClose}
-              onClick={handleReopen}
-              variant="primary-solid"
-            >
-              Reopen
-            </Button>
-          )}
-        </div>
-      )}
+      <div className="flex w-full border-gray-200 justify-center h-10">
+        {isOpen ? (
+          <Button
+            isLoading={isSubmittingClose}
+            disabled={isSubmittingClose}
+            onClick={handleCloseButtonClick}
+            variant="secondary"
+            className="justify-center"
+          >
+            Close
+          </Button>
+        ) : (
+          <Button
+            className="break-keep hyphens-auto"
+            isLoading={isSubmittingClose}
+            disabled={isSubmittingClose}
+            onClick={handleReopen}
+            variant="primary-solid"
+          >
+            Reopen
+          </Button>
+        )}
+      </div>
     </div>
   )
 }

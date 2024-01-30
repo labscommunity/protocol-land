@@ -8,8 +8,9 @@ import { VscIssueReopened } from 'react-icons/vsc'
 import { useNavigate } from 'react-router-dom'
 
 import { Button } from '@/components/common/buttons'
+import Comment from '@/components/IssuePr/Comment'
 import IssueDescription from '@/components/IssuePr/Description'
-import { shortenAddress } from '@/helpers/shortenAddress'
+import { resolveUsernameOrShorten } from '@/helpers/resolveUsername'
 import { useGlobalStore } from '@/stores/globalStore'
 import { IssueActivityComment, IssueActivityStatus } from '@/types/repository'
 
@@ -33,16 +34,18 @@ export default function OverviewTab() {
   const [isSubmittingClose, setIsSubmittingClose] = React.useState(false)
   const [isSubmittingComment, setIsSubmittingComment] = React.useState(false)
   const [commentVal, setCommentVal] = React.useState('')
-  const [isLoggedIn, isContributor, selectedIssue, closeIssue, reopenIssue, addComment] = useGlobalStore((state) => [
-    state.authState.isLoggedIn,
-    state.repoCoreActions.isContributor,
-    state.issuesState.selectedIssue,
-    state.issuesActions.closeIssue,
-    state.issuesActions.reopenIssue,
-    state.issuesActions.addComment
-  ])
+  const [authState, selectedIssue, isContributorOrIssueAuthor, closeIssue, reopenIssue, addComment] = useGlobalStore(
+    (state) => [
+      state.authState,
+      state.issuesState.selectedIssue,
+      state.issuesActions.isContributorOrIssueAuthor,
+      state.issuesActions.closeIssue,
+      state.issuesActions.reopenIssue,
+      state.issuesActions.addComment
+    ]
+  )
   const navigate = useNavigate()
-  const contributor = isContributor()
+  const contributorOrIssueAuthor = isContributorOrIssueAuthor()
 
   async function handleCloseButtonClick() {
     if (selectedIssue) {
@@ -89,28 +92,21 @@ export default function OverviewTab() {
         <div className="flex flex-col gap-8">
           <ol className="relative border-s-2 border-gray-300 ms-5">
             <li className="mb-10 -ms-5">
-              <IssueDescription issueOrPr={selectedIssue} />
+              <IssueDescription isIssue={true} issueOrPr={selectedIssue} canEdit={contributorOrIssueAuthor} />
             </li>
             {selectedIssue.activities &&
-              selectedIssue.activities.map((activity) => {
+              selectedIssue.activities.map((activity, activityId) => {
                 const commentActivity = activity as IssueActivityComment
                 if (activity.type === 'COMMENT') {
                   return (
                     <li className="mb-10 -ms-5">
-                      <div className="flex flex-col border-[1px] border-gray-300 rounded-lg overflow-hidden">
-                        <div className="flex justify-between bg-gray-200 border-b-[1px] border-gray-300 text-gray-900 px-4 py-2">
-                          <span
-                            className="hover:underline hover:text-primary-700 cursor-pointer font-medium"
-                            onClick={() => navigate(`/user/${commentActivity.author}`)}
-                          >
-                            {shortenAddress(commentActivity.author)}
-                          </span>
-                          <span> {formatDistanceToNow(new Date(commentActivity.timestamp), { addSuffix: true })}</span>
-                        </div>
-                        <div className="text-gray-900 p-4 bg-white">
-                          <MDEditor.Markdown source={commentActivity.description} />
-                        </div>
-                      </div>
+                      <Comment
+                        isIssue={true}
+                        issueOrPRId={selectedIssue.id}
+                        commentId={activityId}
+                        item={commentActivity}
+                        canEdit={authState.address === commentActivity.author}
+                      />
                     </li>
                   )
                 } else {
@@ -128,7 +124,7 @@ export default function OverviewTab() {
                           className="font-medium hover:underline cursor-pointer hover:text-primary-700"
                           onClick={() => navigate(`/user/${author}`)}
                         >
-                          {shortenAddress(author)}
+                          {resolveUsernameOrShorten(author)}
                         </span>
                         <span className="text-gray-500">
                           {status === 'COMPLETED' ? (
@@ -147,7 +143,7 @@ export default function OverviewTab() {
                                       className="text-black font-medium hover:underline cursor-pointer hover:text-primary-700"
                                       href={`/#/user/${assignee}`}
                                     >
-                                      {shortenAddress(assignee)}
+                                      {resolveUsernameOrShorten(assignee)}
                                     </a>
                                     {getSeperator(index, assignees!)}
                                   </>
@@ -166,7 +162,7 @@ export default function OverviewTab() {
         </div>
 
         <div className="border-t-[1px] border-gray-200">
-          {isLoggedIn && contributor && (
+          {authState.isLoggedIn && (
             <div className="flex flex-col pt-4">
               {isOpen && (
                 <MDEditor height={180} preview="edit" value={commentVal} onChange={(val) => setCommentVal(val!)} />
@@ -175,7 +171,7 @@ export default function OverviewTab() {
                 <div className="flex w-full justify-center gap-4 py-4">
                   <Button
                     isLoading={isSubmittingClose}
-                    disabled={isSubmittingClose}
+                    disabled={isSubmittingClose || !contributorOrIssueAuthor}
                     onClick={handleCloseButtonClick}
                     variant="secondary"
                     className="justify-center"
@@ -197,7 +193,7 @@ export default function OverviewTab() {
                 <div className="flex w-full justify-center gap-4 py-4">
                   <Button
                     isLoading={isSubmittingClose}
-                    disabled={isSubmittingClose}
+                    disabled={isSubmittingClose || !contributorOrIssueAuthor}
                     onClick={handleReopen}
                     variant="primary-solid"
                   >

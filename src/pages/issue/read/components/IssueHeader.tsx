@@ -1,6 +1,6 @@
 import clsx from 'clsx'
 import { formatDistanceToNow } from 'date-fns'
-import React from 'react'
+import React, { useMemo } from 'react'
 import { FaArrowLeft } from 'react-icons/fa'
 import { GoIssueClosed } from 'react-icons/go'
 import { VscIssues } from 'react-icons/vsc'
@@ -9,7 +9,7 @@ import Sticky from 'react-stickynode'
 
 import { Button } from '@/components/common/buttons'
 import IssueTitle from '@/components/IssuePr/Title'
-import { shortenAddress } from '@/helpers/shortenAddress'
+import { resolveUsernameOrShorten } from '@/helpers/resolveUsername'
 import { useGlobalStore } from '@/stores/globalStore'
 import { Issue, IssueStatus } from '@/types/repository'
 
@@ -31,7 +31,11 @@ const statusMap = {
 export default function IssueHeader({ issue }: { issue: Issue }) {
   const navigate = useNavigate()
   const [isSticky, setIsSticky] = React.useState(false)
-  const isContributor = useGlobalStore((state) => state.repoCoreActions.isContributor)()
+  const [connectedAddress, isContributorOrIssueAuthor] = useGlobalStore((state) => [
+    state.authState.address,
+    state.issuesActions.isContributorOrIssueAuthor
+  ])
+  const contributorOrIssueAuthor = useMemo(() => isContributorOrIssueAuthor(), [connectedAddress])
 
   const StatusComponent = statusMap[issue.status]
 
@@ -47,7 +51,7 @@ export default function IssueHeader({ issue }: { issue: Issue }) {
     <Sticky top={0} innerActiveClass="z-10 left-0 !w-full" onStateChange={handleStateChange}>
       <div className={clsx('border-b-[1px] bg-gray-50 border-gray-200', isSticky ? 'py-2 shadow' : 'pb-4')}>
         <div className={clsx('flex justify-between gap-2 w-full', { 'max-w-[1280px] mx-auto': isSticky })}>
-          <div className={clsx('flex flex-col gap-2', isSticky && isContributor ? 'w-[90%]' : 'w-full')}>
+          <div className={clsx('flex flex-col gap-2', isSticky && contributorOrIssueAuthor ? 'w-[90%]' : 'w-full')}>
             {!isSticky && (
               <>
                 <div>
@@ -55,7 +59,7 @@ export default function IssueHeader({ issue }: { issue: Issue }) {
                     <FaArrowLeft className="h-4 w-4 text-white" />
                   </Button>
                 </div>
-                <IssueTitle issueOrPr={issue} />
+                <IssueTitle issueOrPr={issue} canEdit={contributorOrIssueAuthor} />
               </>
             )}
 
@@ -69,17 +73,17 @@ export default function IssueHeader({ issue }: { issue: Issue }) {
               )}
               {issue && <StatusComponent status={issue!.status} />}
               <div className={clsx('text-gray-600', isSticky && 'truncate')}>
-                {isSticky && <IssueTitle issueOrPr={issue} showEdit={false} />}
+                {isSticky && <IssueTitle issueOrPr={issue} isSticky={true} />}
                 <span className={clsx(isSticky && 'text-sm')}>
-                  {shortenAddress(issue.author)} has opened this issue{' '}
+                  {resolveUsernameOrShorten(issue.author)} has opened this issue{' '}
                   {formatDistanceToNow(new Date(issue.timestamp), { addSuffix: true })}
                 </span>
               </div>
             </div>
           </div>
-          {isSticky && isContributor && (
+          {isSticky && contributorOrIssueAuthor && (
             <div className="flex items-center">
-              <ActionButton isContributor={isContributor} />
+              <ActionButton />
             </div>
           )}
         </div>

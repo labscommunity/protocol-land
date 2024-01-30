@@ -5,6 +5,7 @@ import {
   createNewBounty,
   createNewIssue,
   updateBounty,
+  updateIssueComment,
   updateIssueDetails,
   updateIssueStatus
 } from './actions/issues'
@@ -13,6 +14,8 @@ import {
   addReviewersToPR,
   approvePR,
   createNewPullRequest,
+  linkIssueToPR,
+  updatePRComment,
   updatePullRequestDetails,
   updatePullRequestStatus
 } from './actions/pull-requests'
@@ -35,7 +38,7 @@ import {
   updateRepositoryDetails,
   updateRepositoryTxId
 } from './actions/repository'
-import { getUserDetails, updateProfileDetails } from './actions/user'
+import { getUserDetails, isUsernameAvailable, updateProfileDetails } from './actions/user'
 import { ContractState, EvolveAction, RepositoryAction } from './types'
 
 declare const ContractError
@@ -88,8 +91,12 @@ export async function handle(state: ContractState, action: RepositoryAction | Ev
       return await addReviewersToPR(state, action as RepositoryAction)
     case 'addCommentToPR':
       return await addCommentToPR(state, action as RepositoryAction)
+    case 'updatePRComment':
+      return await updatePRComment(state, action as RepositoryAction)
     case 'approvePR':
       return await approvePR(state, action as RepositoryAction)
+    case 'linkIssueToPR':
+      return await linkIssueToPR(state, action as RepositoryAction)
     case 'createIssue':
       return await createNewIssue(state, action as RepositoryAction)
     case 'updateIssueStatus':
@@ -100,6 +107,8 @@ export async function handle(state: ContractState, action: RepositoryAction | Ev
       return await addAssigneeToIssue(state, action as RepositoryAction)
     case 'addCommentToIssue':
       return await addCommentToIssue(state, action as RepositoryAction)
+    case 'updateIssueComment':
+      return await updateIssueComment(state, action as RepositoryAction)
     case 'createNewBounty':
       return await createNewBounty(state, action as RepositoryAction)
     case 'updateBounty':
@@ -108,6 +117,8 @@ export async function handle(state: ContractState, action: RepositoryAction | Ev
       return await updateProfileDetails(state, action as RepositoryAction)
     case 'getUserDetails':
       return await getUserDetails(state, action as RepositoryAction)
+    case 'isUsernameAvailable':
+      return await isUsernameAvailable(state, action as RepositoryAction)
     case 'evolve':
       return await evolveContract(state, action as EvolveAction)
     default:

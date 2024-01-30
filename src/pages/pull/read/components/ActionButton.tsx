@@ -8,7 +8,7 @@ import { Button } from '@/components/common/buttons'
 import { withAsync } from '@/helpers/withAsync'
 import { useGlobalStore } from '@/stores/globalStore'
 
-export default function ActionButton({ isContributor }: { isContributor: boolean }) {
+export default function ActionButton({ isContributor, isPRAuthor }: { isContributor: boolean; isPRAuthor: boolean }) {
   const [isSubmittingMerge, setIsSubmittingMerge] = useState(false)
   const [isSubmittingClose, setIsSubmittingClose] = useState(false)
   const [selectedRepo, mergePR, closePR, reopenPR] = useGlobalStore((state) => [
@@ -69,20 +69,22 @@ export default function ActionButton({ isContributor }: { isContributor: boolean
 
   return (
     <div className="flex">
-      {isContributor && (
+      {(isContributor || isPRAuthor) && (
         <div className="flex w-full border-gray-200 justify-center h-10">
           {isOpen && (
             <div className="flex gap-3">
-              <Button
-                onClick={handleMergePullRequest}
-                disabled={isSubmittingMerge}
-                isLoading={isSubmittingMerge}
-                className="gap-2 justify-center font-medium"
-                variant="primary-solid"
-              >
-                <FiGitMerge className="w-4 h-4" />
-                Merge
-              </Button>
+              {isContributor && (
+                <Button
+                  onClick={handleMergePullRequest}
+                  disabled={isSubmittingMerge}
+                  isLoading={isSubmittingMerge}
+                  className="gap-2 justify-center font-medium"
+                  variant="primary-solid"
+                >
+                  <FiGitMerge className="w-4 h-4" />
+                  Merge
+                </Button>
+              )}
 
               <Button
                 onClick={handleClosePullRequest}

@@ -12,7 +12,7 @@ import IconForkOutline from '@/assets/icons/fork-outline.svg'
 import IconStarOutline from '@/assets/icons/star-outline.svg'
 import { Button } from '@/components/common/buttons'
 import { trackGoogleAnalyticsPageView } from '@/helpers/google-analytics'
-import { shortenAddress } from '@/helpers/shortenAddress'
+import { resolveUsernameOrShorten } from '@/helpers/resolveUsername'
 import { Repo } from '@/types/repository'
 
 import useRepository from '../hooks/useRepository'
@@ -101,11 +101,9 @@ export default function RepoHeader({ repo, isLoading, owner, parentRepo }: Props
             <div>
               <div className="flex items-center gap-4">
                 <h1 className="text-xl font-bold text-gray-900">{repo.name}</h1>
-                {parentRepo && (
-                  <span className={`border-[1px] border-primary-600 text-primary-600 rounded-full px-2 text-sm`}>
-                    Forked
-                  </span>
-                )}
+                <span className={`border-[1px] border-primary-600 text-primary-600 rounded-full px-2 text-sm`}>
+                  {repo.private ? 'Private' : 'Public'}
+                </span>
               </div>
               <p className="text-gray-900 text-base">
                 <span className="text-gray-600">Transaction ID:</span> {repo.dataTxId}
@@ -114,7 +112,7 @@ export default function RepoHeader({ repo, isLoading, owner, parentRepo }: Props
                 <p className="text-gray-900 text-base">
                   <span className="text-gray-600">Forked from:</span>{' '}
                   <span onClick={handleParentRepoClick} className="text-primary-600 hover:underline cursor-pointer">
-                    {shortenAddress(parentRepo.id, 7)}/{parentRepo.name}
+                    {resolveUsernameOrShorten(parentRepo.id, 7)}/{parentRepo.name}
                   </span>
                 </p>
               )}
@@ -129,7 +127,9 @@ export default function RepoHeader({ repo, isLoading, owner, parentRepo }: Props
             </div>
             <div className="flex gap-1 items-center px-4 py-1 bg-gray-200 rounded-[4px] cursor-default">
               <SVG src={IconForkOutline} />
-              <p>{repoHeaderState.branches} {repoHeaderState.branches === 1 ? 'Branch' : 'Branches'}</p>
+              <p>
+                {repoHeaderState.branches} {repoHeaderState.branches === 1 ? 'Branch' : 'Branches'}
+              </p>
             </div>
             <div className="flex gap-1 items-center px-4 py-1 bg-gray-200 rounded-[4px] cursor-default">
               <SVG src={IconDriveOutline} />

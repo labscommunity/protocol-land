@@ -29,6 +29,10 @@ export type Repo = {
   contributorInvites: ContributorInvite[]
 }
 
+export interface RepoWithParent extends Repo {
+  parentRepo?: Pick<Repo, 'id' | 'name' | 'owner'>
+}
+
 export type ContributorInvite = {
   address: string
   timestamp: number
@@ -70,6 +74,7 @@ export type PullRequest = {
   status: PullRequestStatus
   reviewers: Reviewer[]
   activities: PullRequestActivity[]
+  linkedIssueId?: number
   timestamp: number
   mergedTimestamp?: number
   baseRepo: {
@@ -94,6 +99,7 @@ export type Issue = {
   assignees: string[]
   activities: IssueActivity[]
   bounties: Bounty[]
+  linkedPRIds?: number[]
 }
 
 export type Bounty = {

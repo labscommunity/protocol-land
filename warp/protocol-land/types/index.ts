@@ -8,8 +8,8 @@ export type ContractState = {
 }
 
 export type User = {
-  fullName?: string
-  userName?: string
+  fullname?: string
+  username?: string
   avatar?: string
   bio?: string
   timezone?: Timezone
@@ -54,6 +54,10 @@ export type Repo = {
   contributorInvites: ContributorInvite[]
 }
 
+export interface RepoWithParent extends Repo {
+  parentRepo?: Pick<Repo, 'id' | 'name' | 'owner'>
+}
+
 export type ContributorInvite = {
   address: string
   timestamp: number
@@ -93,6 +97,7 @@ export type PullRequest = {
   status: PullRequestStatus
   reviewers: Reviewer[]
   activities: PullRequestActivity[]
+  linkedIssueId?: number
   timestamp: number
   mergedTimestamp?: number
   baseRepo: PRSide
@@ -116,6 +121,7 @@ export type Issue = {
   assignees: string[]
   activities: IssueActivity[]
   bounties: Bounty[]
+  linkedPRIds?: number[]
 }
 
 export type Bounty = {
@@ -205,20 +211,24 @@ const repoFnList = [
   'updateDomain',
   'addContributor',
   'addCommentToPR',
+  'updatePRComment',
   'inviteContributor',
   'acceptContributorInvite',
   'rejectContributorInvite',
   'addReviewersToPR',
   'approvePR',
+  'linkIssueToPR',
   'createIssue',
   'updateIssueStatus',
   'updateIssueDetails',
   'addAssigneeToIssue',
   'addCommentToIssue',
+  'updateIssueComment',
   'createNewBounty',
   'updateBounty',
   'updateProfileDetails',
   'getUserDetails',
+  'isUsernameAvailable',
   'postEvolve',
   'updatePrivateStateTx',
   'cancelContributorInvite'

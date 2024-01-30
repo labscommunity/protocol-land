@@ -10,7 +10,9 @@ import * as yup from 'yup'
 
 import { Button } from '@/components/common/buttons'
 import { postNewPullRequest } from '@/lib/git/pull-request'
-import { Repo } from '@/types/repository'
+import { Issue, Repo } from '@/types/repository'
+
+import LinkIssue from './LinkIssue'
 
 const prSchema = yup
   .object({
@@ -29,6 +31,7 @@ type Props = {
 export default function NewPRForm({ baseBranch, compareBranch, baseRepo, compareRepo, repoId }: Props) {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [description, setDescription] = useState('')
+  const [selectedIssue, setSelectedIssue] = useState<Issue>()
 
   const navigate = useNavigate()
   const {
@@ -61,6 +64,7 @@ export default function NewPRForm({ baseBranch, compareBranch, baseRepo, compare
       },
       title,
       description: description || '',
+      linkedIssueId: selectedIssue?.id,
       baseBranch,
       compareBranch,
       repoId
@@ -100,14 +104,21 @@ export default function NewPRForm({ baseBranch, compareBranch, baseRepo, compare
             <MDEditor height={300} preview="edit" value={description} onChange={(val) => setDescription(val!)} />
           </div>
         </div>
+        <div className="w-full">
+          <label htmlFor="link-issue" className="block mb-1 text-sm font-medium text-gray-600">
+            Link Issue
+          </label>
+          <LinkIssue selected={selectedIssue} setSelected={setSelectedIssue} issues={baseRepo?.issues ?? []} />
+        </div>
         <div className="mt-6 w-full flex justify-center">
           <Button
             onClick={handlePRSubmit(handleCreateButtonClick)}
             variant="primary-solid"
             className="font-medium"
+            isLoading={isSubmitting}
             disabled={Object.keys(errors).length > 0 || isSubmitting}
           >
-            {isSubmitting ? 'Processing...' : 'Create Pull request'}
+            Create Pull request
           </Button>
         </div>
       </div>

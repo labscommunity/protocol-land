@@ -1,11 +1,11 @@
 import git, { Errors } from 'isomorphic-git'
-import { InjectedArweaveSigner } from 'warp-contracts-plugin-signature'
 
 import { CONTRACT_TX_ID } from '@/helpers/constants'
 import getWarpContract from '@/helpers/getWrapContract'
 import { trackGoogleAnalyticsEvent } from '@/helpers/google-analytics'
 import { isInvalidInput } from '@/helpers/isInvalidInput'
 import { waitFor } from '@/helpers/waitFor'
+import { getSigner } from '@/helpers/wallet/getSigner'
 import { withAsync } from '@/helpers/withAsync'
 import { useGlobalStore } from '@/stores/globalStore'
 import { PullRequest } from '@/types/repository'
@@ -40,17 +40,16 @@ export async function postNewPullRequest({
   compareBranch,
   repoId,
   baseRepo,
-  compareRepo
+  compareRepo,
+  linkedIssueId
 }: PostNewPROptions) {
+  const userSigner = await getSigner()
   const address = useGlobalStore.getState().authState.address
 
   const baseFS = fsWithName(baseRepo.repoId)
   const baseDir = `/${baseRepo.repoId}`
 
   const oid = await git.resolveRef({ fs: baseFS, dir: baseDir, ref: baseBranch })
-
-  const userSigner = new InjectedArweaveSigner(window.arweaveWallet)
-  await userSigner.setPublicKey()
 
   const contract = getWarpContract(CONTRACT_TX_ID, userSigner)
 
@@ -63,6 +62,7 @@ export async function postNewPullRequest({
       baseBranch,
       compareBranch,
       baseBranchOid: oid,
+      linkedIssueId,
       baseRepo,
       compareRepo
     }
@@ -84,7 +84,7 @@ export async function postNewPullRequest({
   if (!PR || !PR.id) return
 
   if (address) {
-    await postPRStatDataTxToArweave(address, baseRepo.repoName, PR)
+    await postPRStatDataTxToArweave(address, baseRepo.repoName, baseRepo.repoId, PR)
   }
 
   trackGoogleAnalyticsEvent('Repository', 'Successfully create a new PR', 'Create PR', {
@@ -181,8 +181,7 @@ export async function mergePullRequest({
 
     await waitFor(1000)
 
-    const userSigner = new InjectedArweaveSigner(window.arweaveWallet)
-    await userSigner.setPublicKey()
+    const userSigner = await getSigner()
 
     const contract = getWarpContract(CONTRACT_TX_ID, userSigner)
 
@@ -216,8 +215,7 @@ export async function mergePullRequest({
 }
 
 export async function closePullRequest({ repoId, prId }: { repoId: string; prId: number }) {
-  const userSigner = new InjectedArweaveSigner(window.arweaveWallet)
-  await userSigner.setPublicKey()
+  const userSigner = await getSigner()
 
   const contract = getWarpContract(CONTRACT_TX_ID, userSigner)
 
@@ -248,8 +246,7 @@ export async function closePullRequest({ repoId, prId }: { repoId: string; prId:
 }
 
 export async function reopenPullRequest({ repoId, prId }: { repoId: string; prId: number }) {
-  const userSigner = new InjectedArweaveSigner(window.arweaveWallet)
-  await userSigner.setPublicKey()
+  const userSigner = await getSigner()
 
   const contract = getWarpContract(CONTRACT_TX_ID, userSigner)
 
@@ -280,8 +277,7 @@ export async function reopenPullRequest({ repoId, prId }: { repoId: string; prId
 }
 
 export async function updatePullRequestDetails(repoId: string, prId: number, pullRequest: Partial<PullRequest>) {
-  const userSigner = new InjectedArweaveSigner(window.arweaveWallet)
-  await userSigner.setPublicKey()
+  const userSigner = await getSigner()
 
   const contract = getWarpContract(CONTRACT_TX_ID, userSigner)
   let payload = {
@@ -304,8 +300,7 @@ export async function updatePullRequestDetails(repoId: string, prId: number, pul
 }
 
 export async function addReviewersToPR({ reviewers, repoId, prId }: AddReviewersToPROptions) {
-  const userSigner = new InjectedArweaveSigner(window.arweaveWallet)
-  await userSigner.setPublicKey()
+  const userSigner = await getSigner()
 
   const contract = getWarpContract(CONTRACT_TX_ID, userSigner)
 
@@ -336,8 +331,7 @@ export async function addReviewersToPR({ reviewers, repoId, prId }: AddReviewers
 }
 
 export async function approvePR({ repoId, prId }: ApprovePROptions) {
-  const userSigner = new InjectedArweaveSigner(window.arweaveWallet)
-  await userSigner.setPublicKey()
+  const userSigner = await getSigner()
 
   const contract = getWarpContract(CONTRACT_TX_ID, userSigner)
 
@@ -367,8 +361,7 @@ export async function approvePR({ repoId, prId }: ApprovePROptions) {
 }
 
 export async function addCommentToPR(repoId: string, prId: number, comment: string) {
-  const userSigner = new InjectedArweaveSigner(window.arweaveWallet)
-  await userSigner.setPublicKey()
+  const userSigner = await getSigner()
 
   const contract = getWarpContract(CONTRACT_TX_ID, userSigner)
 
@@ -378,6 +371,68 @@ export async function addCommentToPR(repoId: string, prId: number, comment: stri
       repoId,
       prId,
       comment
+    }
+  })
+
+  const {
+    cachedValue: {
+      state: { repos }
+    }
+  } = await contract.readState()
+
+  const PRs = repos[repoId]?.pullRequests
+
+  if (!PRs) return
+
+  const PR = PRs[prId - 1]
+
+  if (!PR) return
+
+  return PR
+}
+
+export async function updatePRComment(repoId: string, prId: number, comment: object) {
+  const userSigner = await getSigner()
+
+  const contract = getWarpContract(CONTRACT_TX_ID, userSigner)
+
+  await contract.writeInteraction({
+    function: 'updatePRComment',
+    payload: {
+      repoId,
+      prId,
+      comment
+    }
+  })
+
+  const {
+    cachedValue: {
+      state: { repos }
+    }
+  } = await contract.readState()
+
+  const PRs = repos[repoId]?.pullRequests
+
+  if (!PRs) return
+
+  const PR = PRs[prId - 1]
+
+  if (!PR) return
+
+  return PR
+}
+
+export async function linkIssueToPR(repoId: string, prId: number, issueId: number) {
+  const userSigner = await getSigner()
+
+  const contract = getWarpContract(CONTRACT_TX_ID, userSigner)
+
+  await contract.writeInteraction({
+    function: 'linkIssueToPR',
+    payload: {
+      repoId,
+      prId,
+      linkedIssueId: issueId
     }
   })
 
@@ -417,6 +472,7 @@ type PostNewPROptions = {
   baseBranch: string
   compareBranch: string
   repoId: string
+  linkedIssueId?: number
 }
 
 type PRSide = {
