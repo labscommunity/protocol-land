@@ -6,6 +6,7 @@ import { Activity } from '@/types/explore'
 import { Repo } from '@/types/repository'
 
 import ForkButton from './ForkButton'
+import RepoPopover from './RepoPopover'
 
 interface ActivityHeaderProps {
   activity: Activity
@@ -18,12 +19,14 @@ export default function ActivityHeader({ activity, setIsForkModalOpen, setRepo }
     <div className="w-full flex justify-between items-center gap-2">
       <div className="flex items-center gap-3">
         <div className="flex items-center">
-          <Link
-            className="font-semibold text-lg hover:underline text-primary-700 hover:text-primary-800 cursor-pointer"
-            to={`/repository/${activity.repo.id}`}
-          >
-            {activity.repo.name}
-          </Link>
+          <RepoPopover repo={activity.repo}>
+            <Link
+              className="font-semibold text-lg hover:underline text-primary-700 hover:text-primary-800 cursor-pointer"
+              to={`/repository/${activity.repo.id}`}
+            >
+              {activity.repo.name}
+            </Link>
+          </RepoPopover>
         </div>
         <div className="border-primary-500 border text-sm px-2 rounded-md truncate">
           Owner:{' '}

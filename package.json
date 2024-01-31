@@ -19,6 +19,7 @@
     "@arweave-wallet-kit-beta/core": "^0.0.1-beta.4",
     "@arweave-wallet-kit-beta/othent-strategy": "^0.0.1-beta.12",
     "@arweave-wallet-kit-beta/react": "^0.0.1-beta.4",
+    "@floating-ui/react-dom": "^2.0.8",
     "@headlessui/react": "^1.7.16",
     "@hookform/resolvers": "^3.2.0",
     "@isomorphic-git/lightning-fs": "^4.6.0",

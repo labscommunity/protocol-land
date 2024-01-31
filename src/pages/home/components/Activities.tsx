@@ -17,7 +17,7 @@ import {
   RepositoryActivityType,
   ValidityResponse
 } from '@/types/explore'
-import { Repo } from '@/types/repository'
+import { Repo, RepoWithParent } from '@/types/repository'
 
 import BountyActivity from './BountyActivity'
 import DeploymentActivity from './DeploymentActivity'
@@ -134,6 +134,19 @@ export default function Activities({ filters }: ActivitiesProps) {
 
     let allActivities: Activity[] = []
 
+    const getRepoWithParent = (repos: { [key: string]: Repo }, repo: RepoWithParent) => {
+      if (repo.parent) {
+        const parentRepo = repos[repo.parent]
+        if (parentRepo) {
+          return {
+            ...repo,
+            parentRepo: { id: parentRepo.id, name: parentRepo.name, owner: parentRepo.owner }
+          } as RepoWithParent
+        }
+      }
+      return repo
+    }
+
     if (filters.Repositories) {
       const repositoryActivities = validInteractions.reduce((accumulator, interaction) => {
         const { payload } = interaction.input
@@ -143,10 +156,11 @@ export default function Activities({ filters }: ActivitiesProps) {
           const existingActivity = accumulator.find((activity) => activity.repo.id === repoId && !activity.created)
 
           if (!existingActivity) {
+            const repo = state.repos[repoId]
             const created = ['forkRepository', 'initialize'].includes(interaction.input.function)
             accumulator.push({
               type: 'REPOSITORY',
-              repo: state.repos[repoId],
+              repo: getRepoWithParent(state.repos, repo),
               created,
               timestamp: interaction.timestamp,
               author: interaction.author
@@ -184,7 +198,7 @@ export default function Activities({ filters }: ActivitiesProps) {
             : repo.issues[+payload.issueId - 1]
           return {
             type: 'ISSUE',
-            repo,
+            repo: getRepoWithParent(state.repos, repo),
             issue: {
               ...issue,
               timestamp: interaction.timestamp * 1000,
@@ -225,7 +239,7 @@ export default function Activities({ filters }: ActivitiesProps) {
             : repo.pullRequests[+payload.prId - 1]
           return {
             type: 'PULL_REQUEST',
-            repo,
+            repo: getRepoWithParent(state.repos, repo),
             pullRequest: {
               ...pullRequest,
               timestamp: interaction.timestamp * 1000,
@@ -259,7 +273,7 @@ export default function Activities({ filters }: ActivitiesProps) {
             : issue.bounties[+payload.bountyId - 1]
           return {
             type: 'BOUNTY',
-            repo,
+            repo: getRepoWithParent(state.repos, repo),
             bounty,
             issue,
             created,
@@ -288,7 +302,7 @@ export default function Activities({ filters }: ActivitiesProps) {
 
           return {
             type: 'DEPLOYMENT',
-            repo,
+            repo: getRepoWithParent(state.repos, repo),
             deployment,
             created,
             timestamp: interaction.timestamp
@@ -316,7 +330,7 @@ export default function Activities({ filters }: ActivitiesProps) {
 
           return {
             type: 'DOMAIN',
-            repo,
+            repo: getRepoWithParent(state.repos, repo),
             domain,
             created,
             timestamp: interaction.timestamp
