@@ -13,6 +13,7 @@ export type Repo = {
   description: string
   defaultBranch: string
   dataTxId: string
+  uploadStrategy: 'DEFAULT' | 'ARSEEDING'
   owner: string
   pullRequests: PullRequest[]
   issues: Issue[]

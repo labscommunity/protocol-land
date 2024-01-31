@@ -53,6 +53,7 @@ export async function initializeNewRepository(
     description,
     defaultBranch: 'master',
     dataTxId: payload.dataTxId,
+    uploadStrategy: payload.uploadStrategy === 'ARSEEDING' ? 'ARSEEDING' : 'DEFAULT',
     owner: caller,
     contributors: [],
     pullRequests: [],
@@ -121,6 +122,7 @@ export async function forkRepository(
     description,
     defaultBranch: 'master',
     dataTxId: payload.dataTxId,
+    uploadStrategy: 'DEFAULT',
     owner: caller,
     contributors: [],
     pullRequests: [],
@@ -147,6 +149,7 @@ export async function forkRepository(
   }
 
   parentRepo.forks[caller] = { id: repo.id, name: repo.name, owner: repo.owner, timestamp: repo.timestamp }
+  repo.uploadStrategy = parentRepo.uploadStrategy
   state.repos[repo.id] = repo
 
   return { state }
@@ -178,6 +181,7 @@ export async function updateRepositoryTxId(
   }
 
   repo.dataTxId = payload.dataTxId
+  repo.uploadStrategy = payload.uploadStrategy === 'ARSEEDING' ? 'ARSEEDING' : 'DEFAULT'
 
   return { state }
 }
