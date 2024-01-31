@@ -1,12 +1,13 @@
 import { Dispatch, SetStateAction } from 'react'
 import { Link } from 'react-router-dom'
 
+import RepoPopover from '@/components/Popovers/RepoPopover'
+import UserPopover from '@/components/Popovers/UserPopover'
 import { resolveUsernameOrShorten } from '@/helpers/resolveUsername'
 import { Activity } from '@/types/explore'
 import { Repo } from '@/types/repository'
 
 import ForkButton from './ForkButton'
-import RepoPopover from './RepoPopover'
 
 interface ActivityHeaderProps {
   activity: Activity
@@ -28,14 +29,18 @@ export default function ActivityHeader({ activity, setIsForkModalOpen, setRepo }
             </Link>
           </RepoPopover>
         </div>
-        <div className="border-primary-500 border text-sm px-2 rounded-md truncate">
-          Owner:{' '}
-          <Link
-            className="font-normal hover:underline text-primary-600 hover:text-primary-700 cursor-pointer"
-            to={`/user/${activity.repo.owner}`}
-          >
-            {resolveUsernameOrShorten(activity.repo.owner)}
-          </Link>
+        <div>
+          <div className="border-primary-500 flex gap-1 border text-sm px-2 rounded-md truncate">
+            Owner:
+            <UserPopover userAddress={activity.repo.owner}>
+              <Link
+                className="font-normal hover:underline text-primary-600 hover:text-primary-700 cursor-pointer truncate"
+                to={`/user/${activity.repo.owner}`}
+              >
+                {resolveUsernameOrShorten(activity.repo.owner)}
+              </Link>
+            </UserPopover>
+          </div>
         </div>
       </div>
       <ForkButton activity={activity} setIsForkModalOpen={setIsForkModalOpen} setRepo={setRepo} />
