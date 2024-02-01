@@ -2,6 +2,7 @@ import clsx from 'clsx'
 import { formatDistanceToNow } from 'date-fns'
 import { Link } from 'react-router-dom'
 
+import UserPopover from '@/components/Popovers/UserPopover'
 import { resolveUsernameOrShorten } from '@/helpers/resolveUsername'
 import { ActivityProps, IssueActivityType } from '@/types/explore'
 
@@ -31,9 +32,14 @@ export default function IssueActivity({ activity, setIsForkModalOpen, setRepo }:
               {isOpen ? <span>{activity.created ? 'opened ' : 'reopened '}</span> : <span>was closed </span>}
               <span>
                 by{' '}
-                <Link className="text-primary-600 hover:text-primary-700" to={`/user/${issue.author}`}>
-                  {resolveUsernameOrShorten(issue.author)}{' '}
-                </Link>
+                <UserPopover userAddress={issue.author}>
+                  <Link
+                    className="text-primary-600 hover:text-primary-700 hover:underline"
+                    to={`/user/${issue.author}`}
+                  >
+                    {resolveUsernameOrShorten(issue.author)}
+                  </Link>
+                </UserPopover>{' '}
               </span>
               {isOpen && issue.timestamp && (
                 <span>{formatDistanceToNow(new Date(issue.timestamp), { addSuffix: true })}</span>

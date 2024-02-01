@@ -1,5 +1,6 @@
-import { useFloating } from '@floating-ui/react-dom'
+import { arrow, flip, offset, useFloating } from '@floating-ui/react-dom'
 import { Popover } from '@headlessui/react'
+import clsx from 'clsx'
 import { formatDistanceToNow } from 'date-fns'
 import React from 'react'
 import { GoRepoForked } from 'react-icons/go'
@@ -17,7 +18,16 @@ interface RepoPopoverProps {
 export default function RepoPopover({ repo, children }: RepoPopoverProps) {
   const [isOpen, setIsOpen] = React.useState(false)
   const timeout = React.useRef<NodeJS.Timeout>()
-  const { refs, floatingStyles } = useFloating({ placement: 'top-start' })
+  const arrowRef = React.useRef(null)
+  const {
+    refs,
+    floatingStyles,
+    placement,
+    middlewareData: { arrow: { x: arrowX, y: arrowY } = {} }
+  } = useFloating({
+    placement: 'top-start',
+    middleware: [offset(5), flip(), arrow({ element: arrowRef })]
+  })
 
   function clearCurrentTimeout() {
     if (timeout.current) {
@@ -37,8 +47,15 @@ export default function RepoPopover({ repo, children }: RepoPopoverProps) {
     }, 100)
   }
 
+  const staticSide: any = {
+    top: 'bottom',
+    right: 'left',
+    bottom: 'top',
+    left: 'right'
+  }[placement.split('-')[0]]
+
   return (
-    <Popover className="relative">
+    <Popover as="span">
       {() => (
         <>
           <Popover.Button
@@ -55,10 +72,10 @@ export default function RepoPopover({ repo, children }: RepoPopoverProps) {
               onMouseEnter={openPopover}
               onMouseLeave={closePopover}
               style={floatingStyles}
-              className="w-max max-w-sm px-4 sm:px-0"
+              className="w-[22rem] max-w-sm px-4 sm:px-0"
               static
             >
-              <div className="overflow-hidden rounded-lg shadow-lg ring-1 ring-black/5">
+              <div className="overflow-hidden rounded-lg border border-gray-300">
                 <div className="relative flex flex-col gap-2 bg-gray-50 p-4">
                   <div className="flex items-center gap-2 justify-between">
                     <div className="flex items-center gap-2">
@@ -96,9 +113,18 @@ export default function RepoPopover({ repo, children }: RepoPopoverProps) {
                   </div>
                 </div>
               </div>
-              <svg className="absolute text-white h-2 left-0 ml-3 top-full" x="0px" y="0px" viewBox="0 0 255 255">
-                <polygon className="fill-current" points="0,0 127.5,127.5 255,0" />
-              </svg>
+              <div
+                ref={arrowRef}
+                style={{
+                  left: arrowX != null ? `${arrowX}px` : '',
+                  top: arrowY != null ? `${arrowY}px` : '',
+                  [staticSide]: '-5px'
+                }}
+                className={clsx(
+                  'bg-gray-50 absolute h-[10px] w-[10px] shadow-lg border border-gray-300 rotate-45',
+                  staticSide === 'bottom' ? 'border-l-0 border-t-0' : 'border-r-0 border-b-0'
+                )}
+              ></div>
             </Popover.Panel>
           )}
         </>
