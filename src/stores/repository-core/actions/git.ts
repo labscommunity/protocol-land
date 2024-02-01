@@ -57,10 +57,11 @@ export async function saveRepository(id: string, name: string) {
   document.body.removeChild(downloadLink)
 }
 
-export async function loadRepository(id: string, dataTxId: string, privateStateTxId?: string) {
+export async function loadRepository(id: string, dataTxId: string, uploadStrategy: string, privateStateTxId?: string) {
   await unmountRepository(id)
 
-  const response = await fetch(`https://arweave.net/${dataTxId}`)
+  const gatewayUrl = uploadStrategy === 'ARSEEDING' ? 'https://arseed.web3infra.dev' : 'https://arweave.net'
+  const response = await fetch(`${gatewayUrl}/${dataTxId}`)
   let repoArrayBuf = await response.arrayBuffer()
 
   if (privateStateTxId) {

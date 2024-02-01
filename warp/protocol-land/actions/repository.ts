@@ -13,6 +13,10 @@ import { isInvalidInput } from '../utils/isInvalidInput'
 
 declare const ContractError
 
+function getUploadStrategy(uploadStrategy: string) {
+  return uploadStrategy === 'ARSEEDING' ? 'ARSEEDING' : 'DEFAULT'
+}
+
 export async function initializeNewRepository(
   state: ContractState,
   { caller, input: { payload } }: RepositoryAction
@@ -53,6 +57,7 @@ export async function initializeNewRepository(
     description,
     defaultBranch: 'master',
     dataTxId: payload.dataTxId,
+    uploadStrategy: getUploadStrategy(payload.uploadStrategy),
     owner: caller,
     contributors: [],
     pullRequests: [],
@@ -121,6 +126,7 @@ export async function forkRepository(
     description,
     defaultBranch: 'master',
     dataTxId: payload.dataTxId,
+    uploadStrategy: 'DEFAULT',
     owner: caller,
     contributors: [],
     pullRequests: [],
@@ -147,6 +153,7 @@ export async function forkRepository(
   }
 
   parentRepo.forks[caller] = { id: repo.id, name: repo.name, owner: repo.owner, timestamp: repo.timestamp }
+  repo.uploadStrategy = parentRepo.uploadStrategy
   state.repos[repo.id] = repo
 
   return { state }
@@ -178,6 +185,7 @@ export async function updateRepositoryTxId(
   }
 
   repo.dataTxId = payload.dataTxId
+  repo.uploadStrategy = getUploadStrategy(payload.uploadStrategy)
 
   return { state }
 }
