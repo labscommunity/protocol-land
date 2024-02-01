@@ -36,7 +36,7 @@ const repositoryInteractionFunctions = [
   // 'inviteContributor',
   // 'rejectContributorInvite',
   // 'updatePrivateStateTx',
-  'updateRepositoryDetails',
+  // 'updateRepositoryDetails',
   'updateRepositoryTxId'
 ]
 
