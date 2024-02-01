@@ -19,6 +19,7 @@ export default function ReadPullRequest() {
   const location = useLocation()
   const { id, pullId } = useParams()
   const [isMergable, setIsMergable] = useState(true)
+  const [conflictingFiles, setConflictingFiles] = useState<Array<string>>([])
   const [compareRepoOwner, setCompareRepoOwner] = useState('')
   const [
     selectedRepo,
@@ -117,9 +118,12 @@ export default function ReadPullRequest() {
       if (isContributor()) {
         pullRequestActions.mergePullRequest(PR.id, true).then(({ response, error }) => {
           if (response) {
+            setConflictingFiles([])
             setIsMergable(true)
           }
           if (error) {
+            const files = (error as any)?.data?.filepaths as Array<string>
+            setConflictingFiles(Array.isArray(files) ? files : [])
             setIsMergable(false)
           }
         })
@@ -188,7 +192,7 @@ export default function ReadPullRequest() {
             <Tab.Panels className={'mt-4 px-2 flex flex-col flex-1'}>
               {rootTabConfig.map((TabItem) => (
                 <Tab.Panel className={'flex flex-col flex-1'}>
-                  <TabItem.Component isMergable={isMergable} />
+                  <TabItem.Component isMergable={isMergable} conflictingFiles={conflictingFiles} />
                 </Tab.Panel>
               ))}
             </Tab.Panels>

@@ -4,6 +4,7 @@ import { formatDistanceToNow } from 'date-fns'
 import { useState } from 'react'
 import toast from 'react-hot-toast'
 import { AiFillCloseCircle } from 'react-icons/ai'
+import { BiError } from 'react-icons/bi'
 import { FiGitMerge } from 'react-icons/fi'
 import { GoEye } from 'react-icons/go'
 import { IoMdCheckmark } from 'react-icons/io'
@@ -47,7 +48,13 @@ const StatusTextMap = {
   REVIEW_REQUEST: 'requested review'
 }
 
-export default function OverviewTab({ isMergable }: { isMergable: boolean }) {
+export default function OverviewTab({
+  isMergable,
+  conflictingFiles
+}: {
+  isMergable: boolean
+  conflictingFiles: Array<string>
+}) {
   const [isSubmittingMerge, setIsSubmittingMerge] = useState(false)
   const [isSubmittingClose, setIsSubmittingClose] = useState(false)
   const [isSubmittingComment, setIsSubmittingComment] = useState(false)
@@ -211,10 +218,31 @@ export default function OverviewTab({ isMergable }: { isMergable: boolean }) {
               {isOpen && contributor && (
                 <div className="mb-4 border p-4 flex flex-col gap-2 justify-center items-center">
                   {!isMergable && (
-                    <span className="font-medium text-center">
-                      This branch has conflicts. Please resolve them in your code editor or terminal to proceed with
-                      merging this PR.
-                    </span>
+                    <div className="flex flex-col gap-1 justify-center w-full">
+                      <div className="flex gap-2">
+                        <div className="h-8 w-8 flex items-center justify-center pb-[1px] rounded-full bg-gray-500">
+                          <BiError className="w-5 h-5 fill-white" />
+                        </div>
+                        <div className="flex flex-col">
+                          <span className="text-lg font-medium">This branch has conflicts that must be resolved.</span>
+                          <span className="text-sm text-gray-600">
+                            Please resolve them in your code editor or terminal to proceed with merging this PR.
+                          </span>
+                          {conflictingFiles.length > 0 && (
+                            <div>
+                              <span className="font-bold">Conflicting files:</span>
+                              <ul>
+                                {conflictingFiles.map((file, index) => (
+                                  <li key={`conflict-${index}`}>{file}</li>
+                                ))}
+                              </ul>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+
+                      <div className="h-[2px] my-2 w-full bg-gray-100"></div>
+                    </div>
                   )}
                   <Button
                     onClick={handleMergePullRequest}

@@ -163,7 +163,10 @@ export async function mergePullRequest({
   )
 
   if (dryRun) {
-    return { response, error }
+    if (error && (error instanceof Errors.MergeConflictError || error instanceof Errors.MergeNotSupportedError)) {
+      return { response, error }
+    }
+    return { response, error: undefined }
   }
 
   await waitFor(500)
