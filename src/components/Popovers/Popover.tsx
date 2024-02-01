@@ -1,7 +1,7 @@
-import { arrow, flip, offset, useFloating } from '@floating-ui/react-dom'
+import { arrow, flip, offset, safePolygon, useFloating, useFocus, useHover, useInteractions } from '@floating-ui/react'
 import { Popover as HeadlessPopover } from '@headlessui/react'
 import clsx from 'clsx'
-import React from 'react'
+import React, { useEffect } from 'react'
 
 interface PopoverProps {
   PopoverTrigger: React.ReactNode
@@ -11,38 +11,30 @@ interface PopoverProps {
 
 export default function Popover({ PopoverTrigger, children, openCallback }: PopoverProps) {
   const [isOpen, setIsOpen] = React.useState(false)
-  const timeout = React.useRef<NodeJS.Timeout>()
   const arrowRef = React.useRef(null)
   const {
     refs,
+    context,
     floatingStyles,
     placement,
     middlewareData: { arrow: { x: arrowX, y: arrowY } = {} }
   } = useFloating({
+    open: isOpen,
+    onOpenChange: setIsOpen,
     placement: 'top-start',
-    middleware: [offset(5), flip(), arrow({ element: arrowRef })]
+    middleware: [offset({ mainAxis: 5, alignmentAxis: -20 }), flip(), arrow({ element: arrowRef })]
   })
 
-  function clearCurrentTimeout() {
-    if (timeout.current) {
-      clearTimeout(timeout.current)
-    }
-  }
+  const hover = useHover(context, { handleClose: safePolygon() })
+  const focus = useFocus(context)
 
-  function openPopover() {
-    clearCurrentTimeout()
-    if (openCallback) {
+  const { getReferenceProps, getFloatingProps } = useInteractions([hover, focus])
+
+  useEffect(() => {
+    if (isOpen && openCallback) {
       openCallback()
     }
-    setIsOpen(true)
-  }
-
-  function closePopover() {
-    timeout.current = setTimeout(() => {
-      setIsOpen(false)
-      clearCurrentTimeout()
-    }, 100)
-  }
+  }, [isOpen])
 
   const staticSide: any = {
     top: 'bottom',
@@ -55,19 +47,14 @@ export default function Popover({ PopoverTrigger, children, openCallback }: Popo
     <HeadlessPopover as="span">
       {() => (
         <>
-          <HeadlessPopover.Button
-            ref={refs.setReference}
-            onMouseEnter={() => openPopover()}
-            onMouseLeave={() => closePopover()}
-          >
+          <HeadlessPopover.Button ref={refs.setReference} {...getReferenceProps()}>
             {PopoverTrigger}
           </HeadlessPopover.Button>
 
           {isOpen && (
             <HeadlessPopover.Panel
               ref={refs.setFloating}
-              onMouseEnter={openPopover}
-              onMouseLeave={closePopover}
+              {...getFloatingProps()}
               style={floatingStyles}
               className="w-[22rem] max-w-sm px-4 sm:px-0"
               static

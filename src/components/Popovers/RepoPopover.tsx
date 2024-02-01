@@ -17,13 +17,15 @@ interface RepoPopoverProps {
 export default function RepoPopover({ repo, children }: RepoPopoverProps) {
   return (
     <Popover PopoverTrigger={children}>
-      <div className="relative flex flex-col gap-2 bg-gray-50 p-4">
+      <div className="relative flex flex-col gap-2 bg-white p-4">
         <div className="flex items-center gap-2 justify-between">
           <div className="flex items-center gap-2">
-            <RiGitRepositoryFill className="w-5 h-5 text-inherit" />
+            <div>
+              <RiGitRepositoryFill className="w-5 h-5 text-inherit" />
+            </div>
             <Link
               to={`/repository/${repo.id}`}
-              className="flex gap-1 items-center font-medium hover:underline hover:text-primary-700"
+              className="flex gap-1 items-center font-medium hover:underline hover:text-primary-700 break-all"
             >
               {resolveUsernameOrShorten(repo.owner)}/{repo.name}
             </Link>

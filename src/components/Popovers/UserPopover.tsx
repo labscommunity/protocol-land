@@ -26,7 +26,7 @@ export default function UserPopover({ userAddress, children }: RepoPopoverProps)
 
   return (
     <Popover PopoverTrigger={children} openCallback={openCallback}>
-      <div className="relative flex flex-col gap-2 bg-gray-50 p-4">
+      <div className="relative flex flex-col gap-2 bg-white p-4">
         <div className="flex">
           {!user?.avatar && (
             <div className="rounded-full bg-gray-400 h-12 w-12 flex items-center justify-center">
