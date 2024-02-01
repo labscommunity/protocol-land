@@ -8,7 +8,15 @@ import { Button } from '@/components/common/buttons'
 import { withAsync } from '@/helpers/withAsync'
 import { useGlobalStore } from '@/stores/globalStore'
 
-export default function ActionButton({ isContributor, isPRAuthor }: { isContributor: boolean; isPRAuthor: boolean }) {
+export default function ActionButton({
+  isContributor,
+  isPRAuthor,
+  isMergable
+}: {
+  isContributor: boolean
+  isPRAuthor: boolean
+  isMergable: boolean
+}) {
   const [isSubmittingMerge, setIsSubmittingMerge] = useState(false)
   const [isSubmittingClose, setIsSubmittingClose] = useState(false)
   const [selectedRepo, mergePR, closePR, reopenPR] = useGlobalStore((state) => [
@@ -76,7 +84,7 @@ export default function ActionButton({ isContributor, isPRAuthor }: { isContribu
               {isContributor && (
                 <Button
                   onClick={handleMergePullRequest}
-                  disabled={isSubmittingMerge}
+                  disabled={isSubmittingMerge || !isMergable}
                   isLoading={isSubmittingMerge}
                   className="gap-2 justify-center font-medium"
                   variant="primary-solid"

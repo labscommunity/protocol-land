@@ -47,7 +47,7 @@ const StatusTextMap = {
   REVIEW_REQUEST: 'requested review'
 }
 
-export default function OverviewTab() {
+export default function OverviewTab({ isMergable }: { isMergable: boolean }) {
   const [isSubmittingMerge, setIsSubmittingMerge] = useState(false)
   const [isSubmittingClose, setIsSubmittingClose] = useState(false)
   const [isSubmittingComment, setIsSubmittingComment] = useState(false)
@@ -209,10 +209,16 @@ export default function OverviewTab() {
           {isLoggedIn && (
             <div className="flex flex-col pt-4">
               {isOpen && contributor && (
-                <div className="mb-4 border p-4 flex justify-center items-center">
+                <div className="mb-4 border p-4 flex flex-col gap-2 justify-center items-center">
+                  {!isMergable && (
+                    <span className="font-medium text-center">
+                      This branch has conflicts. Please resolve them in your code editor or terminal to proceed with
+                      merging this PR.
+                    </span>
+                  )}
                   <Button
                     onClick={handleMergePullRequest}
-                    disabled={isSubmittingMerge}
+                    disabled={isSubmittingMerge || !isMergable}
                     isLoading={isSubmittingMerge}
                     className="gap-2 justify-center font-medium"
                     variant="primary-solid"

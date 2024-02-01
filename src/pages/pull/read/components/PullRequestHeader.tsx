@@ -37,10 +37,12 @@ const statusMap = {
 export default function PullRequestHeader({
   PR,
   repo,
+  isMergable,
   compareRepoOwner
 }: {
   PR: PullRequest
   repo: Repo
+  isMergable: boolean
   compareRepoOwner: string
 }) {
   const StatusComponent = statusMap[PR.status]
@@ -134,7 +136,11 @@ export default function PullRequestHeader({
           </div>
           {isSticky && contributorOrPRAuthor && (
             <div className="flex items-center">
-              <ActionButton isContributor={contributor} isPRAuthor={connectedAddress === PR.author} />
+              <ActionButton
+                isMergable={isMergable}
+                isContributor={contributor}
+                isPRAuthor={connectedAddress === PR.author}
+              />
             </div>
           )}
         </div>

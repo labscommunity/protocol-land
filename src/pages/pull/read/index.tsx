@@ -18,6 +18,7 @@ const activeClasses = 'border-b-[2px] border-primary-600 text-gray-900 font-medi
 export default function ReadPullRequest() {
   const location = useLocation()
   const { id, pullId } = useParams()
+  const [isMergable, setIsMergable] = useState(true)
   const [compareRepoOwner, setCompareRepoOwner] = useState('')
   const [
     selectedRepo,
@@ -27,6 +28,7 @@ export default function ReadPullRequest() {
     fileStatuses,
     fetchAndLoadRepository,
     fetchAndLoadForkRepository,
+    isContributor,
     pullRequestActions
   ] = useGlobalStore((state) => [
     state.repoCoreState.selectedRepo,
@@ -36,8 +38,11 @@ export default function ReadPullRequest() {
     state.pullRequestState.fileStatuses,
     state.repoCoreActions.fetchAndLoadRepository,
     state.repoCoreActions.fetchAndLoadForkRepository,
+    state.repoCoreActions.isContributor,
     state.pullRequestActions
   ])
+
+  const PR = selectedRepo.repo ? selectedRepo.repo.pullRequests[+pullId! - 1] : null
 
   useEffect(() => {
     if (id) {
@@ -107,6 +112,21 @@ export default function ReadPullRequest() {
     }
   }, [commits, forkRepo])
 
+  useEffect(() => {
+    if (selectedRepo.status === 'SUCCESS' && PR && fileStatuses.length > 0 && PR.status === 'OPEN') {
+      if (isContributor()) {
+        pullRequestActions.mergePullRequest(PR.id, true).then(({ response, error }) => {
+          if (response) {
+            setIsMergable(true)
+          }
+          if (error) {
+            setIsMergable(false)
+          }
+        })
+      }
+    }
+  }, [PR, fileStatuses, selectedRepo.status])
+
   const isLoading = selectedRepo.status === 'IDLE' || selectedRepo.status === 'PENDING'
 
   if (selectedRepo.status === 'ERROR') {
@@ -132,8 +152,6 @@ export default function ReadPullRequest() {
     )
   }
 
-  const PR = selectedRepo.repo ? selectedRepo.repo.pullRequests[+pullId! - 1] : null
-
   return (
     <>
       <Seo
@@ -142,7 +160,14 @@ export default function ReadPullRequest() {
       />
       <div className="h-full flex-1 flex flex-col max-w-[1280px] px-8 mx-auto w-full mt-6 gap-8">
         {/* PR Meta Details open */}
-        {PR && <PullRequestHeader PR={PR} repo={selectedRepo.repo!} compareRepoOwner={compareRepoOwner} />}
+        {PR && (
+          <PullRequestHeader
+            PR={PR}
+            isMergable={isMergable}
+            repo={selectedRepo.repo!}
+            compareRepoOwner={compareRepoOwner}
+          />
+        )}
         {/* PR Meta Details close */}
         <div className="flex flex-col flex-1">
           <Tab.Group>
@@ -163,7 +188,7 @@ export default function ReadPullRequest() {
             <Tab.Panels className={'mt-4 px-2 flex flex-col flex-1'}>
               {rootTabConfig.map((TabItem) => (
                 <Tab.Panel className={'flex flex-col flex-1'}>
-                  <TabItem.Component />
+                  <TabItem.Component isMergable={isMergable} />
                 </Tab.Panel>
               ))}
             </Tab.Panels>

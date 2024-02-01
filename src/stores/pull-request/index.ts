@@ -209,7 +209,7 @@ const createPullRequestSlice: StateCreator<CombinedSlices, [['zustand/immer', ne
         state.pullRequestState.commits = commits
       })
     },
-    mergePullRequest: async (id) => {
+    mergePullRequest: async (id, dryRun = false) => {
       const repo = get().repoCoreState.selectedRepo.repo
       const baseBranch = get().pullRequestState.baseBranch
       const compareBranch = get().pullRequestState.compareBranch
@@ -224,8 +224,12 @@ const createPullRequestSlice: StateCreator<CombinedSlices, [['zustand/immer', ne
       }
 
       const { response, error } = await withAsync(() =>
-        mergePR(repo.id, id, baseBranch, compareBranch, author!, isFork, repo.private, repo.privateStateTxId)
+        mergePR(repo.id, id, baseBranch, compareBranch, author!, isFork, repo.private, repo.privateStateTxId, dryRun)
       )
+
+      if (dryRun) {
+        return { ...response }
+      }
 
       if (!error && response) {
         const activities = response?.activities

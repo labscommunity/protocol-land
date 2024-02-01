@@ -147,7 +147,7 @@ export async function mergePullRequest({
   isPrivate,
   privateStateTxId
 }: MergePullRequestOptions) {
-  const { error } = await withAsync(() =>
+  const { response, error } = await withAsync(() =>
     git.merge({
       fs,
       dir,
@@ -161,6 +161,10 @@ export async function mergePullRequest({
       }
     })
   )
+
+  if (dryRun) {
+    return { response, error }
+  }
 
   await waitFor(500)
 
