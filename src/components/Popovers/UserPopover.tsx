@@ -1,11 +1,10 @@
-import React, { useState } from 'react'
+import React from 'react'
 import { BsFillPersonFill } from 'react-icons/bs'
 import { TiLocation } from 'react-icons/ti'
 import { Link } from 'react-router-dom'
 
 import { shortenAddress } from '@/helpers/shortenAddress'
 import { useGlobalStore } from '@/stores/globalStore'
-import { User } from '@/types/user'
 
 import Popover from './Popover'
 
@@ -16,16 +15,10 @@ interface RepoPopoverProps {
 
 export default function UserPopover({ userAddress, children }: RepoPopoverProps) {
   const [allUsers] = useGlobalStore((state) => [state.userState.allUsers])
-  const [user, setUser] = useState<User>()
-
-  function openCallback() {
-    if (!user) {
-      setUser(allUsers.get(userAddress))
-    }
-  }
+  const user = allUsers.get(userAddress)
 
   return (
-    <Popover PopoverTrigger={children} openCallback={openCallback}>
+    <Popover PopoverTrigger={children}>
       <div className="relative flex flex-col gap-2 bg-white p-4">
         <div className="flex">
           {!user?.avatar && (
