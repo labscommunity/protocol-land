@@ -37,20 +37,19 @@ const statusMap = {
 export default function PullRequestHeader({
   PR,
   repo,
-  isMergable,
   compareRepoOwner
 }: {
   PR: PullRequest
   repo: Repo
-  isMergable: boolean
   compareRepoOwner: string
 }) {
   const StatusComponent = statusMap[PR.status]
   const navigate = useNavigate()
   const [isSticky, setIsSticky] = useState(false)
-  const [isContributor, connectedAddress] = useGlobalStore((state) => [
+  const [isContributor, connectedAddress, isMergable] = useGlobalStore((state) => [
     state.repoCoreActions.isContributor,
-    state.authState.address
+    state.authState.address,
+    state.pullRequestState.isMergeable
   ])
   const isMergeInSameRepo = PR.baseRepo.repoId === PR.compareRepo.repoId
   const lastActivity = PR.activities?.[(PR?.activities?.length ?? 0) - 1]

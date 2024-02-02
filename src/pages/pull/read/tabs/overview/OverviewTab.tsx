@@ -48,29 +48,35 @@ const StatusTextMap = {
   REVIEW_REQUEST: 'requested review'
 }
 
-export default function OverviewTab({
-  isMergable,
-  conflictingFiles
-}: {
-  isMergable: boolean
-  conflictingFiles: Array<string>
-}) {
+export default function OverviewTab() {
   const [isSubmittingMerge, setIsSubmittingMerge] = useState(false)
   const [isSubmittingClose, setIsSubmittingClose] = useState(false)
   const [isSubmittingComment, setIsSubmittingComment] = useState(false)
   const [commentVal, setCommentVal] = useState('')
   const { pullId } = useParams()
-  const [connectedAddress, isLoggedIn, selectedRepo, mergePR, closePR, reopenPR, addComment, isContributor] =
-    useGlobalStore((state) => [
-      state.authState.address,
-      state.authState.isLoggedIn,
-      state.repoCoreState.selectedRepo.repo,
-      state.pullRequestActions.mergePullRequest,
-      state.pullRequestActions.closePullRequest,
-      state.pullRequestActions.reopenPullRequest,
-      state.pullRequestActions.addComment,
-      state.repoCoreActions.isContributor
-    ])
+  const [
+    connectedAddress,
+    isLoggedIn,
+    selectedRepo,
+    mergePR,
+    closePR,
+    reopenPR,
+    addComment,
+    isContributor,
+    isMergable,
+    conflictingFiles
+  ] = useGlobalStore((state) => [
+    state.authState.address,
+    state.authState.isLoggedIn,
+    state.repoCoreState.selectedRepo.repo,
+    state.pullRequestActions.mergePullRequest,
+    state.pullRequestActions.closePullRequest,
+    state.pullRequestActions.reopenPullRequest,
+    state.pullRequestActions.addComment,
+    state.repoCoreActions.isContributor,
+    state.pullRequestState.isMergeable,
+    state.pullRequestState.conflictingFiles
+  ])
   const navigate = useNavigate()
 
   const PR = selectedRepo && selectedRepo.pullRequests[+pullId! - 1]

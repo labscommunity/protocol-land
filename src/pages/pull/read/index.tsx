@@ -18,8 +18,6 @@ const activeClasses = 'border-b-[2px] border-primary-600 text-gray-900 font-medi
 export default function ReadPullRequest() {
   const location = useLocation()
   const { id, pullId } = useParams()
-  const [isMergable, setIsMergable] = useState(true)
-  const [conflictingFiles, setConflictingFiles] = useState<Array<string>>([])
   const [compareRepoOwner, setCompareRepoOwner] = useState('')
   const [
     selectedRepo,
@@ -116,17 +114,7 @@ export default function ReadPullRequest() {
   useEffect(() => {
     if (selectedRepo.status === 'SUCCESS' && PR && fileStatuses.length > 0 && PR.status === 'OPEN') {
       if (isContributor()) {
-        pullRequestActions.mergePullRequest(PR.id, true).then(({ response, error }) => {
-          if (response) {
-            setConflictingFiles([])
-            setIsMergable(true)
-          }
-          if (error) {
-            const files = (error as any)?.data?.filepaths as Array<string>
-            setConflictingFiles(Array.isArray(files) ? files : [])
-            setIsMergable(false)
-          }
-        })
+        pullRequestActions.mergePullRequest(PR.id, true)
       }
     }
   }, [PR, fileStatuses, selectedRepo.status])
@@ -164,14 +152,7 @@ export default function ReadPullRequest() {
       />
       <div className="h-full flex-1 flex flex-col max-w-[1280px] px-8 mx-auto w-full mt-6 gap-8">
         {/* PR Meta Details open */}
-        {PR && (
-          <PullRequestHeader
-            PR={PR}
-            isMergable={isMergable}
-            repo={selectedRepo.repo!}
-            compareRepoOwner={compareRepoOwner}
-          />
-        )}
+        {PR && <PullRequestHeader PR={PR} repo={selectedRepo.repo!} compareRepoOwner={compareRepoOwner} />}
         {/* PR Meta Details close */}
         <div className="flex flex-col flex-1">
           <Tab.Group>
@@ -192,7 +173,7 @@ export default function ReadPullRequest() {
             <Tab.Panels className={'mt-4 px-2 flex flex-col flex-1'}>
               {rootTabConfig.map((TabItem) => (
                 <Tab.Panel className={'flex flex-col flex-1'}>
-                  <TabItem.Component isMergable={isMergable} conflictingFiles={conflictingFiles} />
+                  <TabItem.Component />
                 </Tab.Panel>
               ))}
             </Tab.Panels>

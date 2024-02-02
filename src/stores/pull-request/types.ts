@@ -16,6 +16,8 @@ export type PullRequestState = {
   compareRepo: Repo | null
   commits: CommitResult[]
   fileStatuses: FileStatus[]
+  conflictingFiles: Array<string>
+  isMergeable: boolean
   reviewers: Reviewer[]
 }
 
@@ -33,7 +35,7 @@ export type PullRequestActions = {
   prepareAndCopyForkCommits: (pr: PullRequest) => Promise<void>
   compareBranches: (prSideOptions: PRSideOptions) => Promise<void>
   setDefaultBranches: () => Promise<void>
-  mergePullRequest: (id: number, dryRun?: boolean) => Promise<void | any>
+  mergePullRequest: (id: number, dryRun?: boolean) => Promise<void>
   closePullRequest: (id: number) => Promise<void>
   reopenPullRequest: (id: number) => Promise<void>
   updatePullRequestDetails: (id: number, updateData: Partial<PullRequest>) => Promise<void>

@@ -28,7 +28,9 @@ const initialPullRequestState: PullRequestState = {
   compareRepo: null,
   commits: [],
   fileStatuses: [],
-  reviewers: []
+  reviewers: [],
+  isMergeable: true,
+  conflictingFiles: []
 }
 
 const createPullRequestSlice: StateCreator<CombinedSlices, [['zustand/immer', never], never], [], PullRequestSlice> = (
@@ -228,7 +230,19 @@ const createPullRequestSlice: StateCreator<CombinedSlices, [['zustand/immer', ne
       )
 
       if (dryRun) {
-        return { ...response }
+        if (error) {
+          const files = (error as any)?.data?.filepaths
+          set((state) => {
+            state.pullRequestState.isMergeable = false
+            state.pullRequestState.conflictingFiles = Array.isArray(files) ? files : []
+          })
+        } else {
+          set((state) => {
+            state.pullRequestState.isMergeable = true
+            state.pullRequestState.conflictingFiles = []
+          })
+        }
+        return
       }
 
       if (!error && response) {
