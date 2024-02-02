@@ -235,11 +235,13 @@ export default function OverviewTab() {
                             Please resolve them in your code editor or terminal to proceed with merging this PR.
                           </span>
                           {conflictingFiles.length > 0 && (
-                            <div>
+                            <div className="mt-1">
                               <span className="font-bold">Conflicting files:</span>
                               <ul>
                                 {conflictingFiles.map((file, index) => (
-                                  <li key={`conflict-${index}`}>{file}</li>
+                                  <li key={`conflict-${index}`} className="text-gray-600">
+                                    {file}
+                                  </li>
                                 ))}
                               </ul>
                             </div>

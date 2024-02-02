@@ -45,6 +45,7 @@ export default function ReadPullRequest() {
 
   useEffect(() => {
     if (id) {
+      pullRequestActions.reset()
       fetchAndLoadRepository(id, branchState.currentBranch)
     }
   }, [id])
