@@ -15,10 +15,11 @@ interface RepoPopoverProps {
 
 export default function UserPopover({ userAddress, children }: RepoPopoverProps) {
   const [allUsers] = useGlobalStore((state) => [state.userState.allUsers])
-  const user = allUsers.get(userAddress)
 
-  return (
-    <Popover PopoverTrigger={children}>
+  const PopoverContent = () => {
+    const user = allUsers.get(userAddress)
+
+    return (
       <div className="relative flex flex-col gap-2 bg-white p-4">
         <div className="flex">
           {!user?.avatar && (
@@ -46,6 +47,8 @@ export default function UserPopover({ userAddress, children }: RepoPopoverProps)
           </div>
         )}
       </div>
-    </Popover>
-  )
+    )
+  }
+
+  return <Popover triggerElement={children} ContentComponent={PopoverContent} />
 }

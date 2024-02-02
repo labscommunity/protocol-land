@@ -15,11 +15,11 @@ import clsx from 'clsx'
 import React from 'react'
 
 interface PopoverProps {
-  PopoverTrigger: React.ReactNode
-  children: React.ReactNode
+  triggerElement: React.ReactNode
+  ContentComponent: () => JSX.Element
 }
 
-export default function Popover({ PopoverTrigger, children }: PopoverProps) {
+export default function Popover({ triggerElement, ContentComponent }: PopoverProps) {
   const [isOpen, setIsOpen] = React.useState(false)
   const arrowRef = React.useRef(null)
   const {
@@ -51,7 +51,7 @@ export default function Popover({ PopoverTrigger, children }: PopoverProps) {
   return (
     <>
       <div className="inline-block" ref={refs.setReference} {...getReferenceProps()}>
-        {PopoverTrigger}
+        {triggerElement}
       </div>
 
       {isMounted && (
@@ -62,7 +62,9 @@ export default function Popover({ PopoverTrigger, children }: PopoverProps) {
             className="w-[22rem] max-w-sm px-4 sm:px-0"
             {...getFloatingProps()}
           >
-            <div className="overflow-hidden shadow rounded-md border border-gray-300">{children}</div>
+            <div className="overflow-hidden shadow rounded-md border border-gray-300">
+              <ContentComponent />
+            </div>
             <div
               ref={arrowRef}
               style={{

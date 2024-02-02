@@ -15,8 +15,8 @@ interface RepoPopoverProps {
 }
 
 export default function RepoPopover({ repo, children }: RepoPopoverProps) {
-  return (
-    <Popover PopoverTrigger={children}>
+  const PopoverContent = () => {
+    return (
       <div className="relative flex flex-col gap-2 bg-white p-4">
         <div className="flex items-center gap-2 justify-between">
           <div className="flex items-center gap-2">
@@ -55,6 +55,8 @@ export default function RepoPopover({ repo, children }: RepoPopoverProps) {
           )}
         </div>
       </div>
-    </Popover>
-  )
+    )
+  }
+
+  return <Popover triggerElement={children} ContentComponent={PopoverContent} />
 }
