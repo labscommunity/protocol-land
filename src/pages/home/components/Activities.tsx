@@ -121,7 +121,7 @@ export default function Activities({ filters }: ActivitiesProps) {
       return
     }
 
-    setHasNextPage(paging.pages !== currentPage)
+    setHasNextPage(paging.pages > 0 && paging.pages !== currentPage)
 
     const { validity, state } = (await validityResponse.json()) as ValidityResponse
     const validInteractions = interactions
@@ -368,20 +368,27 @@ export default function Activities({ filters }: ActivitiesProps) {
   return (
     <div className="w-full">
       <div className="flex flex-col gap-8">
-        {activities.length > 0
-          ? activities.map((activity, index) => {
-              const ActivityComponent = ACTIVITY_TO_COMPONENT[activity.type]
-              return (
-                <ActivityComponent
-                  key={`activity-${index}`}
-                  // @ts-ignore
-                  activity={activity}
-                  setIsForkModalOpen={setIsForkModalOpen}
-                  setRepo={setRepo}
-                />
-              )
-            })
-          : Array.from({ length: 10 }, (_, index) => <SkeletonLoader key={`skeleton-${index}`} />)}
+        {activities.length > 0 ? (
+          activities.map((activity, index) => {
+            const ActivityComponent = ACTIVITY_TO_COMPONENT[activity.type]
+            return (
+              <ActivityComponent
+                key={`activity-${index}`}
+                // @ts-ignore
+                activity={activity}
+                setIsForkModalOpen={setIsForkModalOpen}
+                setRepo={setRepo}
+              />
+            )
+          })
+        ) : !hasNextPage && activities.length === 0 ? (
+          <div className="flex justify-center items-center flex-col gap-1 border-gray-300 border rounded-md py-8 px-4">
+            <span className="font-medium">That's all for now</span>
+            <span className="text-sm text-center">You can adjust your filters to see more content.</span>
+          </div>
+        ) : (
+          Array.from({ length: 10 }, (_, index) => <SkeletonLoader key={`skeleton-${index}`} />)
+        )}
       </div>
       {hasNextPage && (
         <div className="w-full flex mt-4 justify-center" onClick={() => fetchActivities({})}>
