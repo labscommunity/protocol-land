@@ -50,7 +50,7 @@ export default function Popover({ triggerElement, ContentComponent }: PopoverPro
 
   return (
     <>
-      <div className="inline-block" ref={refs.setReference} {...getReferenceProps()}>
+      <div className="inline-block max-w-max" ref={refs.setReference} {...getReferenceProps()}>
         {triggerElement}
       </div>
 
