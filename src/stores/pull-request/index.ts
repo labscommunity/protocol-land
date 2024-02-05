@@ -12,8 +12,9 @@ import {
   updatePRComment,
   updatePullRequestDetails
 } from '@/lib/git/pull-request'
-import { PullRequest } from '@/types/repository'
+import { PullRequest, Repo } from '@/types/repository'
 
+import { getRepositoryMetaFromContract, loadRepository } from '../repository-core/actions'
 import { CombinedSlices } from '../types'
 import { compareTwoBranches, getChangedFiles, mergePR, traverseAndCopyForkObjects } from './actions'
 import { PullRequestSlice, PullRequestState } from './types'
@@ -42,6 +43,62 @@ const createPullRequestSlice: StateCreator<CombinedSlices, [['zustand/immer', ne
     reset: () => {
       set((state) => {
         state.pullRequestState = initialPullRequestState
+      })
+    },
+    checkPRForUpdates: async (id) => {
+      const fetchRepoMeta = async (repoId: string) => {
+        const { error, response } = await withAsync(() => getRepositoryMetaFromContract(repoId))
+        return error || !response || !response.result ? null : response.result
+      }
+
+      const loadRepoWithStatus = async ({ id, dataTxId, uploadStrategy, privateStateTxId }: Repo) => {
+        const { error, response } = await withAsync(() =>
+          loadRepository(id, dataTxId, uploadStrategy, privateStateTxId)
+        )
+        return !error && response && response.success ? { success: true } : { success: false }
+      }
+
+      const {
+        repoCoreState: {
+          selectedRepo: { repo: selectedRepo },
+          forkRepo: { repo: forkRepo }
+        }
+      } = get()
+      if (!selectedRepo) return
+
+      const PR = selectedRepo.pullRequests[+id - 1]
+      if (!PR) return
+
+      const baseRepo = await fetchRepoMeta(PR.baseRepo.repoId)
+      if (!baseRepo) return
+
+      const isSameRepo = PR.baseRepo.repoId === PR.compareRepo.repoId
+      const compareRepo = isSameRepo ? null : await fetchRepoMeta(PR.compareRepo.repoId)
+      if (!isSameRepo && !compareRepo) return
+
+      const isBaseRepoUpdated = selectedRepo.dataTxId !== baseRepo.dataTxId
+      let isCompareRepoUpdated = false
+
+      if (isBaseRepoUpdated) {
+        const { success } = await loadRepoWithStatus(baseRepo)
+        if (!success) return
+      }
+
+      if (!isSameRepo && forkRepo && compareRepo && forkRepo.dataTxId !== compareRepo.dataTxId) {
+        const { success } = await loadRepoWithStatus(compareRepo)
+        if (!success) return
+        isCompareRepoUpdated = true
+      }
+
+      set((state) => {
+        if (isBaseRepoUpdated) {
+          console.log('is Base Repo Updated? ', isBaseRepoUpdated)
+          state.repoCoreState.selectedRepo.repo = baseRepo
+        }
+        if (isCompareRepoUpdated) {
+          console.log('is Compare Repo Updated? ', isCompareRepoUpdated)
+          state.repoCoreState.forkRepo.repo = compareRepo
+        }
       })
     },
     prepareAndCopyForkCommits: async (PR) => {

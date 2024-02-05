@@ -25,6 +25,7 @@ export type FileStatus = [string, number, number, number]
 
 export type PullRequestActions = {
   reset: () => void
+  checkPRForUpdates: (id: number) => Promise<void>
   setBaseRepo: (repo: Repo) => void
   setCompareRepo: (repo: Repo) => void
   setBaseBranch: (branch: string) => void

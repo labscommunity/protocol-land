@@ -9,6 +9,7 @@ import { Seo } from '@/components/Seo'
 import { trackGoogleAnalyticsPageView } from '@/helpers/google-analytics'
 import { defaultMetaTagsData } from '@/helpers/seoUtils'
 import { useGlobalStore } from '@/stores/globalStore'
+import { PullRequest } from '@/types/repository'
 
 import PullRequestHeader from './components/PullRequestHeader'
 import { rootTabConfig } from './config/tabConfig'
@@ -70,22 +71,8 @@ export default function ReadPullRequest() {
         }
       }
 
-      const params = {
-        base: {
-          repoName: PR.baseRepo.repoName,
-          branch: PR.baseBranch,
-          id: PR.baseRepo.repoId
-        },
-        compare: {
-          repoName: PR.compareRepo.repoName,
-          branch: PR.compareBranch,
-          id: PR.compareRepo.repoId
-        }
-      }
-
-      pullRequestActions.compareBranches(params)
-
       if (!compareIsFork) {
+        compareBranches(PR)
         pullRequestActions.getFileStatuses(PR.baseBranchOid, PR.compareBranch)
         pullRequestActions.setCompareBranch(PR.compareBranch)
       }
@@ -113,12 +100,41 @@ export default function ReadPullRequest() {
   }, [commits, forkRepo])
 
   useEffect(() => {
+    if (forkRepo.repo && PR) {
+      compareBranches(PR)
+    }
+  }, [forkRepo.repo])
+
+  useEffect(() => {
     if (selectedRepo.status === 'SUCCESS' && PR && fileStatuses.length > 0 && PR.status === 'OPEN') {
+      pullRequestActions.mergePullRequest(PR.id, true)
       if (isContributor()) {
-        pullRequestActions.mergePullRequest(PR.id, true)
+        const interval = setInterval(() => {
+          pullRequestActions.checkPRForUpdates(PR.id)
+        }, 30000)
+        return () => {
+          clearInterval(interval)
+        }
       }
     }
-  }, [PR, fileStatuses, selectedRepo.status])
+  }, [PR, fileStatuses, selectedRepo, forkRepo.repo])
+
+  function compareBranches(PR: PullRequest) {
+    const params = {
+      base: {
+        repoName: PR.baseRepo.repoName,
+        branch: PR.baseBranch,
+        id: PR.baseRepo.repoId
+      },
+      compare: {
+        repoName: PR.compareRepo.repoName,
+        branch: PR.compareBranch,
+        id: PR.compareRepo.repoId
+      }
+    }
+
+    pullRequestActions.compareBranches(params)
+  }
 
   const isLoading = selectedRepo.status === 'IDLE' || selectedRepo.status === 'PENDING'
 
