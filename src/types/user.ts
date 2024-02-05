@@ -11,7 +11,6 @@ export type User = {
   email?: string
   website?: string
   readmeTxId?: string
-  isArNSUserName?: boolean
   statistics: {
     commits: UserCommit[]
     pullRequests: UserPROrIssue[]

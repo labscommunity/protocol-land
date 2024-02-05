@@ -6,9 +6,11 @@ import toast from 'react-hot-toast'
 import { AiOutlineTwitter, AiTwotoneMail } from 'react-icons/ai'
 import { BsGlobe } from 'react-icons/bs'
 import { TiLocation } from 'react-icons/ti'
+import SVG from 'react-inlinesvg'
 import { useParams } from 'react-router-dom'
 import * as yup from 'yup'
 
+import ArNSIcon from '@/assets/icons/ar.io-logo-black.svg'
 import { Button } from '@/components/common/buttons'
 import { isInvalidInput } from '@/helpers/isInvalidInput'
 import { shortenAddress } from '@/helpers/shortenAddress'
@@ -154,7 +156,10 @@ export default function Sidebar({
     Object.keys(updatedData).forEach((key: string) => {
       const typedKey = key as keyof User
 
-      if (!isInvalidInput(updatedData[typedKey], 'string', true) && originalData[typedKey] !== updatedData[typedKey]) {
+      if (
+        !isInvalidInput(updatedData[typedKey], ['string', 'boolean'], true) &&
+        originalData[typedKey] !== updatedData[typedKey]
+      ) {
         changes[typedKey] = updatedData[typedKey]
       }
     })
@@ -174,8 +179,13 @@ export default function Sidebar({
     setValue('username', value, { shouldValidate: true, shouldTouch: true })
   }
 
+  function createArNSNameClickHandler(name: string) {
+    return function () {
+      window.open(`https://${name}.arweave.dev`, '_blank')
+    }
+  }
+
   if (mode === 'EDIT') {
-    console.log({ usernameErr: errors.username })
     return (
       <div className="flex flex-col w-[296px] gap-4">
         <Avatar setAvatar={setAvatar} mode={'EDIT'} url={userDetails?.avatar} />
@@ -306,13 +316,27 @@ export default function Sidebar({
       </div>
     )
   }
-console.log({formIsUserNameArNS})
+
   return (
     <div className="flex flex-col w-[296px] gap-4">
       <Avatar setAvatar={setAvatar} mode={'READ'} url={userDetails?.avatar} />
       <div className="flex flex-col">
         {userDetails.fullname && <h2 className="font-bold text-gray-900 text-2xl">{userDetails.fullname}</h2>}
-        {userDetails.username && <h3 className="font-medium text-gray-600 text-lg">{userDetails.username}</h3>}
+        {userDetails.username && !userDetails.isUserNameArNS && (
+          <h3 className="font-medium text-gray-600 text-lg">{userDetails.username}</h3>
+        )}
+        {userDetails.username && userDetails.isUserNameArNS && (
+          <div
+            onClick={createArNSNameClickHandler(userDetails.username)}
+            className="flex items-center cursor-pointer font-medium text-primary-600 text-lg tracking-wide"
+          >
+            <span className="mr-1">arns://</span>
+            <span className="">{userDetails.username}</span>
+            <span className="ml-2">
+              <SVG className="w-5 h-5" src={ArNSIcon} />
+            </span>
+          </div>
+        )}
         <h3 className="font-medium text-gray-600 text-lg">{shortenAddress(id!, 12)}</h3>
       </div>
       <div className="flex flex-col gap-1">

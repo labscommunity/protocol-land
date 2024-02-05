@@ -85,7 +85,7 @@ const createUserSlice: StateCreator<CombinedSlices, [['zustand/immer', never], n
         const userDetails = response.result
 
         set((state) => {
-          state.userState.userDetails = userDetails
+          state.userState.userDetails = { ...state.userState.userDetails, ...userDetails }
           const userState = state.userState.allUsers.get(address)
           state.userState.allUsers.set(address, { ...userState, ...userDetails })
         })
