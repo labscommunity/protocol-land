@@ -1,5 +1,5 @@
 import { Tab } from '@headlessui/react'
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import Lottie from 'react-lottie'
 import { useLocation, useParams } from 'react-router-dom'
 
@@ -19,6 +19,7 @@ const activeClasses = 'border-b-[2px] border-primary-600 text-gray-900 font-medi
 export default function ReadPullRequest() {
   const location = useLocation()
   const { id, pullId } = useParams()
+  const interval = useRef<NodeJS.Timer | null>(null)
   const [compareRepoOwner, setCompareRepoOwner] = useState('')
   const [
     selectedRepo,
@@ -109,15 +110,24 @@ export default function ReadPullRequest() {
     if (selectedRepo.status === 'SUCCESS' && PR && fileStatuses.length > 0 && PR.status === 'OPEN') {
       pullRequestActions.mergePullRequest(PR.id, true)
       if (isContributor()) {
-        const interval = setInterval(() => {
+        interval.current = setInterval(() => {
           pullRequestActions.checkPRForUpdates(PR.id)
         }, 30000)
-        return () => {
-          clearInterval(interval)
-        }
       }
     }
-  }, [PR, fileStatuses, selectedRepo, forkRepo.repo])
+
+    if (PR && PR.status !== 'OPEN' && interval.current) {
+      clearInterval(interval.current)
+      interval.current = null
+    }
+
+    return () => {
+      if (interval.current) {
+        clearInterval(interval.current)
+        interval.current = null
+      }
+    }
+  }, [PR?.status, fileStatuses, selectedRepo, forkRepo.repo])
 
   function compareBranches(PR: PullRequest) {
     const params = {

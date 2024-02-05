@@ -58,6 +58,7 @@ export default function OverviewTab() {
     connectedAddress,
     isLoggedIn,
     selectedRepo,
+    checkPRForUpdates,
     mergePR,
     closePR,
     reopenPR,
@@ -69,6 +70,7 @@ export default function OverviewTab() {
     state.authState.address,
     state.authState.isLoggedIn,
     state.repoCoreState.selectedRepo.repo,
+    state.pullRequestActions.checkPRForUpdates,
     state.pullRequestActions.mergePullRequest,
     state.pullRequestActions.closePullRequest,
     state.pullRequestActions.reopenPullRequest,
@@ -84,6 +86,7 @@ export default function OverviewTab() {
   async function handleMergePullRequest() {
     if (PR) {
       setIsSubmittingMerge(true)
+      await checkPRForUpdates(PR.id)
       const { error } = await withAsync(() => mergePR(PR.id))
       console.log({ submitted: !error })
       if (error) {
