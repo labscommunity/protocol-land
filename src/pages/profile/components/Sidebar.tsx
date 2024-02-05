@@ -18,6 +18,7 @@ import { useGlobalStore } from '@/stores/globalStore'
 import { User } from '@/types/user'
 
 import Avatar from './Avatar'
+import UsernameModal from './UsernameModal'
 
 const schema = yup.object().shape(
   {
@@ -44,6 +45,7 @@ const schema = yup.object().shape(
               'Invalid username format. Use only letters, numbers, and hyphens. It must start with a letter or number and be at most 39 characters.'
             )
       }),
+    isUserNameArNS: yup.boolean().required(),
     location: yup.string().trim(),
     // timezone: yup.object({
     //   value: yup.string(),
@@ -76,23 +78,29 @@ export default function Sidebar({
   userDetails: Partial<User>
   setUserDetails: (details: Partial<User>) => void
 }) {
+  const [isUsernameModalOpen, setIsUsernameModalOpen] = React.useState(false)
   const [isSubmitting, setIsSubmitting] = React.useState(false)
   const { id } = useParams()
   const [avatar, setAvatar] = React.useState<null | File>(null)
-  const [address, isLoggedIn, saveUserDetails] = useGlobalStore((state) => [
+  const [address, isLoggedIn, userArNSNames, saveUserDetails, fetchUserArNSListByAddress] = useGlobalStore((state) => [
     state.authState.address,
     state.authState.isLoggedIn,
-    state.userActions.saveUserDetails
+    state.userState.userDetails.arNSNames,
+    state.userActions.saveUserDetails,
+    state.userActions.fetchUserArNSListByAddress
   ])
 
   const {
     register,
     handleSubmit,
     formState: { errors },
-    setValue
+    setValue,
+    watch
   } = useForm({
     resolver: yupResolver(schema)
   })
+  const formUserName = watch('username')
+  const formIsUserNameArNS = watch('isUserNameArNS')
 
   const [mode, setMode] = React.useState<'READ' | 'EDIT'>('READ')
 
@@ -103,6 +111,12 @@ export default function Sidebar({
       }
     }
   }, [mode])
+
+  React.useEffect(() => {
+    if (isLoggedIn) {
+      fetchUserArNSListByAddress(address!)
+    }
+  }, [isLoggedIn])
 
   async function handleSaveDetailsClick(data: yup.InferType<typeof schema>) {
     setIsSubmitting(true)
@@ -148,7 +162,20 @@ export default function Sidebar({
     return changes
   }
 
+  function onUsernameChange(value: string, type?: string) {
+    if (type === 'arns' && !formIsUserNameArNS) {
+      setValue('isUserNameArNS', true, { shouldValidate: true, shouldTouch: true })
+    }
+
+    if (type === 'custom' && formIsUserNameArNS === true) {
+      setValue('isUserNameArNS', false, { shouldValidate: true, shouldTouch: true })
+    }
+
+    setValue('username', value, { shouldValidate: true, shouldTouch: true })
+  }
+
   if (mode === 'EDIT') {
+    console.log({ usernameErr: errors.username })
     return (
       <div className="flex flex-col w-[296px] gap-4">
         <Avatar setAvatar={setAvatar} mode={'EDIT'} url={userDetails?.avatar} />
@@ -174,14 +201,14 @@ export default function Sidebar({
             </label>
             <input
               type="text"
-              {...register('username')}
               className={clsx(
-                'bg-white border-[1px] text-gray-900 text-base rounded-lg hover:shadow-[0px_2px_4px_0px_rgba(0,0,0,0.10)] focus:border-primary-500 focus:border-[1.5px] block w-full px-2.5 py-1 outline-none',
-                errors.username ? 'border-red-500' : 'border-gray-300'
+                'bg-white border-[1px] text-gray-900 text-base rounded-lg hover:shadow-[0px_2px_4px_0px_rgba(0,0,0,0.10)] focus:border-primary-500 focus:border-[1.5px] block w-full px-2.5 py-1 outline-none border-gray-300'
               )}
+              value={formUserName || ''}
+              onClick={() => setIsUsernameModalOpen(true)}
               placeholder="johncancode"
             />
-            {errors.username && <p className="text-red-500 text-sm italic mt-2">{errors.username?.message}</p>}
+            {/* {errors.username && <p className="text-red-500 text-sm italic mt-2">{errors.username?.message}</p>} */}
           </div>
           <h3 className="font-medium text-gray-600 text-md">{shortenAddress(id!, 9)}</h3>
         </div>
@@ -268,10 +295,18 @@ export default function Sidebar({
             Cancel
           </Button>
         </div>
+        <UsernameModal
+          onUsernameChange={onUsernameChange}
+          currentName={formUserName}
+          isOpen={isUsernameModalOpen}
+          setIsOpen={setIsUsernameModalOpen}
+          isArNSName={formIsUserNameArNS}
+          arNSNames={userArNSNames}
+        />
       </div>
     )
   }
-
+console.log({formIsUserNameArNS})
   return (
     <div className="flex flex-col w-[296px] gap-4">
       <Avatar setAvatar={setAvatar} mode={'READ'} url={userDetails?.avatar} />

@@ -43,7 +43,8 @@ export const getUserDetailsByAddressFromContract = async (address: string): Prom
           commits: [],
           pullRequests: [],
           issues: []
-        }
+        },
+        arNSNames: {}
       }
     }
 
@@ -87,7 +88,8 @@ export const saveUserDetails = async (details: Partial<User>, address: string): 
           commits: [],
           pullRequests: [],
           issues: []
-        }
+        },
+        arNSNames: {}
       }
     }
 
