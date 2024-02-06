@@ -19,6 +19,7 @@ export type PullRequestState = {
   conflictingFiles: Array<string>
   isMergeable: boolean
   reviewers: Reviewer[]
+  fileStatusesReady: boolean
 }
 
 export type FileStatus = [string, number, number, number]

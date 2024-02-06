@@ -27,6 +27,7 @@ export default function ReadPullRequest() {
     commits,
     branchState,
     fileStatuses,
+    fileStatusesReady,
     fetchAndLoadRepository,
     fetchAndLoadForkRepository,
     isContributor,
@@ -37,6 +38,7 @@ export default function ReadPullRequest() {
     state.pullRequestState.commits,
     state.branchState,
     state.pullRequestState.fileStatuses,
+    state.pullRequestState.fileStatusesReady,
     state.repoCoreActions.fetchAndLoadRepository,
     state.repoCoreActions.fetchAndLoadForkRepository,
     state.repoCoreActions.isContributor,
@@ -152,7 +154,7 @@ export default function ReadPullRequest() {
     return <PageNotFound />
   }
 
-  if (isLoading || fileStatuses.length === 0) {
+  if (isLoading || !fileStatusesReady) {
     return (
       <div className="h-full flex-1 flex flex-col max-w-[1280px] mx-auto w-full mt-6 gap-8 justify-center items-center">
         <Lottie

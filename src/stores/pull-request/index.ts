@@ -31,7 +31,8 @@ const initialPullRequestState: PullRequestState = {
   fileStatuses: [],
   reviewers: [],
   isMergeable: true,
-  conflictingFiles: []
+  conflictingFiles: [],
+  fileStatusesReady: false
 }
 
 const createPullRequestSlice: StateCreator<CombinedSlices, [['zustand/immer', never], never], [], PullRequestSlice> = (
@@ -235,6 +236,7 @@ const createPullRequestSlice: StateCreator<CombinedSlices, [['zustand/immer', ne
         set((state) => {
           state.pullRequestState.fileStatuses = response
           state.pullRequestState.status = 'SUCCESS'
+          state.pullRequestState.fileStatusesReady = true
         })
       }
     },
