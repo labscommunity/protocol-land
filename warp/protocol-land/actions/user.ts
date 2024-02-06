@@ -58,7 +58,7 @@ export async function updateProfileDetails(
 
   const user: User = state.users[caller] ?? {}
 
-  if (payload.username !== undefined && user.username !== payload.username && !payload.isUserNameArNS) {
+  if (payload.username !== undefined && user.username !== payload.username) {
     const isUsernameTaken = Object.values(state.users).some(
       (userState) => userState.username && userState.username.toLowerCase() === payload.username.toLowerCase()
     )

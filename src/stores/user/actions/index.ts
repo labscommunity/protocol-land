@@ -57,11 +57,7 @@ export const saveUserDetails = async (details: Partial<User>, address: string): 
 
   const contract = getWarpContract(CONTRACT_TX_ID, userSigner)
 
-  if (
-    details.username &&
-    details.username !== useGlobalStore.getState().userState.userDetails.username &&
-    !details.isUserNameArNS
-  ) {
+  if (details.username && details.username !== useGlobalStore.getState().userState.userDetails.username) {
     const { result: isAvailable } = await contract.viewState({
       function: 'isUsernameAvailable',
       payload: { username: details.username }
