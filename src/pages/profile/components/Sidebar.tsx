@@ -102,12 +102,16 @@ export default function Sidebar({
     resolver: yupResolver(schema)
   })
   const formUserName = watch('username')
-  const formIsUserNameArNS = watch('isUserNameArNS')
+  const formIsUserNameArNS = watch('isUserNameArNS', userDetails.isUserNameArNS ? userDetails.isUserNameArNS : false)
 
   const [mode, setMode] = React.useState<'READ' | 'EDIT'>('READ')
 
   React.useEffect(() => {
     if (mode === 'EDIT') {
+      if (!userDetails.isUserNameArNS) {
+        setValue('isUserNameArNS', false)
+      }
+      
       for (const [key, value] of Object.entries(userDetails)) {
         setValue(key as any, value)
       }
