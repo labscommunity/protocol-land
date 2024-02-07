@@ -221,52 +221,59 @@ export default function OverviewTab() {
               })}
           </ol>
         </div>
-        <div className="border-t-[1px] border-gray-200">
-          {isLoggedIn && (
-            <div className="flex flex-col pt-4">
-              {isOpen && contributor && (
-                <div className="mb-4 border p-4 flex flex-col gap-2 justify-center items-center">
-                  {!isMergable && (
-                    <div className="flex flex-col gap-1 justify-center w-full">
-                      <div className="flex gap-2">
-                        <div className="h-8 w-8 flex items-center justify-center pb-[1px] rounded-full bg-gray-500">
-                          <BiError className="w-5 h-5 fill-white" />
-                        </div>
-                        <div className="flex flex-col">
-                          <span className="text-lg font-medium">This branch has conflicts that must be resolved.</span>
-                          <span className="text-sm text-gray-600">
-                            Please resolve them in your code editor or terminal to proceed with merging this PR.
-                          </span>
-                          {conflictingFiles.length > 0 && (
-                            <div className="mt-1">
-                              <span className="font-bold">Conflicting files:</span>
-                              <ul>
-                                {conflictingFiles.map((file, index) => (
-                                  <li key={`conflict-${index}`} className="text-gray-600">
-                                    {file}
-                                  </li>
-                                ))}
-                              </ul>
-                            </div>
-                          )}
-                        </div>
-                      </div>
-
-                      <div className="h-[2px] my-2 w-full bg-gray-100"></div>
+        <div className="border-t-[1px] border-gray-200 pt-4">
+          {isOpen && (
+            <div
+              className={clsx(
+                'mb-4 border p-4 flex flex-col gap-2 justify-center items-center',
+                !contributor && isMergable && 'hidden'
+              )}
+            >
+              {!isMergable && (
+                <div className="flex flex-col gap-1 justify-center w-full">
+                  <div className="flex gap-2">
+                    <div className="h-8 w-8 flex items-center justify-center pb-[1px] rounded-full bg-gray-500">
+                      <BiError className="w-5 h-5 fill-white" />
                     </div>
-                  )}
-                  <Button
-                    onClick={handleMergePullRequest}
-                    disabled={isSubmittingMerge || !isMergable}
-                    isLoading={isSubmittingMerge}
-                    className="gap-2 justify-center font-medium"
-                    variant="primary-solid"
-                  >
-                    <FiGitMerge className="w-4 h-4" />
-                    Merge pull request
-                  </Button>
+                    <div className="flex flex-col">
+                      <span className="text-lg font-medium">This branch has conflicts that must be resolved.</span>
+                      <span className="text-sm text-gray-600">
+                        Please resolve them in the code editor or terminal to proceed with merging this PR.
+                      </span>
+                      {conflictingFiles.length > 0 && (
+                        <div className="mt-1">
+                          <span className="font-bold">Conflicting files:</span>
+                          <ul>
+                            {conflictingFiles.map((file, index) => (
+                              <li key={`conflict-${index}`} className="text-gray-600">
+                                {file}
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {contributor && <div className="h-[2px] my-2 w-full bg-gray-100"></div>}
                 </div>
               )}
+              {contributor && (
+                <Button
+                  onClick={handleMergePullRequest}
+                  disabled={isSubmittingMerge || !isMergable}
+                  isLoading={isSubmittingMerge}
+                  className="gap-2 justify-center font-medium"
+                  variant="primary-solid"
+                >
+                  <FiGitMerge className="w-4 h-4" />
+                  Merge pull request
+                </Button>
+              )}
+            </div>
+          )}
+          {isLoggedIn && (
+            <div className="flex flex-col">
               {isOpen && (
                 <div className="flex flex-col gap-2">
                   <span className="font-medium">Add a comment</span>
