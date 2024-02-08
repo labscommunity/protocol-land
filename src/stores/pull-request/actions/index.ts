@@ -138,7 +138,8 @@ export async function mergePR(
   author: string,
   fork: boolean = false,
   isPrivate: boolean = false,
-  privateStateTxId: string | undefined
+  privateStateTxId: string | undefined,
+  dryRun: boolean
 ) {
   const fs = fsWithName(repoId)
   const dir = `/${repoId}`
@@ -153,6 +154,7 @@ export async function mergePR(
     repoId,
     fork,
     isPrivate,
-    privateStateTxId
+    privateStateTxId,
+    dryRun
   })
 }

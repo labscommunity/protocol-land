@@ -121,7 +121,7 @@ export default function Activities({ filters }: ActivitiesProps) {
       return
     }
 
-    setHasNextPage(paging.pages !== currentPage)
+    setHasNextPage(paging.pages > 0 && paging.pages !== currentPage)
 
     const { validity, state } = (await validityResponse.json()) as ValidityResponse
     const validInteractions = interactions
