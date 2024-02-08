@@ -1,5 +1,3 @@
-import { Buffer } from 'buffer'
-
 const IMAGE_EXTS = ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'tiff', 'tif', 'ico', 'svg', 'webp', 'heic', 'heif']
 const RENDERABLE_EXTS = [
   '.md',
