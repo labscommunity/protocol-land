@@ -6,9 +6,11 @@ import toast from 'react-hot-toast'
 import { AiOutlineTwitter, AiTwotoneMail } from 'react-icons/ai'
 import { BsGlobe } from 'react-icons/bs'
 import { TiLocation } from 'react-icons/ti'
+import SVG from 'react-inlinesvg'
 import { useParams } from 'react-router-dom'
 import * as yup from 'yup'
 
+import ArNSIcon from '@/assets/icons/ar.io-logo-black.svg'
 import { Button } from '@/components/common/buttons'
 import { isInvalidInput } from '@/helpers/isInvalidInput'
 import { shortenAddress } from '@/helpers/shortenAddress'
@@ -18,6 +20,7 @@ import { useGlobalStore } from '@/stores/globalStore'
 import { User } from '@/types/user'
 
 import Avatar from './Avatar'
+import UsernameModal from './UsernameModal'
 
 const schema = yup.object().shape(
   {
@@ -44,6 +47,7 @@ const schema = yup.object().shape(
               'Invalid username format. Use only letters, numbers, and hyphens. It must start with a letter or number and be at most 39 characters.'
             )
       }),
+    isUserNameArNS: yup.boolean().required(),
     location: yup.string().trim(),
     // timezone: yup.object({
     //   value: yup.string(),
@@ -76,33 +80,49 @@ export default function Sidebar({
   userDetails: Partial<User>
   setUserDetails: (details: Partial<User>) => void
 }) {
+  const [isUsernameModalOpen, setIsUsernameModalOpen] = React.useState(false)
   const [isSubmitting, setIsSubmitting] = React.useState(false)
   const { id } = useParams()
   const [avatar, setAvatar] = React.useState<null | File>(null)
-  const [address, isLoggedIn, saveUserDetails] = useGlobalStore((state) => [
+  const [address, isLoggedIn, userArNSNames, saveUserDetails, fetchUserArNSListByAddress] = useGlobalStore((state) => [
     state.authState.address,
     state.authState.isLoggedIn,
-    state.userActions.saveUserDetails
+    state.userState.userDetails.arNSNames,
+    state.userActions.saveUserDetails,
+    state.userActions.fetchUserArNSListByAddress
   ])
 
   const {
     register,
     handleSubmit,
     formState: { errors },
-    setValue
+    setValue,
+    watch
   } = useForm({
     resolver: yupResolver(schema)
   })
+  const formUserName = watch('username')
+  const formIsUserNameArNS = watch('isUserNameArNS', userDetails.isUserNameArNS ? userDetails.isUserNameArNS : false)
 
   const [mode, setMode] = React.useState<'READ' | 'EDIT'>('READ')
 
   React.useEffect(() => {
     if (mode === 'EDIT') {
+      if (!userDetails.isUserNameArNS) {
+        setValue('isUserNameArNS', false)
+      }
+      
       for (const [key, value] of Object.entries(userDetails)) {
         setValue(key as any, value)
       }
     }
   }, [mode])
+
+  React.useEffect(() => {
+    if (isLoggedIn) {
+      fetchUserArNSListByAddress(address!)
+    }
+  }, [isLoggedIn])
 
   async function handleSaveDetailsClick(data: yup.InferType<typeof schema>) {
     setIsSubmitting(true)
@@ -140,12 +160,33 @@ export default function Sidebar({
     Object.keys(updatedData).forEach((key: string) => {
       const typedKey = key as keyof User
 
-      if (!isInvalidInput(updatedData[typedKey], 'string', true) && originalData[typedKey] !== updatedData[typedKey]) {
+      if (
+        !isInvalidInput(updatedData[typedKey], ['string', 'boolean'], true) &&
+        originalData[typedKey] !== updatedData[typedKey]
+      ) {
         changes[typedKey] = updatedData[typedKey]
       }
     })
 
     return changes
+  }
+
+  function onUsernameChange(value: string, type?: string) {
+    if (type === 'arns' && !formIsUserNameArNS) {
+      setValue('isUserNameArNS', true, { shouldValidate: true, shouldTouch: true })
+    }
+
+    if (type === 'custom' && formIsUserNameArNS === true) {
+      setValue('isUserNameArNS', false, { shouldValidate: true, shouldTouch: true })
+    }
+
+    setValue('username', value, { shouldValidate: true, shouldTouch: true })
+  }
+
+  function createArNSNameClickHandler(name: string) {
+    return function () {
+      window.open(`https://${name}.arweave.dev`, '_blank')
+    }
   }
 
   if (mode === 'EDIT') {
@@ -174,14 +215,14 @@ export default function Sidebar({
             </label>
             <input
               type="text"
-              {...register('username')}
               className={clsx(
-                'bg-white border-[1px] text-gray-900 text-base rounded-lg hover:shadow-[0px_2px_4px_0px_rgba(0,0,0,0.10)] focus:border-primary-500 focus:border-[1.5px] block w-full px-2.5 py-1 outline-none',
-                errors.username ? 'border-red-500' : 'border-gray-300'
+                'bg-white border-[1px] text-gray-900 text-base rounded-lg hover:shadow-[0px_2px_4px_0px_rgba(0,0,0,0.10)] focus:border-primary-500 focus:border-[1.5px] block w-full px-2.5 py-1 outline-none border-gray-300'
               )}
+              value={formUserName || ''}
+              onClick={() => setIsUsernameModalOpen(true)}
               placeholder="johncancode"
             />
-            {errors.username && <p className="text-red-500 text-sm italic mt-2">{errors.username?.message}</p>}
+            {/* {errors.username && <p className="text-red-500 text-sm italic mt-2">{errors.username?.message}</p>} */}
           </div>
           <h3 className="font-medium text-gray-600 text-md">{shortenAddress(id!, 9)}</h3>
         </div>
@@ -268,6 +309,14 @@ export default function Sidebar({
             Cancel
           </Button>
         </div>
+        <UsernameModal
+          onUsernameChange={onUsernameChange}
+          currentName={formUserName}
+          isOpen={isUsernameModalOpen}
+          setIsOpen={setIsUsernameModalOpen}
+          isArNSName={formIsUserNameArNS}
+          arNSNames={userArNSNames}
+        />
       </div>
     )
   }
@@ -277,7 +326,21 @@ export default function Sidebar({
       <Avatar setAvatar={setAvatar} mode={'READ'} url={userDetails?.avatar} />
       <div className="flex flex-col">
         {userDetails.fullname && <h2 className="font-bold text-gray-900 text-2xl">{userDetails.fullname}</h2>}
-        {userDetails.username && <h3 className="font-medium text-gray-600 text-lg">{userDetails.username}</h3>}
+        {userDetails.username && !userDetails.isUserNameArNS && (
+          <h3 className="font-medium text-gray-600 text-lg">{userDetails.username}</h3>
+        )}
+        {userDetails.username && userDetails.isUserNameArNS && (
+          <div
+            onClick={createArNSNameClickHandler(userDetails.username)}
+            className="flex items-center cursor-pointer font-medium text-primary-600 text-lg tracking-wide"
+          >
+            <span className="mr-1">arns://</span>
+            <span className="">{userDetails.username}</span>
+            <span className="ml-2">
+              <SVG className="w-5 h-5" src={ArNSIcon} />
+            </span>
+          </div>
+        )}
         <h3 className="font-medium text-gray-600 text-lg">{shortenAddress(id!, 12)}</h3>
       </div>
       <div className="flex flex-col gap-1">

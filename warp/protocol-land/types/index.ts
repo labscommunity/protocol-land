@@ -10,6 +10,7 @@ export type ContractState = {
 export type User = {
   fullname?: string
   username?: string
+  isUserNameArNS?: boolean
   avatar?: string
   bio?: string
   timezone?: Timezone
