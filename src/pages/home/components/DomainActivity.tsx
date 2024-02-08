@@ -1,6 +1,7 @@
 import { formatDistanceToNow } from 'date-fns'
 import { Link } from 'react-router-dom'
 
+import UserPopover from '@/components/Popovers/UserPopover'
 import { resolveUsernameOrShorten } from '@/helpers/resolveUsername'
 import { ActivityProps, DomainActivityType } from '@/types/explore'
 
@@ -21,9 +22,11 @@ export default function DomainActivity({ activity, setIsForkModalOpen, setRepo }
         <div className="flex items-center gap-1 text-sm justify-between flex-wrap">
           <span>
             ArNS Domain {activity.created ? 'added' : 'updated'} by{' '}
-            <Link className="text-primary-600 hover:text-primary-700" to={`/user/${domain.controller}`}>
-              {resolveUsernameOrShorten(domain.controller)}
-            </Link>{' '}
+            <UserPopover userAddress={domain.controller}>
+              <Link className="text-primary-600 hover:text-primary-700" to={`/user/${domain.controller}`}>
+                {resolveUsernameOrShorten(domain.controller)}
+              </Link>
+            </UserPopover>{' '}
             {formatDistanceToNow(new Date(activity.timestamp * 1000), { addSuffix: true })}
           </span>
 

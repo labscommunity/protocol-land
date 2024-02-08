@@ -25,6 +25,7 @@ export type Repo = {
   fork: boolean
   parent: string | null
   timestamp: number
+  updatedTimestamp: number
   private: boolean
   privateStateTxId?: string
   contributorInvites: ContributorInvite[]

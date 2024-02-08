@@ -48,6 +48,7 @@ export type Repo = {
   domains: Domain[]
   deploymentBranch: string
   timestamp: number
+  updatedTimestamp: number
   forks: Forks
   fork: boolean
   parent: string | null
