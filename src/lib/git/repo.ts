@@ -92,7 +92,7 @@ export async function postNewRepo({ id, title, description, file, owner, visibil
     throw new Error('Failed to post Git repository')
   }
 
-  const contract = getWarpContract(CONTRACT_TX_ID, userSigner)
+  const contract = await getWarpContract(CONTRACT_TX_ID, userSigner)
 
   await contract.writeInteraction({
     function: 'initialize',
@@ -194,7 +194,7 @@ export async function updateGithubSync({ id, currentGithubSync, githubSync }: an
 export async function createNewFork(data: ForkRepositoryOptions) {
   const userSigner = await getSigner()
 
-  const contract = getWarpContract(CONTRACT_TX_ID, userSigner)
+  const contract = await getWarpContract(CONTRACT_TX_ID, userSigner)
 
   const uuid = uuidv4()
   await contract.writeInteraction({
@@ -265,7 +265,7 @@ export async function postUpdatedRepo({ fs, dir, owner, id, isPrivate, privateSt
     throw new Error('Failed to post Git repository')
   }
 
-  const contract = getWarpContract(CONTRACT_TX_ID, userSigner)
+  const contract = await getWarpContract(CONTRACT_TX_ID, userSigner)
 
   await contract.writeInteraction({
     function: 'updateRepositoryTxId',
@@ -341,7 +341,7 @@ export async function rotateKeysAndUpdate({ id, currentPrivateStateTxId, type }:
     throw new Error('Failed to post Private State')
   }
 
-  const contract = getWarpContract(CONTRACT_TX_ID, userSigner)
+  const contract = await getWarpContract(CONTRACT_TX_ID, userSigner)
 
   const input = isRepoAction
     ? { function: 'updatePrivateStateTx', payload: { id, privateStateTxId } }
@@ -429,7 +429,7 @@ export async function unmountRepoFromBrowser(name: string) {
 export async function updateRepoName(repoId: string, newName: string) {
   const userSigner = await getSigner()
 
-  const contract = getWarpContract(CONTRACT_TX_ID, userSigner)
+  const contract = await getWarpContract(CONTRACT_TX_ID, userSigner)
 
   await contract.writeInteraction({
     function: 'updateRepositoryDetails',
@@ -443,7 +443,7 @@ export async function updateRepoName(repoId: string, newName: string) {
 export async function updateRepoDescription(description: string, repoId: string) {
   const userSigner = await getSigner()
 
-  const contract = getWarpContract(CONTRACT_TX_ID, userSigner)
+  const contract = await getWarpContract(CONTRACT_TX_ID, userSigner)
 
   await contract.writeInteraction({
     function: 'updateRepositoryDetails',
@@ -457,7 +457,7 @@ export async function updateRepoDescription(description: string, repoId: string)
 export async function updateRepoDeploymentBranch(deploymentBranch: string, repoId: string) {
   const userSigner = await getSigner()
 
-  const contract = getWarpContract(CONTRACT_TX_ID, userSigner)
+  const contract = await getWarpContract(CONTRACT_TX_ID, userSigner)
 
   await contract.writeInteraction({
     function: 'updateRepositoryDetails',
@@ -471,7 +471,7 @@ export async function updateRepoDeploymentBranch(deploymentBranch: string, repoI
 export async function addDeployment(deployment: Partial<Deployment>, repoId: string) {
   const userSigner = await getSigner()
 
-  const contract = getWarpContract(CONTRACT_TX_ID, userSigner)
+  const contract = await getWarpContract(CONTRACT_TX_ID, userSigner)
 
   await contract.writeInteraction({
     function: 'addDeployment',
@@ -504,7 +504,7 @@ export async function inviteContributor(address: string, repoId: string) {
 
   const caller = useGlobalStore.getState().authState.address!
 
-  const contract = getWarpContract(CONTRACT_TX_ID, userSigner)
+  const contract = await getWarpContract(CONTRACT_TX_ID, userSigner)
 
   const dryRunResult = await contract.dryWrite(
     {
@@ -543,7 +543,7 @@ export async function inviteContributor(address: string, repoId: string) {
 export async function addDomain(domain: Omit<Domain, 'timestamp'>, repoId: string) {
   const userSigner = await getSigner()
 
-  const contract = getWarpContract(CONTRACT_TX_ID, userSigner)
+  const contract = await getWarpContract(CONTRACT_TX_ID, userSigner)
 
   await contract.writeInteraction({
     function: 'addDomain',
@@ -567,7 +567,7 @@ export async function addDomain(domain: Omit<Domain, 'timestamp'>, repoId: strin
 export async function updateDomain(domain: Omit<Domain, 'controller' | 'timestamp'>, repoId: string) {
   const userSigner = await getSigner()
 
-  const contract = getWarpContract(CONTRACT_TX_ID, userSigner)
+  const contract = await getWarpContract(CONTRACT_TX_ID, userSigner)
 
   await contract.writeInteraction({
     function: 'updateDomain',
@@ -591,7 +591,7 @@ export async function updateDomain(domain: Omit<Domain, 'controller' | 'timestam
 export async function addContributor(address: string, repoId: string) {
   const userSigner = await getSigner()
 
-  const contract = getWarpContract(CONTRACT_TX_ID, userSigner)
+  const contract = await getWarpContract(CONTRACT_TX_ID, userSigner)
 
   await contract.writeInteraction({
     function: 'addContributor',

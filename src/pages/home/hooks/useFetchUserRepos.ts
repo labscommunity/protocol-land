@@ -15,7 +15,7 @@ export function useFetchUserRepos() {
   const [fetchUserReposStatus, setFetchUserReposStatus] = useState<ApiStatus>('IDLE')
 
   const initFetchUserRepos = async () => {
-    const contract = getWarpContract(CONTRACT_TX_ID)
+    const contract = await getWarpContract(CONTRACT_TX_ID)
 
     setFetchUserReposStatus('PENDING')
     const { response: ownerReposResponse, error: ownerReposError } = await withAsync(() =>

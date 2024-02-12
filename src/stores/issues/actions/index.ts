@@ -8,7 +8,7 @@ import { Issue } from '@/types/repository'
 async function getContract() {
   const userSigner = await getSigner()
 
-  const contract = getWarpContract(CONTRACT_TX_ID, userSigner)
+  const contract = await getWarpContract(CONTRACT_TX_ID, userSigner)
 
   return contract
 }
