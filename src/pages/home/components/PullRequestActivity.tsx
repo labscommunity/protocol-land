@@ -2,6 +2,7 @@ import clsx from 'clsx'
 import { formatDistanceToNow } from 'date-fns'
 import { Link } from 'react-router-dom'
 
+import UserPopover from '@/components/Popovers/UserPopover'
 import { resolveUsernameOrShorten } from '@/helpers/resolveUsername'
 import { ActivityProps, PullRequestActivityType } from '@/types/explore'
 
@@ -48,9 +49,14 @@ export default function PullRequestActivity({
                   : 'reopened'
                 : pullRequest.status.toLowerCase()}{' '}
               by{' '}
-              <Link className="text-primary-600 hover:text-primary-700" to={`/user/${pullRequest.author}`}>
-                {resolveUsernameOrShorten(pullRequest.author)}
-              </Link>
+              <UserPopover userAddress={pullRequest.author}>
+                <Link
+                  className="text-primary-600 hover:text-primary-700 hover:underline"
+                  to={`/user/${pullRequest.author}`}
+                >
+                  {resolveUsernameOrShorten(pullRequest.author)}
+                </Link>
+              </UserPopover>
             </span>
             {pullRequest.status !== 'MERGED' && pullRequest.timestamp && (
               <span> {formatDistanceToNow(new Date(pullRequest.timestamp), { addSuffix: true })}</span>

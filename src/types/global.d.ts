@@ -1,5 +1,6 @@
 declare module 'warp-contracts' {
   const WarpFactory: any
+  const defaultCacheOptions: any
 }
 
 declare module 'warp-contracts-plugin-signature' {

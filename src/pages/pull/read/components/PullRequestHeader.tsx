@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { FaArrowLeft } from 'react-icons/fa'
 import { FiGitMerge, FiGitPullRequest } from 'react-icons/fi'
 import { RiGitClosePullRequestLine } from 'react-icons/ri'
-import { useNavigate } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import Sticky from 'react-stickynode'
 
 import { Button } from '@/components/common/buttons'
@@ -46,9 +46,10 @@ export default function PullRequestHeader({
   const StatusComponent = statusMap[PR.status]
   const navigate = useNavigate()
   const [isSticky, setIsSticky] = useState(false)
-  const [isContributor, connectedAddress] = useGlobalStore((state) => [
+  const [isContributor, connectedAddress, isMergable] = useGlobalStore((state) => [
     state.repoCoreActions.isContributor,
-    state.authState.address
+    state.authState.address,
+    state.pullRequestState.isMergeable
   ])
   const isMergeInSameRepo = PR.baseRepo.repoId === PR.compareRepo.repoId
   const lastActivity = PR.activities?.[(PR?.activities?.length ?? 0) - 1]
@@ -57,16 +58,6 @@ export default function PullRequestHeader({
 
   function goBack() {
     navigate(`/repository/${PR.repoId}/pulls`)
-  }
-
-  function gotoBranch(id: string, branchName: string) {
-    navigate(rootTabConfig[0].getPath(id, branchName))
-  }
-
-  function gotoUser(userAddress: string) {
-    if (userAddress) {
-      navigate(`/user/${userAddress}`)
-    }
   }
 
   const handleStateChange = (status: Sticky.Status) => {
@@ -101,30 +92,30 @@ export default function PullRequestHeader({
               <div className={clsx('text-gray-600', isSticky && 'truncate')}>
                 {isSticky && <PrTitle issueOrPr={PR} isSticky={true} />}
                 <span className={clsx(isSticky && 'text-sm')}>
-                  <span
+                  <Link
+                    to={`/user/${PR.status === 'MERGED' ? lastActivity?.author : PR?.author}`}
                     className="font-medium cursor-pointer hover:underline hover:text-primary-700"
-                    onClick={() => gotoUser(PR.status === 'MERGED' ? lastActivity?.author : PR?.author)}
                   >
                     {PR.status === 'MERGED'
                       ? lastActivity?.author && resolveUsernameOrShorten(lastActivity?.author)
                       : PR?.author && resolveUsernameOrShorten(PR?.author)}
-                  </span>{' '}
+                  </Link>{' '}
                   {PR.status !== 'MERGED' ? 'wants to merge' : 'merged'}{' '}
-                  <span
+                  <Link
+                    to={rootTabConfig[0].getPath(PR.compareRepo.repoId, PR?.compareBranch)}
                     className="text-primary-600 bg-primary-200 px-1 cursor-pointer"
-                    onClick={() => gotoBranch(PR.compareRepo.repoId, PR?.compareBranch)}
                   >
                     {isMergeInSameRepo
                       ? PR?.compareBranch
                       : `${resolveUsernameOrShorten(compareRepoOwner)}:${PR?.compareBranch}`}
-                  </span>{' '}
+                  </Link>{' '}
                   into{' '}
-                  <span
+                  <Link
+                    to={rootTabConfig[0].getPath(PR.baseRepo.repoId, PR?.baseBranch)}
                     className="text-primary-600 bg-primary-200 px-1 cursor-pointer"
-                    onClick={() => gotoBranch(PR.baseRepo.repoId, PR?.baseBranch)}
                   >
                     {isMergeInSameRepo ? PR?.baseBranch : `${resolveUsernameOrShorten(repo.owner)}:${PR?.baseBranch}`}
-                  </span>{' '}
+                  </Link>{' '}
                   {PR.status === 'MERGED' &&
                     PR.mergedTimestamp &&
                     formatDistanceToNow(new Date(PR.mergedTimestamp), { addSuffix: true })}
@@ -134,7 +125,11 @@ export default function PullRequestHeader({
           </div>
           {isSticky && contributorOrPRAuthor && (
             <div className="flex items-center">
-              <ActionButton isContributor={contributor} isPRAuthor={connectedAddress === PR.author} />
+              <ActionButton
+                isMergable={isMergable}
+                isContributor={contributor}
+                isPRAuthor={connectedAddress === PR.author}
+              />
             </div>
           )}
         </div>

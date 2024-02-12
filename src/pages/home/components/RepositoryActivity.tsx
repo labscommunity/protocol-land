@@ -2,6 +2,7 @@ import { formatDistanceToNow } from 'date-fns'
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 
+import UserPopover from '@/components/Popovers/UserPopover'
 import { resolveUsernameOrShorten } from '@/helpers/resolveUsername'
 import { ActivityProps, RepositoryActivityType } from '@/types/explore'
 
@@ -32,9 +33,11 @@ export default function RepositoryActivity({
         <div className="flex gap-1 items-center flex-wrap text-sm justify-between">
           <span>
             {activity.created ? (activity.repo.fork ? 'Forked' : 'Created') : 'Updated'} by{' '}
-            <Link className="text-primary-600 hover:text-primary-70" to={`/user/${activity.author}`}>
-              {resolveUsernameOrShorten(activity.author)}
-            </Link>{' '}
+            <UserPopover userAddress={activity.author}>
+              <Link className="text-primary-600 hover:text-primary-700 hover:underline" to={`/user/${activity.author}`}>
+                {resolveUsernameOrShorten(activity.author)}
+              </Link>
+            </UserPopover>{' '}
             {formatDistanceToNow(new Date(activity.timestamp * 1000), { addSuffix: true })}
           </span>
           <div className="flex gap-3 items-center">

@@ -1,7 +1,7 @@
 import { Tag } from 'arweave/web/lib/transaction'
 import { Dispatch, SetStateAction } from 'react'
 
-import { Bounty, Deployment, Domain, Issue, PullRequest, Repo } from '@/types/repository'
+import { Bounty, Deployment, Domain, Issue, PullRequest, Repo, RepoWithParent } from '@/types/repository'
 
 export type ActivityType = 'REPOSITORY' | 'ISSUE' | 'PULL_REQUEST' | 'BOUNTY' | 'DEPLOYMENT' | 'DOMAIN'
 
@@ -46,7 +46,7 @@ export type Filters = {
 
 export type ActivityBase = {
   type: ActivityType
-  repo: Repo
+  repo: RepoWithParent
   timestamp: number
   created: boolean
 }

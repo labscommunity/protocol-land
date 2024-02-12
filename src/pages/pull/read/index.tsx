@@ -1,5 +1,5 @@
 import { Tab } from '@headlessui/react'
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import Lottie from 'react-lottie'
 import { useLocation, useParams } from 'react-router-dom'
 
@@ -9,6 +9,7 @@ import { Seo } from '@/components/Seo'
 import { trackGoogleAnalyticsPageView } from '@/helpers/google-analytics'
 import { defaultMetaTagsData } from '@/helpers/seoUtils'
 import { useGlobalStore } from '@/stores/globalStore'
+import { PullRequest } from '@/types/repository'
 
 import PullRequestHeader from './components/PullRequestHeader'
 import { rootTabConfig } from './config/tabConfig'
@@ -18,6 +19,7 @@ const activeClasses = 'border-b-[2px] border-primary-600 text-gray-900 font-medi
 export default function ReadPullRequest() {
   const location = useLocation()
   const { id, pullId } = useParams()
+  const interval = useRef<NodeJS.Timer | null>(null)
   const [compareRepoOwner, setCompareRepoOwner] = useState('')
   const [
     selectedRepo,
@@ -25,8 +27,10 @@ export default function ReadPullRequest() {
     commits,
     branchState,
     fileStatuses,
+    fileStatusesReady,
     fetchAndLoadRepository,
     fetchAndLoadForkRepository,
+    isContributor,
     pullRequestActions
   ] = useGlobalStore((state) => [
     state.repoCoreState.selectedRepo,
@@ -34,13 +38,18 @@ export default function ReadPullRequest() {
     state.pullRequestState.commits,
     state.branchState,
     state.pullRequestState.fileStatuses,
+    state.pullRequestState.fileStatusesReady,
     state.repoCoreActions.fetchAndLoadRepository,
     state.repoCoreActions.fetchAndLoadForkRepository,
+    state.repoCoreActions.isContributor,
     state.pullRequestActions
   ])
 
+  const PR = selectedRepo.repo ? selectedRepo.repo.pullRequests[+pullId! - 1] : null
+
   useEffect(() => {
     if (id) {
+      pullRequestActions.reset()
       fetchAndLoadRepository(id, branchState.currentBranch)
     }
   }, [id])
@@ -65,22 +74,8 @@ export default function ReadPullRequest() {
         }
       }
 
-      const params = {
-        base: {
-          repoName: PR.baseRepo.repoName,
-          branch: PR.baseBranch,
-          id: PR.baseRepo.repoId
-        },
-        compare: {
-          repoName: PR.compareRepo.repoName,
-          branch: PR.compareBranch,
-          id: PR.compareRepo.repoId
-        }
-      }
-
-      pullRequestActions.compareBranches(params)
-
       if (!compareIsFork) {
+        compareBranches(PR)
         pullRequestActions.getFileStatuses(PR.baseBranchOid, PR.compareBranch)
         pullRequestActions.setCompareBranch(PR.compareBranch)
       }
@@ -107,13 +102,59 @@ export default function ReadPullRequest() {
     }
   }, [commits, forkRepo])
 
+  useEffect(() => {
+    if (forkRepo.repo && PR) {
+      compareBranches(PR)
+    }
+  }, [forkRepo.repo])
+
+  useEffect(() => {
+    if (selectedRepo.status === 'SUCCESS' && PR && fileStatuses.length > 0 && PR.status === 'OPEN') {
+      pullRequestActions.mergePullRequest(PR.id, true)
+      if (isContributor()) {
+        interval.current = setInterval(() => {
+          pullRequestActions.checkPRForUpdates(PR.id)
+        }, 30000)
+      }
+    }
+
+    if (PR && PR.status !== 'OPEN' && interval.current) {
+      clearInterval(interval.current)
+      interval.current = null
+    }
+
+    return () => {
+      if (interval.current) {
+        clearInterval(interval.current)
+        interval.current = null
+      }
+    }
+  }, [PR?.status, fileStatuses, selectedRepo, forkRepo.repo])
+
+  function compareBranches(PR: PullRequest) {
+    const params = {
+      base: {
+        repoName: PR.baseRepo.repoName,
+        branch: PR.baseBranch,
+        id: PR.baseRepo.repoId
+      },
+      compare: {
+        repoName: PR.compareRepo.repoName,
+        branch: PR.compareBranch,
+        id: PR.compareRepo.repoId
+      }
+    }
+
+    pullRequestActions.compareBranches(params)
+  }
+
   const isLoading = selectedRepo.status === 'IDLE' || selectedRepo.status === 'PENDING'
 
   if (selectedRepo.status === 'ERROR') {
     return <PageNotFound />
   }
 
-  if (isLoading || fileStatuses.length === 0) {
+  if (isLoading || !fileStatusesReady) {
     return (
       <div className="h-full flex-1 flex flex-col max-w-[1280px] mx-auto w-full mt-6 gap-8 justify-center items-center">
         <Lottie
@@ -131,8 +172,6 @@ export default function ReadPullRequest() {
       </div>
     )
   }
-
-  const PR = selectedRepo.repo ? selectedRepo.repo.pullRequests[+pullId! - 1] : null
 
   return (
     <>

@@ -2,7 +2,8 @@ import { StateCreator } from 'zustand'
 
 import { trackGoogleAnalyticsEvent } from '@/helpers/google-analytics'
 import { withAsync } from '@/helpers/withAsync'
-import { User } from '@/types/user'
+import { getAllArNSNames } from '@/lib/dragondeploy/arns'
+import { ArNSNames, User } from '@/types/user'
 
 import { CombinedSlices } from '../types'
 import {
@@ -20,7 +21,8 @@ const initialUserState = {
       commits: [],
       pullRequests: [],
       issues: []
-    }
+    },
+    arNSNames: {}
   },
   allUsers: new Map<string, User>()
 }
@@ -58,7 +60,17 @@ const createUserSlice: StateCreator<CombinedSlices, [['zustand/immer', never], n
           commits: [],
           pullRequests: [],
           issues: []
-        }
+        },
+        arNSNames: {}
+      }
+    },
+    fetchUserArNSListByAddress: async (address: string) => {
+      const { response } = await withAsync<ArNSNames>(() => getAllArNSNames(address))
+
+      if (response) {
+        set((state) => {
+          state.userState.userDetails.arNSNames = response
+        })
       }
     },
     updateUserContributionStats: async (data) => {
@@ -73,7 +85,7 @@ const createUserSlice: StateCreator<CombinedSlices, [['zustand/immer', never], n
         const userDetails = response.result
 
         set((state) => {
-          state.userState.userDetails = userDetails
+          state.userState.userDetails = { ...state.userState.userDetails, ...userDetails }
           const userState = state.userState.allUsers.get(address)
           state.userState.allUsers.set(address, { ...userState, ...userDetails })
         })

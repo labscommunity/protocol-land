@@ -1,6 +1,7 @@
 import { formatDistanceToNow } from 'date-fns'
 import { Link } from 'react-router-dom'
 
+import UserPopover from '@/components/Popovers/UserPopover'
 import { resolveUsernameOrShorten } from '@/helpers/resolveUsername'
 import { ActivityProps, DeploymentActivityType } from '@/types/explore'
 
@@ -26,9 +27,14 @@ export default function DeploymentActivity({
         <div className="flex items-center gap-1 text-sm justify-between flex-wrap">
           <span>
             Deployment done by{' '}
-            <Link className="text-primary-600 hover:text-primary-700" to={`/user/${deployment.deployedBy}`}>
-              {resolveUsernameOrShorten(deployment.deployedBy)}
-            </Link>{' '}
+            <UserPopover userAddress={deployment.deployedBy}>
+              <Link
+                className="text-primary-600 hover:text-primary-700 hover:underline"
+                to={`/user/${deployment.deployedBy}`}
+              >
+                {resolveUsernameOrShorten(deployment.deployedBy)}
+              </Link>
+            </UserPopover>{' '}
             {formatDistanceToNow(new Date(activity.timestamp * 1000), { addSuffix: true })}
           </span>
 

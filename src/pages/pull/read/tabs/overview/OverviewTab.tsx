@@ -4,6 +4,7 @@ import { formatDistanceToNow } from 'date-fns'
 import { useState } from 'react'
 import toast from 'react-hot-toast'
 import { AiFillCloseCircle } from 'react-icons/ai'
+import { BiError } from 'react-icons/bi'
 import { FiGitMerge } from 'react-icons/fi'
 import { GoEye } from 'react-icons/go'
 import { IoMdCheckmark } from 'react-icons/io'
@@ -53,17 +54,31 @@ export default function OverviewTab() {
   const [isSubmittingComment, setIsSubmittingComment] = useState(false)
   const [commentVal, setCommentVal] = useState('')
   const { pullId } = useParams()
-  const [connectedAddress, isLoggedIn, selectedRepo, mergePR, closePR, reopenPR, addComment, isContributor] =
-    useGlobalStore((state) => [
-      state.authState.address,
-      state.authState.isLoggedIn,
-      state.repoCoreState.selectedRepo.repo,
-      state.pullRequestActions.mergePullRequest,
-      state.pullRequestActions.closePullRequest,
-      state.pullRequestActions.reopenPullRequest,
-      state.pullRequestActions.addComment,
-      state.repoCoreActions.isContributor
-    ])
+  const [
+    connectedAddress,
+    isLoggedIn,
+    selectedRepo,
+    checkPRForUpdates,
+    mergePR,
+    closePR,
+    reopenPR,
+    addComment,
+    isContributor,
+    isMergable,
+    conflictingFiles
+  ] = useGlobalStore((state) => [
+    state.authState.address,
+    state.authState.isLoggedIn,
+    state.repoCoreState.selectedRepo.repo,
+    state.pullRequestActions.checkPRForUpdates,
+    state.pullRequestActions.mergePullRequest,
+    state.pullRequestActions.closePullRequest,
+    state.pullRequestActions.reopenPullRequest,
+    state.pullRequestActions.addComment,
+    state.repoCoreActions.isContributor,
+    state.pullRequestState.isMergeable,
+    state.pullRequestState.conflictingFiles
+  ])
   const navigate = useNavigate()
 
   const PR = selectedRepo && selectedRepo.pullRequests[+pullId! - 1]
@@ -71,6 +86,7 @@ export default function OverviewTab() {
   async function handleMergePullRequest() {
     if (PR) {
       setIsSubmittingMerge(true)
+      await checkPRForUpdates(PR.id)
       const { error } = await withAsync(() => mergePR(PR.id))
       console.log({ submitted: !error })
       if (error) {
@@ -205,23 +221,59 @@ export default function OverviewTab() {
               })}
           </ol>
         </div>
-        <div className="border-t-[1px] border-gray-200">
-          {isLoggedIn && (
-            <div className="flex flex-col pt-4">
-              {isOpen && contributor && (
-                <div className="mb-4 border p-4 flex justify-center items-center">
-                  <Button
-                    onClick={handleMergePullRequest}
-                    disabled={isSubmittingMerge}
-                    isLoading={isSubmittingMerge}
-                    className="gap-2 justify-center font-medium"
-                    variant="primary-solid"
-                  >
-                    <FiGitMerge className="w-4 h-4" />
-                    Merge pull request
-                  </Button>
+        <div className="border-t-[1px] border-gray-200 pt-4">
+          {isOpen && (
+            <div
+              className={clsx(
+                'mb-4 border p-4 flex flex-col gap-2 justify-center items-center',
+                !contributor && isMergable && 'hidden'
+              )}
+            >
+              {!isMergable && (
+                <div className="flex flex-col gap-1 justify-center w-full">
+                  <div className="flex gap-2">
+                    <div className="h-8 w-8 flex items-center justify-center pb-[1px] rounded-full bg-gray-500">
+                      <BiError className="w-5 h-5 fill-white" />
+                    </div>
+                    <div className="flex flex-col">
+                      <span className="text-lg font-medium">This branch has conflicts that must be resolved.</span>
+                      <span className="text-sm text-gray-600">
+                        Please resolve them in the code editor or terminal to proceed with merging this PR.
+                      </span>
+                      {conflictingFiles.length > 0 && (
+                        <div className="mt-1">
+                          <span className="font-bold">Conflicting files:</span>
+                          <ul>
+                            {conflictingFiles.map((file, index) => (
+                              <li key={`conflict-${index}`} className="text-gray-600">
+                                {file}
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {contributor && <div className="h-[2px] my-2 w-full bg-gray-100"></div>}
                 </div>
               )}
+              {contributor && (
+                <Button
+                  onClick={handleMergePullRequest}
+                  disabled={isSubmittingMerge || !isMergable}
+                  isLoading={isSubmittingMerge}
+                  className="gap-2 justify-center font-medium"
+                  variant="primary-solid"
+                >
+                  <FiGitMerge className="w-4 h-4" />
+                  Merge pull request
+                </Button>
+              )}
+            </div>
+          )}
+          {isLoggedIn && (
+            <div className="flex flex-col">
               {isOpen && (
                 <div className="flex flex-col gap-2">
                   <span className="font-medium">Add a comment</span>

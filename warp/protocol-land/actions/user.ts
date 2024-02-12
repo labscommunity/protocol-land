@@ -24,6 +24,7 @@ export async function updateProfileDetails(
     isInvalidInput(payload, 'object') ||
     (payload.fullname !== undefined && isInvalidInput(payload.fullname, 'string', true)) ||
     (payload.username !== undefined && isInvalidInput(payload.username, 'username')) ||
+    (payload.isUserNameArNS !== undefined && isInvalidInput(payload.isUserNameArNS, 'boolean')) ||
     (payload.avatar !== undefined && isInvalidInput(payload.avatar, 'arweave-address')) ||
     (payload.bio !== undefined && isInvalidInput(payload.bio, 'string', true)) ||
     (payload.timezone !== undefined && isInvalidTimezone(payload.timezone)) ||
@@ -40,6 +41,7 @@ export async function updateProfileDetails(
   const filteredPayload = pickKeys(payload, [
     'fullname',
     'username',
+    'isUserNameArNS',
     'avatar',
     'bio',
     'timezone',

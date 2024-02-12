@@ -162,6 +162,14 @@ export async function mergePullRequest({
     })
   )
 
+  if (dryRun) {
+    if (error && (error instanceof Errors.MergeConflictError || error instanceof Errors.MergeNotSupportedError)) {
+      throw error
+    }
+
+    return
+  }
+
   await waitFor(500)
 
   if (error instanceof Errors.MergeNotSupportedError) {

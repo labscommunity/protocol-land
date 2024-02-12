@@ -66,6 +66,7 @@ export async function initializeNewRepository(
     issues: [],
     deploymentBranch: '',
     timestamp: getBlockTimeStamp(),
+    updatedTimestamp: getBlockTimeStamp(),
     fork: false,
     forks: {},
     parent: null,
@@ -135,6 +136,7 @@ export async function forkRepository(
     domains: [],
     deploymentBranch: '',
     timestamp: getBlockTimeStamp(),
+    updatedTimestamp: getBlockTimeStamp(),
     fork: true,
     forks: {},
     parent: payload.parent,
@@ -186,6 +188,7 @@ export async function updateRepositoryTxId(
 
   repo.dataTxId = payload.dataTxId
   repo.uploadStrategy = getUploadStrategy(payload.uploadStrategy)
+  repo.updatedTimestamp = getBlockTimeStamp()
 
   return { state }
 }
