@@ -1,6 +1,6 @@
 import { UserCommit, UserContributionData, UserPROrIssue } from '@/lib/user'
 import { CommitResult } from '@/types/commit'
-import { Deployment, Domain, Repo } from '@/types/repository'
+import { Deployment, Domain, GithubSync, Repo } from '@/types/repository'
 
 export interface RepoCoreSlice {
   repoCoreState: RepoCoreState
@@ -47,6 +47,8 @@ export type RepoCoreActions = {
   updateRepoName: (name: string) => Promise<void>
   updateRepoDescription: (description: string) => Promise<void>
   updateRepoDeploymentBranch: (deploymentBranch: string) => Promise<void>
+  getGitHubPAT: () => Promise<string>
+  updateGithubSync: (githubSync: GithubSync) => Promise<void>
   inviteContributor: (address: string) => Promise<{ status: boolean; response?: any } | void>
   addDeployment: (
     deployment: Omit<Deployment, 'deployedBy' | 'branch' | 'timestamp'>

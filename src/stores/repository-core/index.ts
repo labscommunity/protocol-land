@@ -9,17 +9,19 @@ import {
   addDomain,
   inviteContributor,
   updateDomain,
+  updateGithubSync,
   updateRepoDeploymentBranch,
   updateRepoDescription,
   updateRepoName
 } from '@/lib/git'
 import { useRepoHeaderStore } from '@/pages/repository/store/repoHeader'
-import { Deployment, Domain } from '@/types/repository'
+import { Deployment, Domain, GithubSync } from '@/types/repository'
 
 import { changeBranch, getBranchList, getCurrentActiveBranch } from '../branch/actions'
 import { CombinedSlices } from '../types'
 import {
   countCommits,
+  decryptPAT,
   getFileContentFromOid,
   getFilesFromOid,
   getOidOfHeadRef,
@@ -169,6 +171,54 @@ const createRepoCoreSlice: StateCreator<CombinedSlices, [['zustand/immer', never
           repo_name: repo.name,
           repo_id: repo.id,
           deploymentBranch,
+          result: 'SUCCESS'
+        })
+      }
+    },
+    getGitHubPAT: async () => {
+      const repo = get().repoCoreState.selectedRepo.repo
+
+      if (!repo) {
+        set((state) => (state.repoCoreState.git.status = 'ERROR'))
+
+        return
+      }
+
+      if (!repo.githubSync) {
+        return ''
+      }
+
+      const { response, error } = await withAsync(() =>
+        decryptPAT(repo.githubSync?.accessToken as string, repo.githubSync?.privateStateTxId as string)
+      )
+      if (response) {
+        return response
+      } else {
+        throw error
+      }
+    },
+    updateGithubSync: async (githubSync: GithubSync) => {
+      const repo = get().repoCoreState.selectedRepo.repo
+
+      if (!repo) {
+        set((state) => (state.repoCoreState.git.status = 'ERROR'))
+
+        return
+      }
+
+      const currentAccessToken = repo.githubSync?.accessToken
+
+      const { error, response } = await withAsync(() =>
+        updateGithubSync({ id: repo.id, currentAccessToken, githubSync })
+      )
+
+      if (!error && response) {
+        set((state) => {
+          state.repoCoreState.selectedRepo.repo!.githubSync = response
+        })
+        trackGoogleAnalyticsEvent('Repository', 'Update GitHub Sync Settings', 'Update GitHub Sync', {
+          repo_name: repo.name,
+          repo_id: repo.id,
           result: 'SUCCESS'
         })
       }

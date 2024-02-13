@@ -109,6 +109,68 @@ export async function postNewRepo({ id, title, description, file, owner, visibil
   return { txResponse: dataTxResponse }
 }
 
+export async function updateGithubSync({ id, currentAccessToken, githubSync }: any) {
+  const publicKey = await getActivePublicKey()
+
+  const userSigner = await getSigner()
+
+  const data = new TextEncoder().encode(githubSync.accessToken)
+
+  const pubKeyArray = [strToJwkPubKey(publicKey)]
+  // Encrypt
+  const { aesKey, encryptedFile: encryptedAccessToken, iv } = await encryptFileWithAesGcm(data)
+  const encryptedAesKeysArray = await encryptAesKeyWithPublicKeys(aesKey, pubKeyArray)
+  githubSync.accessToken = arweave.utils.bufferTob64Url(new Uint8Array(encryptedAccessToken))
+
+  if (currentAccessToken !== githubSync.accessToken) {
+    const privateState = {
+      version: '0.1',
+      iv,
+      encKeys: encryptedAesKeysArray,
+      pubKeys: [publicKey]
+    }
+
+    const privateInputTags = [
+      { name: 'App-Name', value: 'Protocol.Land' },
+      { name: 'Content-Type', value: 'application/json' },
+      { name: 'Type', value: 'private-github-sync-state' },
+      { name: 'ID', value: id }
+    ] as Tag[]
+
+    const privateStateTxId = await signAndSendTx(JSON.stringify(privateState), privateInputTags, userSigner)
+
+    if (!privateStateTxId) {
+      throw new Error('Failed to post Private GitHub Sync State')
+    }
+
+    githubSync.privateStateTxId = privateStateTxId
+  }
+
+  const contract = getWarpContract(CONTRACT_TX_ID, userSigner)
+
+  await contract.writeInteraction({
+    function: 'updateRepositoryDetails',
+    payload: {
+      id,
+      githubSync
+    }
+  })
+
+  const {
+    cachedValue: {
+      state: { repos }
+    }
+  } = await contract.readState()
+
+  const repo = repos[id] as Repo
+
+  if (!repo) return
+
+  if (!repo.githubSync) return
+
+  return repo.githubSync
+}
+
 export async function createNewFork(data: ForkRepositoryOptions) {
   const userSigner = await getSigner()
 

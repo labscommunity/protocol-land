@@ -71,7 +71,8 @@ export async function initializeNewRepository(
     forks: {},
     parent: null,
     private: false,
-    contributorInvites: []
+    contributorInvites: [],
+    githubSync: null
   }
 
   if (payload.visibility === 'private') {
@@ -141,7 +142,8 @@ export async function forkRepository(
     forks: {},
     parent: payload.parent,
     private: false,
-    contributorInvites: []
+    contributorInvites: [],
+    githubSync: null
   }
 
   const parentRepo: Repo = state.repos[payload.parent]
@@ -277,8 +279,15 @@ export async function updateRepositoryDetails(
   const isNameInvalid = isInvalidInput(payload.name, 'string')
   const isDescriptionInvalid = isInvalidInput(payload.description, 'string', true)
   const isDeploymentBranchInvalid = isInvalidInput(payload.deploymentBranch, 'string', true)
+  const isGithubSyncInvalid =
+    isInvalidInput(payload.githubSync, 'object') ||
+    isInvalidInput(payload.githubSync.repository, 'string') ||
+    isInvalidInput(payload.githubSync.branch, 'string') ||
+    isInvalidInput(payload.githubSync.workflowId, 'string') ||
+    isInvalidInput(payload.githubSync.accessToken, 'string') ||
+    isInvalidInput(payload.githubSync.privateStateTxId, 'string')
 
-  if (isNameInvalid && isDescriptionInvalid && isDeploymentBranchInvalid) {
+  if (isNameInvalid && isDescriptionInvalid && isDeploymentBranchInvalid && isGithubSyncInvalid) {
     throw new ContractError('Either name, description or deploymentBranch should be present.')
   }
 
@@ -297,6 +306,10 @@ export async function updateRepositoryDetails(
 
   if (!(isOwner || isContributor) && !isDeploymentBranchInvalid) {
     throw new ContractError('Error: Only repo owner or contributor can update deployment branch.')
+  }
+
+  if (!isOwner && !isGithubSyncInvalid) {
+    throw new ContractError('Error: Only repo owner can update githubSync.')
   }
 
   if (!isNameInvalid) {
@@ -325,6 +338,10 @@ export async function updateRepositoryDetails(
 
   if (!isDeploymentBranchInvalid) {
     repo.deploymentBranch = payload.deploymentBranch
+  }
+
+  if (!isGithubSyncInvalid) {
+    repo.githubSync = payload.githubSync
   }
 
   return { state }
