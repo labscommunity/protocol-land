@@ -35,26 +35,26 @@ export default function GithubSync() {
     selectedRepo,
     branchActions,
     branchState,
-    isContributor,
+    // isContributor,
     isRepoOwner,
     updateGithubSync,
-    githubSyncAllowPending,
-    triggerGithubSync
+    githubSyncAllowPending
+    // triggerGithubSync
   ] = useGlobalStore((state) => [
     state.repoCoreState.selectedRepo.repo,
     state.branchActions,
     state.branchState,
-    state.repoCoreActions.isContributor,
+    // state.repoCoreActions.isContributor,
     state.repoCoreActions.isRepoOwner,
     state.repoCoreActions.updateGithubSync,
-    state.repoCoreActions.githubSyncAllowPending,
-    state.repoCoreActions.triggerGithubSync
+    state.repoCoreActions.githubSyncAllowPending
+    // state.repoCoreActions.triggerGithubSync
   ])
   const defaultBranch = 'Select a Branch'
   const [branches, setBranches] = useState<string[]>([defaultBranch])
   const [selectedBranch, setSelectedBranch] = useState(branches[0])
   const [isUpdating, setIsUpdating] = useState(false)
-  const [isSyncing, setIsSyncing] = useState(false)
+  // const [isSyncing, setIsSyncing] = useState(false)
   const [isAllowing, setIsAllowing] = useState(false)
   const [enabled, setEnabled] = useState(false)
 
@@ -69,7 +69,7 @@ export default function GithubSync() {
 
   const githubSync = selectedRepo?.githubSync
   const repoOwner = isRepoOwner()
-  const contributor = isContributor()
+  // const contributor = isContributor()
 
   console.log(githubSync)
 
@@ -102,16 +102,16 @@ export default function GithubSync() {
     }
   }
 
-  async function handleTriggerWorkflow() {
-    setIsSyncing(true)
-    const { error } = await withAsync(() => triggerGithubSync())
+  // async function handleTriggerWorkflow() {
+  //   setIsSyncing(true)
+  //   const { error } = await withAsync(() => triggerGithubSync())
 
-    if (error) {
-      throw new Error('Failed to Sync to GitHub')
-    }
+  //   if (error) {
+  //     throw new Error('Failed to Sync to GitHub')
+  //   }
 
-    setIsSyncing(false)
-  }
+  //   setIsSyncing(false)
+  // }
 
   async function handleAllowPendingContributors() {
     setIsAllowing(true)

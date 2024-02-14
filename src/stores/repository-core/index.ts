@@ -179,7 +179,7 @@ const createRepoCoreSlice: StateCreator<CombinedSlices, [['zustand/immer', never
     getGitHubPAT: async () => {
       const repo = get().repoCoreState.selectedRepo.repo!
 
-      if (!repo.githubSync) return ''
+      if (!repo.githubSync || !repo.githubSync?.accessToken || !repo.githubSync?.privateStateTxId) return ''
 
       const { response, error } = await withAsync(() =>
         decryptPAT(repo.githubSync?.accessToken as string, repo.githubSync?.privateStateTxId as string)
@@ -250,22 +250,18 @@ const createRepoCoreSlice: StateCreator<CombinedSlices, [['zustand/immer', never
       }
 
       const githubSync = repo.githubSync
-      if (!githubSync) {
-        return
-      }
-
-      if (!githubSync.enabled) {
-        return
-      }
+      if (!githubSync) return
+      if (!githubSync.enabled) return
 
       const connectedAddress = get().authState.address
       const isAllowed = githubSync.allowed.findIndex((address) => address === connectedAddress) > -1
 
-      if (!isAllowed) {
-        return
-      }
+      if (!isAllowed || !githubSync.repository || !githubSync.workflowId || !githubSync.branch) return
 
       const accessToken = await get().repoCoreActions.getGitHubPAT()
+
+      if (!accessToken) return
+
       const response = await fetch(
         `https://api.github.com/repos/${githubSync?.repository}/actions/workflows/${githubSync?.workflowId}/dispatches`,
         {
@@ -448,7 +444,7 @@ const createRepoCoreSlice: StateCreator<CombinedSlices, [['zustand/immer', never
         privateStateTxId = updatedPrivateStateTxId
       }
 
-      if (repo.githubSync) {
+      if (repo.githubSync && repo.githubSync.privateStateTxId) {
         const updatedPrivateStateTxId = await addActivePubKeyToPrivateState(
           repo.id,
           repo.githubSync.privateStateTxId,

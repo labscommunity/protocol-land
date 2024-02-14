@@ -4,12 +4,14 @@ import {
   ContributorInvite,
   Deployment,
   Domain,
+  GithubSync,
   Repo,
   RepositoryAction,
   RepoWithParent
 } from '../types'
 import { getBlockTimeStamp } from '../utils/getBlockTimeStamp'
 import { isInvalidInput } from '../utils/isInvalidInput'
+import { pickKeys } from '../utils/pickKeys'
 
 declare const ContractError
 
@@ -337,10 +339,11 @@ export async function updateGithubSync(
   { input: { payload }, caller }: RepositoryAction
 ): Promise<ContractResult<ContractState>> {
   // validate payload
+  const requiredFields = ['enabled', 'repository', 'branch', 'workflowId', 'accessToken', 'privateStateTxId']
   if (
     isInvalidInput(payload, 'object') ||
     isInvalidInput(payload.id, 'uuid') ||
-    ['enabled', 'repository', 'branch', 'workflowId', 'accessToken', 'privateStateTxId'].every((field) =>
+    requiredFields.every((field) =>
       field === 'enabled'
         ? isInvalidInput(payload.githubSync?.[field], 'boolean')
         : isInvalidInput(payload.githubSync?.[field], 'string', true)
@@ -369,7 +372,13 @@ export async function updateGithubSync(
     allowed.push(...pending)
     pending = []
   }
-  repo.githubSync = { ...repo.githubSync, ...payload.githubSync, allowed, pending }
+
+  repo.githubSync = {
+    ...repo.githubSync,
+    ...(pickKeys(payload.githubSync, requiredFields) as unknown as GithubSync),
+    allowed,
+    pending
+  }
 
   return { state }
 }
