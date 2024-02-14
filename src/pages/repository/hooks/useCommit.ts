@@ -1,5 +1,6 @@
 import React from 'react'
 import { FileWithPath } from 'react-dropzone'
+import toast from 'react-hot-toast'
 
 import { trackGoogleAnalyticsEvent } from '@/helpers/google-analytics'
 import { withAsync } from '@/helpers/withAsync'
@@ -30,10 +31,11 @@ type AddFilesOptions = {
 }
 
 export default function useCommit() {
-  const [selectedRepo, repoCommitsG, setRepoCommitsG] = useGlobalStore((state) => [
+  const [selectedRepo, repoCommitsG, setRepoCommitsG, triggerGithubSync] = useGlobalStore((state) => [
     state.repoCoreState.selectedRepo,
     state.repoCoreState.git.commits,
-    state.repoCoreActions.git.setCommits
+    state.repoCoreActions.git.setCommits,
+    state.repoCoreActions.triggerGithubSync
   ])
   const [commitsList, setCommitsList] = React.useState<CommitResult[]>([])
 
@@ -92,6 +94,10 @@ export default function useCommit() {
     if (error) throw trackAndThrowError('Failed to update repository', name, id)
 
     if (response) {
+      const { error: triggerError } = await withAsync(() => triggerGithubSync())
+      if (triggerError) {
+        toast.error((triggerError as any)?.message ?? 'Failed to sync repository to Github')
+      }
       const commitsCount = useRepoHeaderStore.getState().repoHeaderState.commits
       useRepoHeaderStore.getState().setCommits(commitsCount + 1)
 

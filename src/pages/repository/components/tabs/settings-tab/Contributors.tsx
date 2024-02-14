@@ -7,7 +7,7 @@ import * as yup from 'yup'
 
 import { Button } from '@/components/common/buttons'
 import { resolveUsername, resolveUsernameOrShorten } from '@/helpers/resolveUsername'
-import { rotateKeysAndUpdateRepo } from '@/lib/git'
+import { rotateKeysAndUpdate } from '@/lib/git'
 import { useGlobalStore } from '@/stores/globalStore'
 import { ContributorInvite } from '@/types/repository'
 
@@ -100,7 +100,7 @@ export default function Contributors() {
     try {
       setIsGrantAccessLoading(true)
 
-      await rotateKeysAndUpdateRepo({ id: repo.id, currentPrivateStateTxId: repo.privateStateTxId })
+      await rotateKeysAndUpdate({ id: repo.id, currentPrivateStateTxId: repo.privateStateTxId, type: 'REPO' })
       await addContributor(invite.address)
 
       toast.success('Successfully grated access to contributor.')

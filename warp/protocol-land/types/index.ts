@@ -64,6 +64,8 @@ export interface GithubSync {
   workflowId: string
   accessToken: string
   privateStateTxId: string
+  allowed: Array<string>
+  pending: Array<string>
 }
 
 export interface RepoWithParent extends Repo {
@@ -215,6 +217,7 @@ const repoFnList = [
   'updateRepositoryTxId',
   'isRepositoryNameAvailable',
   'createPullRequest',
+  'updateGithubSync',
   'updatePullRequestStatus',
   'updatePullRequestDetails',
   'updateRepositoryDetails',

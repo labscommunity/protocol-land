@@ -1,4 +1,4 @@
-import { Listbox, Transition } from '@headlessui/react'
+import { Listbox, Switch, Transition } from '@headlessui/react'
 import { yupResolver } from '@hookform/resolvers/yup'
 import clsx from 'clsx'
 import { Fragment, useEffect, useState } from 'react'
@@ -25,26 +25,38 @@ const schema = yup
       .required('Branch name is required'),
     workflowId: yup.string().required('Workflow ID is required'),
     accessToken: yup.string().trim().required('Personal Access Token is required'),
-    privateStateTxId: yup.string().notRequired()
+    privateStateTxId: yup.string().notRequired(),
+    enabled: yup.boolean().notRequired()
   })
   .required()
 
 export default function GithubSync() {
-  const [selectedRepo, branchActions, branchState, isRepoOwner, updateGithubSync, getGitHubPAT] = useGlobalStore(
-    (state) => [
-      state.repoCoreState.selectedRepo.repo,
-      state.branchActions,
-      state.branchState,
-      state.repoCoreActions.isRepoOwner,
-      state.repoCoreActions.updateGithubSync,
-      state.repoCoreActions.getGitHubPAT
-    ]
-  )
+  const [
+    selectedRepo,
+    branchActions,
+    branchState,
+    isContributor,
+    isRepoOwner,
+    updateGithubSync,
+    githubSyncAllowPending,
+    triggerGithubSync
+  ] = useGlobalStore((state) => [
+    state.repoCoreState.selectedRepo.repo,
+    state.branchActions,
+    state.branchState,
+    state.repoCoreActions.isContributor,
+    state.repoCoreActions.isRepoOwner,
+    state.repoCoreActions.updateGithubSync,
+    state.repoCoreActions.githubSyncAllowPending,
+    state.repoCoreActions.triggerGithubSync
+  ])
   const defaultBranch = 'Select a Branch'
   const [branches, setBranches] = useState<string[]>([defaultBranch])
   const [selectedBranch, setSelectedBranch] = useState(branches[0])
   const [isUpdating, setIsUpdating] = useState(false)
   const [isSyncing, setIsSyncing] = useState(false)
+  const [isAllowing, setIsAllowing] = useState(false)
+  const [enabled, setEnabled] = useState(false)
 
   const {
     register,
@@ -57,18 +69,28 @@ export default function GithubSync() {
 
   const githubSync = selectedRepo?.githubSync
   const repoOwner = isRepoOwner()
+  const contributor = isContributor()
+
+  console.log(githubSync)
 
   async function handleUpdateButtonClick(data: yup.InferType<typeof schema>) {
-    const isChanged =
+    const dataToUpdate = Object.fromEntries(
       Object.entries(data).filter(([key, value]) => {
-        // @ts-ignore
-        return githubSync && value && githubSync[key] !== value
-      }).length > 0
+        if (githubSync && value) {
+          // @ts-ignore
+          return githubSync[key] !== value
+        }
+
+        return true
+      })
+    )
+
+    const isChanged = Object.keys(dataToUpdate).length > 0
 
     if (selectedRepo && isChanged) {
       setIsUpdating(true)
 
-      const { error } = await withAsync(() => updateGithubSync(data as any))
+      const { error } = await withAsync(() => updateGithubSync(dataToUpdate as any))
       if (error) {
         toast.success('Failed to update GitHub Sync settings.')
       } else {
@@ -81,30 +103,25 @@ export default function GithubSync() {
   }
 
   async function handleTriggerWorkflow() {
-    try {
-      setIsSyncing(true)
-      const accessToken = await getGitHubPAT()
-      const response = await fetch(
-        `https://api.github.com/repos/${githubSync?.repository}/actions/workflows/${githubSync?.workflowId}/dispatches`,
-        {
-          method: 'POST',
-          headers: {
-            Accept: 'application/vnd.github+json',
-            'X-GitHub-Api-Version': '2022-11-28',
-            Authorization: `Bearer ${accessToken}`
-          },
-          body: JSON.stringify({ ref: githubSync?.branch, inputs: {} })
-        }
-      )
+    setIsSyncing(true)
+    const { error } = await withAsync(() => triggerGithubSync())
 
-      if (response.status !== 204) {
-        throw new Error('Failed to Sync to GitHub')
-      }
-    } catch (error) {
-      toast.error('Failed to Sync to GitHub')
-    } finally {
-      setIsSyncing(false)
+    if (error) {
+      throw new Error('Failed to Sync to GitHub')
     }
+
+    setIsSyncing(false)
+  }
+
+  async function handleAllowPendingContributors() {
+    setIsAllowing(true)
+    const { error } = await withAsync(() => githubSyncAllowPending())
+    if (error) {
+      toast.error('Failed to allow pending contributors')
+    } else {
+      toast.success('Successfully allowed pending contributors')
+    }
+    setIsAllowing(false)
   }
 
   useEffect(() => {
@@ -116,6 +133,8 @@ export default function GithubSync() {
       if (githubSync?.branch) {
         setSelectedBranch(githubSync.branch)
         setValue('branch', githubSync.branch)
+        setEnabled(!!githubSync.enabled)
+        setValue('enabled', !!githubSync.enabled)
       }
       setBranches([defaultBranch, ...branchState.branchList])
     }
@@ -131,11 +150,31 @@ export default function GithubSync() {
           <span className="text-md">
             GitHub Sync lets you sync Protocol.Land repositories to GitHub with some configuration and Github Workflow.
           </span>
+          <div className="flex items-center gap-2">
+            <Switch
+              checked={enabled}
+              onChange={(checked) => {
+                setEnabled(checked)
+                setValue('enabled', checked)
+              }}
+              className={`${
+                enabled ? 'bg-primary-900' : 'bg-primary-700'
+              } relative inline-flex h-6 w-12 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus-visible:ring-2  focus-visible:ring-white/75`}
+            >
+              <span
+                aria-hidden="true"
+                className={`${enabled ? 'translate-x-6' : 'translate-x-0'}
+            pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow-lg ring-0 transition duration-200 ease-in-out`}
+              />
+            </Switch>
+            <span>{enabled ? 'Enabled' : 'Disabled'}</span>
+          </div>
           <div className="flex flex-col">
             <div className="w-[50%]">
               <label htmlFor="title" className="block mb-1 text-sm font-medium text-gray-600">
                 Repository
               </label>
+
               <div className="flex items-center gap-4">
                 <input
                   type="text"
@@ -154,7 +193,7 @@ export default function GithubSync() {
           </div>
           <div className="w-full">
             <label htmlFor="title" className="block mb-1 text-sm font-medium text-gray-600">
-              Select a branch with your GitHub workflow file
+              Select a branch containing your GitHub workflow file
             </label>
             <div className="flex items-center gap-4">
               <div className="w-[50%]">
@@ -256,21 +295,32 @@ export default function GithubSync() {
           </div>
           <div className="flex gap-3">
             <Button
-              disabled={isUpdating || !repoOwner}
+              disabled={!repoOwner || isUpdating}
               isLoading={isUpdating}
               onClick={handleSubmit(handleUpdateButtonClick)}
               variant="primary-solid"
             >
               Save
             </Button>
-            {githubSync && (
+            {/* {githubSync && (
               <Button
-                disabled={!repoOwner}
+                disabled={!contributor || isSyncing}
                 isLoading={isSyncing}
+                loadingText="Syncing"
                 onClick={handleTriggerWorkflow}
                 variant="primary-solid"
               >
-                GitHub Sync
+                Trigger GitHub Sync
+              </Button>
+            )} */}
+            {githubSync?.pending && githubSync.pending.length > 0 && (
+              <Button
+                disabled={!repoOwner || isAllowing}
+                isLoading={isAllowing}
+                onClick={handleAllowPendingContributors}
+                variant="primary-solid"
+              >
+                Allow pending Contributors
               </Button>
             )}
           </div>

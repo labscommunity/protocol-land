@@ -279,15 +279,8 @@ export async function updateRepositoryDetails(
   const isNameInvalid = isInvalidInput(payload.name, 'string')
   const isDescriptionInvalid = isInvalidInput(payload.description, 'string', true)
   const isDeploymentBranchInvalid = isInvalidInput(payload.deploymentBranch, 'string', true)
-  const isGithubSyncInvalid =
-    isInvalidInput(payload.githubSync, 'object') ||
-    isInvalidInput(payload.githubSync.repository, 'string') ||
-    isInvalidInput(payload.githubSync.branch, 'string') ||
-    isInvalidInput(payload.githubSync.workflowId, 'string') ||
-    isInvalidInput(payload.githubSync.accessToken, 'string') ||
-    isInvalidInput(payload.githubSync.privateStateTxId, 'string')
 
-  if (isNameInvalid && isDescriptionInvalid && isDeploymentBranchInvalid && isGithubSyncInvalid) {
+  if (isNameInvalid && isDescriptionInvalid && isDeploymentBranchInvalid) {
     throw new ContractError('Either name, description or deploymentBranch should be present.')
   }
 
@@ -306,10 +299,6 @@ export async function updateRepositoryDetails(
 
   if (!(isOwner || isContributor) && !isDeploymentBranchInvalid) {
     throw new ContractError('Error: Only repo owner or contributor can update deployment branch.')
-  }
-
-  if (!isOwner && !isGithubSyncInvalid) {
-    throw new ContractError('Error: Only repo owner can update githubSync.')
   }
 
   if (!isNameInvalid) {
@@ -340,9 +329,47 @@ export async function updateRepositoryDetails(
     repo.deploymentBranch = payload.deploymentBranch
   }
 
-  if (!isGithubSyncInvalid) {
-    repo.githubSync = payload.githubSync
+  return { state }
+}
+
+export async function updateGithubSync(
+  state: ContractState,
+  { input: { payload }, caller }: RepositoryAction
+): Promise<ContractResult<ContractState>> {
+  // validate payload
+  if (
+    isInvalidInput(payload, 'object') ||
+    isInvalidInput(payload.id, 'uuid') ||
+    ['enabled', 'repository', 'branch', 'workflowId', 'accessToken', 'privateStateTxId'].every((field) =>
+      field === 'enabled'
+        ? isInvalidInput(payload.githubSync?.[field], 'boolean')
+        : isInvalidInput(payload.githubSync?.[field], 'string', true)
+    )
+  ) {
+    throw new ContractError('Invalid inputs supplied.')
   }
+
+  const repo = state.repos[payload.id]
+
+  if (!repo) {
+    throw new ContractError('Repository not found.')
+  }
+
+  const isOwner = caller === repo.owner
+
+  if (!isOwner) {
+    throw new ContractError('Error: Only repo owner can update githubSync.')
+  }
+  const allowed = repo.githubSync?.allowed ?? []
+  let pending = repo.githubSync?.pending ?? []
+
+  if (!allowed.includes(caller)) allowed.push(caller)
+
+  if (payload.githubSync?.allowPending === true && pending.length > 0) {
+    allowed.push(...pending)
+    pending = []
+  }
+  repo.githubSync = { ...repo.githubSync, ...payload.githubSync, allowed, pending }
 
   return { state }
 }
@@ -603,6 +630,15 @@ export async function acceptContributorInvite(
   }
 
   repo.contributorInvites[contributorInviteIdx].status = 'ACCEPTED'
+
+  if (payload.ghSyncPrivateStateTxId && repo.githubSync) {
+    repo.githubSync.privateStateTxId = payload.ghSyncPrivateStateTxId
+    if (Array.isArray(repo.githubSync.pending)) {
+      repo.githubSync.pending.push(invite.address)
+    } else {
+      repo.githubSync.pending = [invite.address]
+    }
+  }
 
   if (payload.visibility === 'private' && payload.privateStateTxId) {
     repo.privateStateTxId = payload.privateStateTxId

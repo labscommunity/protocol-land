@@ -109,47 +109,49 @@ export async function postNewRepo({ id, title, description, file, owner, visibil
   return { txResponse: dataTxResponse }
 }
 
-export async function updateGithubSync({ id, currentAccessToken, githubSync }: any) {
+export async function updateGithubSync({ id, currentGithubSync, githubSync }: any) {
   const publicKey = await getActivePublicKey()
 
   const userSigner = await getSigner()
 
-  const data = new TextEncoder().encode(githubSync.accessToken)
+  if (githubSync?.accessToken) {
+    const data = new TextEncoder().encode(githubSync.accessToken)
 
-  const pubKeyArray = [strToJwkPubKey(publicKey)]
-  // Encrypt
-  const { aesKey, encryptedFile: encryptedAccessToken, iv } = await encryptFileWithAesGcm(data)
-  const encryptedAesKeysArray = await encryptAesKeyWithPublicKeys(aesKey, pubKeyArray)
-  githubSync.accessToken = arweave.utils.bufferTob64Url(new Uint8Array(encryptedAccessToken))
+    const pubKeyArray = currentGithubSync?.pubKeys ?? [strToJwkPubKey(publicKey)]
+    // Encrypt
+    const { aesKey, encryptedFile: encryptedAccessToken, iv } = await encryptFileWithAesGcm(data)
+    const encryptedAesKeysArray = await encryptAesKeyWithPublicKeys(aesKey, pubKeyArray)
+    githubSync.accessToken = arweave.utils.bufferTob64Url(new Uint8Array(encryptedAccessToken))
 
-  if (currentAccessToken !== githubSync.accessToken) {
-    const privateState = {
-      version: '0.1',
-      iv,
-      encKeys: encryptedAesKeysArray,
-      pubKeys: [publicKey]
+    if (currentGithubSync?.accessToken !== githubSync.accessToken) {
+      const privateState = {
+        version: '0.1',
+        iv,
+        encKeys: encryptedAesKeysArray,
+        pubKeys: [publicKey]
+      }
+
+      const privateInputTags = [
+        { name: 'App-Name', value: 'Protocol.Land' },
+        { name: 'Content-Type', value: 'application/json' },
+        { name: 'Type', value: 'private-github-sync-state' },
+        { name: 'ID', value: id }
+      ] as Tag[]
+
+      const privateStateTxId = await signAndSendTx(JSON.stringify(privateState), privateInputTags, userSigner)
+
+      if (!privateStateTxId) {
+        throw new Error('Failed to post Private GitHub Sync State')
+      }
+
+      githubSync.privateStateTxId = privateStateTxId
     }
-
-    const privateInputTags = [
-      { name: 'App-Name', value: 'Protocol.Land' },
-      { name: 'Content-Type', value: 'application/json' },
-      { name: 'Type', value: 'private-github-sync-state' },
-      { name: 'ID', value: id }
-    ] as Tag[]
-
-    const privateStateTxId = await signAndSendTx(JSON.stringify(privateState), privateInputTags, userSigner)
-
-    if (!privateStateTxId) {
-      throw new Error('Failed to post Private GitHub Sync State')
-    }
-
-    githubSync.privateStateTxId = privateStateTxId
   }
 
   const contract = getWarpContract(CONTRACT_TX_ID, userSigner)
 
   await contract.writeInteraction({
-    function: 'updateRepositoryDetails',
+    function: 'updateGithubSync',
     payload: {
       id,
       githubSync
@@ -258,7 +260,7 @@ export async function postUpdatedRepo({ fs, dir, owner, id, isPrivate, privateSt
   return dataTxResponse
 }
 
-export async function addActivePubKeyToPrivateState(id: string, currentPrivateStateTxId: string) {
+export async function addActivePubKeyToPrivateState(id: string, currentPrivateStateTxId: string, type = 'REPO') {
   const activePubKey = await getActivePublicKey()
   const userSigner = await getSigner()
 
@@ -273,7 +275,7 @@ export async function addActivePubKeyToPrivateState(id: string, currentPrivateSt
   const privateInputTags = [
     { name: 'App-Name', value: 'Protocol.Land' },
     { name: 'Content-Type', value: 'application/json' },
-    { name: 'Type', value: 'private-state' },
+    { name: 'Type', value: type === 'REPO' ? 'private-state' : 'private-github-sync-state' },
     { name: 'ID', value: id }
   ] as Tag[]
 
@@ -286,7 +288,8 @@ export async function addActivePubKeyToPrivateState(id: string, currentPrivateSt
   return privateStateTxResponse
 }
 
-export async function rotateKeysAndUpdateRepo({ id, currentPrivateStateTxId }: RotateKeysAndUpdateRepoOptions) {
+export async function rotateKeysAndUpdate({ id, currentPrivateStateTxId, type }: RotateKeysAndUpdateOptions) {
+  const isRepoAction = type === 'REPO'
   const activePubKey = await getActivePublicKey()
   const userSigner = await getSigner()
 
@@ -310,25 +313,43 @@ export async function rotateKeysAndUpdateRepo({ id, currentPrivateStateTxId }: R
   const privateInputTags = [
     { name: 'App-Name', value: 'Protocol.Land' },
     { name: 'Content-Type', value: 'application/json' },
-    { name: 'Type', value: 'private-state' },
+    { name: 'Type', value: isRepoAction ? 'private-state' : 'private-github-sync-state' },
     { name: 'ID', value: id }
   ] as Tag[]
 
-  const privateStateTxResponse = await signAndSendTx(JSON.stringify(privateState), privateInputTags, userSigner)
+  const privateStateTxId = await signAndSendTx(JSON.stringify(privateState), privateInputTags, userSigner)
 
-  if (!privateStateTxResponse) {
+  if (!privateStateTxId) {
     throw new Error('Failed to post Private State')
   }
 
   const contract = getWarpContract(CONTRACT_TX_ID, userSigner)
 
-  await contract.writeInteraction({
-    function: 'updatePrivateStateTx',
-    payload: {
-      id,
-      privateStateTxId: privateStateTxResponse
+  const input = isRepoAction
+    ? { function: 'updatePrivateStateTx', payload: { id, privateStateTxId } }
+    : { function: 'updateGithubSync', payload: { id, githubSync: { privateStateTxId, allowPending: true } } }
+
+  await contract.writeInteraction(input)
+}
+
+export async function githubSyncAllowPending(id: string, currentPrivateStateTxId: string) {
+  await rotateKeysAndUpdate({ id, currentPrivateStateTxId, type: 'GITHUB_SYNC' })
+
+  const contract = getWarpContract(CONTRACT_TX_ID)
+
+  const {
+    cachedValue: {
+      state: { repos }
     }
-  })
+  } = await contract.readState()
+
+  const repo = repos[id] as Repo
+
+  if (!repo) return
+
+  if (!repo.githubSync) return
+
+  return repo.githubSync
 }
 
 export async function createNewRepo(title: string, fs: FSType, owner: string, id: string) {
@@ -567,7 +588,8 @@ type PostUpdatedRepoOptions = {
   privateStateTxId?: string
 }
 
-type RotateKeysAndUpdateRepoOptions = {
+type RotateKeysAndUpdateOptions = {
   id: string
   currentPrivateStateTxId: string
+  type: 'REPO' | 'GITHUB_SYNC'
 }
