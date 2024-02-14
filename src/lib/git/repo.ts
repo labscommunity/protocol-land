@@ -363,12 +363,14 @@ export async function createNewRepo(title: string, fs: FSType, owner: string, id
 
     await git.add({ fs, dir, filepath: 'README.md' })
 
+    const user = useGlobalStore.getState().userState.allUsers.get(owner)
+
     const sha = await git.commit({
       fs,
       dir,
       author: {
-        name: owner,
-        email: owner
+        name: user?.fullname || owner,
+        email: user?.email || owner
       },
       message: 'Add README.md'
     })
