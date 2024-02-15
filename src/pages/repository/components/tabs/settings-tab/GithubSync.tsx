@@ -26,7 +26,7 @@ const schema = yup
     workflowId: yup.string().required('Workflow ID is required'),
     accessToken: yup.string().trim().required('Personal Access Token is required'),
     privateStateTxId: yup.string().notRequired(),
-    enabled: yup.boolean().notRequired()
+    enabled: yup.boolean().notRequired().default(false)
   })
   .required()
 
@@ -74,7 +74,7 @@ export default function GithubSync() {
   async function handleUpdateButtonClick(data: yup.InferType<typeof schema>) {
     const dataToUpdate = Object.fromEntries(
       Object.entries(data).filter(([key, value]) => {
-        if (githubSync && value) {
+        if (githubSync && value !== undefined) {
           // @ts-ignore
           return githubSync[key] !== value
         }
@@ -96,7 +96,7 @@ export default function GithubSync() {
       }
       setIsUpdating(false)
     } else {
-      toast.error('Please update GitHub Sync settings')
+      toast.error('Please update settings to save')
     }
   }
 
@@ -139,6 +139,12 @@ export default function GithubSync() {
       setBranches([defaultBranch, ...branchState.branchList])
     }
   }, [branchState, selectedRepo])
+
+  useEffect(() => {
+    if (githubSync?.accessToken) {
+      setValue('accessToken', githubSync?.accessToken)
+    }
+  }, [githubSync])
 
   return (
     <div className="flex flex-col gap-4">

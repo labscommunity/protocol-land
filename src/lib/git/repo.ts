@@ -116,14 +116,14 @@ export async function updateGithubSync({ id, currentGithubSync, githubSync }: an
 
   if (githubSync?.accessToken) {
     const data = new TextEncoder().encode(githubSync.accessToken)
+    if (!currentGithubSync?.privateStateTxId) {
+      const pubKeyArray = [strToJwkPubKey(publicKey)]
 
-    const pubKeyArray = currentGithubSync?.pubKeys ?? [strToJwkPubKey(publicKey)]
-    // Encrypt
-    const { aesKey, encryptedFile: encryptedAccessToken, iv } = await encryptFileWithAesGcm(data)
-    const encryptedAesKeysArray = await encryptAesKeyWithPublicKeys(aesKey, pubKeyArray)
-    githubSync.accessToken = arweave.utils.bufferTob64Url(new Uint8Array(encryptedAccessToken))
+      // Encrypt
+      const { aesKey, encryptedFile: encryptedAccessToken, iv } = await encryptFileWithAesGcm(data)
+      const encryptedAesKeysArray = await encryptAesKeyWithPublicKeys(aesKey, pubKeyArray)
+      githubSync.accessToken = arweave.utils.bufferTob64Url(new Uint8Array(encryptedAccessToken))
 
-    if (currentGithubSync?.accessToken !== githubSync.accessToken) {
       const privateState = {
         version: '0.1',
         iv,
@@ -145,8 +145,26 @@ export async function updateGithubSync({ id, currentGithubSync, githubSync }: an
       }
 
       githubSync.privateStateTxId = privateStateTxId
+    } else {
+      const pubKey = await getActivePublicKey()
+      const address = await deriveAddress(pubKey)
+
+      const response = await fetch(`https://arweave.net/${currentGithubSync?.privateStateTxId}`)
+      const privateState = (await response.json()) as PrivateState
+
+      const encAesKeyStr = privateState.encKeys[address]
+      const encAesKeyBuf = arweave.utils.b64UrlToBuffer(encAesKeyStr)
+
+      const aesKey = (await decryptAesKeyWithPrivateKey(encAesKeyBuf)) as unknown as ArrayBuffer
+      const ivArrBuff = arweave.utils.b64UrlToBuffer(privateState.iv)
+
+      const encryptedAccessToken = await encryptDataWithExistingKey(data, aesKey, ivArrBuff)
+
+      githubSync.accessToken = arweave.utils.bufferTob64Url(new Uint8Array(encryptedAccessToken))
     }
   }
+
+  githubSync.partialUpdate = !!currentGithubSync
 
   const contract = getWarpContract(CONTRACT_TX_ID, userSigner)
 
