@@ -343,12 +343,26 @@ export async function updateGithubSync(
   if (
     isInvalidInput(payload, 'object') ||
     isInvalidInput(payload.id, 'uuid') ||
-    requiredFields.every((field) =>
-      field === 'enabled'
-        ? isInvalidInput(payload.githubSync?.[field], 'boolean')
-        : isInvalidInput(payload.githubSync?.[field], 'string', true)
-    )
+    isInvalidInput(payload.githubSync, 'object')
   ) {
+    throw new ContractError('Invalid inputs supplied.')
+  }
+
+  // Determine if it's a partial or full update and validate accordingly
+  const isValidUpdate = (payload.githubSync?.partialUpdate ? requiredFields.some : requiredFields.every).call(
+    requiredFields,
+    (field: string) => {
+      if (field === 'enabled') {
+        return !isInvalidInput(payload.githubSync?.[field], 'boolean')
+      } else if (field === 'privateStateTxId') {
+        return !isInvalidInput(payload.githubSync?.[field], 'arweave-address')
+      } else {
+        return !isInvalidInput(payload.githubSync?.[field], 'string', true)
+      }
+    }
+  )
+
+  if (!isValidUpdate) {
     throw new ContractError('Invalid inputs supplied.')
   }
 
