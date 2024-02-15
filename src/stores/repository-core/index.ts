@@ -240,7 +240,7 @@ const createRepoCoreSlice: StateCreator<CombinedSlices, [['zustand/immer', never
         throw error
       }
     },
-    triggerGithubSync: async () => {
+    triggerGithubSync: async (manualTrigger = false) => {
       const repo = get().repoCoreState.selectedRepo.repo
 
       if (!repo) {
@@ -250,8 +250,7 @@ const createRepoCoreSlice: StateCreator<CombinedSlices, [['zustand/immer', never
       }
 
       const githubSync = repo.githubSync
-      if (!githubSync) return
-      if (!githubSync.enabled) return
+      if (!githubSync || (!githubSync?.enabled && !manualTrigger)) return
 
       const connectedAddress = get().authState.address
       const isAllowed = githubSync.allowed.findIndex((address) => address === connectedAddress) > -1

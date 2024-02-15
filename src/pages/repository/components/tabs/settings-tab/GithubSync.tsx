@@ -35,26 +35,26 @@ export default function GithubSync() {
     selectedRepo,
     branchActions,
     branchState,
-    // isContributor,
+    isContributor,
     isRepoOwner,
     updateGithubSync,
-    githubSyncAllowPending
-    // triggerGithubSync
+    githubSyncAllowPending,
+    triggerGithubSync
   ] = useGlobalStore((state) => [
     state.repoCoreState.selectedRepo.repo,
     state.branchActions,
     state.branchState,
-    // state.repoCoreActions.isContributor,
+    state.repoCoreActions.isContributor,
     state.repoCoreActions.isRepoOwner,
     state.repoCoreActions.updateGithubSync,
-    state.repoCoreActions.githubSyncAllowPending
-    // state.repoCoreActions.triggerGithubSync
+    state.repoCoreActions.githubSyncAllowPending,
+    state.repoCoreActions.triggerGithubSync
   ])
   const defaultBranch = 'Select a Branch'
   const [branches, setBranches] = useState<string[]>([defaultBranch])
   const [selectedBranch, setSelectedBranch] = useState(branches[0])
   const [isUpdating, setIsUpdating] = useState(false)
-  // const [isSyncing, setIsSyncing] = useState(false)
+  const [isTriggering, setIsTriggering] = useState(false)
   const [isAllowing, setIsAllowing] = useState(false)
   const [enabled, setEnabled] = useState(false)
 
@@ -69,9 +69,7 @@ export default function GithubSync() {
 
   const githubSync = selectedRepo?.githubSync
   const repoOwner = isRepoOwner()
-  // const contributor = isContributor()
-
-  console.log(githubSync)
+  const contributor = isContributor()
 
   async function handleUpdateButtonClick(data: yup.InferType<typeof schema>) {
     const dataToUpdate = Object.fromEntries(
@@ -102,16 +100,18 @@ export default function GithubSync() {
     }
   }
 
-  // async function handleTriggerWorkflow() {
-  //   setIsSyncing(true)
-  //   const { error } = await withAsync(() => triggerGithubSync())
+  async function handleTriggerWorkflow() {
+    setIsTriggering(true)
+    const { error } = await withAsync(() => triggerGithubSync(true))
 
-  //   if (error) {
-  //     throw new Error('Failed to Sync to GitHub')
-  //   }
+    if (error) {
+      toast.error('Failed to trigger GitHub Sync')
+    } else {
+      toast.success('Successfully triggered GitHub Sync')
+    }
 
-  //   setIsSyncing(false)
-  // }
+    setIsTriggering(false)
+  }
 
   async function handleAllowPendingContributors() {
     setIsAllowing(true)
@@ -206,7 +206,7 @@ export default function GithubSync() {
                   }}
                 >
                   <div className="relative mt-1">
-                    <Listbox.Button className="relative w-full cursor-default rounded-lg bg-white py-2 pl-3 pr-10 text-left shadow-md focus:outline-none focus-visible:border-indigo-500 focus-visible:ring-2 focus-visible:ring-white/75 focus-visible:ring-offset-2 focus-visible:ring-offset-orange-300 sm:text-sm">
+                    <Listbox.Button className="relative w-full cursor-pointer rounded-lg bg-white px-3 py-[10px] border-[1px] text-left shadow-md focus:outline-none focus-visible:border-primary-500 focus-visible:ring-2 focus-visible:ring-white/75 focus-visible:ring-offset-2 focus-visible:ring-offset-primary-300 text-base text-gray-900">
                       <span className="block truncate">{selectedBranch}</span>
                       <span className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2">
                         <HiChevronUpDown className="h-5 w-5 text-gray-400" aria-hidden="true" />
@@ -223,7 +223,7 @@ export default function GithubSync() {
                           <Listbox.Option
                             key={branchIdx}
                             className={({ active }) =>
-                              `relative cursor-default select-none py-2 pl-10 pr-4 ${
+                              `relative cursor-pointer select-none py-2 pl-10 pr-4 ${
                                 active ? 'bg-primary-100' : 'text-gray-900'
                               }`
                             }
@@ -302,17 +302,17 @@ export default function GithubSync() {
             >
               Save
             </Button>
-            {/* {githubSync && (
+            {githubSync && (
               <Button
-                disabled={!contributor || isSyncing}
-                isLoading={isSyncing}
-                loadingText="Syncing"
+                disabled={!contributor || isTriggering}
+                isLoading={isTriggering}
+                loadingText="Triggering"
                 onClick={handleTriggerWorkflow}
                 variant="primary-solid"
               >
-                Trigger GitHub Sync
+                Trigger Sync
               </Button>
-            )} */}
+            )}
             {githubSync?.pending && githubSync.pending.length > 0 && (
               <Button
                 disabled={!repoOwner || isAllowing}
