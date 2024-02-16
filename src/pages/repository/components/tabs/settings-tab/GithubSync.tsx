@@ -57,6 +57,7 @@ export default function GithubSync() {
   const [isTriggering, setIsTriggering] = useState(false)
   const [isAllowing, setIsAllowing] = useState(false)
   const [enabled, setEnabled] = useState(false)
+  const [forcePush, setForcePush] = useState(false)
 
   const {
     register,
@@ -102,7 +103,7 @@ export default function GithubSync() {
 
   async function handleTriggerWorkflow() {
     setIsTriggering(true)
-    const { error } = await withAsync(() => triggerGithubSync(true))
+    const { error } = await withAsync(() => triggerGithubSync({ manualTrigger: true, forcePush }))
 
     if (error) {
       toast.error('Failed to trigger GitHub Sync')
@@ -308,17 +309,6 @@ export default function GithubSync() {
             >
               Save
             </Button>
-            {githubSync && (
-              <Button
-                disabled={!contributor || isTriggering}
-                isLoading={isTriggering}
-                loadingText="Triggering"
-                onClick={handleTriggerWorkflow}
-                variant="primary-solid"
-              >
-                Trigger Sync
-              </Button>
-            )}
             {githubSync?.pending && githubSync.pending.length > 0 && (
               <Button
                 disabled={!repoOwner || isAllowing}
@@ -330,6 +320,37 @@ export default function GithubSync() {
               </Button>
             )}
           </div>
+          {githubSync && (
+            <div className="flex flex-col gap-3">
+              <span className="text-lg font-medium">Manual Trigger Sync</span>
+              <div className="flex items-center gap-2">
+                <Switch
+                  checked={forcePush}
+                  onChange={setForcePush}
+                  className={`${
+                    forcePush ? 'bg-primary-900' : 'bg-primary-700'
+                  } relative inline-flex h-6 w-12 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus-visible:ring-2  focus-visible:ring-white/75`}
+                >
+                  <span
+                    aria-hidden="true"
+                    className={`${forcePush ? 'translate-x-6' : 'translate-x-0'}
+            pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow-lg ring-0 transition duration-200 ease-in-out`}
+                  />
+                </Switch>
+                <span>Force Push {forcePush ? 'Enabled' : 'Disabled'}</span>
+              </div>
+              <Button
+                className="w-fit"
+                disabled={!contributor || isTriggering}
+                isLoading={isTriggering}
+                loadingText="Triggering"
+                onClick={handleTriggerWorkflow}
+                variant="primary-solid"
+              >
+                Trigger Sync
+              </Button>
+            </div>
+          )}
         </div>
       </div>
     </div>

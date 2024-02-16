@@ -240,7 +240,8 @@ const createRepoCoreSlice: StateCreator<CombinedSlices, [['zustand/immer', never
         throw error
       }
     },
-    triggerGithubSync: async (manualTrigger = false) => {
+    triggerGithubSync: async (options?: { manualTrigger?: boolean; forcePush?: boolean }) => {
+      const { manualTrigger = false, forcePush = false } = options ?? {}
       const repo = get().repoCoreState.selectedRepo.repo
 
       if (!repo) {
@@ -270,7 +271,7 @@ const createRepoCoreSlice: StateCreator<CombinedSlices, [['zustand/immer', never
             'X-GitHub-Api-Version': '2022-11-28',
             Authorization: `Bearer ${accessToken}`
           },
-          body: JSON.stringify({ ref: githubSync?.branch, inputs: {} })
+          body: JSON.stringify({ ref: githubSync?.branch, inputs: { forcePush: forcePush.toString() } })
         }
       )
 

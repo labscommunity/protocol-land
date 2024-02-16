@@ -50,7 +50,7 @@ export type RepoCoreActions = {
   getGitHubPAT: () => Promise<string>
   updateGithubSync: (githubSync: GithubSync) => Promise<void>
   githubSyncAllowPending: () => Promise<void>
-  triggerGithubSync: (manualTrigger?: boolean) => Promise<void>
+  triggerGithubSync: (options?: { manualTrigger?: boolean; forcePush?: boolean }) => Promise<void>
   inviteContributor: (address: string) => Promise<{ status: boolean; response?: any } | void>
   addDeployment: (
     deployment: Omit<Deployment, 'deployedBy' | 'branch' | 'timestamp'>
