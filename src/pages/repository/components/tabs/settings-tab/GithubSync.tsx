@@ -160,6 +160,7 @@ export default function GithubSync() {
           <div className="flex items-center gap-2">
             <Switch
               checked={enabled}
+              disabled={!repoOwner}
               onChange={(checked) => {
                 setEnabled(checked)
                 setValue('enabled', checked)
@@ -207,6 +208,7 @@ export default function GithubSync() {
                 <Listbox
                   {...register('branch')}
                   value={selectedBranch}
+                  disabled={!repoOwner}
                   onChange={(value) => {
                     setSelectedBranch(value)
                     setValue('branch', value)
@@ -320,7 +322,7 @@ export default function GithubSync() {
               </Button>
             )}
           </div>
-          {githubSync && (
+          {githubSync && contributor && (
             <div className="flex flex-col gap-3">
               <span className="text-lg font-medium">Manual Trigger Sync</span>
               <div className="flex items-center gap-2">
@@ -341,7 +343,7 @@ export default function GithubSync() {
               </div>
               <Button
                 className="w-fit"
-                disabled={!contributor || isTriggering}
+                disabled={isTriggering}
                 isLoading={isTriggering}
                 loadingText="Triggering"
                 onClick={handleTriggerWorkflow}
