@@ -337,7 +337,7 @@ export default function GithubSync() {
             pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow-lg ring-0 transition duration-200 ease-in-out`}
                   />
                 </Switch>
-                <span>Force Push {forcePush ? 'Enabled' : 'Disabled'}</span>
+                <span>Force Push: {forcePush ? 'On' : 'Off'}</span>
               </div>
               <Button
                 className="w-fit"
