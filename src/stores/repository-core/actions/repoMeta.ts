@@ -70,7 +70,7 @@ export const handleAcceptContributor = async (
 
   const repo = repos[id] as Repo
 
-  return { contributorInvites: repo.contributorInvites, contributors: repo.contributors }
+  return { contributorInvites: repo.contributorInvites, contributors: repo.contributors, githubSync: repo.githubSync }
 }
 
 export const handleRejectContributor = async (id: string) => {

@@ -345,7 +345,10 @@ export async function rotateKeysAndUpdate({ id, currentPrivateStateTxId, type }:
 
   const input = isRepoAction
     ? { function: 'updatePrivateStateTx', payload: { id, privateStateTxId } }
-    : { function: 'updateGithubSync', payload: { id, githubSync: { privateStateTxId, allowPending: true } } }
+    : {
+        function: 'updateGithubSync',
+        payload: { id, githubSync: { privateStateTxId, allowPending: true, partialUpdate: true } }
+      }
 
   await contract.writeInteraction(input)
 }

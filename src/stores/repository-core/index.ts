@@ -461,6 +461,9 @@ const createRepoCoreSlice: StateCreator<CombinedSlices, [['zustand/immer', never
           set((state) => {
             state.repoCoreState.selectedRepo.repo!.contributorInvites = response.contributorInvites
             state.repoCoreState.selectedRepo.repo!.contributors = response.contributors
+            if (response.githubSync) {
+              state.repoCoreState.selectedRepo.repo!.githubSync = response.githubSync
+            }
           })
         }
         trackGoogleAnalyticsEvent('Repository', 'Accept contributor invite', 'Accept repo contributor invite', {
