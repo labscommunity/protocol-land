@@ -32,19 +32,19 @@ const schema = yup
 
 export default function GithubSync() {
   const [
+    connectedAddress,
     selectedRepo,
     branchActions,
     branchState,
-    isContributor,
     isRepoOwner,
     updateGithubSync,
     githubSyncAllowPending,
     triggerGithubSync
   ] = useGlobalStore((state) => [
+    state.authState.address,
     state.repoCoreState.selectedRepo.repo,
     state.branchActions,
     state.branchState,
-    state.repoCoreActions.isContributor,
     state.repoCoreActions.isRepoOwner,
     state.repoCoreActions.updateGithubSync,
     state.repoCoreActions.githubSyncAllowPending,
@@ -70,7 +70,7 @@ export default function GithubSync() {
 
   const githubSync = selectedRepo?.githubSync
   const repoOwner = isRepoOwner()
-  const contributor = isContributor()
+  const canTrigger = githubSync?.allowed?.includes(connectedAddress as string)
 
   async function handleUpdateButtonClick(data: yup.InferType<typeof schema>) {
     const dataToUpdate = Object.fromEntries(
@@ -311,7 +311,7 @@ export default function GithubSync() {
             >
               Save
             </Button>
-            {githubSync?.pending && githubSync.pending.length > 0 && (
+            {repoOwner && githubSync?.pending && githubSync.pending.length > 0 && (
               <Button
                 disabled={!repoOwner || isAllowing}
                 isLoading={isAllowing}
@@ -322,7 +322,7 @@ export default function GithubSync() {
               </Button>
             )}
           </div>
-          {githubSync && contributor && (
+          {githubSync && canTrigger && (
             <div className="flex flex-col gap-3">
               <span className="text-lg font-medium">Manual Trigger Sync</span>
               <div className="flex items-center gap-2">

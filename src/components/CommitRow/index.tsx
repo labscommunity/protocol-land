@@ -6,7 +6,6 @@ import { resolveUsernameOrShorten } from '@/helpers/resolveUsername'
 import { CommitResult } from '@/types/commit'
 
 export default function CommitRow({ commit }: { commit: CommitResult }) {
-  console.log(commit)
   return (
     <div className="flex justify-between flex-1 border-[1px] border-gray-300 bg-gray-200 rounded-lg w-full px-4 py-2">
       <div className="flex flex-col">
