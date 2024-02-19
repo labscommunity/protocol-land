@@ -26,8 +26,15 @@ export async function readFilesFromOid({ fs, dir, oid, prefix }: ReadFilesFromOi
     })
   }
 
+  const sortedObjects = objects.sort((a, b) => {
+    if (a.type === b.type) {
+      return a.path.localeCompare(b.path)
+    }
+    return a.type === 'folder' ? -1 : 1
+  })
+
   return {
-    objects,
+    objects: sortedObjects,
     parent: oid
   }
 }

@@ -1,3 +1,4 @@
+import clsx from 'clsx'
 import SVG from 'react-inlinesvg'
 
 import CodeFileIcon from '@/assets/icons/code-file.svg'
@@ -23,7 +24,8 @@ export default function Row({ isFolder, item, onFolderClick, onFileClick }: Prop
       onClick={handleRowClick}
       className="flex bg-gray-50 cursor-pointer hover:bg-primary-50 text-gray-600 hover:text-gray-900 items-center gap-4 py-[10px] px-4 border-b-[1px] border-gray-300 last:border-b-0"
     >
-      <SVG src={Icon} className="w-5 h-5" /> <span>{item.path}</span>
+      <SVG src={Icon} className={clsx('w-5 h-5', item.type === 'folder' && 'fill-primary-600 text-primary-700')} />{' '}
+      <span>{item.path}</span>
     </div>
   )
 }
