@@ -1,11 +1,9 @@
-import { Listbox, Switch, Transition } from '@headlessui/react'
+import { Switch } from '@headlessui/react'
 import { yupResolver } from '@hookform/resolvers/yup'
 import clsx from 'clsx'
-import { Fragment, useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import toast from 'react-hot-toast'
-import { HiChevronUpDown } from 'react-icons/hi2'
-import { IoCheckmark } from 'react-icons/io5'
 import * as yup from 'yup'
 
 import { Button } from '@/components/common/buttons'
@@ -23,13 +21,7 @@ const schema = yup
         "Use format 'username/repositoryName'"
       )
       .required('Repository is required'),
-    branch: yup
-      .string()
-      .trim()
-      .transform((value: string) => {
-        return value.replace('Select a Branch', '').trim()
-      })
-      .required('Branch name is required'),
+    branch: yup.string().trim().required('Branch name is required'),
     workflowId: yup.string().required('Workflow ID is required'),
     accessToken: yup.string().trim().required('Personal Access Token is required'),
     privateStateTxId: yup.string().notRequired(),
@@ -42,7 +34,6 @@ export default function GithubSync() {
     connectedAddress,
     selectedRepo,
     branchActions,
-    branchState,
     isRepoOwner,
     updateGithubSync,
     githubSyncAllowPending,
@@ -51,15 +42,11 @@ export default function GithubSync() {
     state.authState.address,
     state.repoCoreState.selectedRepo.repo,
     state.branchActions,
-    state.branchState,
     state.repoCoreActions.isRepoOwner,
     state.repoCoreActions.updateGithubSync,
     state.repoCoreActions.githubSyncAllowPending,
     state.repoCoreActions.triggerGithubSync
   ])
-  const defaultBranch = 'Select a Branch'
-  const [branches, setBranches] = useState<string[]>([defaultBranch])
-  const [selectedBranch, setSelectedBranch] = useState(branches[0])
   const [isUpdating, setIsUpdating] = useState(false)
   const [isTriggering, setIsTriggering] = useState(false)
   const [isAllowing, setIsAllowing] = useState(false)
@@ -137,20 +124,12 @@ export default function GithubSync() {
   }, [])
 
   useEffect(() => {
-    if (branchState.status === 'SUCCESS' && branches.length === 1 && selectedRepo) {
-      if (githubSync?.branch) {
-        setSelectedBranch(githubSync.branch)
-        setValue('branch', githubSync.branch)
-        setEnabled(!!githubSync.enabled)
-        setValue('enabled', !!githubSync.enabled)
+    if (githubSync) {
+      setEnabled(!!githubSync.enabled)
+      setValue('enabled', !!githubSync.enabled)
+      if (githubSync?.accessToken) {
+        setValue('accessToken', githubSync?.accessToken)
       }
-      setBranches([defaultBranch, ...branchState.branchList])
-    }
-  }, [branchState, selectedRepo])
-
-  useEffect(() => {
-    if (githubSync?.accessToken) {
-      setValue('accessToken', githubSync?.accessToken)
     }
   }, [githubSync])
 
@@ -206,64 +185,22 @@ export default function GithubSync() {
             </div>
             {errors.repository && <p className="text-red-500 text-sm italic mt-2">{errors.repository?.message}</p>}
           </div>
-          <div className="w-full">
+          <div className="w-[50%]">
             <label htmlFor="title" className="block mb-1 text-sm font-medium text-gray-600">
-              Select a branch containing your GitHub workflow file
+              Branch containing your GitHub workflow file
             </label>
             <div className="flex items-center gap-4">
-              <div className="w-[50%]">
-                <Listbox
-                  {...register('branch')}
-                  value={selectedBranch}
-                  disabled={!repoOwner}
-                  onChange={(value) => {
-                    setSelectedBranch(value)
-                    setValue('branch', value)
-                  }}
-                >
-                  <div className="relative mt-1">
-                    <Listbox.Button className="relative w-full cursor-pointer rounded-lg bg-white px-3 py-[10px] border-[1px] text-left shadow-md focus:outline-none focus-visible:border-primary-500 focus-visible:ring-2 focus-visible:ring-white/75 focus-visible:ring-offset-2 focus-visible:ring-offset-primary-300 text-base text-gray-900">
-                      <span className="block truncate">{selectedBranch}</span>
-                      <span className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2">
-                        <HiChevronUpDown className="h-5 w-5 text-gray-400" aria-hidden="true" />
-                      </span>
-                    </Listbox.Button>
-                    <Transition
-                      as={Fragment}
-                      leave="transition ease-in duration-100"
-                      leaveFrom="opacity-100"
-                      leaveTo="opacity-0"
-                    >
-                      <Listbox.Options className="absolute mt-1 max-h-60 w-full overflow-auto rounded-md bg-white py-1 text-base shadow-lg ring-1 ring-black/5 focus:outline-none sm:text-sm">
-                        {branches.map((branch, branchIdx) => (
-                          <Listbox.Option
-                            key={branchIdx}
-                            className={({ active }) =>
-                              `relative cursor-pointer select-none py-2 pl-10 pr-4 ${
-                                active ? 'bg-primary-100' : 'text-gray-900'
-                              }`
-                            }
-                            value={branch}
-                          >
-                            {({ selected }) => (
-                              <>
-                                <span className={`block truncate ${selected ? 'font-medium' : 'font-normal'}`}>
-                                  {branch}
-                                </span>
-                                {selected ? (
-                                  <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-primary-700">
-                                    <IoCheckmark className="h-5 w-5" aria-hidden="true" />
-                                  </span>
-                                ) : null}
-                              </>
-                            )}
-                          </Listbox.Option>
-                        ))}
-                      </Listbox.Options>
-                    </Transition>
-                  </div>
-                </Listbox>
-              </div>
+              <input
+                type="text"
+                {...register('branch')}
+                className={clsx(
+                  'bg-white border-[1px] text-gray-900 text-base rounded-lg hover:shadow-[0px_2px_4px_0px_rgba(0,0,0,0.10)] focus:border-primary-500 focus:border-[1.5px] block w-full px-3 py-[10px] outline-none',
+                  errors.branch ? 'border-red-500' : 'border-gray-300'
+                )}
+                defaultValue={githubSync?.branch ?? ''}
+                placeholder="master"
+                disabled={!repoOwner}
+              />
             </div>
             {errors.branch && <p className="text-red-500 text-sm italic mt-2">{errors.branch?.message}</p>}
           </div>
