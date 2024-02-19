@@ -15,7 +15,14 @@ import { useGlobalStore } from '@/stores/globalStore'
 const schema = yup
   .object()
   .shape({
-    repository: yup.string().trim().required('Repository is required'),
+    repository: yup
+      .string()
+      .trim()
+      .matches(
+        /^[a-zA-Z\d](?:[a-zA-Z\d]|-(?=[a-zA-Z\d])){0,38}\/[a-zA-Z0-9._-]+$/,
+        "Use format 'username/repositoryName'"
+      )
+      .required('Repository is required'),
     branch: yup
       .string()
       .trim()
