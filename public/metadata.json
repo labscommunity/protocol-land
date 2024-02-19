@@ -6,11 +6,23 @@
       "status": "published",
       "href": "/blog/protocol-land-is-now-open-to-all",
       "file": "/blog/protocol-land-is-now-open-to-all.md",
-      "featured": true,
+      "featured": false,
       "category": "ANNOUNCEMENT",
       "description": "Protocol.Land announces its public launch, extending the benefits of decentralized code collaboration to everyone. Checkout what's in store and how to get started.",
       "coverImage": "/blog/images/protocol-land-is-open-to-all.png",
       "publishedAt": "2024-01-11"
+    },
+    {
+      "id": 2,
+      "title": "Protocol Land integrates Othent for streamlined onboarding",
+      "status": "published",
+      "href": "/blog/protocol-land-integrates-othent",
+      "file": "/blog/protocol-land-integrates-othent.md",
+      "featured": true,
+      "category": "ANNOUNCEMENT",
+      "description": "Protocol.Land integrates Othent for streamlined onboarding and secure way to access Protocol Land with social logins. Checkout what's in store and how to get started.",
+      "coverImage": "/blog/images/protocol-land-integrates-othent.jpg",
+      "publishedAt": "2024-02-19"
     }
   ]
 }
