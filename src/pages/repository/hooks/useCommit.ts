@@ -96,7 +96,7 @@ export default function useCommit() {
     if (response) {
       const { error: triggerError } = await withAsync(() => triggerGithubSync())
       if (triggerError) {
-        toast.error((triggerError as any)?.message ?? 'Failed to sync repository to Github')
+        toast.error((triggerError as any)?.message ?? 'Failed to trigger GitHub Sync')
       }
       const commitsCount = useRepoHeaderStore.getState().repoHeaderState.commits
       useRepoHeaderStore.getState().setCommits(commitsCount + 1)
