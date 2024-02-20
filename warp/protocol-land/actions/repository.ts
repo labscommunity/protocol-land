@@ -4,12 +4,14 @@ import {
   ContributorInvite,
   Deployment,
   Domain,
+  GithubSync,
   Repo,
   RepositoryAction,
   RepoWithParent
 } from '../types'
 import { getBlockTimeStamp } from '../utils/getBlockTimeStamp'
 import { isInvalidInput } from '../utils/isInvalidInput'
+import { pickKeys } from '../utils/pickKeys'
 
 declare const ContractError
 
@@ -71,7 +73,8 @@ export async function initializeNewRepository(
     forks: {},
     parent: null,
     private: false,
-    contributorInvites: []
+    contributorInvites: [],
+    githubSync: null
   }
 
   if (payload.visibility === 'private') {
@@ -141,7 +144,8 @@ export async function forkRepository(
     forks: {},
     parent: payload.parent,
     private: false,
-    contributorInvites: []
+    contributorInvites: [],
+    githubSync: null
   }
 
   const parentRepo: Repo = state.repos[payload.parent]
@@ -325,6 +329,69 @@ export async function updateRepositoryDetails(
 
   if (!isDeploymentBranchInvalid) {
     repo.deploymentBranch = payload.deploymentBranch
+  }
+
+  return { state }
+}
+
+export async function updateGithubSync(
+  state: ContractState,
+  { input: { payload }, caller }: RepositoryAction
+): Promise<ContractResult<ContractState>> {
+  // validate payload
+  const requiredFields = ['enabled', 'repository', 'branch', 'workflowId', 'accessToken', 'privateStateTxId']
+  if (
+    isInvalidInput(payload, 'object') ||
+    isInvalidInput(payload.id, 'uuid') ||
+    isInvalidInput(payload.githubSync, 'object')
+  ) {
+    throw new ContractError('Invalid inputs supplied.')
+  }
+
+  // Determine if it's a partial or full update and validate accordingly
+  const isValidUpdate = (payload.githubSync?.partialUpdate ? requiredFields.some : requiredFields.every).call(
+    requiredFields,
+    (field: string) => {
+      if (field === 'enabled') {
+        return !isInvalidInput(payload.githubSync?.[field], 'boolean')
+      } else if (field === 'privateStateTxId') {
+        return !isInvalidInput(payload.githubSync?.[field], 'arweave-address')
+      } else {
+        return !isInvalidInput(payload.githubSync?.[field], 'string', true)
+      }
+    }
+  )
+
+  if (!isValidUpdate) {
+    throw new ContractError('Invalid inputs supplied.')
+  }
+
+  const repo = state.repos[payload.id]
+
+  if (!repo) {
+    throw new ContractError('Repository not found.')
+  }
+
+  const isOwner = caller === repo.owner
+
+  if (!isOwner) {
+    throw new ContractError('Error: Only repo owner can update githubSync.')
+  }
+  const allowed = repo.githubSync?.allowed ?? []
+  let pending = repo.githubSync?.pending ?? []
+
+  if (!allowed.includes(caller)) allowed.push(caller)
+
+  if (payload.githubSync?.allowPending === true && pending.length > 0) {
+    allowed.push(...pending)
+    pending = []
+  }
+
+  repo.githubSync = {
+    ...repo.githubSync,
+    ...(pickKeys(payload.githubSync, requiredFields) as unknown as GithubSync),
+    allowed,
+    pending
   }
 
   return { state }
@@ -586,6 +653,15 @@ export async function acceptContributorInvite(
   }
 
   repo.contributorInvites[contributorInviteIdx].status = 'ACCEPTED'
+
+  if (payload.ghSyncPrivateStateTxId && repo.githubSync) {
+    repo.githubSync.privateStateTxId = payload.ghSyncPrivateStateTxId
+    if (Array.isArray(repo.githubSync.pending)) {
+      repo.githubSync.pending.push(invite.address)
+    } else {
+      repo.githubSync.pending = [invite.address]
+    }
+  }
 
   if (payload.visibility === 'private' && payload.privateStateTxId) {
     repo.privateStateTxId = payload.privateStateTxId

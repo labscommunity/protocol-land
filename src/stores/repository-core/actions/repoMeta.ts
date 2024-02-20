@@ -46,7 +46,12 @@ export const searchRepositories = async (query: string): Promise<{ result: Repo[
   return { result: ownerRepos }
 }
 
-export const handleAcceptContributor = async (id: string, visibility: string, privateStateTxId: string | null) => {
+export const handleAcceptContributor = async (
+  id: string,
+  visibility: string,
+  privateStateTxId: string | null,
+  ghSyncPrivateStateTxId: string | null
+) => {
   //rotate keys
   const userSigner = await getSigner()
 
@@ -54,7 +59,7 @@ export const handleAcceptContributor = async (id: string, visibility: string, pr
 
   await contract.writeInteraction({
     function: 'acceptContributorInvite',
-    payload: { id, visibility, privateStateTxId }
+    payload: { id, visibility, privateStateTxId, ghSyncPrivateStateTxId }
   })
 
   const {
@@ -65,7 +70,7 @@ export const handleAcceptContributor = async (id: string, visibility: string, pr
 
   const repo = repos[id] as Repo
 
-  return { contributorInvites: repo.contributorInvites, contributors: repo.contributors }
+  return { contributorInvites: repo.contributorInvites, contributors: repo.contributors, githubSync: repo.githubSync }
 }
 
 export const handleRejectContributor = async (id: string) => {

@@ -147,6 +147,7 @@ export async function mergePullRequest({
   isPrivate,
   privateStateTxId
 }: MergePullRequestOptions) {
+  const user = useGlobalStore.getState().userState.allUsers.get(author)
   const { error } = await withAsync(() =>
     git.merge({
       fs,
@@ -156,8 +157,8 @@ export async function mergePullRequest({
       abortOnConflict: true,
       dryRun,
       author: {
-        email: author,
-        name: author
+        email: user?.email || author,
+        name: user?.fullname || author
       }
     })
   )

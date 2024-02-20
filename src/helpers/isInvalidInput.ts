@@ -28,28 +28,28 @@ const regexPatterns = {
   username: /^[a-zA-Z\d](?:[a-zA-Z\d]|-(?=[a-zA-Z\d])){3,38}$/
 }
 
-function isUuid(input: any): boolean {
+export function isUuid(input: any): boolean {
   return typeof input === 'string' && regexPatterns.uuid.test(input)
 }
 
-function isArweaveAddress(input: any): boolean {
+export function isArweaveAddress(input: any): boolean {
   return typeof input === 'string' && regexPatterns.address.test(input)
 }
 
-function isObject(input: any) {
+export function isObject(input: any) {
   return typeof input === 'object' && input !== null && !Array.isArray(input)
 }
 
-function isEmail(input: any, skipEmptyStringCheck: boolean) {
+export function isEmail(input: any, skipEmptyStringCheck: boolean) {
   if (skipEmptyStringCheck && input === '') return true
   return typeof input === 'string' && regexPatterns.email.test(input)
 }
 
-function isUsername(input: any) {
+export function isUsername(input: any) {
   return typeof input === 'string' && regexPatterns.username.test(input)
 }
 
-function isURL(input: any, skipEmptyStringCheck: boolean) {
+export function isURL(input: any, skipEmptyStringCheck: boolean) {
   if (skipEmptyStringCheck && input === '') return true
   return typeof input === 'string' && regexPatterns.url.test(input)
 }

@@ -34,6 +34,7 @@ import {
   isRepositoryNameAvailable,
   rejectContributorInvite,
   updateDomain,
+  updateGithubSync,
   updatePrivateStateTx,
   updateRepositoryDetails,
   updateRepositoryTxId
@@ -57,6 +58,8 @@ export async function handle(state: ContractState, action: RepositoryAction | Ev
       return await getAllRepositoriesByOwner(state, action as RepositoryAction)
     case 'getRepositoriesByContributor':
       return await getAllRepositoriesByContributor(state, action as RepositoryAction)
+    case 'updateGithubSync':
+      return await updateGithubSync(state, action as RepositoryAction)
     case 'updateRepositoryTxId':
       return await updateRepositoryTxId(state, action as RepositoryAction)
     case 'updateRepositoryDetails':

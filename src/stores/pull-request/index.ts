@@ -305,6 +305,8 @@ const createPullRequestSlice: StateCreator<CombinedSlices, [['zustand/immer', ne
       }
 
       if (!error && response) {
+        await withAsync(() => get().repoCoreActions.triggerGithubSync())
+
         const activities = response?.activities
         if (!activities || !Array.isArray(activities)) return
 
