@@ -7,19 +7,22 @@ import {
   addContributor,
   addDeployment,
   addDomain,
+  githubSyncAllowPending,
   inviteContributor,
   updateDomain,
+  updateGithubSync,
   updateRepoDeploymentBranch,
   updateRepoDescription,
   updateRepoName
 } from '@/lib/git'
 import { useRepoHeaderStore } from '@/pages/repository/store/repoHeader'
-import { Deployment, Domain } from '@/types/repository'
+import { Deployment, Domain, GithubSync } from '@/types/repository'
 
 import { changeBranch, getBranchList, getCurrentActiveBranch } from '../branch/actions'
 import { CombinedSlices } from '../types'
 import {
   countCommits,
+  decryptPAT,
   getFileContentFromOid,
   getFilesFromOid,
   getOidOfHeadRef,
@@ -171,6 +174,109 @@ const createRepoCoreSlice: StateCreator<CombinedSlices, [['zustand/immer', never
           deploymentBranch,
           result: 'SUCCESS'
         })
+      }
+    },
+    getGitHubPAT: async () => {
+      const repo = get().repoCoreState.selectedRepo.repo!
+
+      if (!repo.githubSync || !repo.githubSync?.accessToken || !repo.githubSync?.privateStateTxId) return ''
+
+      const { response, error } = await withAsync(() =>
+        decryptPAT(repo.githubSync?.accessToken as string, repo.githubSync?.privateStateTxId as string)
+      )
+      if (response) {
+        return response
+      } else {
+        throw error
+      }
+    },
+    updateGithubSync: async (githubSync: GithubSync) => {
+      const repo = get().repoCoreState.selectedRepo.repo
+
+      if (!repo) {
+        set((state) => (state.repoCoreState.git.status = 'ERROR'))
+
+        return
+      }
+
+      const { error, response } = await withAsync(() =>
+        updateGithubSync({ id: repo.id, currentGithubSync: repo.githubSync, githubSync })
+      )
+
+      if (!error && response) {
+        set((state) => {
+          state.repoCoreState.selectedRepo.repo!.githubSync = response
+        })
+        trackGoogleAnalyticsEvent('Repository', 'Update GitHub Sync Settings', 'Update GitHub Sync', {
+          repo_name: repo.name,
+          repo_id: repo.id,
+          result: 'SUCCESS'
+        })
+      }
+    },
+    githubSyncAllowPending: async () => {
+      const repo = get().repoCoreState.selectedRepo.repo
+
+      if (!repo) {
+        set((state) => (state.repoCoreState.git.status = 'ERROR'))
+
+        return
+      }
+
+      const { error, response } = await withAsync(() =>
+        githubSyncAllowPending(repo.id, repo.githubSync?.privateStateTxId as string)
+      )
+
+      if (!error && response) {
+        set((state) => {
+          state.repoCoreState.selectedRepo.repo!.githubSync = response
+        })
+        trackGoogleAnalyticsEvent('Repository', 'Update GitHub Sync Settings', 'Update GitHub Sync', {
+          repo_name: repo.name,
+          repo_id: repo.id,
+          result: 'SUCCESS'
+        })
+      } else {
+        throw error
+      }
+    },
+    triggerGithubSync: async (options?: { manualTrigger?: boolean; forcePush?: boolean }) => {
+      const { manualTrigger = false, forcePush = false } = options ?? {}
+      const repo = get().repoCoreState.selectedRepo.repo
+
+      if (!repo) {
+        set((state) => (state.repoCoreState.git.status = 'ERROR'))
+
+        return
+      }
+
+      const githubSync = repo.githubSync
+      if (!githubSync || (!githubSync?.enabled && !manualTrigger)) return
+
+      const connectedAddress = get().authState.address
+      const isAllowed = githubSync.allowed.findIndex((address) => address === connectedAddress) > -1
+
+      if (!isAllowed || !githubSync.repository || !githubSync.workflowId || !githubSync.branch) return
+
+      const accessToken = await get().repoCoreActions.getGitHubPAT()
+
+      if (!accessToken) return
+
+      const response = await fetch(
+        `https://api.github.com/repos/${githubSync?.repository}/actions/workflows/${githubSync?.workflowId}/dispatches`,
+        {
+          method: 'POST',
+          headers: {
+            Accept: 'application/vnd.github+json',
+            'X-GitHub-Api-Version': '2022-11-28',
+            Authorization: `Bearer ${accessToken}`
+          },
+          body: JSON.stringify({ ref: githubSync?.branch, inputs: { forcePush: forcePush.toString() } })
+        }
+      )
+
+      if (response.status !== 204) {
+        throw new Error('Failed to Sync to GitHub')
       }
     },
     setRepoContributionStats: (data) => {
@@ -330,6 +436,7 @@ const createRepoCoreSlice: StateCreator<CombinedSlices, [['zustand/immer', never
 
       const visibility = repo.private ? 'private' : 'public'
       let privateStateTxId: string | null = null
+      let ghSyncPrivateStateTxId: string | null = null
 
       if (repo.private && repo.privateStateTxId) {
         const updatedPrivateStateTxId = await addActivePubKeyToPrivateState(repo.id, repo.privateStateTxId)
@@ -337,13 +444,27 @@ const createRepoCoreSlice: StateCreator<CombinedSlices, [['zustand/immer', never
         privateStateTxId = updatedPrivateStateTxId
       }
 
-      const { error, response } = await withAsync(() => handleAcceptContributor(repo.id, visibility, privateStateTxId))
+      if (repo.githubSync && repo.githubSync.privateStateTxId) {
+        const updatedPrivateStateTxId = await addActivePubKeyToPrivateState(
+          repo.id,
+          repo.githubSync.privateStateTxId,
+          'GITHUB_SYNC'
+        )
+        ghSyncPrivateStateTxId = updatedPrivateStateTxId
+      }
+
+      const { error, response } = await withAsync(() =>
+        handleAcceptContributor(repo.id, visibility, privateStateTxId, ghSyncPrivateStateTxId)
+      )
 
       if (!error && response) {
         if (!repo.private) {
           set((state) => {
             state.repoCoreState.selectedRepo.repo!.contributorInvites = response.contributorInvites
             state.repoCoreState.selectedRepo.repo!.contributors = response.contributors
+            if (response.githubSync) {
+              state.repoCoreState.selectedRepo.repo!.githubSync = response.githubSync
+            }
           })
         }
         trackGoogleAnalyticsEvent('Repository', 'Accept contributor invite', 'Accept repo contributor invite', {
@@ -436,7 +557,7 @@ const createRepoCoreSlice: StateCreator<CombinedSlices, [['zustand/immer', never
         privateStateTxId = updatedPrivateStateTxId
       }
 
-      const { error } = await withAsync(() => handleAcceptContributor(repo.id, visibility, privateStateTxId))
+      const { error } = await withAsync(() => handleAcceptContributor(repo.id, visibility, privateStateTxId, null))
 
       if (!error) {
         trackGoogleAnalyticsEvent('Repository', 'Accept contributor invite', 'Accept repo contributor invite', {

@@ -55,6 +55,17 @@ export type Repo = {
   private: boolean
   privateStateTxId?: string
   contributorInvites: ContributorInvite[]
+  githubSync: GithubSync | null
+}
+
+export interface GithubSync {
+  repository: string
+  branch: string
+  workflowId: string
+  accessToken: string
+  privateStateTxId: string
+  allowed: Array<string>
+  pending: Array<string>
 }
 
 export interface RepoWithParent extends Repo {
@@ -206,6 +217,7 @@ const repoFnList = [
   'updateRepositoryTxId',
   'isRepositoryNameAvailable',
   'createPullRequest',
+  'updateGithubSync',
   'updatePullRequestStatus',
   'updatePullRequestDetails',
   'updateRepositoryDetails',

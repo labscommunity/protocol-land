@@ -29,6 +29,18 @@ export type Repo = {
   private: boolean
   privateStateTxId?: string
   contributorInvites: ContributorInvite[]
+  githubSync: GithubSync | null
+}
+
+export interface GithubSync {
+  enabled: boolean
+  repository: string
+  branch: string
+  workflowId: string
+  accessToken: string
+  privateStateTxId: string
+  allowed: Array<string>
+  pending: Array<string>
 }
 
 export interface RepoWithParent extends Repo {
