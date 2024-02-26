@@ -166,7 +166,7 @@ export async function updateGithubSync({ id, currentGithubSync, githubSync }: an
 
   githubSync.partialUpdate = !!currentGithubSync
 
-  const contract = getWarpContract(CONTRACT_TX_ID, userSigner)
+  const contract = await getWarpContract(CONTRACT_TX_ID, userSigner)
 
   await contract.writeInteraction({
     function: 'updateGithubSync',
@@ -356,7 +356,7 @@ export async function rotateKeysAndUpdate({ id, currentPrivateStateTxId, type }:
 export async function githubSyncAllowPending(id: string, currentPrivateStateTxId: string) {
   await rotateKeysAndUpdate({ id, currentPrivateStateTxId, type: 'GITHUB_SYNC' })
 
-  const contract = getWarpContract(CONTRACT_TX_ID)
+  const contract = await getWarpContract(CONTRACT_TX_ID)
 
   const {
     cachedValue: {
