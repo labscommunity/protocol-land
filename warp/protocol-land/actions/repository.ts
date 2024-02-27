@@ -161,6 +161,8 @@ export async function forkRepository(
   parentRepo.forks[caller] = { id: repo.id, name: repo.name, owner: repo.owner, timestamp: repo.timestamp }
   repo.uploadStrategy = parentRepo.uploadStrategy
   state.repos[repo.id] = repo
+  callerRepos[lowercasedRepoName] = repo.id
+  state.userRepoIdMap[caller] = callerRepos
 
   return { state }
 }
