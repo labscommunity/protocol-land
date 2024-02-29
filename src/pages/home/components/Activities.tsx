@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 
 import { Button } from '@/components/common/buttons'
 import { CONTRACT_TX_ID } from '@/helpers/constants'
+import getWarpContract from '@/helpers/getWrapContract'
 import { withAsync } from '@/helpers/withAsync'
 import ForkModal from '@/pages/repository/components/ForkModal'
 import {
@@ -110,20 +111,16 @@ export default function Activities({ filters }: ActivitiesProps) {
 
     const { paging, interactions } = (await response.json()) as { paging: Paging; interactions: Interactions }
 
-    const { response: validityResponse, error: validityError } = await withAsync(() =>
-      fetch(
-        `https://dre-1.warp.cc/contract?id=${CONTRACT_TX_ID}&validity=true&errorMessages=true&limit=${limit}&page=${page}`
-      )
-    )
+    const contract = getWarpContract(CONTRACT_TX_ID)
+    const { response: stateResponse, error: stateError } = await withAsync(() => contract.readState())
 
-    if (validityError || !validityResponse) {
+    if (stateError || !stateResponse?.cachedValue) {
       setIsLoading(false)
       return
     }
 
     setHasNextPage(paging.pages > 0 && paging.pages !== currentPage)
-
-    const { validity, state } = (await validityResponse.json()) as ValidityResponse
+    const { validity, state } = stateResponse.cachedValue as ValidityResponse
     const validInteractions = interactions
       .filter(({ interaction }) => validity[interaction.id])
       .map(({ interaction }) => ({
