@@ -107,6 +107,10 @@ const createUserSlice: StateCreator<CombinedSlices, [['zustand/immer', never], n
           state.userState.allUsers = response
         })
       }
+    },
+    getUserFromAddress: (address: string) => {
+      const user = get().userState.allUsers.get(address)
+      return user
     }
   }
 })
