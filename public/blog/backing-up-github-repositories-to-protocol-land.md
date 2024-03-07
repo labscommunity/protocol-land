@@ -1,6 +1,6 @@
 ---
 title: 'Backing up GitHub repositories to Protocol.Land'
-status: 'draft'
+status: 'published'
 author:
   name: 'Rohit Pathare'
   avatar: 'https://avatars.githubusercontent.com/u/50047129?v=4'
