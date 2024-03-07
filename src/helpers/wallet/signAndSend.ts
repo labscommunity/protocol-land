@@ -11,7 +11,7 @@ export async function signAndSendTx(
   data: string | ArrayBuffer | Uint8Array,
   tags: Tag[],
   signer: any,
-  subsidize: boolean = true
+  subsidize: boolean = false
 ) {
   if (subsidize) {
     const { response } = await withAsync(() => subsidizeAndSubmitTx(data as Uint8Array | string, tags, signer))
