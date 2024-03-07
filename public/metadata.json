@@ -23,6 +23,18 @@
       "description": "Protocol.Land integrates Othent for streamlined onboarding and secure way to access Protocol Land with social logins. Checkout what's in store and how to get started.",
       "coverImage": "/blog/images/protocol-land-integrates-othent.jpg",
       "publishedAt": "2024-02-19"
+    },
+    {
+      "id": 3,
+      "title": "Backing up GitHub repositories to Protocol.Land",
+      "status": "published",
+      "href": "/blog/backing-up-github-repositories-to-protocol-land",
+      "file": "/blog/backing-up-github-repositories-to-protocol-land.md",
+      "featured": false,
+      "category": "EDUCATION",
+      "description": "Effortlessly backup GitHub repositories on Protocol.Land, a decentralized code collaboration platform built atop Arweave ensuring permanent, verifiable backups.",
+      "coverImage": "/blog/images/backing-up-github-repositories-to-protocol-land.png",
+      "publishedAt": "2024-03-11"
     }
   ]
 }
