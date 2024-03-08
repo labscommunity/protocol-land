@@ -1,8 +1,8 @@
 import { Tag } from 'arweave/web/lib/transaction'
 import axios from 'axios'
 import toast from 'react-hot-toast'
-import { createData } from 'warp-arbundles'
 
+import { createAndSignDataItem } from '@/helpers/wallet/createAndSignDataItem'
 import { useGlobalStore } from '@/stores/globalStore'
 
 import { bundleAndSignData } from './utils'
@@ -10,8 +10,7 @@ import { bundleAndSignData } from './utils'
 export async function subsidizeAndSubmitTx(data: string | Uint8Array, tags: Tag[], signer: any) {
   const address = useGlobalStore.getState().authState.address
 
-  const dataItem = createData(data, signer, { tags })
-  await dataItem.sign(signer)
+  const dataItem = await createAndSignDataItem(data, tags, signer)
 
   const dataItems = [dataItem]
 
