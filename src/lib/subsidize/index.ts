@@ -40,7 +40,7 @@ export async function subsidizeAndSubmitTx(data: string | Uint8Array, tags: Tag[
       throw new Error('Failed to subsidize your transaction. Please try again.')
     }
 
-    return await dataItem.id
+    return res.data ? res.data.repoTxId : await dataItem.id
   } catch (error: any) {
     toast.error(error.message)
   }
