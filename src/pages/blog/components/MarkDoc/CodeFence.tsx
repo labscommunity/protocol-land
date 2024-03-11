@@ -1,17 +1,17 @@
-import 'prismjs'
-import 'prismjs/themes/prism.css'
-
-import Prism from 'react-prism'
+import SyntaxHighlighter from 'react-syntax-highlighter'
+import { atelierLakesideLight } from 'react-syntax-highlighter/dist/esm/styles/hljs'
 
 type Props = {
   language: string
-  children: JSX.Element
+  children: string
 }
 
 export default function CodeFence({ children, language }: Props) {
   return (
-    <Prism key={language} component="pre" className={`language-${language}`}>
-      {children}
-    </Prism>
+    <div className="rounded-md overflow-hidden my-12 [&>pre]:!p-4">
+      <SyntaxHighlighter key={language} language={language} style={atelierLakesideLight}>
+        {children}
+      </SyntaxHighlighter>
+    </div>
   )
 }

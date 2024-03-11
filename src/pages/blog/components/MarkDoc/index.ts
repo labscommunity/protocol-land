@@ -4,6 +4,7 @@ import CodeFence from './CodeFence'
 import Heading from './Heading'
 import Image from './Image'
 import Link from './Link'
+import List from './List'
 import Paragraph from './Paragraph'
 
 export const config: Config = {
@@ -39,6 +40,9 @@ export const config: Config = {
           type: String
         }
       }
+    },
+    list: {
+      render: 'List'
     }
   }
 }
@@ -48,5 +52,6 @@ export const components = {
   Paragraph,
   Image,
   Link,
-  Fence: CodeFence
+  Fence: CodeFence,
+  List
 }
