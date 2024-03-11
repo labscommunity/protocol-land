@@ -13,6 +13,7 @@ import IconStarOutline from '@/assets/icons/star-outline.svg'
 import { Button } from '@/components/common/buttons'
 import { trackGoogleAnalyticsPageView } from '@/helpers/google-analytics'
 import { resolveUsernameOrShorten } from '@/helpers/resolveUsername'
+import { useGlobalStore } from '@/stores/globalStore'
 import { Repo } from '@/types/repository'
 
 import useRepository from '../hooks/useRepository'
@@ -29,6 +30,7 @@ type Props = {
 }
 
 export default function RepoHeader({ repo, isLoading, owner, parentRepo }: Props) {
+  const getUserFromAddress = useGlobalStore((state) => state.userActions.getUserFromAddress)
   const [isForkModalOpen, setIsForkModalOpen] = React.useState(false)
   const [showCloneDropdown, setShowCloneDropdown] = React.useState(false)
   const cloneRef = React.useRef<HTMLDivElement | null>(null)
@@ -89,6 +91,8 @@ export default function RepoHeader({ repo, isLoading, owner, parentRepo }: Props
 
     navigate(`/repository/${parentRepo.id}`)
   }
+
+  const repoOwner = getUserFromAddress(repo?.owner)
 
   return (
     <div className="flex flex-col">
@@ -173,10 +177,12 @@ export default function RepoHeader({ repo, isLoading, owner, parentRepo }: Props
                 <div className="px-4 py-2 z-10 divide-y divide-gray-200 divide-opacity-60 rounded-lg absolute w-96 bg-white right-0 origin-top-right border-[1px] mt-2 border-gray-300 shadow-[0px_2px_4px_0px_rgba(0,0,0,0.10)]">
                   <div className="flex flex-col w-full gap-1 py-2">
                     <h3 className="font-medium text-gray-900">Clone</h3>
-                    <div className="flex w-full px-2 py-1 gap-1 justify-start items-center border-[0.5px] border-gray-300 bg-gray-200 rounded-md overflow-hidden">
+                    <div className="flex w-full px-2 py-1 gap-1 justify-between items-center border-[0.5px] border-gray-300 bg-gray-200 rounded-md overflow-hidden">
                       <div className="pr-2 overflow-scroll [&::-webkit-scrollbar]:hidden whitespace-nowrap">
                         <div ref={cloneRef} className="text-gray-900 w-full flex">
-                          git clone proland://{repo.id} {repo.name}
+                          {repoOwner?.username
+                            ? `git clone proland://${repoOwner.username}/${repo.name}`
+                            : `git clone proland://${repo.id} ${repo.name}`}
                         </div>
                       </div>
                       <div onClick={handleCopyClone} className="text-gray-900 bg-gray-200 h-full px-1 cursor-pointer">

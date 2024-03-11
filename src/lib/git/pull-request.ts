@@ -51,7 +51,7 @@ export async function postNewPullRequest({
 
   const oid = await git.resolveRef({ fs: baseFS, dir: baseDir, ref: baseBranch })
 
-  const contract = getWarpContract(CONTRACT_TX_ID, userSigner)
+  const contract = await getWarpContract(CONTRACT_TX_ID, userSigner)
 
   await contract.writeInteraction({
     function: 'createPullRequest',
@@ -192,7 +192,7 @@ export async function mergePullRequest({
 
     const userSigner = await getSigner()
 
-    const contract = getWarpContract(CONTRACT_TX_ID, userSigner)
+    const contract = await getWarpContract(CONTRACT_TX_ID, userSigner)
 
     await contract.writeInteraction({
       function: 'updatePullRequestStatus',
@@ -226,7 +226,7 @@ export async function mergePullRequest({
 export async function closePullRequest({ repoId, prId }: { repoId: string; prId: number }) {
   const userSigner = await getSigner()
 
-  const contract = getWarpContract(CONTRACT_TX_ID, userSigner)
+  const contract = await getWarpContract(CONTRACT_TX_ID, userSigner)
 
   await contract.writeInteraction({
     function: 'updatePullRequestStatus',
@@ -257,7 +257,7 @@ export async function closePullRequest({ repoId, prId }: { repoId: string; prId:
 export async function reopenPullRequest({ repoId, prId }: { repoId: string; prId: number }) {
   const userSigner = await getSigner()
 
-  const contract = getWarpContract(CONTRACT_TX_ID, userSigner)
+  const contract = await getWarpContract(CONTRACT_TX_ID, userSigner)
 
   await contract.writeInteraction({
     function: 'updatePullRequestStatus',
@@ -288,7 +288,7 @@ export async function reopenPullRequest({ repoId, prId }: { repoId: string; prId
 export async function updatePullRequestDetails(repoId: string, prId: number, pullRequest: Partial<PullRequest>) {
   const userSigner = await getSigner()
 
-  const contract = getWarpContract(CONTRACT_TX_ID, userSigner)
+  const contract = await getWarpContract(CONTRACT_TX_ID, userSigner)
   let payload = {
     repoId,
     prId
@@ -311,7 +311,7 @@ export async function updatePullRequestDetails(repoId: string, prId: number, pul
 export async function addReviewersToPR({ reviewers, repoId, prId }: AddReviewersToPROptions) {
   const userSigner = await getSigner()
 
-  const contract = getWarpContract(CONTRACT_TX_ID, userSigner)
+  const contract = await getWarpContract(CONTRACT_TX_ID, userSigner)
 
   await contract.writeInteraction({
     function: 'addReviewersToPR',
@@ -342,7 +342,7 @@ export async function addReviewersToPR({ reviewers, repoId, prId }: AddReviewers
 export async function approvePR({ repoId, prId }: ApprovePROptions) {
   const userSigner = await getSigner()
 
-  const contract = getWarpContract(CONTRACT_TX_ID, userSigner)
+  const contract = await getWarpContract(CONTRACT_TX_ID, userSigner)
 
   await contract.writeInteraction({
     function: 'approvePR',
@@ -372,7 +372,7 @@ export async function approvePR({ repoId, prId }: ApprovePROptions) {
 export async function addCommentToPR(repoId: string, prId: number, comment: string) {
   const userSigner = await getSigner()
 
-  const contract = getWarpContract(CONTRACT_TX_ID, userSigner)
+  const contract = await getWarpContract(CONTRACT_TX_ID, userSigner)
 
   await contract.writeInteraction({
     function: 'addCommentToPR',
@@ -403,7 +403,7 @@ export async function addCommentToPR(repoId: string, prId: number, comment: stri
 export async function updatePRComment(repoId: string, prId: number, comment: object) {
   const userSigner = await getSigner()
 
-  const contract = getWarpContract(CONTRACT_TX_ID, userSigner)
+  const contract = await getWarpContract(CONTRACT_TX_ID, userSigner)
 
   await contract.writeInteraction({
     function: 'updatePRComment',
@@ -434,7 +434,7 @@ export async function updatePRComment(repoId: string, prId: number, comment: obj
 export async function linkIssueToPR(repoId: string, prId: number, issueId: number) {
   const userSigner = await getSigner()
 
-  const contract = getWarpContract(CONTRACT_TX_ID, userSigner)
+  const contract = await getWarpContract(CONTRACT_TX_ID, userSigner)
 
   await contract.writeInteraction({
     function: 'linkIssueToPR',

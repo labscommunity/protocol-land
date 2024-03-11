@@ -180,7 +180,7 @@ export async function uploadFiles(
           { name: 'File-Hash', value: hash }
         ] as Tag[]
 
-        const response = await signAndSendTx(data, transactionTags, userSigner)
+        const response = await signAndSendTx(data, transactionTags, userSigner, true)
         manifest.paths[updatedFilePath] = { id: response }
         setUploadPercent((uploadPercent: number) => parseFloat((uploadPercent + incrementValue).toFixed(2)))
       }

@@ -21,5 +21,6 @@ export type UserActions = {
   fetchUserArNSListByAddress: (address: string) => Promise<void>
   saveUserDetails: (details: Partial<User>, address: string) => Promise<void>
   updateUserContributionStats: (data: UserContributionData) => Promise<void>
+  getUserFromAddress: (address: string) => User | undefined
   updateAllUsers: () => Promise<void>
 }

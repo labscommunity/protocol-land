@@ -271,7 +271,10 @@ const createRepoCoreSlice: StateCreator<CombinedSlices, [['zustand/immer', never
             'X-GitHub-Api-Version': '2022-11-28',
             Authorization: `Bearer ${accessToken}`
           },
-          body: JSON.stringify({ ref: githubSync?.branch, inputs: { forcePush: forcePush.toString() } })
+          body: JSON.stringify({
+            ref: githubSync?.branch,
+            inputs: { forcePush: forcePush.toString(), repoId: repo.id }
+          })
         }
       )
 
