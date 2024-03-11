@@ -111,7 +111,7 @@ export default function Activities({ filters }: ActivitiesProps) {
 
     const { paging, interactions } = (await response.json()) as { paging: Paging; interactions: Interactions }
 
-    const contract = getWarpContract(CONTRACT_TX_ID)
+    const contract = await getWarpContract(CONTRACT_TX_ID)
     const { response: stateResponse, error: stateError } = await withAsync(() => contract.readState())
 
     if (stateError || !stateResponse?.cachedValue) {
