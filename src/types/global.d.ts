@@ -3,6 +3,8 @@ declare module 'warp-contracts' {
   const defaultCacheOptions: any
 }
 
+declare module 'react-prism'
+
 declare module 'warp-contracts-plugin-signature' {
   const InjectedArweaveSigner: any
 }

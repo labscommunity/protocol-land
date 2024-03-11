@@ -1,5 +1,6 @@
 import { Config } from '@markdoc/markdoc'
 
+import CodeFence from './CodeFence'
 import Heading from './Heading'
 import Image from './Image'
 import Link from './Link'
@@ -30,6 +31,14 @@ export const config: Config = {
         href: { type: String },
         title: { type: String }
       }
+    },
+    fence: {
+      render: 'Fence',
+      attributes: {
+        language: {
+          type: String
+        }
+      }
     }
   }
 }
@@ -38,5 +47,6 @@ export const components = {
   Heading,
   Paragraph,
   Image,
-  Link
+  Link,
+  Fence: CodeFence
 }
