@@ -4,5 +4,5 @@ type ListProps = {
 }
 
 export default function List({ children }: ListProps) {
-  return <ol className="text-white my-4 hover:underline list-decimal list-inside [&>li]:py-1">{children}</ol>
+  return <ul className="text-white my-4 list-disc list-inside [&>li]:py-2 [&>li]:leading-6">{children}</ul>
 }
