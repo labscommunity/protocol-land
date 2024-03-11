@@ -5,7 +5,7 @@ import { Repo, WarpReadState } from '@/types/repository'
 // Repo Meta
 
 export const getRepositoryMetaFromContract = async (id: string): Promise<{ result: Repo }> => {
-  const contract = getWarpContract(CONTRACT_TX_ID)
+  const contract = await getWarpContract(CONTRACT_TX_ID)
 
   return contract.viewState({
     function: 'getRepository',
@@ -16,7 +16,7 @@ export const getRepositoryMetaFromContract = async (id: string): Promise<{ resul
 }
 
 export const isRepositoryNameAvailable = async (name: string, caller: string): Promise<boolean> => {
-  const contract = getWarpContract(CONTRACT_TX_ID)
+  const contract = await getWarpContract(CONTRACT_TX_ID)
 
   const { result: isAvailable } = await contract.viewState(
     {
@@ -32,7 +32,7 @@ export const isRepositoryNameAvailable = async (name: string, caller: string): P
 }
 
 export const searchRepositories = async (query: string): Promise<{ result: Repo[] }> => {
-  const contract = getWarpContract(CONTRACT_TX_ID)
+  const contract = await getWarpContract(CONTRACT_TX_ID)
 
   const {
     cachedValue: {
@@ -55,7 +55,7 @@ export const handleAcceptContributor = async (
   //rotate keys
   const userSigner = await getSigner()
 
-  const contract = getWarpContract(CONTRACT_TX_ID, userSigner)
+  const contract = await getWarpContract(CONTRACT_TX_ID, userSigner)
 
   await contract.writeInteraction({
     function: 'acceptContributorInvite',
@@ -77,7 +77,7 @@ export const handleRejectContributor = async (id: string) => {
   //rotate keys
   const userSigner = await getSigner()
 
-  const contract = getWarpContract(CONTRACT_TX_ID, userSigner)
+  const contract = await getWarpContract(CONTRACT_TX_ID, userSigner)
 
   await contract.writeInteraction({
     function: 'rejectContributorInvite',
@@ -99,7 +99,7 @@ export const handleCancelContributorInvite = async (id: string, contributor: str
   //rotate keys
   const userSigner = await getSigner()
 
-  const contract = getWarpContract(CONTRACT_TX_ID, userSigner)
+  const contract = await getWarpContract(CONTRACT_TX_ID, userSigner)
 
   await contract.writeInteraction({
     function: 'cancelContributorInvite',

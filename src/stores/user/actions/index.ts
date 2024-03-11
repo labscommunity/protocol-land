@@ -8,7 +8,7 @@ import { User } from '@/types/user'
 
 export const getUserAddressToUserMap = async () => {
   const userMap = new Map<string, User>()
-  const contract = getWarpContract(CONTRACT_TX_ID)
+  const contract = await getWarpContract(CONTRACT_TX_ID)
   const state = (await contract.readState()).cachedValue.state
   const users = state.users
   Object.entries(users).forEach(([address, user]) => {
@@ -18,7 +18,7 @@ export const getUserAddressToUserMap = async () => {
 }
 
 export const getUserDetailsFromContract = async (): Promise<{ result: User }> => {
-  const contract = getWarpContract(CONTRACT_TX_ID)
+  const contract = await getWarpContract(CONTRACT_TX_ID)
 
   return contract.viewState({
     function: 'getUserDetails'
@@ -26,7 +26,7 @@ export const getUserDetailsFromContract = async (): Promise<{ result: User }> =>
 }
 
 export const getUserDetailsByAddressFromContract = async (address: string): Promise<{ result: User }> => {
-  const contract = getWarpContract(CONTRACT_TX_ID)
+  const contract = await getWarpContract(CONTRACT_TX_ID)
 
   const {
     cachedValue: {
@@ -55,7 +55,7 @@ export const saveUserDetails = async (details: Partial<User>, address: string): 
   const userSigner = await getSigner()
   userSigner.getAddress = () => userSigner.signer.getActiveAddress()
 
-  const contract = getWarpContract(CONTRACT_TX_ID, userSigner)
+  const contract = await getWarpContract(CONTRACT_TX_ID, userSigner)
 
   if (details.username && details.username !== useGlobalStore.getState().userState.userDetails.username) {
     const { result: isAvailable } = await contract.viewState({
@@ -99,7 +99,7 @@ export const saveUserDetails = async (details: Partial<User>, address: string): 
 export const fetchUserRepos = async (address: string) => {
   let repos: RepoWithParent[] = []
 
-  const contract = getWarpContract(CONTRACT_TX_ID)
+  const contract = await getWarpContract(CONTRACT_TX_ID)
 
   const { response: ownerReposResponse } = await withAsync(() =>
     contract.viewState({
