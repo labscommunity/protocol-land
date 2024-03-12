@@ -50,7 +50,7 @@ export async function registerArNSName({
 }) {
   name = name.toLowerCase()
 
-  const signer = await getSigner({ forArNS: true })
+  const signer = await getSigner({ injectedSigner: false })
   const registry = getWarpPstContract(REGISTRY, signer)
   const owner = useGlobalStore.getState().authState.address!
 
@@ -100,7 +100,7 @@ export async function updateArNSDomain({
   transactionId: string
   subDomain?: string
 }) {
-  const userSigner = await getSigner({ forArNS: true })
+  const userSigner = await getSigner({ injectedSigner: false })
   const result = await getWarpPstContract(antContract, userSigner).writeInteraction(
     {
       function: 'setRecord',

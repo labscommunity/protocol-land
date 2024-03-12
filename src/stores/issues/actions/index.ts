@@ -1,26 +1,25 @@
-import { CONTRACT_TX_ID } from '@/helpers/constants'
-import getWarpContract from '@/helpers/getWrapContract'
+import { createDataItemSigner, dryrun, message, result } from '@permaweb/aoconnect'
+
+import { AOS_PROCESS_ID } from '@/helpers/constants'
+import { extractMessage } from '@/helpers/extractMessage'
+import { getTags } from '@/helpers/getTags'
 import { isInvalidInput } from '@/helpers/isInvalidInput'
 import { getSigner } from '@/helpers/wallet/getSigner'
 import { postIssueStatDataTxToArweave } from '@/lib/user'
-import { BountyBase, Issue } from '@/types/repository'
+import { BountyBase, Issue, Repo } from '@/types/repository'
 
-async function getContract() {
-  const userSigner = await getSigner()
+async function getIssue(repoId: string, issueId: number) {
+  const { Messages } = await dryrun({
+    process: AOS_PROCESS_ID,
+    tags: getTags({
+      Action: 'Get-Repository',
+      Id: repoId
+    })
+  })
 
-  const contract = await getWarpContract(CONTRACT_TX_ID, userSigner)
+  const repo = JSON.parse(Messages[0].Data)?.result as Repo
 
-  return contract
-}
-
-async function getIssue(contract: any, repoId: string, issueId: number) {
-  const {
-    cachedValue: {
-      state: { repos }
-    }
-  } = await contract.readState()
-
-  const issues = repos[repoId]?.issues
+  const issues = repo?.issues
 
   if (!issues) return
 
@@ -32,24 +31,35 @@ async function getIssue(contract: any, repoId: string, issueId: number) {
 }
 
 export async function createNewIssue(title: string, description: string, repoId: string, address: string) {
-  const contract = await getContract()
-
-  await contract.writeInteraction({
-    function: 'createIssue',
-    payload: {
-      title,
-      description,
-      repoId
-    }
+  const messageId = await message({
+    process: AOS_PROCESS_ID,
+    tags: getTags({
+      Action: 'Create-Issue',
+      Title: title,
+      Description: description,
+      RepoId: repoId
+    }),
+    signer: createDataItemSigner(await getSigner({ injectedSigner: false }))
   })
 
-  const {
-    cachedValue: {
-      state: { repos }
-    }
-  } = await contract.readState()
+  const { Output } = await result({
+    message: messageId,
+    process: AOS_PROCESS_ID
+  })
 
-  const repo = repos[repoId]
+  if (Output?.data?.output) {
+    throw new Error(extractMessage(Output?.data?.output))
+  }
+
+  const { Messages } = await dryrun({
+    process: AOS_PROCESS_ID,
+    tags: getTags({
+      Action: 'Get-Repository',
+      Id: repoId
+    })
+  })
+
+  const repo = JSON.parse(Messages[0].Data)?.result as Repo
 
   if (!repo) return
 
@@ -68,56 +78,87 @@ export async function createNewIssue(title: string, description: string, repoId:
 }
 
 export async function addAssigneeToIssue(repoId: string, issueId: number, assignees: string[]) {
-  const contract = await getContract()
-
-  await contract.writeInteraction({
-    function: 'addAssigneeToIssue',
-    payload: {
-      repoId,
-      issueId,
-      assignees
-    }
+  const messageId = await message({
+    process: AOS_PROCESS_ID,
+    tags: getTags({
+      Action: 'Add-Issue-Assignees',
+      RepoId: repoId,
+      IssueId: issueId.toString(),
+      Assignees: JSON.stringify(assignees)
+    }),
+    signer: createDataItemSigner(await getSigner({ injectedSigner: false }))
   })
 
-  const issue = await getIssue(contract, repoId, issueId)
+  const { Output } = await result({
+    message: messageId,
+    process: AOS_PROCESS_ID
+  })
+
+  if (Output?.data?.output) {
+    throw new Error(extractMessage(Output?.data?.output))
+  }
+
+  const issue = await getIssue(repoId, issueId)
   return issue
 }
 
 export async function addCommentToIssue(repoId: string, issueId: number, comment: string) {
-  const contract = await getContract()
-
-  await contract.writeInteraction({
-    function: 'addCommentToIssue',
-    payload: {
-      repoId,
-      issueId,
-      comment
-    }
+  const messageId = await message({
+    process: AOS_PROCESS_ID,
+    tags: getTags({
+      Action: 'Add-Issue-Comment',
+      RepoId: repoId,
+      IssueId: issueId.toString(),
+      Comment: comment
+    }),
+    signer: createDataItemSigner(await getSigner({ injectedSigner: false }))
   })
 
-  const issue = await getIssue(contract, repoId, issueId)
+  const { Output } = await result({
+    message: messageId,
+    process: AOS_PROCESS_ID
+  })
+
+  if (Output?.data?.output) {
+    throw new Error(extractMessage(Output?.data?.output))
+  }
+
+  const issue = await getIssue(repoId, issueId)
   return issue
 }
 
 export async function updateIssueComment(repoId: string, issueId: number, comment: object) {
-  const contract = await getContract()
-
-  await contract.writeInteraction({
-    function: 'updateIssueComment',
-    payload: {
-      repoId,
-      issueId,
-      comment
-    }
+  const messageId = await message({
+    process: AOS_PROCESS_ID,
+    tags: getTags({
+      Action: 'Update-Issue-Comment',
+      RepoId: repoId,
+      IssueId: issueId.toString(),
+      Comment: JSON.stringify(comment)
+    }),
+    signer: createDataItemSigner(await getSigner({ injectedSigner: false }))
   })
 
-  const {
-    cachedValue: {
-      state: { repos }
-    }
-  } = await contract.readState()
+  const { Output } = await result({
+    message: messageId,
+    process: AOS_PROCESS_ID
+  })
 
-  const issues = repos[repoId]?.issues
+  if (Output?.data?.output) {
+    throw new Error(extractMessage(Output?.data?.output))
+  }
+
+  const { Messages } = await dryrun({
+    process: AOS_PROCESS_ID,
+    tags: getTags({
+      Action: 'Get-Repository',
+      Id: repoId
+    })
+  })
+
+  const repo = JSON.parse(Messages[0].Data)?.result as Repo
+
+  const issues = repo?.issues
 
   if (!issues) return
 
@@ -129,74 +170,110 @@ export async function updateIssueComment(repoId: string, issueId: number, commen
 }
 
 export async function closeIssue(repoId: string, issueId: number) {
-  const contract = await getContract()
-
-  await contract.writeInteraction({
-    function: 'updateIssueStatus',
-    payload: {
-      repoId,
-      issueId,
-      status: 'COMPLETED'
-    }
+  const messageId = await message({
+    process: AOS_PROCESS_ID,
+    tags: getTags({
+      Action: 'Update-Issue-Status',
+      RepoId: repoId,
+      IssueId: issueId.toString(),
+      Status: 'COMPLETED'
+    }),
+    signer: createDataItemSigner(await getSigner({ injectedSigner: false }))
   })
 
-  const issue = await getIssue(contract, repoId, issueId)
+  const { Output } = await result({
+    message: messageId,
+    process: AOS_PROCESS_ID
+  })
+
+  if (Output?.data?.output) {
+    throw new Error(extractMessage(Output?.data?.output))
+  }
+
+  const issue = await getIssue(repoId, issueId)
   return issue
 }
 
 export async function reopenIssue(repoId: string, issueId: number) {
-  const contract = await getContract()
-
-  await contract.writeInteraction({
-    function: 'updateIssueStatus',
-    payload: {
-      repoId,
-      issueId,
-      status: 'REOPEN'
-    }
+  const messageId = await message({
+    process: AOS_PROCESS_ID,
+    tags: getTags({
+      Action: 'Update-Issue-Status',
+      RepoId: repoId,
+      IssueId: issueId.toString(),
+      Status: 'REOPEN'
+    }),
+    signer: createDataItemSigner(await getSigner({ injectedSigner: false }))
   })
 
-  const issue = await getIssue(contract, repoId, issueId)
+  const { Output } = await result({
+    message: messageId,
+    process: AOS_PROCESS_ID
+  })
+
+  if (Output?.data?.output) {
+    throw new Error(extractMessage(Output?.data?.output))
+  }
+
+  const issue = await getIssue(repoId, issueId)
   return issue
 }
 
 export async function updateIssueDetails(repoId: string, issueId: number, issue: Partial<Issue>) {
-  const contract = await getContract()
-
-  let payload = {
-    repoId,
-    issueId
+  let tags = {
+    Action: 'Update-Issue-Details',
+    RepoId: repoId,
+    IssueId: issueId.toString()
   } as any
 
   if (!isInvalidInput(issue.title, 'string')) {
-    payload = { ...payload, title: issue.title }
+    tags = { ...tags, Title: issue.title }
   }
 
   if (!isInvalidInput(issue.description, 'string', true)) {
-    payload = { ...payload, description: issue.description }
+    tags = { ...tags, Description: issue.description }
   }
 
-  await contract.writeInteraction({
-    function: 'updateIssueDetails',
-    payload: payload
+  const messageId = await message({
+    process: AOS_PROCESS_ID,
+    tags: getTags(tags),
+    signer: createDataItemSigner(await getSigner({ injectedSigner: false }))
   })
+
+  const { Output } = await result({
+    message: messageId,
+    process: AOS_PROCESS_ID
+  })
+
+  if (Output?.data?.output) {
+    throw new Error(extractMessage(Output?.data?.output))
+  }
 }
 
 export async function addBounty(repoId: string, issueId: number, amount: number, expiry: number, base: BountyBase) {
-  const contract = await getContract()
-
-  await contract.writeInteraction({
-    function: 'createNewBounty',
-    payload: {
-      repoId,
-      issueId,
-      amount,
-      expiry,
-      base
-    }
+  const messageId = await message({
+    process: AOS_PROCESS_ID,
+    tags: getTags({
+      Action: 'Create-Bounty',
+      RepoId: repoId,
+      IssueId: issueId.toString(),
+      Amount: amount.toString(),
+      Expiry: expiry.toString(),
+      Base: base
+    }),
+    signer: createDataItemSigner(await getSigner({ injectedSigner: false }))
   })
 
-  const issue = await getIssue(contract, repoId, issueId)
+  const { Output } = await result({
+    message: messageId,
+    process: AOS_PROCESS_ID
+  })
+
+  if (Output?.data?.output) {
+    throw new Error(extractMessage(Output?.data?.output))
+  }
+
+  const issue = await getIssue(repoId, issueId)
   return issue
 }
 
@@ -207,19 +284,32 @@ export async function closeBounty(
   status: string,
   paymentTxId?: string
 ) {
-  const contract = await getContract()
+  const tags = {
+    Action: 'Update-Bounty',
+    RepoId: repoId,
+    IssueId: issueId.toString(),
+    BountyId: bountyId.toString(),
+    Status: status
+  } as any
 
-  await contract.writeInteraction({
-    function: 'updateBounty',
-    payload: {
-      repoId,
-      issueId,
-      bountyId,
-      status,
-      paymentTxId
-    }
+  if (paymentTxId) {
+    tags.PaymentTxId = paymentTxId
+  }
+  const messageId = await message({
+    process: AOS_PROCESS_ID,
+    tags: getTags(tags),
+    signer: createDataItemSigner(await getSigner({ injectedSigner: false }))
   })
 
-  const issue = await getIssue(contract, repoId, issueId)
+  const { Output } = await result({
+    message: messageId,
+    process: AOS_PROCESS_ID
+  })
+
+  if (Output?.data?.output) {
+    throw new Error(extractMessage(Output?.data?.output))
+  }
+
+  const issue = await getIssue(repoId, issueId)
   return issue
 }

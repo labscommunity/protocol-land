@@ -68,9 +68,7 @@ export default function General() {
   async function handleRenameButtonClick(data: yup.InferType<typeof titleSchema>) {
     if (selectedRepo && data.title !== selectedRepo.name) {
       setIsSubmittingName(true)
-      const { response: isAvailable, error } = await withAsync(() =>
-        isRepositoryNameAvailable(data.title, connectedAddress!)
-      )
+      const { response: isAvailable, error } = await withAsync(() => isRepositoryNameAvailable(data.title))
 
       if (!error && isAvailable === false) {
         toast.error(`The repository ${data.title} already exists.`)

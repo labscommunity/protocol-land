@@ -1,14 +1,16 @@
+import { createDataItemSigner, dryrun, message, result } from '@permaweb/aoconnect'
 import git, { Errors } from 'isomorphic-git'
 
-import { CONTRACT_TX_ID } from '@/helpers/constants'
-import getWarpContract from '@/helpers/getWrapContract'
+import { AOS_PROCESS_ID } from '@/helpers/constants'
+import { extractMessage } from '@/helpers/extractMessage'
+import { getTags } from '@/helpers/getTags'
 import { trackGoogleAnalyticsEvent } from '@/helpers/google-analytics'
 import { isInvalidInput } from '@/helpers/isInvalidInput'
 import { waitFor } from '@/helpers/waitFor'
 import { getSigner } from '@/helpers/wallet/getSigner'
 import { withAsync } from '@/helpers/withAsync'
 import { useGlobalStore } from '@/stores/globalStore'
-import { PullRequest } from '@/types/repository'
+import { PullRequest, Repo } from '@/types/repository'
 
 import { postPRStatDataTxToArweave } from '../user'
 import { postUpdatedRepo } from '.'
@@ -43,7 +45,6 @@ export async function postNewPullRequest({
   compareRepo,
   linkedIssueId
 }: PostNewPROptions) {
-  const userSigner = await getSigner()
   const address = useGlobalStore.getState().authState.address
 
   const baseFS = fsWithName(baseRepo.repoId)
@@ -51,30 +52,41 @@ export async function postNewPullRequest({
 
   const oid = await git.resolveRef({ fs: baseFS, dir: baseDir, ref: baseBranch })
 
-  const contract = await getWarpContract(CONTRACT_TX_ID, userSigner)
-
-  await contract.writeInteraction({
-    function: 'createPullRequest',
-    payload: {
-      title,
-      description,
-      repoId,
-      baseBranch,
-      compareBranch,
-      baseBranchOid: oid,
-      linkedIssueId,
-      baseRepo,
-      compareRepo
-    }
+  const messageId = await message({
+    process: AOS_PROCESS_ID,
+    tags: getTags({
+      Action: 'Create-Pr',
+      Title: title,
+      Description: description,
+      RepoId: repoId,
+      BaseBranch: baseBranch,
+      CompareBranch: compareBranch,
+      BaseBranchOid: oid,
+      LinkedIssueId: typeof linkedIssueId === 'number' ? linkedIssueId.toString() : '',
+      BaseRepo: JSON.stringify(baseRepo),
+      CompareRepo: JSON.stringify(compareRepo)
+    }),
+    signer: createDataItemSigner(await getSigner({ injectedSigner: false }))
   })
 
-  const {
-    cachedValue: {
-      state: { repos }
-    }
-  } = await contract.readState()
+  const { Output } = await result({
+    message: messageId,
+    process: AOS_PROCESS_ID
+  })
 
-  const repo = repos[repoId]
+  if (Output?.data?.output) {
+    throw new Error(extractMessage(Output?.data?.output))
+  }
+
+  const { Messages } = await dryrun({
+    process: AOS_PROCESS_ID,
+    tags: getTags({
+      Action: 'Get-Repository',
+      Id: repoId
+    })
+  })
+
+  const repo = JSON.parse(Messages[0].Data)?.result as Repo
 
   if (!repo) return
 
@@ -190,26 +202,37 @@ export async function mergePullRequest({
 
     await waitFor(1000)
 
-    const userSigner = await getSigner()
-
-    const contract = await getWarpContract(CONTRACT_TX_ID, userSigner)
-
-    await contract.writeInteraction({
-      function: 'updatePullRequestStatus',
-      payload: {
-        repoId,
-        prId,
-        status: 'MERGED'
-      }
+    const messageId = await message({
+      process: AOS_PROCESS_ID,
+      tags: getTags({
+        Action: 'Update-Pr-status',
+        RepoId: repoId,
+        PrId: prId.toString(),
+        Status: 'MERGED'
+      }),
+      signer: createDataItemSigner(await getSigner({ injectedSigner: false }))
     })
 
-    const {
-      cachedValue: {
-        state: { repos }
-      }
-    } = await contract.readState()
+    const { Output } = await result({
+      message: messageId,
+      process: AOS_PROCESS_ID
+    })
 
-    const PRs = repos[repoId]?.pullRequests
+    if (Output?.data?.output) {
+      throw new Error(extractMessage(Output?.data?.output))
+    }
+
+    const { Messages } = await dryrun({
+      process: AOS_PROCESS_ID,
+      tags: getTags({
+        Action: 'Get-Repository',
+        Id: repoId
+      })
+    })
+
+    const repo = JSON.parse(Messages[0].Data)?.result as Repo
+
+    const PRs = repo?.pullRequests
 
     if (!PRs) return
 
@@ -224,26 +247,37 @@ export async function mergePullRequest({
 }
 
 export async function closePullRequest({ repoId, prId }: { repoId: string; prId: number }) {
-  const userSigner = await getSigner()
-
-  const contract = await getWarpContract(CONTRACT_TX_ID, userSigner)
-
-  await contract.writeInteraction({
-    function: 'updatePullRequestStatus',
-    payload: {
-      repoId,
-      prId,
-      status: 'CLOSED'
-    }
+  const messageId = await message({
+    process: AOS_PROCESS_ID,
+    tags: getTags({
+      Action: 'Update-Pr-status',
+      RepoId: repoId,
+      PrId: prId.toString(),
+      Status: 'CLOSED'
+    }),
+    signer: createDataItemSigner(await getSigner({ injectedSigner: false }))
   })
 
-  const {
-    cachedValue: {
-      state: { repos }
-    }
-  } = await contract.readState()
+  const { Output } = await result({
+    message: messageId,
+    process: AOS_PROCESS_ID
+  })
 
-  const PRs = repos[repoId]?.pullRequests
+  if (Output?.data?.output) {
+    throw new Error(extractMessage(Output?.data?.output))
+  }
+
+  const { Messages } = await dryrun({
+    process: AOS_PROCESS_ID,
+    tags: getTags({
+      Action: 'Get-Repository',
+      Id: repoId
+    })
+  })
+
+  const repo = JSON.parse(Messages[0].Data)?.result as Repo
+
+  const PRs = repo?.pullRequests
 
   if (!PRs) return
 
@@ -255,26 +289,37 @@ export async function closePullRequest({ repoId, prId }: { repoId: string; prId:
 }
 
 export async function reopenPullRequest({ repoId, prId }: { repoId: string; prId: number }) {
-  const userSigner = await getSigner()
-
-  const contract = await getWarpContract(CONTRACT_TX_ID, userSigner)
-
-  await contract.writeInteraction({
-    function: 'updatePullRequestStatus',
-    payload: {
-      repoId,
-      prId,
-      status: 'REOPEN'
-    }
+  const messageId = await message({
+    process: AOS_PROCESS_ID,
+    tags: getTags({
+      Action: 'Update-Pr-status',
+      RepoId: repoId,
+      PrId: prId.toString(),
+      Status: 'REOPEN'
+    }),
+    signer: createDataItemSigner(await getSigner({ injectedSigner: false }))
   })
 
-  const {
-    cachedValue: {
-      state: { repos }
-    }
-  } = await contract.readState()
+  const { Output } = await result({
+    message: messageId,
+    process: AOS_PROCESS_ID
+  })
 
-  const PRs = repos[repoId]?.pullRequests
+  if (Output?.data?.output) {
+    throw new Error(extractMessage(Output?.data?.output))
+  }
+
+  const { Messages } = await dryrun({
+    process: AOS_PROCESS_ID,
+    tags: getTags({
+      Action: 'Get-Repository',
+      Id: repoId
+    })
+  })
+
+  const repo = JSON.parse(Messages[0].Data)?.result as Repo
+
+  const PRs = repo?.pullRequests
 
   if (!PRs) return
 
@@ -286,49 +331,68 @@ export async function reopenPullRequest({ repoId, prId }: { repoId: string; prId
 }
 
 export async function updatePullRequestDetails(repoId: string, prId: number, pullRequest: Partial<PullRequest>) {
-  const userSigner = await getSigner()
-
-  const contract = await getWarpContract(CONTRACT_TX_ID, userSigner)
-  let payload = {
-    repoId,
-    prId
+  let tags = {
+    Action: 'Update-Pr-Details',
+    RepoId: repoId,
+    PrId: prId.toString()
   } as any
 
   if (!isInvalidInput(pullRequest.title, 'string')) {
-    payload = { ...payload, title: pullRequest.title }
+    tags = { ...tags, Title: pullRequest.title }
   }
 
   if (!isInvalidInput(pullRequest.description, 'string', true)) {
-    payload = { ...payload, description: pullRequest.description }
+    tags = { ...tags, Description: pullRequest.description }
   }
 
-  await contract.writeInteraction({
-    function: 'updatePullRequestDetails',
-    payload: payload
+  const messageId = await message({
+    process: AOS_PROCESS_ID,
+    tags: getTags(tags),
+    signer: createDataItemSigner(await getSigner({ injectedSigner: false }))
   })
+
+  const { Output } = await result({
+    message: messageId,
+    process: AOS_PROCESS_ID
+  })
+
+  if (Output?.data?.output) {
+    throw new Error(extractMessage(Output?.data?.output))
+  }
 }
 
 export async function addReviewersToPR({ reviewers, repoId, prId }: AddReviewersToPROptions) {
-  const userSigner = await getSigner()
-
-  const contract = await getWarpContract(CONTRACT_TX_ID, userSigner)
-
-  await contract.writeInteraction({
-    function: 'addReviewersToPR',
-    payload: {
-      repoId,
-      prId,
-      reviewers
-    }
+  const messageId = await message({
+    process: AOS_PROCESS_ID,
+    tags: getTags({
+      Action: 'Add-Pr-Reviewers',
+      RepoId: repoId,
+      PrId: prId.toString(),
+      Reviewers: JSON.stringify(reviewers)
+    }),
+    signer: createDataItemSigner(await getSigner({ injectedSigner: false }))
   })
 
-  const {
-    cachedValue: {
-      state: { repos }
-    }
-  } = await contract.readState()
+  const { Output } = await result({
+    message: messageId,
+    process: AOS_PROCESS_ID
+  })
 
-  const PRs = repos[repoId]?.pullRequests
+  if (Output?.data?.output) {
+    throw new Error(extractMessage(Output?.data?.output))
+  }
+
+  const { Messages } = await dryrun({
+    process: AOS_PROCESS_ID,
+    tags: getTags({
+      Action: 'Get-Repository',
+      Id: repoId
+    })
+  })
+
+  const repo = JSON.parse(Messages[0].Data)?.result as Repo
+
+  const PRs = repo?.pullRequests
 
   if (!PRs) return
 
@@ -340,25 +404,36 @@ export async function addReviewersToPR({ reviewers, repoId, prId }: AddReviewers
 }
 
 export async function approvePR({ repoId, prId }: ApprovePROptions) {
-  const userSigner = await getSigner()
-
-  const contract = await getWarpContract(CONTRACT_TX_ID, userSigner)
-
-  await contract.writeInteraction({
-    function: 'approvePR',
-    payload: {
-      repoId,
-      prId
-    }
+  const messageId = await message({
+    process: AOS_PROCESS_ID,
+    tags: getTags({
+      Action: 'Approve-Pr',
+      RepoId: repoId,
+      PrId: prId.toString()
+    }),
+    signer: createDataItemSigner(await getSigner({ injectedSigner: false }))
   })
 
-  const {
-    cachedValue: {
-      state: { repos }
-    }
-  } = await contract.readState()
+  const { Output } = await result({
+    message: messageId,
+    process: AOS_PROCESS_ID
+  })
 
-  const PRs = repos[repoId]?.pullRequests
+  if (Output?.data?.output) {
+    throw new Error(extractMessage(Output?.data?.output))
+  }
+
+  const { Messages } = await dryrun({
+    process: AOS_PROCESS_ID,
+    tags: getTags({
+      Action: 'Get-Repository',
+      Id: repoId
+    })
+  })
+
+  const repo = JSON.parse(Messages[0].Data)?.result as Repo
+
+  const PRs = repo?.pullRequests
 
   if (!PRs) return
 
@@ -370,26 +445,37 @@ export async function approvePR({ repoId, prId }: ApprovePROptions) {
 }
 
 export async function addCommentToPR(repoId: string, prId: number, comment: string) {
-  const userSigner = await getSigner()
-
-  const contract = await getWarpContract(CONTRACT_TX_ID, userSigner)
-
-  await contract.writeInteraction({
-    function: 'addCommentToPR',
-    payload: {
-      repoId,
-      prId,
-      comment
-    }
+  const messageId = await message({
+    process: AOS_PROCESS_ID,
+    tags: getTags({
+      Action: 'Add-Pr-Comment',
+      RepoId: repoId,
+      PrId: prId.toString(),
+      Comment: comment
+    }),
+    signer: createDataItemSigner(await getSigner({ injectedSigner: false }))
   })
 
-  const {
-    cachedValue: {
-      state: { repos }
-    }
-  } = await contract.readState()
+  const { Output } = await result({
+    message: messageId,
+    process: AOS_PROCESS_ID
+  })
 
-  const PRs = repos[repoId]?.pullRequests
+  if (Output?.data?.output) {
+    throw new Error(extractMessage(Output?.data?.output))
+  }
+
+  const { Messages } = await dryrun({
+    process: AOS_PROCESS_ID,
+    tags: getTags({
+      Action: 'Get-Repository',
+      Id: repoId
+    })
+  })
+
+  const repo = JSON.parse(Messages[0].Data)?.result as Repo
+
+  const PRs = repo?.pullRequests
 
   if (!PRs) return
 
@@ -401,26 +487,37 @@ export async function addCommentToPR(repoId: string, prId: number, comment: stri
 }
 
 export async function updatePRComment(repoId: string, prId: number, comment: object) {
-  const userSigner = await getSigner()
-
-  const contract = await getWarpContract(CONTRACT_TX_ID, userSigner)
-
-  await contract.writeInteraction({
-    function: 'updatePRComment',
-    payload: {
-      repoId,
-      prId,
-      comment
-    }
+  const messageId = await message({
+    process: AOS_PROCESS_ID,
+    tags: getTags({
+      Action: 'Update-Pr-Comment',
+      RepoId: repoId,
+      PrId: prId.toString(),
+      Comment: JSON.stringify(comment)
+    }),
+    signer: createDataItemSigner(await getSigner({ injectedSigner: false }))
   })
 
-  const {
-    cachedValue: {
-      state: { repos }
-    }
-  } = await contract.readState()
+  const { Output } = await result({
+    message: messageId,
+    process: AOS_PROCESS_ID
+  })
 
-  const PRs = repos[repoId]?.pullRequests
+  if (Output?.data?.output) {
+    throw new Error(extractMessage(Output?.data?.output))
+  }
+
+  const { Messages } = await dryrun({
+    process: AOS_PROCESS_ID,
+    tags: getTags({
+      Action: 'Get-Repository',
+      Id: repoId
+    })
+  })
+
+  const repo = JSON.parse(Messages[0].Data)?.result as Repo
+
+  const PRs = repo?.pullRequests
 
   if (!PRs) return
 
@@ -432,26 +529,37 @@ export async function updatePRComment(repoId: string, prId: number, comment: obj
 }
 
 export async function linkIssueToPR(repoId: string, prId: number, issueId: number) {
-  const userSigner = await getSigner()
-
-  const contract = await getWarpContract(CONTRACT_TX_ID, userSigner)
-
-  await contract.writeInteraction({
-    function: 'linkIssueToPR',
-    payload: {
-      repoId,
-      prId,
-      linkedIssueId: issueId
-    }
+  const messageId = await message({
+    process: AOS_PROCESS_ID,
+    tags: getTags({
+      Action: 'Link-Issue-Pr',
+      RepoId: repoId,
+      PrId: prId.toString(),
+      LinkedIssueId: issueId.toString()
+    }),
+    signer: createDataItemSigner(await getSigner({ injectedSigner: false }))
   })
 
-  const {
-    cachedValue: {
-      state: { repos }
-    }
-  } = await contract.readState()
+  const { Output } = await result({
+    message: messageId,
+    process: AOS_PROCESS_ID
+  })
 
-  const PRs = repos[repoId]?.pullRequests
+  if (Output?.data?.output) {
+    throw new Error(extractMessage(Output?.data?.output))
+  }
+
+  const { Messages } = await dryrun({
+    process: AOS_PROCESS_ID,
+    tags: getTags({
+      Action: 'Get-Repository',
+      Id: repoId
+    })
+  })
+
+  const repo = JSON.parse(Messages[0].Data)?.result as Repo
+
+  const PRs = repo?.pullRequests
 
   if (!PRs) return
 

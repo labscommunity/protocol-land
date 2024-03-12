@@ -61,7 +61,9 @@ export default function NewRepoModal({ setIsOpen, isOpen }: NewRepoModalProps) {
     const { title, description } = data
     const owner = authState.address || 'Protocol.Land user'
 
-    const { response: isAvailable, error } = await withAsync(() => isRepositoryNameAvailable(title, authState.address!))
+    const { response: isAvailable, error } = await withAsync(() => isRepositoryNameAvailable(title))
+
+    console.log(isAvailable, error)
 
     if (!error && isAvailable === false) {
       toast.error(`The repository ${title} already exists.`)
@@ -95,6 +97,7 @@ export default function NewRepoModal({ setIsOpen, isOpen }: NewRepoModalProps) {
         }
       }
     } catch (error) {
+      console.log(error)
       trackGoogleAnalyticsEvent('Repository', 'Failed to create a new repo', 'Create new repo')
     }
   }
