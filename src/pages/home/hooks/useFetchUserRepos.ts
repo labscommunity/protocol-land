@@ -18,7 +18,6 @@ export function useFetchUserRepos() {
 
   const initFetchUserRepos = async () => {
     setFetchUserReposStatus('PENDING')
-    const contract = await getWarpContract(CONTRACT_TX_ID)
 
     const { response: ownerReposResponse, error: ownerReposError } = await withAsync(() =>
       dryrun({
