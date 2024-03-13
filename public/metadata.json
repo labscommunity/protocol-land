@@ -35,6 +35,18 @@
       "description": "Effortlessly backup GitHub repositories on Protocol.Land, a decentralized code collaboration platform built atop Arweave ensuring permanent, verifiable backups.",
       "coverImage": "/blog/images/backing-up-github-repositories-to-protocol-land.png",
       "publishedAt": "2024-03-11"
+    },
+    {
+      "id": 4,
+      "title": "Dragon Deploy: Redefining Static Page Deployment with Protocol.Land",
+      "status": "published",
+      "href": "/blog/redefining-static-page-deployment-with-protocol-land",
+      "file": "/blog/redefining-static-page-deployment-with-protocol-land.md",
+      "featured": false,
+      "category": "ANNOUNCEMENT",
+      "description": "Protocol.Land simplifies static page deployment on Arweave by integrating Dragon Deploy, an innovative feature to reshape the landscape of deploying static pages on Arweave.",
+      "coverImage": "/blog/images/pl-integrates-dragon-deploy.png",
+      "publishedAt": "2024-03-13"
     }
   ]
 }
