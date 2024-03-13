@@ -7,7 +7,7 @@ author:
   twitter: 'https://twitter.com/jenmarieinc'
 slug: 'redefining-static-page-deployment-with-protocol-land'
 category: 'ANNOUNCEMENT'
-description: "Explore Dragon Deploy, the latest Protocol.Land feature that revolutionizes static page deployment on Arweave, providing a seamless experience for developers writing code on the permaweb. Join Protocol.Land today."
+description: "Explore Dragon Deploy, the latest Protocol.Land integration that revolutionizes static page deployment on Arweave, providing a seamless experience for developers writing code on the permaweb. Join Protocol.Land today."
 coverImage: '/blog/images/pl-integrates-dragon-deploy.png'
 transparentThumbnail: 'https://u2hyhgglc4egidq3zkthnzdruyatqwql5lk5foen3zv5zf5fo2wa.arweave.net/po-DmMsXCGQOG8qmduRxpgE4Wgvq1dK4jd5r3Jeldqw'
 themeColor: 'rgba(0, 0, 0, .15)'
