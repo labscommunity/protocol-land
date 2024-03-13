@@ -33,13 +33,13 @@ export default function BountyActivity({ activity, setIsForkModalOpen, setRepo }
         <Link to={`/repository/${activity.repo.id}/issue/${activity.issue?.id}`} className="text-base font-medium">
           <>{activity.bounty?.amount ?? ''} AR</>
         </Link>
-        <div className="text-sm">{activity.issue?.title ?? ''} AR</div>
+        <div className="text-sm">{activity.issue?.title ?? ''}</div>
         <div className="flex gap-1 text-sm items-center justify-between flex-wrap">
           <div className="flex items-center gap-1">
             <Icon />
             <span>
               {isActive ? 'Bounty expires in' : `Bounty ${bounty.status.toLowerCase()}`}{' '}
-              {formatDistanceToNow(new Date(activity.timestamp), { addSuffix: true })}
+              {formatDistanceToNow(new Date(isActive ? bounty.expiry * 1000 : activity.timestamp), { addSuffix: true })}
             </span>
           </div>
           <div>{activeBountiesCount} Active Bounties </div>

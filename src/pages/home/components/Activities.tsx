@@ -256,7 +256,7 @@ export default function Activities({ filters }: ActivitiesProps) {
           bounty,
           issue,
           created,
-          timestamp: timestamp
+          timestamp
         } as BountyActivityType)
       }
 
