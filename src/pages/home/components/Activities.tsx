@@ -1,9 +1,10 @@
-import { useEffect, useState } from 'react'
+import { dryrun } from '@permaweb/aoconnect'
+import ArdbTransaction from 'ardb/lib/models/transaction'
+import { useEffect, useRef, useState } from 'react'
 
 import { Button } from '@/components/common/buttons'
-import { CONTRACT_TX_ID } from '@/helpers/constants'
-import getWarpContract from '@/helpers/getWrapContract'
-import { withAsync } from '@/helpers/withAsync'
+import { AOS_PROCESS_ID } from '@/helpers/constants'
+import { getTags } from '@/helpers/getTags'
 import ForkModal from '@/pages/repository/components/ForkModal'
 import {
   Activity,
@@ -11,15 +12,13 @@ import {
   DeploymentActivityType,
   DomainActivityType,
   Filters,
-  Interactions,
   IssueActivityType,
-  Paging,
   PullRequestActivityType,
-  RepositoryActivityType,
-  ValidityResponse
+  RepositoryActivityType
 } from '@/types/explore'
-import { Repo, RepoWithParent } from '@/types/repository'
+import { Repo } from '@/types/repository'
 
+import { ardb } from '../utils'
 import BountyActivity from './BountyActivity'
 import DeploymentActivity from './DeploymentActivity'
 import DomainActivity from './DomainActivity'
@@ -28,42 +27,12 @@ import PullRequestActivity from './PullRequestActivity'
 import RepositoryActivity from './RepositoryActivity'
 import SkeletonLoader from './SkeletonLoader'
 
-const repositoryInteractionFunctions = [
-  'initialize',
-  'forkRepository',
-  // 'acceptContributorInvite',
-  // 'addContributor',
-  // 'cancelContributorInvite',
-  // 'inviteContributor',
-  // 'rejectContributorInvite',
-  // 'updatePrivateStateTx',
-  // 'updateRepositoryDetails',
-  'updateRepositoryTxId'
-]
-
-const deploymentInteractionFunctions = ['addDeployment']
-
-const domainInteractionFunctions = ['addDomain', 'updateDomain']
-
-const issueInteractionFunctions = [
-  'createIssue',
-  // 'addAssigneeToIssue',
-  // 'addCommentToIssue',
-  // 'updateIssueDetails',
-  'updateIssueStatus'
-]
-
-const pullRequestInteractionFunctions = [
-  // 'addCommentToPR',
-  // 'addReviewersToPR',
-  // 'approvePR',
-  'createPullRequest',
-  // 'linkIssueToPR',
-  // 'updatePullRequestDetails',
-  'updatePullRequestStatus'
-]
-
-const bountyInteractionFunctions = ['createNewBounty', 'updateBounty']
+const repositoryActions = ['Repo-Created', 'Repo-Forked', 'Repo-TxId-Updated']
+const deploymentActions = ['Deployment-Added']
+const domainActions = ['Domain-Added', 'Domain-Updated']
+const issueActions = ['Issue-Created', 'Issue-Status-Updated']
+const pullRequestActions = ['PullRequest-Created', 'PullRequest-Status-Updated']
+const bountyActions = ['Bounty-Created', 'Bounty-Updated']
 
 const ACTIVITY_TO_COMPONENT = {
   REPOSITORY: RepositoryActivity,
@@ -86,6 +55,9 @@ export default function Activities({ filters }: ActivitiesProps) {
   const [activities, setActivities] = useState<Activity[]>([])
   const [repo, setRepo] = useState<Repo>()
   const [isForkModalOpen, setIsForkModalOpen] = useState(false)
+  const cursor = useRef('')
+  const repos = useRef<{ [id: string]: Repo }>({})
+  const fetchedRepoIds = useRef(new Set<string>())
 
   function getValueFromTags(tags: Array<{ name: string; value: string }>, name: string) {
     const tag = tags.find((tag) => tag.name === name)
@@ -93,248 +65,205 @@ export default function Activities({ filters }: ActivitiesProps) {
     return tag ? tag.value : ''
   }
 
-  async function fetchActivities({ page }: { page?: number }) {
+  async function fetchActivities({ refresh }: { refresh?: boolean }) {
     setIsLoading(true)
-    // const limit  = baseLimit + ((numberOfTotalFilters - numberOfFilters) * 14)
-    const limit = 30 + (Object.keys(filters).length - Object.values(filters).filter(Boolean).length) * 14
-    page = page ?? currentPage
-    const { error, response } = await withAsync(() =>
-      fetch(
-        `https://gw.warp.cc/sonar/gateway/interactions-sonar?contractId=${CONTRACT_TX_ID}&limit=${limit}&totalCount=true&page=${page}`
-      )
-    )
+    const limit = 30
 
-    if (error || !response) {
-      setIsLoading(false)
-      return
-    }
+    const actions = []
 
-    const { paging, interactions } = (await response.json()) as { paging: Paging; interactions: Interactions }
+    if (filters.Bounties) actions.push(...bountyActions)
+    if (filters.Deployments) actions.push(...deploymentActions)
+    if (filters.Domains) actions.push(...domainActions)
+    if (filters.Issues) actions.push(...issueActions)
+    if (filters['Pull Requests']) actions.push(...pullRequestActions)
+    if (filters.Repositories) actions.push(...repositoryActions)
 
-    const contract = await getWarpContract(CONTRACT_TX_ID)
-    const { response: stateResponse, error: stateError } = await withAsync(() => contract.readState())
+    const interactions = (await ardb
+      .search('transactions')
+      .only(['id', 'tags', 'block.timestamp', 'owner.address'])
+      .tags([
+        { name: 'From-Process', values: AOS_PROCESS_ID },
+        { name: 'Action', values: actions }
+      ])
+      .cursor(activities.length > 0 && !refresh ? cursor.current : '')
+      .limit(limit)
+      .find()) as ArdbTransaction[]
 
-    if (stateError || !stateResponse?.cachedValue) {
-      setIsLoading(false)
-      return
-    }
-
-    setHasNextPage(paging.pages > 0 && paging.pages !== currentPage)
-    const { validity, state } = stateResponse.cachedValue as ValidityResponse
-    const validInteractions = interactions
-      .filter(({ interaction }) => validity[interaction.id])
-      .map(({ interaction }) => ({
-        timestamp: +interaction.block.timestamp,
-        author: interaction.owner.address,
-        input: JSON.parse(getValueFromTags(interaction.tags, 'Input'))
-      }))
+    cursor.current = ardb.getCursor()
 
     let allActivities: Activity[] = []
 
-    const getRepoWithParent = (repos: { [key: string]: Repo }, repo: RepoWithParent) => {
-      if (repo.parent) {
-        const parentRepo = repos[repo.parent]
-        if (parentRepo) {
-          return {
-            ...repo,
-            parentRepo: { id: parentRepo.id, name: parentRepo.name, owner: parentRepo.owner }
-          } as RepoWithParent
-        }
+    const repoIds = interactions
+      .map((interaction) => {
+        const repoId = getValueFromTags(interaction.tags, 'Repo-Id')
+        if (repoId) return repoId
+      })
+      .filter((id) => id && !fetchedRepoIds.current.has(id))
+
+    if (repoIds.length > 0) {
+      repoIds.forEach((id) => fetchedRepoIds.current.add(id as string))
+
+      const { Messages } = await dryrun({
+        process: AOS_PROCESS_ID,
+        tags: getTags({ Action: 'Get-Repositories-By-Ids', Ids: JSON.stringify(repoIds) })
+      })
+
+      const fetchedRepos = JSON.parse(Messages[0].Data).result as Repo[]
+      for (const repo of fetchedRepos) {
+        repos.current[repo.id] = repo
       }
-      return repo
     }
 
-    if (filters.Repositories) {
-      const repositoryActivities = validInteractions.reduce((accumulator, interaction) => {
-        const { payload } = interaction.input
+    const repositoryActivities = interactions.reduce((accumulator, interaction) => {
+      const action = getValueFromTags(interaction.tags, 'Action')
+      const repoId = getValueFromTags(interaction.tags, 'Repo-Id')
 
-        if (repositoryInteractionFunctions.includes(interaction.input.function)) {
-          const repoId = payload.id ?? payload.repoId
-          const existingActivity = accumulator.find((activity) => activity.repo.id === repoId && !activity.created)
+      const timestamp =
+        +getValueFromTags(interaction.tags, 'Timestamp') ||
+        (interaction?.block?.timestamp ? interaction?.block?.timestamp * 1000 : Date.now())
 
-          if (!existingActivity) {
-            const repo = state.repos[repoId]
-            const created = ['forkRepository', 'initialize'].includes(interaction.input.function)
-            accumulator.push({
-              type: 'REPOSITORY',
-              repo: getRepoWithParent(state.repos, repo),
-              created,
-              timestamp: interaction.timestamp,
-              author: interaction.author
-            })
-          }
+      if (repositoryActions.includes(action) && repoId) {
+        const existingActivity = accumulator.find((activity) => activity.repo.id === repoId && !activity.created)
+        if (!existingActivity) {
+          const repo = repos.current[repoId]
+          const created = ['Repo-Forked', 'Repo-Created'].includes(action)
+          accumulator.push({
+            type: 'REPOSITORY',
+            repo,
+            created,
+            timestamp: timestamp,
+            author: interaction.owner.address
+          } as RepositoryActivityType)
+        }
+      } else if (deploymentActions.includes(action) && repoId) {
+        const repo = repos.current[repoId]
+        const created = action === 'Deployment-Added'
+        const deployment = {
+          deployedBy: interaction.owner.address,
+          commitOid: '',
+          timestamp: timestamp,
+          ...JSON.parse(getValueFromTags(interaction.tags, 'Deployment'))
         }
 
-        return accumulator
-      }, [] as RepositoryActivityType[])
+        accumulator.push({
+          type: 'DEPLOYMENT',
+          repo,
+          deployment,
+          created,
+          timestamp: timestamp
+        } as DeploymentActivityType)
+      } else if (domainActions.includes(action) && repoId) {
+        const repo = repos.current[repoId]
+        const created = action === 'addDomain'
+        const parsedDomain = JSON.parse(getValueFromTags(interaction.tags, 'Deployment'))
+        const domain = created
+          ? {
+              txId: parsedDomain.txId,
+              name: parsedDomain.name,
+              contractTxId: parsedDomain.contractTxId,
+              controller: interaction.owner.address,
+              timestamp
+            }
+          : repo.domains.find((d) => d.name === parsedDomain.name || d.contractTxId === parsedDomain.contractTxId)
 
-      allActivities = [...allActivities, ...repositoryActivities]
-    }
+        accumulator.push({
+          type: 'DOMAIN',
+          repo: repo,
+          domain,
+          created,
+          timestamp: timestamp
+        } as DomainActivityType)
+      } else if (issueActions.includes(action) && repoId) {
+        const repo = repos.current[repoId]
+        const created = action === 'Issue-Created'
+        const issueParsed = JSON.parse(getValueFromTags(interaction.tags, 'Issue'))
+        const issue = created
+          ? {
+              id: +issueParsed.id,
+              repoId: repo.id,
+              title: issueParsed.title,
+              description: issueParsed.description ?? '',
+              author: interaction.owner.address,
+              status: 'OPEN',
+              timestamp,
+              assignees: [],
+              activities: [],
+              bounties: [],
+              linkedPRIds: []
+            }
+          : repo.issues[+issueParsed.id - 1]
 
-    if (filters.Issues) {
-      const issueActivities = validInteractions
-        .filter((interaction) => issueInteractionFunctions.includes(interaction.input.function))
-        .map((interaction) => {
-          const { payload } = interaction.input
-          const repo = state.repos[payload.repoId]
-          const created = interaction.input.function === 'createIssue'
-          const issue = created
-            ? {
-                id: '',
-                repoId: repo.id,
-                title: payload.title,
-                description: payload.description ?? '',
-                author: interaction.author,
-                status: 'OPEN',
-                timestamp: interaction.timestamp * 1000,
-                assignees: [],
-                activities: [],
-                bounties: [],
-                linkedPRIds: []
-              }
-            : repo.issues[+payload.issueId - 1]
-          return {
-            type: 'ISSUE',
-            repo: getRepoWithParent(state.repos, repo),
-            issue: {
-              ...issue,
-              timestamp: interaction.timestamp * 1000,
-              author: interaction.author,
-              status: created || payload.status === 'REOPEN' ? 'OPEN' : 'COMPLETED'
-            },
-            created,
-            timestamp: interaction.timestamp
-          } as IssueActivityType
-        })
-      allActivities = [...allActivities, ...issueActivities]
-    }
+        accumulator.push({
+          type: 'ISSUE',
+          repo,
+          issue: {
+            ...issue,
+            timestamp,
+            author: interaction.owner.address,
+            status: created ? 'OPEN' : issueParsed.status
+          },
+          created,
+          timestamp: timestamp
+        } as IssueActivityType)
+      } else if (pullRequestActions.includes(action) && repoId) {
+        const repo = repos.current[repoId]
+        const created = action === 'PullRequest-Created'
+        const prParsed = JSON.parse(getValueFromTags(interaction.tags, 'Pull-Request'))
+        const pullRequest = created
+          ? {
+              id: +prParsed.id,
+              repoId: repo.id,
+              title: prParsed.title,
+              author: interaction.owner.address,
+              status: 'OPEN',
+              reviewers: [],
+              activities: [],
+              timestamp
+            }
+          : repo.pullRequests[+prParsed.id - 1]
 
-    if (filters['Pull Requests']) {
-      const pullRequestActivities = validInteractions
-        .filter((interaction) => pullRequestInteractionFunctions.includes(interaction.input.function))
-        .map((interaction) => {
-          const { payload } = interaction.input
-          const repo = state.repos[payload.repoId]
-          const created = interaction.input.function === 'createPullRequest'
-          const pullRequest = created
-            ? {
-                id: '',
-                repoId: payload.repoId,
-                title: payload.title,
-                description: payload.description ?? '',
-                baseBranch: payload.baseBranch,
-                compareBranch: payload.compareBranch,
-                baseBranchOid: payload.baseBranchOid,
-                author: interaction.author,
-                status: 'OPEN',
-                reviewers: [],
-                activities: [],
-                timestamp: interaction.timestamp * 1000,
-                baseRepo: payload.baseRepo,
-                compareRepo: payload.compareRepo
-              }
-            : repo.pullRequests[+payload.prId - 1]
-          return {
-            type: 'PULL_REQUEST',
-            repo: getRepoWithParent(state.repos, repo),
-            pullRequest: {
-              ...pullRequest,
-              timestamp: interaction.timestamp * 1000,
-              author: interaction.author,
-              status: created || payload.status === 'REOPEN' ? 'OPEN' : payload.status
-            },
-            created,
-            timestamp: interaction.timestamp
-          } as PullRequestActivityType
-        })
-      allActivities = [...allActivities, ...pullRequestActivities]
-    }
+        accumulator.push({
+          type: 'PULL_REQUEST',
+          repo,
+          pullRequest: {
+            ...pullRequest,
+            timestamp,
+            author: interaction.owner.address,
+            status: created ? 'OPEN' : prParsed.status
+          },
+          created,
+          timestamp: timestamp
+        } as PullRequestActivityType)
+      } else if (bountyActions.includes(action) && repoId) {
+        const repo = repos.current[repoId]
+        const issueId = getValueFromTags(interaction.tags, 'Issue-Id')
+        const issue = repo.issues[+issueId - 1]
+        const bountyParsed = JSON.parse(getValueFromTags(interaction.tags, 'Bounty') || '{}')
+        const bountyId = getValueFromTags(interaction.tags, 'Bounty-Id')
+        const created = action === 'Bounty-Created'
+        const bounty = created
+          ? {
+              ...bountyParsed,
+              paymentTxId: null,
+              status: 'ACTIVE',
+              timestamp
+            }
+          : issue.bounties[+bountyId - 1]
 
-    if (filters.Bounties) {
-      const bountiesActivities = validInteractions
-        .filter((interaction) => bountyInteractionFunctions.includes(interaction.input.function))
-        .map((interaction) => {
-          const { payload } = interaction.input
-          const repo = state.repos[payload.repoId]
-          const issue = repo.issues[+payload.issueId - 1]
-          const created = interaction.input.function === 'createNewBounty'
-          const bounty = created
-            ? {
-                id: '',
-                amount: payload.amount,
-                expiry: payload.expiry,
-                paymentTxId: null,
-                status: 'ACTIVE',
-                timestamp: interaction.timestamp * 1000
-              }
-            : issue.bounties[+payload.bountyId - 1]
-          return {
-            type: 'BOUNTY',
-            repo: getRepoWithParent(state.repos, repo),
-            bounty,
-            issue,
-            created,
-            timestamp: interaction.timestamp
-          } as BountyActivityType
-        })
+        accumulator.push({
+          type: 'BOUNTY',
+          repo,
+          bounty,
+          issue,
+          created,
+          timestamp: timestamp
+        } as BountyActivityType)
+      }
 
-      allActivities = [...allActivities, ...bountiesActivities]
-    }
+      return accumulator
+    }, [] as Activity[])
 
-    if (filters.Deployments) {
-      const deploymentActivities = validInteractions
-        .filter((interaction) => deploymentInteractionFunctions.includes(interaction.input.function))
-        .map((interaction) => {
-          const { payload } = interaction.input
-          const repo = state.repos[payload.id]
-          const created = interaction.input.function === 'addDeployment'
-          const deployment = {
-            txId: payload.deployment.txId,
-            branch: repo.deploymentBranch,
-            deployedBy: interaction.author,
-            commitOid: payload.deployment.commitOid,
-            commitMessage: payload.deployment.commitMessage,
-            timestamp: interaction.timestamp * 1000
-          }
-
-          return {
-            type: 'DEPLOYMENT',
-            repo: getRepoWithParent(state.repos, repo),
-            deployment,
-            created,
-            timestamp: interaction.timestamp
-          } as DeploymentActivityType
-        })
-      allActivities = [...allActivities, ...deploymentActivities]
-    }
-
-    if (filters.Domains) {
-      const domainActivities = validInteractions
-        .filter((interaction) => domainInteractionFunctions.includes(interaction.input.function))
-        .map((interaction) => {
-          const { payload } = interaction.input
-          const repo = state.repos[payload.id]
-          const created = interaction.input.function === 'addDomain'
-          const domain = created
-            ? {
-                txId: payload.domain.txId,
-                name: payload.domain.name,
-                contractTxId: payload.domain.contractTxId,
-                controller: interaction.author,
-                timestamp: interaction.timestamp * 1000
-              }
-            : repo.domains.find((d) => d.name === payload.domain.name || d.contractTxId === payload.domain.contractTxId)
-
-          return {
-            type: 'DOMAIN',
-            repo: getRepoWithParent(state.repos, repo),
-            domain,
-            created,
-            timestamp: interaction.timestamp
-          } as DomainActivityType
-        })
-      allActivities = [...allActivities, ...domainActivities]
-    }
+    allActivities = [...allActivities, ...repositoryActivities]
 
     // Filter out all private repos activities
     allActivities = allActivities.filter((activity) => !activity?.repo?.private)
@@ -345,6 +274,7 @@ export default function Activities({ filters }: ActivitiesProps) {
       [...previousActivities, ...allActivities].sort((a, b) => b.timestamp - a.timestamp)
     )
 
+    setHasNextPage(interactions?.length === limit)
     setCurrentPage((page) => page + 1)
     setIsLoading(false)
   }
@@ -353,7 +283,7 @@ export default function Activities({ filters }: ActivitiesProps) {
     setCurrentPage(1)
     setHasNextPage(true)
     setActivities([])
-    fetchActivities({ page: 1 })
+    fetchActivities({ refresh: true })
   }, [filters])
 
   useEffect(() => {

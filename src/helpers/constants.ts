@@ -1,4 +1,3 @@
-export const CONTRACT_TX_ID = 'w5ZU15Y2cLzZlu3jewauIlnzbKw-OAxbN9G5TbuuiDQ'
 export const AOS_PROCESS_ID = 'EaBvvVYxSRQqXK104AzpNAcLGJ8lXvUbDk52eUBOHrY'
 export const VITE_GA_TRACKING_ID = 'G-L433HSR0D0'
 export const AMPLITUDE_TRACKING_ID = '92a463755ed8c8b96f0f2353a37b7b2'

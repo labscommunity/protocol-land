@@ -30,8 +30,6 @@ export const isRepositoryNameAvailable = async (name: string): Promise<boolean> 
     Owner: useGlobalStore.getState().authState.address as string
   })
 
-  console.log(Messages)
-
   return JSON.parse(Messages[0].Data).result
 }
 

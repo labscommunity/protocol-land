@@ -16,25 +16,6 @@ export interface Interaction {
   tags: Tag[]
 }
 
-export type Interactions = Array<{
-  interaction: Interaction
-}>
-
-export interface Paging {
-  total: number
-  limit: number
-  items: number
-  page: number
-  pages: number
-}
-
-export interface ValidityResponse {
-  validity: Record<string, boolean>
-  state: {
-    repos: { [key: string]: Repo }
-  }
-}
-
 export type Filters = {
   Repositories: boolean
   'Pull Requests': boolean

@@ -38,7 +38,7 @@ export default function RepositoryActivity({
                 {resolveUsernameOrShorten(activity.author)}
               </Link>
             </UserPopover>{' '}
-            {formatDistanceToNow(new Date(activity.timestamp * 1000), { addSuffix: true })}
+            {formatDistanceToNow(new Date(activity.timestamp), { addSuffix: true })}
           </span>
           <div className="flex gap-3 items-center">
             <span>{openPullsCount} Open Pull Requests</span>

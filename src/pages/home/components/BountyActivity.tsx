@@ -39,7 +39,7 @@ export default function BountyActivity({ activity, setIsForkModalOpen, setRepo }
             <Icon />
             <span>
               {isActive ? 'Bounty expires in' : `Bounty ${bounty.status.toLowerCase()}`}{' '}
-              {formatDistanceToNow(new Date(activity.timestamp * 1000), { addSuffix: true })}
+              {formatDistanceToNow(new Date(activity.timestamp), { addSuffix: true })}
             </span>
           </div>
           <div>{activeBountiesCount} Active Bounties </div>
