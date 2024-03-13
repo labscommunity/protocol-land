@@ -7,7 +7,7 @@ author:
   twitter: 'https://twitter.com/jenmarieinc'
 slug: 'redefining-static-page-deployment-with-protocol-land'
 category: 'ANNOUNCEMENT'
-description: "Explore Dragon Deploy, the latest Protocol.Land feature that revolutionizes static page deployment on Arweave, providing a seamless experience for developers writing code on the permaweb. Join Protocol.Land today."
+description: "Explore Dragon Deploy, the latest Protocol.Land integration that revolutionizes static page deployment on Arweave, providing a seamless experience for developers writing code on the permaweb. Join Protocol.Land today."
 coverImage: '/blog/images/pl-integrates-dragon-deploy.png'
 transparentThumbnail: 'https://u2hyhgglc4egidq3zkthnzdruyatqwql5lk5foen3zv5zf5fo2wa.arweave.net/po-DmMsXCGQOG8qmduRxpgE4Wgvq1dK4jd5r3Jeldqw'
 themeColor: 'rgba(0, 0, 0, .15)'
@@ -15,7 +15,7 @@ publishedAt: '2024-03-12'
 ---
 
 ## Dragon Deploy: Redefining Static Page Deployment with Protocol.Land
-Protocol.Land’s Dragon Deploy—an innovative feature to reshape the landscape of deploying static pages on Arweave. This enhancement streamlines the deployment process, creating a smooth flow for developers writing code on the permaweb.
+Protocol.Land’s [Dragon Deploy](https://dragondeploy.xyz) integration —an innovative feature to reshape the landscape of deploying static pages on Arweave. This enhancement streamlines the deployment process, creating a smooth flow for developers writing code on the permaweb.
 
 Protocol.Land's web UI simplifies static page deployment on Arweave, offering a user-friendly experience with just a few clicks. The intuitive interface ensures a trouble-free experience for developers.
 
@@ -28,5 +28,5 @@ Prior to Dragon Deploy, users could host a static website on Arweave using ArDri
 - **Eternal Preservation and Accessibility:** Deployed code on Arweave via Dragon Deploy benefits from eternal preservation on the Arweave network. On-chain snapshots, facilitated by Warp contracts, transform each commit into a permanent record, providing a verifiable history crucial for tracking progress and validating the integrity of the work. The Arweave Name System (ArNS) enhances accessibility by providing user-friendly aliases for deployments, making it easier for developers and end-users to access and interact with deployed content.
 
 ### Get Started
-Just go to [https://protocol.land](https://protocol.land) and click "Connect Wallet." Using ArConnect, you can connect using your Arweave wallet or Google. Join Protocol.Land now to make your first permanent git repository with your social account. Check out our [comprehensive documentation](https://docs.protocol.land/working-with-deployments/deploy-a-static-page) and join our [Community Discord](https://discord.com/invite/GqxX2vtwRj) for guidance and support.
+Just go to [https://protocol.land](https://protocol.land), click "Connect Wallet" and you can connect using ArConnect or Google. Join Protocol.Land now to make your first permanent git repository with your social account. Check out our [comprehensive documentation](https://docs.protocol.land/working-with-deployments/deploy-a-static-page) and join our [Community Discord](https://discord.com/invite/GqxX2vtwRj) for guidance and support.
 
