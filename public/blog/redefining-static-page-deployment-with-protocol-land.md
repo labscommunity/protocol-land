@@ -15,7 +15,7 @@ publishedAt: '2024-03-12'
 ---
 
 ## Dragon Deploy: Redefining Static Page Deployment with Protocol.Land
-Protocol.Land’s Dragon Deploy—an innovative feature to reshape the landscape of deploying static pages on Arweave. This enhancement streamlines the deployment process, creating a smooth flow for developers writing code on the permaweb.
+Protocol.Land’s [Dragon Deploy](https://dragondeploy.xyz) integration —an innovative feature to reshape the landscape of deploying static pages on Arweave. This enhancement streamlines the deployment process, creating a smooth flow for developers writing code on the permaweb.
 
 Protocol.Land's web UI simplifies static page deployment on Arweave, offering a user-friendly experience with just a few clicks. The intuitive interface ensures a trouble-free experience for developers.
 
