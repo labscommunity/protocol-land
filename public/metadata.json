@@ -18,7 +18,7 @@
       "status": "published",
       "href": "/blog/protocol-land-integrates-othent",
       "file": "/blog/protocol-land-integrates-othent.md",
-      "featured": true,
+      "featured": false,
       "category": "ANNOUNCEMENT",
       "description": "Protocol.Land integrates Othent for streamlined onboarding and secure way to access Protocol Land with social logins. Checkout what's in store and how to get started.",
       "coverImage": "/blog/images/protocol-land-integrates-othent.jpg",
@@ -35,6 +35,18 @@
       "description": "Effortlessly backup GitHub repositories on Protocol.Land, a decentralized code collaboration platform built atop Arweave ensuring permanent, verifiable backups.",
       "coverImage": "/blog/images/backing-up-github-repositories-to-protocol-land.png",
       "publishedAt": "2024-03-11"
+    },
+    {
+      "id": 4,
+      "title": "Dragon Deploy: Redefining Static Page Deployment with Protocol.Land",
+      "status": "published",
+      "href": "/blog/redefining-static-page-deployment-with-protocol-land",
+      "file": "/blog/redefining-static-page-deployment-with-protocol-land.md",
+      "featured": true,
+      "category": "ANNOUNCEMENT",
+      "description": "Explore Dragon Deploy, the latest Protocol.Land feature that revolutionizes static page deployment on Arweave, providing a seamless experience for developers writing code on the permaweb. Join Protocol.Land today.",
+      "coverImage": "/blog/images/pl-integrates-dragon-deploy.png",
+      "publishedAt": "2024-03-12"
     }
   ]
 }
