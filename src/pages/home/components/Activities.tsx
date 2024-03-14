@@ -153,8 +153,8 @@ export default function Activities({ filters }: ActivitiesProps) {
         } as DeploymentActivityType)
       } else if (domainActions.includes(action) && repoId) {
         const repo = repos.current[repoId]
-        const created = action === 'addDomain'
-        const parsedDomain = JSON.parse(getValueFromTags(interaction.tags, 'Deployment'))
+        const created = action === 'Domain-Added'
+        const parsedDomain = JSON.parse(getValueFromTags(interaction.tags, 'Domain'))
         const domain = created
           ? {
               txId: parsedDomain.txId,
