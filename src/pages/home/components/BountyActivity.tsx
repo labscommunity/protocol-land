@@ -38,7 +38,7 @@ export default function BountyActivity({ activity, setIsForkModalOpen, setRepo }
           <div className="flex items-center gap-1">
             <Icon />
             <span>
-              {isActive ? 'Bounty expires in' : `Bounty ${bounty.status.toLowerCase()}`}{' '}
+              {isActive ? 'Bounty expires' : `Bounty ${bounty.status.toLowerCase()}`}{' '}
               {formatDistanceToNow(new Date(isActive ? bounty.expiry * 1000 : activity.timestamp), { addSuffix: true })}
             </span>
           </div>

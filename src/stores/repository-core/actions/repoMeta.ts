@@ -1,23 +1,15 @@
-import { createDataItemSigner, dryrun, message, result } from '@permaweb/aoconnect'
+import { dryrun } from '@permaweb/aoconnect'
 
 import { AOS_PROCESS_ID } from '@/helpers/constants'
-import { extractMessage } from '@/helpers/extractMessage'
 import { getTags } from '@/helpers/getTags'
-import { getSigner } from '@/helpers/wallet/getSigner'
+import { getRepo, sendMessage } from '@/lib/contract'
 import { useGlobalStore } from '@/stores/globalStore'
 import { Repo } from '@/types/repository'
 // Repo Meta
 
 export const getRepositoryMetaFromContract = async (id: string): Promise<{ result: Repo }> => {
-  const { Messages } = await dryrun({
-    process: AOS_PROCESS_ID,
-    tags: getTags({
-      Action: 'Get-Repository',
-      Id: id
-    })
-  })
-
-  return JSON.parse(Messages[0].Data)
+  const repo = await getRepo(id)
+  return { result: repo }
 }
 
 export const isRepositoryNameAvailable = async (name: string): Promise<boolean> => {
@@ -63,97 +55,38 @@ export const handleAcceptContributor = async (
     tags.GhSyncPrivateStateTxId = ghSyncPrivateStateTxId
   }
 
-  const messageId = await message({
-    process: AOS_PROCESS_ID,
-    tags: getTags(tags),
-    signer: createDataItemSigner(await getSigner({ injectedSigner: false }))
-  })
+  await sendMessage({ tags: getTags(tags) })
 
-  const { Output } = await result({
-    message: messageId,
-    process: AOS_PROCESS_ID
-  })
-
-  if (Output?.data?.output) {
-    throw new Error(extractMessage(Output?.data?.output))
-  }
-
-  const { Messages } = await dryrun({
-    process: AOS_PROCESS_ID,
-    tags: getTags({
-      Action: 'Get-Repository',
-      Id: id
-    })
-  })
-
-  const repo = JSON.parse(Messages[0].Data)?.result as Repo
+  const repo = await getRepo(id)
 
   return { contributorInvites: repo.contributorInvites, contributors: repo.contributors, githubSync: repo.githubSync }
 }
 
 export const handleRejectContributor = async (id: string) => {
   //rotate keys
-  const messageId = await message({
-    process: AOS_PROCESS_ID,
+  await sendMessage({
     tags: getTags({
       Action: 'Reject-Contributor-Invite',
-      Id: id
-    }),
-    signer: createDataItemSigner(await getSigner({ injectedSigner: false }))
-  })
-
-  const { Output } = await result({
-    message: messageId,
-    process: AOS_PROCESS_ID
-  })
-
-  if (Output?.data?.output) {
-    throw new Error(extractMessage(Output?.data?.output))
-  }
-
-  const { Messages } = await dryrun({
-    process: AOS_PROCESS_ID,
-    tags: getTags({
-      Action: 'Get-Repository',
       Id: id
     })
   })
 
-  const repo = JSON.parse(Messages[0].Data)?.result as Repo
+  const repo = await getRepo(id)
 
   return { contributorInvites: repo.contributorInvites, contributors: repo.contributors }
 }
 
 export const handleCancelContributorInvite = async (id: string, contributor: string) => {
   //rotate keys
-  const messageId = await message({
-    process: AOS_PROCESS_ID,
+  await sendMessage({
     tags: getTags({
       Action: 'Cancel-Contributor-Invite',
       Id: id,
       Contributor: contributor
-    }),
-    signer: createDataItemSigner(await getSigner({ injectedSigner: false }))
-  })
-
-  const { Output } = await result({
-    message: messageId,
-    process: AOS_PROCESS_ID
-  })
-
-  if (Output?.data?.output) {
-    throw new Error(extractMessage(Output?.data?.output))
-  }
-
-  const { Messages } = await dryrun({
-    process: AOS_PROCESS_ID,
-    tags: getTags({
-      Action: 'Get-Repository',
-      Id: id
     })
   })
 
-  const repo = JSON.parse(Messages[0].Data)?.result as Repo
+  const repo = await getRepo(id)
 
   return repo.contributorInvites
 }

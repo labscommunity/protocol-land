@@ -1,12 +1,9 @@
-import { createDataItemSigner, dryrun, message, result } from '@permaweb/aoconnect'
 import Arweave from 'arweave'
 import { Tag } from 'arweave/web/lib/transaction'
 import Dexie from 'dexie'
 import git from 'isomorphic-git'
 import { v4 as uuidv4 } from 'uuid'
 
-import { AOS_PROCESS_ID } from '@/helpers/constants'
-import { extractMessage } from '@/helpers/extractMessage'
 import { getTags } from '@/helpers/getTags'
 import { toArrayBuffer } from '@/helpers/toArrayBuffer'
 import { waitFor } from '@/helpers/waitFor'
@@ -16,8 +13,9 @@ import { signAndSendTx } from '@/helpers/wallet/signAndSend'
 import { withAsync } from '@/helpers/withAsync'
 import { useGlobalStore } from '@/stores/globalStore'
 import { ForkRepositoryOptions } from '@/stores/repository-core/types'
-import { Deployment, Domain, PrivateState, Repo } from '@/types/repository'
+import { Deployment, Domain, PrivateState } from '@/types/repository'
 
+import { getRepo, sendMessage } from '../contract'
 import { decryptAesKeyWithPrivateKey } from '../private-repos/crypto/decrypt'
 import {
   encryptAesKeyWithPublicKeys,
@@ -94,8 +92,7 @@ export async function postNewRepo({ id, title, description, file, owner, visibil
     throw new Error('Failed to post Git repository')
   }
 
-  const messageId = await message({
-    process: AOS_PROCESS_ID,
+  await sendMessage({
     tags: getTags({
       Action: 'Initialize-Repository',
       Id: id,
@@ -104,18 +101,8 @@ export async function postNewRepo({ id, title, description, file, owner, visibil
       DataTxId: dataTxResponse,
       Visibility: visibility,
       PrivateStateTxId: privateStateTxId
-    }),
-    signer: createDataItemSigner(await getSigner({ injectedSigner: false }))
+    })
   })
-
-  const { Output } = await result({
-    message: messageId,
-    process: AOS_PROCESS_ID
-  })
-
-  if (Output?.data?.output) {
-    throw new Error(extractMessage(Output?.data?.output))
-  }
 
   return { txResponse: dataTxResponse }
 }
@@ -177,34 +164,15 @@ export async function updateGithubSync({ id, currentGithubSync, githubSync }: an
 
   githubSync.partialUpdate = !!currentGithubSync
 
-  const messageId = await message({
-    process: AOS_PROCESS_ID,
+  await sendMessage({
     tags: getTags({
       Action: 'Update-Github-Sync',
       Id: id,
       GithubSync: JSON.stringify(githubSync)
-    }),
-    signer: createDataItemSigner(await getSigner({ injectedSigner: false }))
-  })
-
-  const { Output } = await result({
-    message: messageId,
-    process: AOS_PROCESS_ID
-  })
-
-  if (Output?.data?.output) {
-    throw new Error(extractMessage(Output?.data?.output))
-  }
-
-  const { Messages } = await dryrun({
-    process: AOS_PROCESS_ID,
-    tags: getTags({
-      Action: 'Get-Repository',
-      Id: id
     })
   })
 
-  const repo = JSON.parse(Messages[0].Data)?.result as Repo
+  const repo = await getRepo(id)
 
   if (!repo) return
 
@@ -216,8 +184,7 @@ export async function updateGithubSync({ id, currentGithubSync, githubSync }: an
 export async function createNewFork(data: ForkRepositoryOptions) {
   const uuid = uuidv4()
 
-  const messageId = await message({
-    process: AOS_PROCESS_ID,
+  await sendMessage({
     tags: getTags({
       Action: 'Fork-Repository',
       Id: uuid,
@@ -225,18 +192,8 @@ export async function createNewFork(data: ForkRepositoryOptions) {
       Description: data.description,
       DataTxId: data.dataTxId,
       Parent: data.parent
-    }),
-    signer: createDataItemSigner(await getSigner({ injectedSigner: false }))
+    })
   })
-
-  const { Output } = await result({
-    message: messageId,
-    process: AOS_PROCESS_ID
-  })
-
-  if (Output?.data?.output) {
-    throw new Error(extractMessage(Output?.data?.output))
-  }
 
   return uuid
 }
@@ -295,24 +252,13 @@ export async function postUpdatedRepo({ fs, dir, owner, id, isPrivate, privateSt
     throw new Error('Failed to post Git repository')
   }
 
-  const messageId = await message({
-    process: AOS_PROCESS_ID,
+  await sendMessage({
     tags: getTags({
       Action: 'Update-Repository-TxId',
       Id: id,
       DataTxId: dataTxResponse
-    }),
-    signer: createDataItemSigner(await getSigner({ injectedSigner: false }))
+    })
   })
-
-  const { Output } = await result({
-    message: messageId,
-    process: AOS_PROCESS_ID
-  })
-
-  if (Output?.data?.output) {
-    throw new Error(extractMessage(Output?.data?.output))
-  }
 
   return dataTxResponse
 }
@@ -390,34 +336,13 @@ export async function rotateKeysAndUpdate({ id, currentPrivateStateTxId, type }:
         }
   )
 
-  const messageId = await message({
-    process: AOS_PROCESS_ID,
-    tags,
-    signer: createDataItemSigner(await getSigner({ injectedSigner: false }))
-  })
-
-  const { Output } = await result({
-    message: messageId,
-    process: AOS_PROCESS_ID
-  })
-
-  if (Output?.data?.output) {
-    throw new Error(extractMessage(Output?.data?.output))
-  }
+  await sendMessage({ tags })
 }
 
 export async function githubSyncAllowPending(id: string, currentPrivateStateTxId: string) {
   await rotateKeysAndUpdate({ id, currentPrivateStateTxId, type: 'GITHUB_SYNC' })
 
-  const { Messages } = await dryrun({
-    process: AOS_PROCESS_ID,
-    tags: getTags({
-      Action: 'Get-Repository',
-      Id: id
-    })
-  })
-
-  const repo = JSON.parse(Messages[0].Data)?.result as Repo
+  const repo = await getRepo(id)
 
   if (!repo) return
 
@@ -480,97 +405,45 @@ export async function unmountRepoFromBrowser(name: string) {
 }
 
 export async function updateRepoName(repoId: string, newName: string) {
-  const messageId = await message({
-    process: AOS_PROCESS_ID,
+  await sendMessage({
     tags: getTags({
       Action: 'Update-Repository-Details',
       Id: repoId,
       Name: newName
-    }),
-    signer: createDataItemSigner(await getSigner({ injectedSigner: false }))
+    })
   })
-
-  const { Output } = await result({
-    message: messageId,
-    process: AOS_PROCESS_ID
-  })
-
-  if (Output?.data?.output) {
-    throw new Error(extractMessage(Output?.data?.output))
-  }
 }
 
 export async function updateRepoDescription(description: string, repoId: string) {
-  const messageId = await message({
-    process: AOS_PROCESS_ID,
+  await sendMessage({
     tags: getTags({
       Action: 'Update-Repository-Details',
       Id: repoId,
       Description: description
-    }),
-    signer: createDataItemSigner(await getSigner({ injectedSigner: false }))
+    })
   })
-
-  const { Output } = await result({
-    message: messageId,
-    process: AOS_PROCESS_ID
-  })
-
-  if (Output?.data?.output) {
-    throw new Error(extractMessage(Output?.data?.output))
-  }
 }
 
 export async function updateRepoDeploymentBranch(deploymentBranch: string, repoId: string) {
-  const messageId = await message({
-    process: AOS_PROCESS_ID,
+  await sendMessage({
     tags: getTags({
       Action: 'Update-Repository-Details',
       Id: repoId,
       DeploymentBranch: deploymentBranch
-    }),
-    signer: createDataItemSigner(await getSigner({ injectedSigner: false }))
+    })
   })
-
-  const { Output } = await result({
-    message: messageId,
-    process: AOS_PROCESS_ID
-  })
-
-  if (Output?.data?.output) {
-    throw new Error(extractMessage(Output?.data?.output))
-  }
 }
 
 export async function addDeployment(deployment: Partial<Deployment>, repoId: string) {
-  const messageId = await message({
-    process: AOS_PROCESS_ID,
+  await sendMessage({
     tags: getTags({
       Action: 'Add-Deployment',
       Id: repoId,
       Deployment: JSON.stringify(deployment)
-    }),
-    signer: createDataItemSigner(await getSigner({ injectedSigner: false }))
-  })
-
-  const { Output } = await result({
-    message: messageId,
-    process: AOS_PROCESS_ID
-  })
-
-  if (Output?.data?.output) {
-    throw new Error(extractMessage(Output?.data?.output))
-  }
-
-  const { Messages } = await dryrun({
-    process: AOS_PROCESS_ID,
-    tags: getTags({
-      Action: 'Get-Repository',
-      Id: repoId
     })
   })
 
-  const repo = JSON.parse(Messages[0].Data)?.result as Repo
+  const repo = await getRepo(repoId)
 
   if (!repo) return
 
@@ -583,123 +456,55 @@ export async function addDeployment(deployment: Partial<Deployment>, repoId: str
 }
 
 export async function inviteContributor(address: string, repoId: string) {
-  const messageId = await message({
-    process: AOS_PROCESS_ID,
+  await sendMessage({
     tags: getTags({
       Action: 'Invite-Contributor',
       Id: repoId,
       Contributor: address
-    }),
-    signer: createDataItemSigner(await getSigner({ injectedSigner: false }))
-  })
-
-  const { Output } = await result({
-    message: messageId,
-    process: AOS_PROCESS_ID
-  })
-
-  if (Output?.data?.output) {
-    throw new Error(extractMessage(Output?.data?.output))
-  }
-
-  const { Messages } = await dryrun({
-    process: AOS_PROCESS_ID,
-    tags: getTags({
-      Action: 'Get-Repository',
-      Id: repoId
     })
   })
 
-  const repo = JSON.parse(Messages[0].Data)?.result as Repo
+  const repo = await getRepo(repoId)
 
   return repo.contributorInvites
 }
 
 export async function addDomain(domain: Omit<Domain, 'timestamp'>, repoId: string) {
-  const messageId = await message({
-    process: AOS_PROCESS_ID,
+  await sendMessage({
     tags: getTags({
       Action: 'Add-Domain',
       Id: repoId,
       Domain: JSON.stringify(domain)
-    }),
-    signer: createDataItemSigner(await getSigner({ injectedSigner: false }))
-  })
-
-  const { Output } = await result({
-    message: messageId,
-    process: AOS_PROCESS_ID
-  })
-
-  if (Output?.data?.output) {
-    throw new Error(extractMessage(Output?.data?.output))
-  }
-
-  const { Messages } = await dryrun({
-    process: AOS_PROCESS_ID,
-    tags: getTags({
-      Action: 'Get-Repository',
-      Id: repoId
     })
   })
 
-  const repo = JSON.parse(Messages[0].Data)?.result as Repo
+  const repo = await getRepo(repoId)
 
   return repo.domains
 }
 
 export async function updateDomain(domain: Omit<Domain, 'controller' | 'timestamp'>, repoId: string) {
-  const messageId = await message({
-    process: AOS_PROCESS_ID,
+  await sendMessage({
     tags: getTags({
       Action: 'Update-Domain',
       Id: repoId,
       Domain: JSON.stringify(domain)
-    }),
-    signer: createDataItemSigner(await getSigner({ injectedSigner: false }))
-  })
-
-  const { Output } = await result({
-    message: messageId,
-    process: AOS_PROCESS_ID
-  })
-
-  if (Output?.data?.output) {
-    throw new Error(extractMessage(Output?.data?.output))
-  }
-
-  const { Messages } = await dryrun({
-    process: AOS_PROCESS_ID,
-    tags: getTags({
-      Action: 'Get-Repository',
-      Id: repoId
     })
   })
 
-  const repo = JSON.parse(Messages[0].Data)?.result as Repo
+  const repo = await getRepo(repoId)
 
   return repo.domains
 }
 
 export async function addContributor(address: string, repoId: string) {
-  const messageId = await message({
-    process: AOS_PROCESS_ID,
+  await sendMessage({
     tags: getTags({
       Action: 'Add-Contributor',
       Id: repoId,
       Contributor: address
-    }),
-    signer: createDataItemSigner(await getSigner({ injectedSigner: false }))
+    })
   })
-
-  const { Output } = await result({
-    message: messageId,
-    process: AOS_PROCESS_ID
-  })
-
-  if (Output?.data?.output) {
-    throw new Error(extractMessage(Output?.data?.output))
-  }
 }
 
 type PostUpdatedRepoOptions = {

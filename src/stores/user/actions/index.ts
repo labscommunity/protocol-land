@@ -1,10 +1,9 @@
-import { createDataItemSigner, dryrun, message, result } from '@permaweb/aoconnect'
+import { dryrun } from '@permaweb/aoconnect'
 
 import { AOS_PROCESS_ID } from '@/helpers/constants'
-import { extractMessage } from '@/helpers/extractMessage'
 import { getTags } from '@/helpers/getTags'
-import { getSigner } from '@/helpers/wallet/getSigner'
 import { withAsync } from '@/helpers/withAsync'
+import { sendMessage } from '@/lib/contract'
 import { useGlobalStore } from '@/stores/globalStore'
 import { Repo, RepoWithParent } from '@/types/repository'
 import { User } from '@/types/user'
@@ -74,20 +73,7 @@ export const saveUserDetails = async (details: Partial<User>, address: string): 
     }
   }
 
-  const messageId = await message({
-    process: AOS_PROCESS_ID,
-    tags: getTags({ Action: 'Update-Profile-Details', Payload: JSON.stringify(details || {}) }),
-    signer: createDataItemSigner(await getSigner({ injectedSigner: false }))
-  })
-
-  const { Output } = await result({
-    message: messageId,
-    process: AOS_PROCESS_ID
-  })
-
-  if (Output?.data?.output) {
-    throw new Error(extractMessage(Output?.data?.output))
-  }
+  await sendMessage({ tags: getTags({ Action: 'Update-Profile-Details', Payload: JSON.stringify(details || {}) }) })
 
   const { Messages } = await dryrun({
     process: AOS_PROCESS_ID,

@@ -1,17 +1,14 @@
-import { createDataItemSigner, dryrun, message, result } from '@permaweb/aoconnect'
 import git, { Errors } from 'isomorphic-git'
 
-import { AOS_PROCESS_ID } from '@/helpers/constants'
-import { extractMessage } from '@/helpers/extractMessage'
 import { getTags } from '@/helpers/getTags'
 import { trackGoogleAnalyticsEvent } from '@/helpers/google-analytics'
 import { isInvalidInput } from '@/helpers/isInvalidInput'
 import { waitFor } from '@/helpers/waitFor'
-import { getSigner } from '@/helpers/wallet/getSigner'
 import { withAsync } from '@/helpers/withAsync'
 import { useGlobalStore } from '@/stores/globalStore'
-import { PullRequest, Repo } from '@/types/repository'
+import { PullRequest } from '@/types/repository'
 
+import { getRepo, sendMessage } from '../contract'
 import { postPRStatDataTxToArweave } from '../user'
 import { postUpdatedRepo } from '.'
 import { checkoutBranch, deleteBranch } from './branch'
@@ -52,8 +49,7 @@ export async function postNewPullRequest({
 
   const oid = await git.resolveRef({ fs: baseFS, dir: baseDir, ref: baseBranch })
 
-  const messageId = await message({
-    process: AOS_PROCESS_ID,
+  await sendMessage({
     tags: getTags({
       Action: 'Create-Pr',
       Title: title,
@@ -65,28 +61,10 @@ export async function postNewPullRequest({
       LinkedIssueId: typeof linkedIssueId === 'number' ? linkedIssueId.toString() : '',
       BaseRepo: JSON.stringify(baseRepo),
       CompareRepo: JSON.stringify(compareRepo)
-    }),
-    signer: createDataItemSigner(await getSigner({ injectedSigner: false }))
-  })
-
-  const { Output } = await result({
-    message: messageId,
-    process: AOS_PROCESS_ID
-  })
-
-  if (Output?.data?.output) {
-    throw new Error(extractMessage(Output?.data?.output))
-  }
-
-  const { Messages } = await dryrun({
-    process: AOS_PROCESS_ID,
-    tags: getTags({
-      Action: 'Get-Repository',
-      Id: repoId
     })
   })
 
-  const repo = JSON.parse(Messages[0].Data)?.result as Repo
+  const repo = await getRepo(repoId)
 
   if (!repo) return
 
@@ -202,35 +180,16 @@ export async function mergePullRequest({
 
     await waitFor(1000)
 
-    const messageId = await message({
-      process: AOS_PROCESS_ID,
+    await sendMessage({
       tags: getTags({
         Action: 'Update-Pr-status',
         RepoId: repoId,
         PrId: prId.toString(),
         Status: 'MERGED'
-      }),
-      signer: createDataItemSigner(await getSigner({ injectedSigner: false }))
-    })
-
-    const { Output } = await result({
-      message: messageId,
-      process: AOS_PROCESS_ID
-    })
-
-    if (Output?.data?.output) {
-      throw new Error(extractMessage(Output?.data?.output))
-    }
-
-    const { Messages } = await dryrun({
-      process: AOS_PROCESS_ID,
-      tags: getTags({
-        Action: 'Get-Repository',
-        Id: repoId
       })
     })
 
-    const repo = JSON.parse(Messages[0].Data)?.result as Repo
+    const repo = await getRepo(repoId)
 
     const PRs = repo?.pullRequests
 
@@ -247,35 +206,16 @@ export async function mergePullRequest({
 }
 
 export async function closePullRequest({ repoId, prId }: { repoId: string; prId: number }) {
-  const messageId = await message({
-    process: AOS_PROCESS_ID,
+  await sendMessage({
     tags: getTags({
       Action: 'Update-Pr-status',
       RepoId: repoId,
       PrId: prId.toString(),
       Status: 'CLOSED'
-    }),
-    signer: createDataItemSigner(await getSigner({ injectedSigner: false }))
-  })
-
-  const { Output } = await result({
-    message: messageId,
-    process: AOS_PROCESS_ID
-  })
-
-  if (Output?.data?.output) {
-    throw new Error(extractMessage(Output?.data?.output))
-  }
-
-  const { Messages } = await dryrun({
-    process: AOS_PROCESS_ID,
-    tags: getTags({
-      Action: 'Get-Repository',
-      Id: repoId
     })
   })
 
-  const repo = JSON.parse(Messages[0].Data)?.result as Repo
+  const repo = await getRepo(repoId)
 
   const PRs = repo?.pullRequests
 
@@ -289,35 +229,16 @@ export async function closePullRequest({ repoId, prId }: { repoId: string; prId:
 }
 
 export async function reopenPullRequest({ repoId, prId }: { repoId: string; prId: number }) {
-  const messageId = await message({
-    process: AOS_PROCESS_ID,
+  await sendMessage({
     tags: getTags({
       Action: 'Update-Pr-status',
       RepoId: repoId,
       PrId: prId.toString(),
       Status: 'REOPEN'
-    }),
-    signer: createDataItemSigner(await getSigner({ injectedSigner: false }))
-  })
-
-  const { Output } = await result({
-    message: messageId,
-    process: AOS_PROCESS_ID
-  })
-
-  if (Output?.data?.output) {
-    throw new Error(extractMessage(Output?.data?.output))
-  }
-
-  const { Messages } = await dryrun({
-    process: AOS_PROCESS_ID,
-    tags: getTags({
-      Action: 'Get-Repository',
-      Id: repoId
     })
   })
 
-  const repo = JSON.parse(Messages[0].Data)?.result as Repo
+  const repo = await getRepo(repoId)
 
   const PRs = repo?.pullRequests
 
@@ -345,52 +266,20 @@ export async function updatePullRequestDetails(repoId: string, prId: number, pul
     tags = { ...tags, Description: pullRequest.description }
   }
 
-  const messageId = await message({
-    process: AOS_PROCESS_ID,
-    tags: getTags(tags),
-    signer: createDataItemSigner(await getSigner({ injectedSigner: false }))
-  })
-
-  const { Output } = await result({
-    message: messageId,
-    process: AOS_PROCESS_ID
-  })
-
-  if (Output?.data?.output) {
-    throw new Error(extractMessage(Output?.data?.output))
-  }
+  await sendMessage({ tags: getTags(tags) })
 }
 
 export async function addReviewersToPR({ reviewers, repoId, prId }: AddReviewersToPROptions) {
-  const messageId = await message({
-    process: AOS_PROCESS_ID,
+  await sendMessage({
     tags: getTags({
       Action: 'Add-Pr-Reviewers',
       RepoId: repoId,
       PrId: prId.toString(),
       Reviewers: JSON.stringify(reviewers)
-    }),
-    signer: createDataItemSigner(await getSigner({ injectedSigner: false }))
-  })
-
-  const { Output } = await result({
-    message: messageId,
-    process: AOS_PROCESS_ID
-  })
-
-  if (Output?.data?.output) {
-    throw new Error(extractMessage(Output?.data?.output))
-  }
-
-  const { Messages } = await dryrun({
-    process: AOS_PROCESS_ID,
-    tags: getTags({
-      Action: 'Get-Repository',
-      Id: repoId
     })
   })
 
-  const repo = JSON.parse(Messages[0].Data)?.result as Repo
+  const repo = await getRepo(repoId)
 
   const PRs = repo?.pullRequests
 
@@ -404,34 +293,15 @@ export async function addReviewersToPR({ reviewers, repoId, prId }: AddReviewers
 }
 
 export async function approvePR({ repoId, prId }: ApprovePROptions) {
-  const messageId = await message({
-    process: AOS_PROCESS_ID,
+  await sendMessage({
     tags: getTags({
       Action: 'Approve-Pr',
       RepoId: repoId,
       PrId: prId.toString()
-    }),
-    signer: createDataItemSigner(await getSigner({ injectedSigner: false }))
-  })
-
-  const { Output } = await result({
-    message: messageId,
-    process: AOS_PROCESS_ID
-  })
-
-  if (Output?.data?.output) {
-    throw new Error(extractMessage(Output?.data?.output))
-  }
-
-  const { Messages } = await dryrun({
-    process: AOS_PROCESS_ID,
-    tags: getTags({
-      Action: 'Get-Repository',
-      Id: repoId
     })
   })
 
-  const repo = JSON.parse(Messages[0].Data)?.result as Repo
+  const repo = await getRepo(repoId)
 
   const PRs = repo?.pullRequests
 
@@ -445,35 +315,16 @@ export async function approvePR({ repoId, prId }: ApprovePROptions) {
 }
 
 export async function addCommentToPR(repoId: string, prId: number, comment: string) {
-  const messageId = await message({
-    process: AOS_PROCESS_ID,
+  await sendMessage({
     tags: getTags({
       Action: 'Add-Pr-Comment',
       RepoId: repoId,
       PrId: prId.toString(),
       Comment: comment
-    }),
-    signer: createDataItemSigner(await getSigner({ injectedSigner: false }))
-  })
-
-  const { Output } = await result({
-    message: messageId,
-    process: AOS_PROCESS_ID
-  })
-
-  if (Output?.data?.output) {
-    throw new Error(extractMessage(Output?.data?.output))
-  }
-
-  const { Messages } = await dryrun({
-    process: AOS_PROCESS_ID,
-    tags: getTags({
-      Action: 'Get-Repository',
-      Id: repoId
     })
   })
 
-  const repo = JSON.parse(Messages[0].Data)?.result as Repo
+  const repo = await getRepo(repoId)
 
   const PRs = repo?.pullRequests
 
@@ -487,35 +338,16 @@ export async function addCommentToPR(repoId: string, prId: number, comment: stri
 }
 
 export async function updatePRComment(repoId: string, prId: number, comment: object) {
-  const messageId = await message({
-    process: AOS_PROCESS_ID,
+  await sendMessage({
     tags: getTags({
       Action: 'Update-Pr-Comment',
       RepoId: repoId,
       PrId: prId.toString(),
       Comment: JSON.stringify(comment)
-    }),
-    signer: createDataItemSigner(await getSigner({ injectedSigner: false }))
-  })
-
-  const { Output } = await result({
-    message: messageId,
-    process: AOS_PROCESS_ID
-  })
-
-  if (Output?.data?.output) {
-    throw new Error(extractMessage(Output?.data?.output))
-  }
-
-  const { Messages } = await dryrun({
-    process: AOS_PROCESS_ID,
-    tags: getTags({
-      Action: 'Get-Repository',
-      Id: repoId
     })
   })
 
-  const repo = JSON.parse(Messages[0].Data)?.result as Repo
+  const repo = await getRepo(repoId)
 
   const PRs = repo?.pullRequests
 
@@ -529,35 +361,16 @@ export async function updatePRComment(repoId: string, prId: number, comment: obj
 }
 
 export async function linkIssueToPR(repoId: string, prId: number, issueId: number) {
-  const messageId = await message({
-    process: AOS_PROCESS_ID,
+  await sendMessage({
     tags: getTags({
       Action: 'Link-Issue-Pr',
       RepoId: repoId,
       PrId: prId.toString(),
       LinkedIssueId: issueId.toString()
-    }),
-    signer: createDataItemSigner(await getSigner({ injectedSigner: false }))
-  })
-
-  const { Output } = await result({
-    message: messageId,
-    process: AOS_PROCESS_ID
-  })
-
-  if (Output?.data?.output) {
-    throw new Error(extractMessage(Output?.data?.output))
-  }
-
-  const { Messages } = await dryrun({
-    process: AOS_PROCESS_ID,
-    tags: getTags({
-      Action: 'Get-Repository',
-      Id: repoId
     })
   })
 
-  const repo = JSON.parse(Messages[0].Data)?.result as Repo
+  const repo = await getRepo(repoId)
 
   const PRs = repo?.pullRequests
 
