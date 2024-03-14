@@ -19,14 +19,22 @@ async function getIssue(repoId: string, issueId: number) {
 }
 
 export async function createNewIssue(title: string, description: string, repoId: string, address: string) {
-  await sendMessage({
+  const args = {
     tags: getTags({
       Action: 'Create-Issue',
       Title: title,
-      Description: description,
       RepoId: repoId
-    })
-  })
+    }),
+    data: description
+  } as any
+
+  if (description) {
+    args.data = description
+  } else {
+    args.tags.push({ name: 'Description', value: description || '' })
+  }
+
+  await sendMessage(args)
 
   const repo = await getRepo(repoId)
 
@@ -65,23 +73,28 @@ export async function addCommentToIssue(repoId: string, issueId: number, comment
     tags: getTags({
       Action: 'Add-Issue-Comment',
       RepoId: repoId,
-      IssueId: issueId.toString(),
-      Comment: comment
-    })
+      IssueId: issueId.toString()
+    }),
+    data: comment
   })
 
   const issue = await getIssue(repoId, issueId)
   return issue
 }
 
-export async function updateIssueComment(repoId: string, issueId: number, comment: object) {
+export async function updateIssueComment(
+  repoId: string,
+  issueId: number,
+  comment: { id: number; description: string }
+) {
   await sendMessage({
     tags: getTags({
       Action: 'Update-Issue-Comment',
       RepoId: repoId,
       IssueId: issueId.toString(),
-      Comment: JSON.stringify(comment)
-    })
+      CommentId: comment.id.toString()
+    }),
+    data: comment.description
   })
 
   const repo = await getRepo(repoId)
@@ -132,15 +145,21 @@ export async function updateIssueDetails(repoId: string, issueId: number, issue:
     IssueId: issueId.toString()
   } as any
 
+  let data = ''
+
   if (!isInvalidInput(issue.title, 'string')) {
     tags = { ...tags, Title: issue.title }
   }
 
   if (!isInvalidInput(issue.description, 'string', true)) {
-    tags = { ...tags, Description: issue.description }
+    if (issue.description) {
+      data = issue.description as string
+    } else {
+      tags = { ...tags, Description: issue.description }
+    }
   }
 
-  await sendMessage({ tags: getTags(tags) })
+  await sendMessage({ tags: getTags(tags), data })
 }
 
 export async function addBounty(repoId: string, issueId: number, amount: number, expiry: number, base: BountyBase) {

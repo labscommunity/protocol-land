@@ -49,11 +49,10 @@ export async function postNewPullRequest({
 
   const oid = await git.resolveRef({ fs: baseFS, dir: baseDir, ref: baseBranch })
 
-  await sendMessage({
+  const args = {
     tags: getTags({
       Action: 'Create-Pr',
       Title: title,
-      Description: description,
       RepoId: repoId,
       BaseBranch: baseBranch,
       CompareBranch: compareBranch,
@@ -62,7 +61,15 @@ export async function postNewPullRequest({
       BaseRepo: JSON.stringify(baseRepo),
       CompareRepo: JSON.stringify(compareRepo)
     })
-  })
+  } as any
+
+  if (description) {
+    args.data = description
+  } else {
+    args.tags.push({ name: 'Description', value: description || '' })
+  }
+
+  await sendMessage(args)
 
   const repo = await getRepo(repoId)
 
@@ -258,15 +265,21 @@ export async function updatePullRequestDetails(repoId: string, prId: number, pul
     PrId: prId.toString()
   } as any
 
+  let data = ''
+
   if (!isInvalidInput(pullRequest.title, 'string')) {
     tags = { ...tags, Title: pullRequest.title }
   }
 
   if (!isInvalidInput(pullRequest.description, 'string', true)) {
-    tags = { ...tags, Description: pullRequest.description }
+    if (pullRequest.description) {
+      data = pullRequest.description
+    } else {
+      tags = { ...tags, Description: pullRequest.description }
+    }
   }
 
-  await sendMessage({ tags: getTags(tags) })
+  await sendMessage({ tags: getTags(tags), data })
 }
 
 export async function addReviewersToPR({ reviewers, repoId, prId }: AddReviewersToPROptions) {
@@ -319,9 +332,9 @@ export async function addCommentToPR(repoId: string, prId: number, comment: stri
     tags: getTags({
       Action: 'Add-Pr-Comment',
       RepoId: repoId,
-      PrId: prId.toString(),
-      Comment: comment
-    })
+      PrId: prId.toString()
+    }),
+    data: comment
   })
 
   const repo = await getRepo(repoId)
@@ -337,14 +350,15 @@ export async function addCommentToPR(repoId: string, prId: number, comment: stri
   return PR
 }
 
-export async function updatePRComment(repoId: string, prId: number, comment: object) {
+export async function updatePRComment(repoId: string, prId: number, comment: { id: number; description: string }) {
   await sendMessage({
     tags: getTags({
       Action: 'Update-Pr-Comment',
       RepoId: repoId,
       PrId: prId.toString(),
-      Comment: JSON.stringify(comment)
-    })
+      CommentId: comment.id.toString()
+    }),
+    data: comment.description
   })
 
   const repo = await getRepo(repoId)

@@ -47,10 +47,10 @@ interface ActivitiesProps {
   filters: Filters
 }
 
+const ACTIVITY_LIMIT = 30
+
 export default function Activities({ filters }: ActivitiesProps) {
-  const [currentPage, setCurrentPage] = useState(1)
   const [hasNextPage, setHasNextPage] = useState(true)
-  const [currentFetchCount, setCurrentFetchCount] = useState(0)
   const [isLoading, setIsLoading] = useState(false)
   const [activities, setActivities] = useState<Activity[]>([])
   const [repo, setRepo] = useState<Repo>()
@@ -67,7 +67,6 @@ export default function Activities({ filters }: ActivitiesProps) {
 
   async function fetchActivities({ refresh }: { refresh?: boolean }) {
     setIsLoading(true)
-    const limit = 30
 
     const actions = []
 
@@ -86,7 +85,7 @@ export default function Activities({ filters }: ActivitiesProps) {
         { name: 'Action', values: actions }
       ])
       .cursor(activities.length > 0 && !refresh ? cursor.current : '')
-      .limit(limit)
+      .limit(ACTIVITY_LIMIT)
       .find()) as ArdbTransaction[]
 
     cursor.current = ardb.getCursor()
@@ -268,29 +267,19 @@ export default function Activities({ filters }: ActivitiesProps) {
     // Filter out all private repos activities
     allActivities = allActivities.filter((activity) => !activity?.repo?.private)
 
-    setCurrentFetchCount(allActivities.length)
-
     setActivities((previousActivities) =>
       [...previousActivities, ...allActivities].sort((a, b) => b.timestamp - a.timestamp)
     )
 
-    setHasNextPage(interactions?.length === limit)
-    setCurrentPage((page) => page + 1)
+    setHasNextPage(interactions?.length === ACTIVITY_LIMIT)
     setIsLoading(false)
   }
 
   useEffect(() => {
-    setCurrentPage(1)
     setHasNextPage(true)
     setActivities([])
     fetchActivities({ refresh: true })
   }, [filters])
-
-  useEffect(() => {
-    if (currentPage > 1 && hasNextPage && currentFetchCount === 0) {
-      fetchActivities({})
-    }
-  }, [currentPage])
 
   return (
     <div className="w-full">

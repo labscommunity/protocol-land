@@ -151,6 +151,8 @@ const createRepoCoreSlice: StateCreator<CombinedSlices, [['zustand/immer', never
           result: 'SUCCESS'
         })
       }
+
+      if (error) throw error
     },
     updateRepoDeploymentBranch: async (deploymentBranch: string) => {
       const repo = get().repoCoreState.selectedRepo.repo
@@ -175,6 +177,8 @@ const createRepoCoreSlice: StateCreator<CombinedSlices, [['zustand/immer', never
           result: 'SUCCESS'
         })
       }
+
+      if (error) throw error
     },
     getGitHubPAT: async () => {
       const repo = get().repoCoreState.selectedRepo.repo!
@@ -212,6 +216,10 @@ const createRepoCoreSlice: StateCreator<CombinedSlices, [['zustand/immer', never
           repo_id: repo.id,
           result: 'SUCCESS'
         })
+      }
+
+      if (error) {
+        throw error
       }
     },
     githubSyncAllowPending: async () => {
@@ -309,6 +317,8 @@ const createRepoCoreSlice: StateCreator<CombinedSlices, [['zustand/immer', never
           contributor_address: address,
           result: 'SUCCESS'
         })
+      } else {
+        throw error
       }
     },
     addDeployment: async (deployment: Omit<Deployment, 'deployedBy' | 'branch' | 'timestamp'>) => {
@@ -511,6 +521,7 @@ const createRepoCoreSlice: StateCreator<CombinedSlices, [['zustand/immer', never
           repo_id: repo.id,
           result: 'FAILED'
         })
+        throw error
       }
     },
     cancelContributor: async (contributor) => {
@@ -540,6 +551,7 @@ const createRepoCoreSlice: StateCreator<CombinedSlices, [['zustand/immer', never
           repo_id: repo.id,
           result: 'FAILED'
         })
+        throw error
       }
     },
     grantAccessToContributor: async () => {
@@ -574,6 +586,7 @@ const createRepoCoreSlice: StateCreator<CombinedSlices, [['zustand/immer', never
           repo_id: repo.id,
           result: 'FAILED'
         })
+        throw error
       }
     },
     fetchAndLoadRepository: async (id: string, branchName?: string) => {

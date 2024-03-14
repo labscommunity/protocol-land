@@ -28,14 +28,17 @@ export async function getRepo(id: string) {
   return repo
 }
 
-export async function sendMessage(args: SendMessageArgs) {
+export async function sendMessage({ tags, data }: SendMessageArgs) {
   const signer = await getSigner({ injectedSigner: false })
-
-  const messageId = await message({
+  const args = {
     process: AOS_PROCESS_ID,
-    tags: args.tags,
+    tags,
     signer: createDataItemSigner(signer)
-  })
+  } as any
+
+  if (data) args.data = data
+
+  const messageId = await message(args)
 
   const { Output } = await result({
     message: messageId,

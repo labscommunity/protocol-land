@@ -83,9 +83,9 @@ const createPullRequestSlice: StateCreator<CombinedSlices, [['zustand/immer', ne
         trackGoogleAnalyticsEvent('Repository', 'Create a new issue', 'Create issue', {
           repo_name: repo.name,
           repo_id: repo.id,
-          issue_id: response.id,
           result: 'FAILED'
         })
+        throw error
       }
     },
     reopenIssue: async (id) => {
@@ -125,6 +125,7 @@ const createPullRequestSlice: StateCreator<CombinedSlices, [['zustand/immer', ne
           issue_id: id,
           result: 'FAILED'
         })
+        throw error
       }
     },
     closeIssue: async (id) => {
@@ -165,6 +166,7 @@ const createPullRequestSlice: StateCreator<CombinedSlices, [['zustand/immer', ne
           issue_id: id,
           result: 'FAILED'
         })
+        throw error
       }
     },
     updateIssueDetails: async (id, updateData: Partial<Issue>) => {
@@ -259,6 +261,7 @@ const createPullRequestSlice: StateCreator<CombinedSlices, [['zustand/immer', ne
           issue_id: id,
           result: 'FAILED'
         })
+        throw error
       }
     },
     addComment: async (id, comment) => {
@@ -296,6 +299,7 @@ const createPullRequestSlice: StateCreator<CombinedSlices, [['zustand/immer', ne
           issue_id: id,
           result: 'FAILED'
         })
+        throw error
       }
     },
     updateComment: async (id, comment) => {
@@ -335,6 +339,7 @@ const createPullRequestSlice: StateCreator<CombinedSlices, [['zustand/immer', ne
           comment_id: comment.id,
           result: 'FAILED'
         })
+        throw error
       }
     },
     addBounty: async (id, amount, expiry, base) => {
@@ -376,6 +381,7 @@ const createPullRequestSlice: StateCreator<CombinedSlices, [['zustand/immer', ne
           base,
           result: 'FAILED'
         })
+        throw error
       }
     },
     closeBounty: async (issueId, bountyId) => {
@@ -406,6 +412,8 @@ const createPullRequestSlice: StateCreator<CombinedSlices, [['zustand/immer', ne
           result: 'SUCCESS'
         })
       }
+
+      if (error) throw error
     },
     expireBounty: async (issueId, bountyId) => {
       const repo = get().repoCoreState.selectedRepo.repo
@@ -435,6 +443,8 @@ const createPullRequestSlice: StateCreator<CombinedSlices, [['zustand/immer', ne
           result: 'SUCCESS'
         })
       }
+
+      if (error) throw error
     },
     completeBounty: async (issueId, bountyId, paymentTxId) => {
       const repo = get().repoCoreState.selectedRepo.repo
@@ -465,6 +475,8 @@ const createPullRequestSlice: StateCreator<CombinedSlices, [['zustand/immer', ne
           result: 'SUCCESS'
         })
       }
+
+      if (error) throw error
     }
   }
 })

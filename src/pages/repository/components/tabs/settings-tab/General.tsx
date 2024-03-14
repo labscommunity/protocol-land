@@ -31,8 +31,7 @@ const descriptionSchema = yup
 export default function General() {
   const [isSubmittingName, setIsSubmittingName] = useState(false)
   const [isSubmittingDescription, setIsSubmittingDescription] = useState(false)
-  const [connectedAddress, selectedRepo, updateDescription, updateName, isRepoOwner] = useGlobalStore((state) => [
-    state.authState.address,
+  const [selectedRepo, updateDescription, updateName, isRepoOwner] = useGlobalStore((state) => [
     state.repoCoreState.selectedRepo.repo,
     state.repoCoreActions.updateRepoDescription,
     state.repoCoreActions.updateRepoName,
