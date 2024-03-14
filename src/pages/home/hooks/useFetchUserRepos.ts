@@ -19,38 +19,24 @@ export function useFetchUserRepos() {
   const initFetchUserRepos = async () => {
     setFetchUserReposStatus('PENDING')
 
-    const { response: ownerReposResponse, error: ownerReposError } = await withAsync(() =>
+    const { response: userReposResponse, error: userReposError } = await withAsync(() =>
       dryrun({
         process: AOS_PROCESS_ID,
         tags: getTags({
-          Action: 'Get-Repositories-By-Owner'
-        }),
-        Owner: address as string
+          Action: 'Get-User-Owned-Contributed-Repos',
+          User: address as string
+        })
       })
     )
 
     const { response: PLRepoResponse } = await withAsync(() => getRepositoryMetaFromContract(PL_REPO_ID))
 
-    const { response: collabResponse, error: collabError } = await withAsync(() =>
-      dryrun({
-        process: AOS_PROCESS_ID,
-        tags: getTags({
-          Action: 'Get-Repositories-By-Contributor',
-          Contributor: address as string
-        })
-      })
-    )
-
-    if (ownerReposError || collabError) {
+    if (userReposError) {
       setFetchUserReposStatus('ERROR')
-    } else if (ownerReposResponse && collabResponse) {
+    } else if (userReposResponse) {
       const PLRepo = PLRepoResponse?.result ? [PLRepoResponse.result] : []
 
-      setUserRepos([
-        ...PLRepo,
-        ...(JSON.parse(ownerReposResponse?.Messages[0].Data)?.result as Repo[]),
-        ...(JSON.parse(collabResponse?.Messages[0].Data)?.result as Repo[])
-      ])
+      setUserRepos([...PLRepo, ...(JSON.parse(userReposResponse?.Messages[0].Data)?.result as Repo[])])
       setFetchUserReposStatus('SUCCESS')
     }
   }

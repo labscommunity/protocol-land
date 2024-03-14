@@ -105,28 +105,14 @@ export const fetchUserRepos = async (address: string) => {
     dryrun({
       process: AOS_PROCESS_ID,
       tags: getTags({
-        Action: 'Get-Repositories-By-Owner'
-      }),
-      Owner: address as string
-    })
-  )
-
-  const { response: collabResponse } = await withAsync(() =>
-    dryrun({
-      process: AOS_PROCESS_ID,
-      tags: getTags({
-        Action: 'Get-Repositories-By-Contributor',
-        Contributor: address as string
+        Action: 'Get-User-Owned-Contributed-Repos',
+        User: address as string
       })
     })
   )
 
   if (ownerReposResponse) {
     repos = [...repos, ...(JSON.parse(ownerReposResponse?.Messages[0].Data)?.result as Repo[])]
-  }
-
-  if (collabResponse) {
-    repos = [...repos, ...(JSON.parse(collabResponse?.Messages[0].Data)?.result as Repo[])]
   }
 
   return repos
