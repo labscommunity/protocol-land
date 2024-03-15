@@ -79,7 +79,7 @@ export default function Activities({ filters }: ActivitiesProps) {
 
     const interactions = (await ardb
       .search('transactions')
-      .only(['id', 'tags', 'block.timestamp', 'owner.address'])
+      .only(['id', 'tags', 'block.timestamp', 'recipient'])
       .tags([
         { name: 'From-Process', values: AOS_PROCESS_ID },
         { name: 'Action', values: actions }
@@ -117,7 +117,7 @@ export default function Activities({ filters }: ActivitiesProps) {
       }
     }
 
-    const repositoryActivities = interactions.reduce((accumulator, interaction) => {
+    const newActivities = interactions.reduce((accumulator, interaction) => {
       const action = getValueFromTags(interaction.tags, 'Action')
       const repoId = getValueFromTags(interaction.tags, 'Repo-Id')
 
@@ -135,14 +135,14 @@ export default function Activities({ filters }: ActivitiesProps) {
             repo,
             created,
             timestamp: timestamp,
-            author: interaction.owner.address
+            author: interaction.recipient
           } as RepositoryActivityType)
         }
       } else if (deploymentActions.includes(action) && repoId) {
         const repo = repos.current[repoId]
         const created = action === 'Deployment-Added'
         const deployment = {
-          deployedBy: interaction.owner.address,
+          deployedBy: interaction.recipient,
           commitOid: '',
           timestamp: timestamp,
           ...JSON.parse(getValueFromTags(interaction.tags, 'Deployment'))
@@ -164,7 +164,7 @@ export default function Activities({ filters }: ActivitiesProps) {
               txId: parsedDomain.txId,
               name: parsedDomain.name,
               contractTxId: parsedDomain.contractTxId,
-              controller: interaction.owner.address,
+              controller: interaction.recipient,
               timestamp
             }
           : repo.domains.find((d) => d.name === parsedDomain.name || d.contractTxId === parsedDomain.contractTxId)
@@ -186,7 +186,7 @@ export default function Activities({ filters }: ActivitiesProps) {
               repoId: repo.id,
               title: issueParsed.title,
               description: issueParsed.description ?? '',
-              author: interaction.owner.address,
+              author: interaction.recipient,
               status: 'OPEN',
               timestamp,
               assignees: [],
@@ -202,7 +202,7 @@ export default function Activities({ filters }: ActivitiesProps) {
           issue: {
             ...issue,
             timestamp,
-            author: interaction.owner.address,
+            author: interaction.recipient,
             status: created ? 'OPEN' : issueParsed.status
           },
           created,
@@ -217,7 +217,7 @@ export default function Activities({ filters }: ActivitiesProps) {
               id: +prParsed.id,
               repoId: repo.id,
               title: prParsed.title,
-              author: interaction.owner.address,
+              author: interaction.recipient,
               status: 'OPEN',
               reviewers: [],
               activities: [],
@@ -231,7 +231,7 @@ export default function Activities({ filters }: ActivitiesProps) {
           pullRequest: {
             ...pullRequest,
             timestamp,
-            author: interaction.owner.address,
+            author: interaction.recipient,
             status: created ? 'OPEN' : prParsed.status
           },
           created,
@@ -266,7 +266,7 @@ export default function Activities({ filters }: ActivitiesProps) {
       return accumulator
     }, [] as Activity[])
 
-    allActivities = [...allActivities, ...repositoryActivities]
+    allActivities = [...allActivities, ...newActivities]
 
     // Filter out all private repos activities
     allActivities = allActivities.filter((activity) => !activity?.repo?.private)
