@@ -92,12 +92,16 @@ export default function Activities({ filters }: ActivitiesProps) {
 
     let allActivities: Activity[] = []
 
-    const repoIds = interactions
-      .map((interaction) => {
-        const repoId = getValueFromTags(interaction.tags, 'Repo-Id')
-        if (repoId) return repoId
-      })
-      .filter((id) => id && !fetchedRepoIds.current.has(id))
+    const repoIds = Array.from(
+      new Set(
+        interactions
+          .map((interaction) => {
+            const repoId = getValueFromTags(interaction.tags, 'Repo-Id')
+            if (repoId) return repoId
+          })
+          .filter((id) => id && !fetchedRepoIds.current.has(id))
+      )
+    )
 
     if (repoIds.length > 0) {
       repoIds.forEach((id) => fetchedRepoIds.current.add(id as string))
