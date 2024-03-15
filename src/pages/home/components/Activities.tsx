@@ -52,6 +52,8 @@ const ACTIVITY_LIMIT = 30
 export default function Activities({ filters }: ActivitiesProps) {
   const [hasNextPage, setHasNextPage] = useState(true)
   const [isLoading, setIsLoading] = useState(false)
+  const [currentPage, setCurrentPage] = useState(1)
+  const [currentFetchCount, setCurrentFetchCount] = useState(0)
   const [activities, setActivities] = useState<Activity[]>([])
   const [repo, setRepo] = useState<Repo>()
   const [isForkModalOpen, setIsForkModalOpen] = useState(false)
@@ -90,8 +92,6 @@ export default function Activities({ filters }: ActivitiesProps) {
 
     cursor.current = ardb.getCursor()
 
-    let allActivities: Activity[] = []
-
     const repoIds = Array.from(
       new Set(
         interactions
@@ -117,9 +117,12 @@ export default function Activities({ filters }: ActivitiesProps) {
       }
     }
 
-    const newActivities = interactions.reduce((accumulator, interaction) => {
+    let newActivities = interactions.reduce((accumulator, interaction) => {
       const action = getValueFromTags(interaction.tags, 'Action')
       const repoId = getValueFromTags(interaction.tags, 'Repo-Id')
+      const repo = repos.current[repoId]
+
+      if (repo?.private) return accumulator
 
       const timestamp =
         +getValueFromTags(interaction.tags, 'Timestamp') ||
@@ -128,7 +131,6 @@ export default function Activities({ filters }: ActivitiesProps) {
       if (repositoryActions.includes(action) && repoId) {
         const existingActivity = accumulator.find((activity) => activity.repo.id === repoId && !activity.created)
         if (!existingActivity) {
-          const repo = repos.current[repoId]
           const created = ['Repo-Forked', 'Repo-Created'].includes(action)
           accumulator.push({
             type: 'REPOSITORY',
@@ -139,7 +141,6 @@ export default function Activities({ filters }: ActivitiesProps) {
           } as RepositoryActivityType)
         }
       } else if (deploymentActions.includes(action) && repoId) {
-        const repo = repos.current[repoId]
         const created = action === 'Deployment-Added'
         const deployment = {
           deployedBy: interaction.recipient,
@@ -156,7 +157,6 @@ export default function Activities({ filters }: ActivitiesProps) {
           timestamp: timestamp
         } as DeploymentActivityType)
       } else if (domainActions.includes(action) && repoId) {
-        const repo = repos.current[repoId]
         const created = action === 'Domain-Added'
         const parsedDomain = JSON.parse(getValueFromTags(interaction.tags, 'Domain'))
         const domain = created
@@ -177,7 +177,6 @@ export default function Activities({ filters }: ActivitiesProps) {
           timestamp: timestamp
         } as DomainActivityType)
       } else if (issueActions.includes(action) && repoId) {
-        const repo = repos.current[repoId]
         const created = action === 'Issue-Created'
         const issueParsed = JSON.parse(getValueFromTags(interaction.tags, 'Issue'))
         const issue = created
@@ -209,7 +208,6 @@ export default function Activities({ filters }: ActivitiesProps) {
           timestamp: timestamp
         } as IssueActivityType)
       } else if (pullRequestActions.includes(action) && repoId) {
-        const repo = repos.current[repoId]
         const created = action === 'PullRequest-Created'
         const prParsed = JSON.parse(getValueFromTags(interaction.tags, 'Pull-Request'))
         const pullRequest = created
@@ -238,7 +236,6 @@ export default function Activities({ filters }: ActivitiesProps) {
           timestamp: timestamp
         } as PullRequestActivityType)
       } else if (bountyActions.includes(action) && repoId) {
-        const repo = repos.current[repoId]
         const issueId = getValueFromTags(interaction.tags, 'Issue-Id')
         const issue = repo.issues[+issueId - 1]
         const bountyParsed = JSON.parse(getValueFromTags(interaction.tags, 'Bounty') || '{}')
@@ -266,16 +263,14 @@ export default function Activities({ filters }: ActivitiesProps) {
       return accumulator
     }, [] as Activity[])
 
-    allActivities = [...allActivities, ...newActivities]
+    if (newActivities.length > 0) {
+      newActivities = newActivities.sort((a, b) => b.timestamp - a.timestamp)
+      setActivities((previousActivities) => [...previousActivities, ...newActivities])
+    }
 
-    // Filter out all private repos activities
-    allActivities = allActivities.filter((activity) => !activity?.repo?.private)
-
-    setActivities((previousActivities) =>
-      [...previousActivities, ...allActivities].sort((a, b) => b.timestamp - a.timestamp)
-    )
-
+    setCurrentFetchCount(newActivities.length)
     setHasNextPage(interactions?.length === ACTIVITY_LIMIT)
+    setCurrentPage((page) => page + 1)
     setIsLoading(false)
   }
 
@@ -284,6 +279,12 @@ export default function Activities({ filters }: ActivitiesProps) {
     setActivities([])
     fetchActivities({ refresh: true })
   }, [filters])
+
+  useEffect(() => {
+    if (currentPage > 1 && hasNextPage && currentFetchCount === 0) {
+      fetchActivities({})
+    }
+  }, [currentPage])
 
   return (
     <div className="w-full">
