@@ -47,7 +47,7 @@ interface ActivitiesProps {
   filters: Filters
 }
 
-const ACTIVITY_LIMIT = 30
+const ACTIVITY_LIMIT = 20
 
 export default function Activities({ filters }: ActivitiesProps) {
   const [hasNextPage, setHasNextPage] = useState(true)
@@ -136,7 +136,7 @@ export default function Activities({ filters }: ActivitiesProps) {
             type: 'REPOSITORY',
             repo,
             created,
-            timestamp: timestamp,
+            timestamp,
             author: interaction.recipient
           } as RepositoryActivityType)
         }
@@ -145,7 +145,7 @@ export default function Activities({ filters }: ActivitiesProps) {
         const deployment = {
           deployedBy: interaction.recipient,
           commitOid: '',
-          timestamp: timestamp,
+          timestamp,
           ...JSON.parse(getValueFromTags(interaction.tags, 'Deployment'))
         }
 
@@ -154,7 +154,7 @@ export default function Activities({ filters }: ActivitiesProps) {
           repo,
           deployment,
           created,
-          timestamp: timestamp
+          timestamp
         } as DeploymentActivityType)
       } else if (domainActions.includes(action) && repoId) {
         const created = action === 'Domain-Added'
@@ -174,7 +174,7 @@ export default function Activities({ filters }: ActivitiesProps) {
           repo: repo,
           domain,
           created,
-          timestamp: timestamp
+          timestamp
         } as DomainActivityType)
       } else if (issueActions.includes(action) && repoId) {
         const created = action === 'Issue-Created'
@@ -205,7 +205,7 @@ export default function Activities({ filters }: ActivitiesProps) {
             status: created ? 'OPEN' : issueParsed.status
           },
           created,
-          timestamp: timestamp
+          timestamp
         } as IssueActivityType)
       } else if (pullRequestActions.includes(action) && repoId) {
         const created = action === 'PullRequest-Created'
@@ -233,7 +233,7 @@ export default function Activities({ filters }: ActivitiesProps) {
             status: created ? 'OPEN' : prParsed.status
           },
           created,
-          timestamp: timestamp
+          timestamp
         } as PullRequestActivityType)
       } else if (bountyActions.includes(action) && repoId) {
         const issueId = getValueFromTags(interaction.tags, 'Issue-Id')
