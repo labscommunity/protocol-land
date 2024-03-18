@@ -15,8 +15,8 @@ export default function RepositoryActivity({
   setRepo
 }: ActivityProps<RepositoryActivityType>) {
   const [contributionsCount, setContributionsCount] = useState(0)
-  const openPullsCount = activity.repo.pullRequests.filter((pull) => pull.status === 'OPEN').length
-  const openIssuesCount = activity.repo.issues.filter((issue) => issue.status === 'OPEN').length
+  const openPullsCount = activity.repo.pullRequests
+  const openIssuesCount = activity.repo.issues
 
   useEffect(() => {
     getRepoContributionsCount(activity.repo.name).then((count) => {

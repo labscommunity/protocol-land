@@ -14,7 +14,7 @@ export default function PullRequestActivity({
   setRepo
 }: ActivityProps<PullRequestActivityType>) {
   const pullRequest = activity.pullRequest!
-  const commentsCount = pullRequest.activities.filter((act) => act.type === 'COMMENT').length
+  const commentsCount = pullRequest.comments
 
   return (
     <div className="w-full flex justify-between items-start border border-primary-500 rounded-md p-4">

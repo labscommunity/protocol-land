@@ -16,9 +16,7 @@ const STATUS_TO_ICON_MAP = {
 export default function BountyActivity({ activity, setIsForkModalOpen, setRepo }: ActivityProps<BountyActivityType>) {
   const bounty = activity.bounty!
   const isActive = new Date().getTime() < bounty.expiry * 1000 && activity.bounty?.status === 'ACTIVE'
-  const activeBountiesCount = activity.issue.bounties.filter(
-    (bnty) => new Date().getTime() < bnty.expiry * 1000 && bnty?.status === 'ACTIVE'
-  ).length
+  const activeBountiesCount = activity.issue.bounties
 
   if (!isActive && bounty.status === 'ACTIVE') {
     bounty.status = 'EXPIRED'

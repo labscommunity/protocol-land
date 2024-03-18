@@ -13,7 +13,7 @@ export default function DeploymentActivity({
   setRepo
 }: ActivityProps<DeploymentActivityType>) {
   const deployment = activity.deployment!
-  const deploymentsCount = activity.repo.deployments.length
+  const deploymentsCount = activity.repo.deployments
 
   return (
     <div className="w-full flex justify-between items-start border border-primary-500 rounded-md p-4">

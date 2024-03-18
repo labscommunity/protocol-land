@@ -8,6 +8,7 @@ import { getTags } from '@/helpers/getTags'
 import ForkModal from '@/pages/repository/components/ForkModal'
 import {
   Activity,
+  ActivityRepo,
   BountyActivityType,
   DeploymentActivityType,
   DomainActivityType,
@@ -58,8 +59,6 @@ export default function Activities({ filters }: ActivitiesProps) {
   const [repo, setRepo] = useState<Repo>()
   const [isForkModalOpen, setIsForkModalOpen] = useState(false)
   const cursor = useRef('')
-  const repos = useRef<{ [id: string]: Repo }>({})
-  const fetchedRepoIds = useRef(new Set<string>())
 
   function getValueFromTags(tags: Array<{ name: string; value: string }>, name: string) {
     const tag = tags.find((tag) => tag.name === name)
@@ -92,176 +91,239 @@ export default function Activities({ filters }: ActivitiesProps) {
 
     cursor.current = ardb.getCursor()
 
-    const repoIds = Array.from(
-      new Set(
-        interactions
-          .map((interaction) => {
-            const repoId = getValueFromTags(interaction.tags, 'Repo-Id')
-            if (repoId) return repoId
-          })
-          .filter((id) => id && !fetchedRepoIds.current.has(id))
-      )
-    )
+    const items = interactions
+      .map((interaction) => {
+        const action = getValueFromTags(interaction.tags, 'Action')
+        const repoId = getValueFromTags(interaction.tags, 'Repo-Id')
 
-    if (repoIds.length > 0) {
-      repoIds.forEach((id) => fetchedRepoIds.current.add(id as string))
+        if (!repoId) return
 
-      const { Messages } = await dryrun({
-        process: AOS_PROCESS_ID,
-        tags: getTags({ Action: 'Get-Repositories-By-Ids', Ids: JSON.stringify(repoIds) })
+        switch (action) {
+          case 'Repo-Created': {
+            return { interaction, payload: { repoId, type: 'repo' } }
+          }
+
+          case 'Repo-Forked': {
+            return { interaction, payload: { repoId, type: 'repo' } }
+          }
+
+          case 'Bounty-Created': {
+            const issueId = getValueFromTags(interaction.tags, 'Issue-Id')
+            const bountyId = getValueFromTags(interaction.tags, 'Bounty-Id')
+            if (issueId && bountyId)
+              return {
+                interaction,
+                payload: { repoId, issueId: parseInt(issueId), bountyId: parseInt(bountyId), type: 'bounty' }
+              }
+            break
+          }
+
+          case 'Bounty-Updated': {
+            const issueId = getValueFromTags(interaction.tags, 'Issue-Id')
+            const bountyId = getValueFromTags(interaction.tags, 'Bounty-Id')
+            if (issueId && bountyId)
+              return {
+                interaction,
+                payload: { repoId, issueId: parseInt(issueId), bountyId: parseInt(bountyId), type: 'bounty' }
+              }
+            break
+          }
+
+          case 'Deployment-Added': {
+            const deploymentTxId = getValueFromTags(interaction.tags, 'Deployment-TxId')
+            if (deploymentTxId) return { interaction, payload: { repoId, deploymentTxId, type: 'deployment' } }
+            break
+          }
+
+          case 'Domain-Added': {
+            const domainName = getValueFromTags(interaction.tags, 'Domain-Name')
+            if (domainName) return { interaction, payload: { repoId, domainName, type: 'deployment' } }
+            break
+          }
+
+          case 'Domain-Updated': {
+            const domainName = getValueFromTags(interaction.tags, 'Domain-Name')
+            if (domainName) return { interaction, payload: { repoId, domainName, type: 'domain' } }
+            break
+          }
+
+          case 'Issue-Created': {
+            const issueId = getValueFromTags(interaction.tags, 'Issue-Id')
+            if (issueId) return { interaction, payload: { repoId, issueId: parseInt(issueId), type: 'issue' } }
+            break
+          }
+
+          case 'Issue-Status-Updated': {
+            const issueId = getValueFromTags(interaction.tags, 'Issue-Id')
+            if (issueId) return { interaction, payload: { repoId, issueId: parseInt(issueId), type: 'issue' } }
+            break
+          }
+
+          case 'PullRequest-Created': {
+            const prId = getValueFromTags(interaction.tags, 'Pr-Id')
+            if (prId) return { interaction, payload: { repoId, prId: parseInt(prId), type: 'pr' } }
+            break
+          }
+
+          case 'PullRequest-Status-Updated': {
+            const prId = getValueFromTags(interaction.tags, 'Pr-Id')
+            if (prId) return { interaction, payload: { repoId, prId: parseInt(prId), type: 'pr' } }
+            break
+          }
+        }
       })
+      .filter((d) => !!d)
 
-      const fetchedRepos = JSON.parse(Messages[0].Data).result as Repo[]
-      for (const repo of fetchedRepos) {
-        repos.current[repo.id] = repo
-      }
-    }
+    const { Messages } = await dryrun({
+      process: AOS_PROCESS_ID,
+      tags: getTags({
+        Action: 'Get-Explore-Page-Repos',
+        Payloads: JSON.stringify(items.map((item) => item!.payload))
+      })
+    })
 
-    let newActivities = interactions.reduce((accumulator, interaction) => {
-      const action = getValueFromTags(interaction.tags, 'Action')
-      const repoId = getValueFromTags(interaction.tags, 'Repo-Id')
-      const repo = repos.current[repoId]
+    const repos = JSON.parse(Messages[0].Data).result as ActivityRepo[]
 
-      if (repo?.private) return accumulator
+    let newActivities = items
+      .map((item) => item!.interaction)
+      .reduce((accumulator, interaction, index) => {
+        const action = getValueFromTags(interaction.tags, 'Action')
+        const repoId = getValueFromTags(interaction.tags, 'Repo-Id')
+        const repo = repos[index]
 
-      const timestamp =
-        +getValueFromTags(interaction.tags, 'Timestamp') ||
-        (interaction?.block?.timestamp ? interaction?.block?.timestamp * 1000 : Date.now())
+        if (repo?.private) return accumulator
 
-      if (repositoryActions.includes(action) && repoId) {
-        const existingActivity = accumulator.find((activity) => activity.repo.id === repoId && !activity.created)
-        if (!existingActivity) {
-          const created = ['Repo-Forked', 'Repo-Created'].includes(action)
-          accumulator.push({
-            type: 'REPOSITORY',
-            repo,
-            created,
-            timestamp,
-            author: interaction.recipient
-          } as RepositoryActivityType)
-        }
-      } else if (deploymentActions.includes(action) && repoId) {
-        const created = action === 'Deployment-Added'
-        const deployment = {
-          deployedBy: interaction.recipient,
-          commitOid: '',
-          timestamp,
-          ...JSON.parse(getValueFromTags(interaction.tags, 'Deployment'))
-        }
+        const timestamp =
+          +getValueFromTags(interaction.tags, 'Timestamp') ||
+          (interaction?.block?.timestamp ? interaction?.block?.timestamp * 1000 : Date.now())
 
-        accumulator.push({
-          type: 'DEPLOYMENT',
-          repo,
-          deployment,
-          created,
-          timestamp
-        } as DeploymentActivityType)
-      } else if (domainActions.includes(action) && repoId) {
-        const created = action === 'Domain-Added'
-        const parsedDomain = JSON.parse(getValueFromTags(interaction.tags, 'Domain'))
-        const domain = created
-          ? {
-              txId: parsedDomain.txId,
-              name: parsedDomain.name,
-              contractTxId: parsedDomain.contractTxId,
-              controller: interaction.recipient,
-              timestamp
-            }
-          : repo.domains.find((d) => d.name === parsedDomain.name || d.contractTxId === parsedDomain.contractTxId)
-
-        accumulator.push({
-          type: 'DOMAIN',
-          repo: repo,
-          domain,
-          created,
-          timestamp
-        } as DomainActivityType)
-      } else if (issueActions.includes(action) && repoId) {
-        const created = action === 'Issue-Created'
-        const issueParsed = JSON.parse(getValueFromTags(interaction.tags, 'Issue'))
-        const issue = created
-          ? {
-              id: +issueParsed.id,
-              repoId: repo.id,
-              title: issueParsed.title,
-              description: issueParsed.description ?? '',
-              author: interaction.recipient,
-              status: 'OPEN',
+        if (repositoryActions.includes(action) && repoId) {
+          const existingActivity = accumulator.find((activity) => activity.repo.id === repoId && !activity.created)
+          if (!existingActivity) {
+            const created = ['Repo-Forked', 'Repo-Created'].includes(action)
+            accumulator.push({
+              type: 'REPOSITORY',
+              repo,
+              created,
               timestamp,
-              assignees: [],
-              activities: [],
-              bounties: [],
-              linkedPRIds: []
-            }
-          : repo.issues[+issueParsed.id - 1]
-
-        accumulator.push({
-          type: 'ISSUE',
-          repo,
-          issue: {
-            ...issue,
+              author: interaction.recipient
+            } as RepositoryActivityType)
+          }
+        } else if (deploymentActions.includes(action) && repoId) {
+          const created = action === 'Deployment-Added'
+          const deployment = {
+            deployedBy: interaction.recipient,
+            commitOid: '',
             timestamp,
-            author: interaction.recipient,
-            status: created ? 'OPEN' : issueParsed.status
-          },
-          created,
-          timestamp
-        } as IssueActivityType)
-      } else if (pullRequestActions.includes(action) && repoId) {
-        const created = action === 'PullRequest-Created'
-        const prParsed = JSON.parse(getValueFromTags(interaction.tags, 'Pull-Request'))
-        const pullRequest = created
-          ? {
-              id: +prParsed.id,
-              repoId: repo.id,
-              title: prParsed.title,
+            ...JSON.parse(getValueFromTags(interaction.tags, 'Deployment'))
+          }
+
+          accumulator.push({
+            type: 'DEPLOYMENT',
+            repo,
+            deployment,
+            created,
+            timestamp
+          } as DeploymentActivityType)
+        } else if (domainActions.includes(action) && repoId) {
+          const created = action === 'Domain-Added'
+          const parsedDomain = JSON.parse(getValueFromTags(interaction.tags, 'Domain'))
+          const domain = created
+            ? {
+                txId: parsedDomain.txId,
+                name: parsedDomain.name,
+                contractTxId: parsedDomain.contractTxId,
+                controller: interaction.recipient,
+                timestamp
+              }
+            : repo.domain
+
+          accumulator.push({
+            type: 'DOMAIN',
+            repo: repo,
+            domain,
+            created,
+            timestamp
+          } as DomainActivityType)
+        } else if (issueActions.includes(action) && repoId) {
+          const created = action === 'Issue-Created'
+          const issueParsed = JSON.parse(getValueFromTags(interaction.tags, 'Issue'))
+          const issue = created
+            ? {
+                id: +issueParsed.id,
+                title: issueParsed.title,
+                description: issueParsed.description ?? '',
+                author: interaction.recipient,
+                status: 'OPEN',
+                timestamp,
+                comments: 0
+              }
+            : repo.issue
+
+          accumulator.push({
+            type: 'ISSUE',
+            repo,
+            issue: {
+              ...issue,
+              timestamp,
+              completedTimestamp: timestamp,
               author: interaction.recipient,
-              status: 'OPEN',
-              reviewers: [],
-              activities: [],
-              timestamp
-            }
-          : repo.pullRequests[+prParsed.id - 1]
+              status: created ? 'OPEN' : issueParsed.status
+            },
+            created,
+            timestamp
+          } as IssueActivityType)
+        } else if (pullRequestActions.includes(action) && repoId) {
+          const created = action === 'PullRequest-Created'
+          const prParsed = JSON.parse(getValueFromTags(interaction.tags, 'Pull-Request'))
+          const pullRequest = created
+            ? {
+                id: +prParsed.id,
+                title: prParsed.title,
+                author: interaction.recipient,
+                status: 'OPEN',
+                comments: 0,
+                timestamp
+              }
+            : repo.pullRequest
 
-        accumulator.push({
-          type: 'PULL_REQUEST',
-          repo,
-          pullRequest: {
-            ...pullRequest,
-            timestamp,
-            author: interaction.recipient,
-            status: created ? 'OPEN' : prParsed.status
-          },
-          created,
-          timestamp
-        } as PullRequestActivityType)
-      } else if (bountyActions.includes(action) && repoId) {
-        const issueId = getValueFromTags(interaction.tags, 'Issue-Id')
-        const issue = repo.issues[+issueId - 1]
-        const bountyParsed = JSON.parse(getValueFromTags(interaction.tags, 'Bounty') || '{}')
-        const bountyId = getValueFromTags(interaction.tags, 'Bounty-Id')
-        const created = action === 'Bounty-Created'
-        const bounty = created
-          ? {
-              ...bountyParsed,
-              paymentTxId: null,
-              status: 'ACTIVE',
-              timestamp
-            }
-          : issue.bounties[+bountyId - 1]
+          accumulator.push({
+            type: 'PULL_REQUEST',
+            repo,
+            pullRequest: {
+              ...pullRequest,
+              timestamp,
+              author: interaction.recipient,
+              status: created ? 'OPEN' : prParsed.status
+            },
+            created,
+            timestamp
+          } as PullRequestActivityType)
+        } else if (bountyActions.includes(action) && repoId) {
+          const issue = repo.issue
+          const bountyParsed = JSON.parse(getValueFromTags(interaction.tags, 'Bounty') || '{}')
+          const created = action === 'Bounty-Created'
+          const bounty = created
+            ? {
+                ...bountyParsed,
+                paymentTxId: null,
+                status: 'ACTIVE',
+                timestamp
+              }
+            : repo.issue!.bounty
 
-        accumulator.push({
-          type: 'BOUNTY',
-          repo,
-          bounty,
-          issue,
-          created,
-          timestamp
-        } as BountyActivityType)
-      }
+          accumulator.push({
+            type: 'BOUNTY',
+            repo,
+            bounty,
+            issue,
+            created,
+            timestamp
+          } as BountyActivityType)
+        }
 
-      return accumulator
-    }, [] as Activity[])
+        return accumulator
+      }, [] as Activity[])
 
     if (newActivities.length > 0) {
       newActivities = newActivities.sort((a, b) => b.timestamp - a.timestamp)
