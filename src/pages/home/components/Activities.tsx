@@ -99,25 +99,13 @@ export default function Activities({ filters }: ActivitiesProps) {
         if (!repoId) return
 
         switch (action) {
-          case 'Repo-Created': {
+          case 'Repo-Created':
+          case 'Repo-Forked':
+          case 'Repo-TxId-Updated': {
             return { interaction, payload: { repoId, type: 'repo' } }
           }
 
-          case 'Repo-Forked': {
-            return { interaction, payload: { repoId, type: 'repo' } }
-          }
-
-          case 'Bounty-Created': {
-            const issueId = getValueFromTags(interaction.tags, 'Issue-Id')
-            const bountyId = getValueFromTags(interaction.tags, 'Bounty-Id')
-            if (issueId && bountyId)
-              return {
-                interaction,
-                payload: { repoId, issueId: parseInt(issueId), bountyId: parseInt(bountyId), type: 'bounty' }
-              }
-            break
-          }
-
+          case 'Bounty-Created':
           case 'Bounty-Updated': {
             const issueId = getValueFromTags(interaction.tags, 'Issue-Id')
             const bountyId = getValueFromTags(interaction.tags, 'Bounty-Id')
@@ -135,36 +123,21 @@ export default function Activities({ filters }: ActivitiesProps) {
             break
           }
 
-          case 'Domain-Added': {
-            const domainName = getValueFromTags(interaction.tags, 'Domain-Name')
-            if (domainName) return { interaction, payload: { repoId, domainName, type: 'deployment' } }
-            break
-          }
-
+          case 'Domain-Added':
           case 'Domain-Updated': {
             const domainName = getValueFromTags(interaction.tags, 'Domain-Name')
             if (domainName) return { interaction, payload: { repoId, domainName, type: 'domain' } }
             break
           }
 
-          case 'Issue-Created': {
-            const issueId = getValueFromTags(interaction.tags, 'Issue-Id')
-            if (issueId) return { interaction, payload: { repoId, issueId: parseInt(issueId), type: 'issue' } }
-            break
-          }
-
+          case 'Issue-Created':
           case 'Issue-Status-Updated': {
             const issueId = getValueFromTags(interaction.tags, 'Issue-Id')
             if (issueId) return { interaction, payload: { repoId, issueId: parseInt(issueId), type: 'issue' } }
             break
           }
 
-          case 'PullRequest-Created': {
-            const prId = getValueFromTags(interaction.tags, 'Pr-Id')
-            if (prId) return { interaction, payload: { repoId, prId: parseInt(prId), type: 'pr' } }
-            break
-          }
-
+          case 'PullRequest-Created':
           case 'PullRequest-Status-Updated': {
             const prId = getValueFromTags(interaction.tags, 'Pr-Id')
             if (prId) return { interaction, payload: { repoId, prId: parseInt(prId), type: 'pr' } }
@@ -198,9 +171,11 @@ export default function Activities({ filters }: ActivitiesProps) {
           (interaction?.block?.timestamp ? interaction?.block?.timestamp * 1000 : Date.now())
 
         if (repositoryActions.includes(action) && repoId) {
-          const existingActivity = accumulator.find((activity) => activity.repo.id === repoId && !activity.created)
+          const created = ['Repo-Forked', 'Repo-Created'].includes(action)
+          const existingActivity = accumulator.find(
+            (activity) => activity.type === 'REPOSITORY' && activity.repo.id === repoId && !activity.created && !created
+          )
           if (!existingActivity) {
-            const created = ['Repo-Forked', 'Repo-Created'].includes(action)
             accumulator.push({
               type: 'REPOSITORY',
               repo,
