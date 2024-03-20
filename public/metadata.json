@@ -47,6 +47,18 @@
       "description": "Explore Dragon Deploy, the latest Protocol.Land integration that revolutionizes static page deployment on Arweave, providing a seamless experience for developers writing code on the permaweb. Join Protocol.Land today.",
       "coverImage": "/blog/images/pl-integrates-dragon-deploy.png",
       "publishedAt": "2024-03-12"
+    },
+    {
+      "id": 5,
+      "title": "Rewarding Open Source Contributions with Protocol.land",
+      "status": "published",
+      "href": "/blog/rewarding-open-source-contributions-with-protocol-land",
+      "file": "/blog/rewarding-open-source-contributions-with-protocol-land.md",
+      "featured": false,
+      "category": "EDUCATION",
+      "description": "Explore the impact of open source and how Protocol.Land’s built-in bounty feature addresses the challenges of rewarding contributors and project sustainability.",
+      "coverImage": "/blog/images/rewarding-open-source-contributions-with-protocol-land.png",
+      "publishedAt": "2024-03-11"
     }
   ]
 }
