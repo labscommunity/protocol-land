@@ -94,7 +94,7 @@ export async function postNewRepo({ id, title, description, file, owner, visibil
 
   await sendMessage({
     tags: getTags({
-      Action: 'Initialize-Repository',
+      Action: 'Initialize-Repo',
       Id: id,
       Name: title,
       Description: description,
@@ -186,7 +186,7 @@ export async function createNewFork(data: ForkRepositoryOptions) {
 
   await sendMessage({
     tags: getTags({
-      Action: 'Fork-Repository',
+      Action: 'Fork-Repo',
       Id: uuid,
       Name: data.name,
       Description: data.description,
@@ -254,7 +254,7 @@ export async function postUpdatedRepo({ fs, dir, owner, id, isPrivate, privateSt
 
   await sendMessage({
     tags: getTags({
-      Action: 'Update-Repository-TxId',
+      Action: 'Update-Repo-TxId',
       Id: id,
       DataTxId: dataTxResponse
     })
@@ -328,7 +328,7 @@ export async function rotateKeysAndUpdate({ id, currentPrivateStateTxId, type }:
 
   const tags = getTags(
     isRepoAction
-      ? { Action: 'Update-Repository-PrivateStateTx', Id: id, PrivateStateTxId: privateStateTxId }
+      ? { Action: 'Update-Repo-PrivateStateTx', Id: id, PrivateStateTxId: privateStateTxId }
       : {
           Action: 'Update-Github-Sync',
           Id: id,
@@ -407,7 +407,7 @@ export async function unmountRepoFromBrowser(name: string) {
 export async function updateRepoName(repoId: string, newName: string) {
   await sendMessage({
     tags: getTags({
-      Action: 'Update-Repository-Details',
+      Action: 'Update-Repo-Details',
       Id: repoId,
       Name: newName
     })
@@ -417,7 +417,7 @@ export async function updateRepoName(repoId: string, newName: string) {
 export async function updateRepoDescription(description: string, repoId: string) {
   await sendMessage({
     tags: getTags({
-      Action: 'Update-Repository-Details',
+      Action: 'Update-Repo-Details',
       Id: repoId,
       Description: description
     })
@@ -427,7 +427,7 @@ export async function updateRepoDescription(description: string, repoId: string)
 export async function updateRepoDeploymentBranch(deploymentBranch: string, repoId: string) {
   await sendMessage({
     tags: getTags({
-      Action: 'Update-Repository-Details',
+      Action: 'Update-Repo-Details',
       Id: repoId,
       DeploymentBranch: deploymentBranch
     })

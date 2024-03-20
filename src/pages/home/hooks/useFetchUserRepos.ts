@@ -24,7 +24,7 @@ export function useFetchUserRepos() {
         process: AOS_PROCESS_ID,
         tags: getTags({
           Action: 'Get-User-Owned-Contributed-Repos',
-          User: address as string
+          UserAddress: address as string
         })
       })
     )

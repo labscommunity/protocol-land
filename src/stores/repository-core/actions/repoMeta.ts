@@ -16,7 +16,7 @@ export const isRepositoryNameAvailable = async (name: string): Promise<boolean> 
   const { Messages } = await dryrun({
     process: AOS_PROCESS_ID,
     tags: getTags({
-      Action: 'Get-Repository-Availability',
+      Action: 'Get-Repo-Availability',
       Name: name
     }),
     Owner: useGlobalStore.getState().authState.address as string
@@ -28,7 +28,7 @@ export const isRepositoryNameAvailable = async (name: string): Promise<boolean> 
 export const searchRepositories = async (query: string): Promise<{ result: Repo[] }> => {
   const { Messages } = await dryrun({
     process: AOS_PROCESS_ID,
-    tags: getTags({ Action: 'Get-Repositories-By-Name', Query: query })
+    tags: getTags({ Action: 'Get-Repos-By-Name', Query: query })
   })
 
   return JSON.parse(Messages[0].Data)

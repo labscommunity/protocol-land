@@ -32,7 +32,7 @@ const repositoryActions = ['Repo-Created', 'Repo-Forked', 'Repo-TxId-Updated']
 const deploymentActions = ['Deployment-Added']
 const domainActions = ['Domain-Added', 'Domain-Updated']
 const issueActions = ['Issue-Created', 'Issue-Status-Updated']
-const pullRequestActions = ['PullRequest-Created', 'PullRequest-Status-Updated']
+const pullRequestActions = ['PR-Created', 'PR-Status-Updated']
 const bountyActions = ['Bounty-Created', 'Bounty-Updated']
 
 const ACTIVITY_TO_COMPONENT = {
@@ -137,8 +137,8 @@ export default function Activities({ filters }: ActivitiesProps) {
             break
           }
 
-          case 'PullRequest-Created':
-          case 'PullRequest-Status-Updated': {
+          case 'PR-Created':
+          case 'PR-Status-Updated': {
             const prId = getValueFromTags(interaction.tags, 'Pr-Id')
             if (prId) return { interaction, payload: { repoId, prId: parseInt(prId), type: 'pr' } }
             break
@@ -151,7 +151,7 @@ export default function Activities({ filters }: ActivitiesProps) {
       process: AOS_PROCESS_ID,
       tags: getTags({
         Action: 'Get-Explore-Page-Repos',
-        Payloads: JSON.stringify(items.map((item) => item!.payload))
+        Payload: JSON.stringify(items.map((item) => item!.payload))
       })
     })
 
@@ -249,7 +249,7 @@ export default function Activities({ filters }: ActivitiesProps) {
             timestamp
           } as IssueActivityType)
         } else if (pullRequestActions.includes(action) && repoId) {
-          const created = action === 'PullRequest-Created'
+          const created = action === 'PR-Created'
           const prParsed = JSON.parse(getValueFromTags(interaction.tags, 'Pull-Request'))
           const pullRequest = created
             ? {
