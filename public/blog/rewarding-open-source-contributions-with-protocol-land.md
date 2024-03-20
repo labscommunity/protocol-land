@@ -49,4 +49,4 @@ Protocol.Land’s bounty feature marks a significant step towards supporting the
 
 Be a part of this new era of open source. Create a project that sets the stage for sustainable open source. Or start contributing to an existing project today! Head over to [Protocol.Land](https://protocol.land/?utm_source=Protocol.Land+Blog&utm_medium=Post&utm_campaign=Rewarding+Open+Source+Contributions+with+Protocol.land&utm_id=Rewarding+Open+Source+Contributions+with+Protocol.land) to get started.
 
-For guidance and support, checkout our [comprehensive documentation](https://docs.protocol.land/?utm_source=Protocol.Land+Blog&utm_medium=Post&utm_campaign=Rewarding+Open+Source+Contributions+with+Protocol.land&utm_id=Rewarding+Open+Source+Contributions+with+Protocol.land) and join our [Community Discord](https://discord.gg/8zabdz59).
+For guidance and support, checkout our [comprehensive documentation](https://docs.protocol.land/?utm_source=Protocol.Land+Blog&utm_medium=Post&utm_campaign=Rewarding+Open+Source+Contributions+with+Protocol.land&utm_id=Rewarding+Open+Source+Contributions+with+Protocol.land) and join our [Community Discord](https://discord.gg/fQ4YsQYD7v).
