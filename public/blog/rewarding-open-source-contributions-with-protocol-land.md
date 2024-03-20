@@ -45,7 +45,7 @@ Supporting the bounty feature, every commit on Protocol.Land is permanently stor
 
 ## **Sustainable Open Source with Protocol.Land**
 
-Protocol.Land’s bounty feature marks a significant step towards supporting the open source ethos. It can play a vital role nurturing in sustainable project growth by incentivizing contributors to actively work on open source projects.
+Protocol.Land’s bounty feature marks a significant step towards supporting the open source ethos. It can play a vital role in nurturing sustainable project growth by incentivizing contributors to actively work on open source projects.
 
 Be a part of this new era of open source. Create a project that sets the stage for sustainable open source. Or start contributing to an existing project today! Head over to [Protocol.Land](https://protocol.land/?utm_source=Protocol.Land+Blog&utm_medium=Post&utm_campaign=Rewarding+Open+Source+Contributions+with+Protocol.land&utm_id=Rewarding+Open+Source+Contributions+with+Protocol.land) to get started.
 
