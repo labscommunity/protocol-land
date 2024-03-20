@@ -11,7 +11,7 @@ description: 'Explore the impact of open source and how Protocol.Land’s built-
 coverImage: '/blog/images/rewarding-open-source-contributions-with-protocol-land.png'
 transparentThumbnail: 'https://u2hyhgglc4egidq3zkthnzdruyatqwql5lk5foen3zv5zf5fo2wa.arweave.net/po-DmMsXCGQOG8qmduRxpgE4Wgvq1dK4jd5r3Jeldqw'
 themeColor: 'rgba(0, 0, 0, .15)'
-publishedAt: '2024-03-11'
+publishedAt: '2024-03-20'
 ---
 
 Imagine a world where your code not only pushes the boundaries of technology but also brings the rewards it deserves. With Protocol.Land, open source projects have the power to realize this vision. With built-in rewarding features, you can create a culture where contributions are not merely acknowledged but actively rewarded. Thus, ensuring the sustainable growth of projects while preserving the spirit of open source.
