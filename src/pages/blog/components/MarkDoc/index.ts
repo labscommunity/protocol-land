@@ -1,4 +1,4 @@
-import { Config } from '@markdoc/markdoc'
+import { Config, Tag } from '@markdoc/markdoc'
 
 import CodeFence from './CodeFence'
 import Heading from './Heading'
@@ -43,6 +43,19 @@ export const config: Config = {
     },
     list: {
       render: 'List'
+    }
+  },
+  tags: {
+    'html-tag': {
+      attributes: {
+        name: { type: String, required: true },
+        attrs: { type: Object }
+      },
+      transform(node, config) {
+        const { name, attrs } = node.attributes
+        const children = node.transformChildren(config)
+        return new Tag(name, attrs, children)
+      }
     }
   }
 }
