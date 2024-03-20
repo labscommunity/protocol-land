@@ -139,7 +139,7 @@ export default function Activities({ filters }: ActivitiesProps) {
 
           case 'PR-Created':
           case 'PR-Status-Updated': {
-            const prId = getValueFromTags(interaction.tags, 'Pr-Id')
+            const prId = getValueFromTags(interaction.tags, 'PR-Id')
             if (prId) return { interaction, payload: { repoId, prId: parseInt(prId), type: 'pr' } }
             break
           }

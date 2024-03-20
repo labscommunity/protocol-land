@@ -189,7 +189,7 @@ export async function mergePullRequest({
 
     await sendMessage({
       tags: getTags({
-        Action: 'Update-PR-status',
+        Action: 'Update-PR-Status',
         RepoId: repoId,
         PRId: prId.toString(),
         Status: 'MERGED'
@@ -215,7 +215,7 @@ export async function mergePullRequest({
 export async function closePullRequest({ repoId, prId }: { repoId: string; prId: number }) {
   await sendMessage({
     tags: getTags({
-      Action: 'Update-PR-status',
+      Action: 'Update-PR-Status',
       RepoId: repoId,
       PRId: prId.toString(),
       Status: 'CLOSED'
@@ -238,7 +238,7 @@ export async function closePullRequest({ repoId, prId }: { repoId: string; prId:
 export async function reopenPullRequest({ repoId, prId }: { repoId: string; prId: number }) {
   await sendMessage({
     tags: getTags({
-      Action: 'Update-PR-status',
+      Action: 'Update-PR-Status',
       RepoId: repoId,
       PRId: prId.toString(),
       Status: 'REOPEN'
