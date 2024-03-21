@@ -435,7 +435,7 @@ const createRepoCoreSlice: StateCreator<CombinedSlices, [['zustand/immer', never
           result: 'FAILED'
         })
 
-        return { status: false, response: error }
+        return { status: false, response: (error as any)?.message }
       }
     },
     acceptContributor: async () => {

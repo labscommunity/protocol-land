@@ -500,7 +500,7 @@ export async function updateDomain(domain: Omit<Domain, 'controller' | 'timestam
 export async function addContributor(address: string, repoId: string) {
   await sendMessage({
     tags: getTags({
-      Action: 'Add-Contributor',
+      Action: 'Grant-Contributor-Invite',
       Id: repoId,
       Contributor: address
     })
