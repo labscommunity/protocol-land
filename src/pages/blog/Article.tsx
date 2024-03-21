@@ -12,7 +12,7 @@ import { withAsync } from '@/helpers/withAsync'
 import ArticleMeta from './components/ArticleMeta'
 import Author from './components/Author'
 import { components, config } from './components/MarkDoc'
-import { fetchStaticMetadata, getParsedFrontmatter, loadBlogPages } from './utils'
+import { fetchStaticMetadata, getParsedFrontmatter, loadBlogPages, processTokens } from './utils'
 import { blogDB } from './utils/blog'
 
 export default function Article() {
@@ -33,7 +33,10 @@ export default function Article() {
   }
 
   if (article) {
-    const ast = Markdoc.parse(article.body)
+    const tokenizer = new Markdoc.Tokenizer({ html: true })
+    const tokens = tokenizer.tokenize(article.body)
+    const processed = processTokens(tokens)
+    const ast = Markdoc.parse(processed)
     const frontMatter = getParsedFrontmatter(ast)
     const content = Markdoc.transform(ast, config)
 
