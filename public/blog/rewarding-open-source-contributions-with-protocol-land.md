@@ -26,6 +26,7 @@ At the heart of open source projects are the contributors. Contributors often wo
 
 But there’s a gap in the world of open source. Despite their critical role, contributors lack fair rewards, often having their invaluable work relegated to a hobby in their spare time. An [xkcd comic](https://xkcd.com/2347/) highlights the growing gap between the value provided by open source projects and the support their contributors receive:
 
+<br />
 <div class="w-full flex justify-center">
   <img src="/blog/images/rewarding-open-source-contributions-with-protocol-land-xkcd-comic.png" width="300" alt="xkcd comic highlighting the growing gap between the value provided by open source projects and the support their contributors receive"/>
 </div>
