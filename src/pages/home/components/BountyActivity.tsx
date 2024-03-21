@@ -16,9 +16,7 @@ const STATUS_TO_ICON_MAP = {
 export default function BountyActivity({ activity, setIsForkModalOpen, setRepo }: ActivityProps<BountyActivityType>) {
   const bounty = activity.bounty!
   const isActive = new Date().getTime() < bounty.expiry * 1000 && activity.bounty?.status === 'ACTIVE'
-  const activeBountiesCount = activity.issue.bounties.filter(
-    (bnty) => new Date().getTime() < bnty.expiry * 1000 && bnty?.status === 'ACTIVE'
-  ).length
+  const activeBountiesCount = activity.issue.bounties
 
   if (!isActive && bounty.status === 'ACTIVE') {
     bounty.status = 'EXPIRED'
@@ -33,13 +31,13 @@ export default function BountyActivity({ activity, setIsForkModalOpen, setRepo }
         <Link to={`/repository/${activity.repo.id}/issue/${activity.issue?.id}`} className="text-base font-medium">
           <>{activity.bounty?.amount ?? ''} AR</>
         </Link>
-        <div className="text-sm">{activity.issue?.title ?? ''} AR</div>
+        <div className="text-sm">{activity.issue?.title ?? ''}</div>
         <div className="flex gap-1 text-sm items-center justify-between flex-wrap">
           <div className="flex items-center gap-1">
             <Icon />
             <span>
-              {isActive ? 'Bounty expires in' : `Bounty ${bounty.status.toLowerCase()}`}{' '}
-              {formatDistanceToNow(new Date(activity.timestamp * 1000), { addSuffix: true })}
+              {isActive ? 'Bounty expires' : `Bounty ${bounty.status.toLowerCase()}`}{' '}
+              {formatDistanceToNow(new Date(isActive ? bounty.expiry * 1000 : activity.timestamp), { addSuffix: true })}
             </span>
           </div>
           <div>{activeBountiesCount} Active Bounties </div>

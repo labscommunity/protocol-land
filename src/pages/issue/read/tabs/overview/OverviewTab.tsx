@@ -103,7 +103,7 @@ export default function OverviewTab() {
                       <Comment
                         isIssue={true}
                         issueOrPRId={selectedIssue.id}
-                        commentId={activityId}
+                        commentId={activityId + 1} // AO Lua contract index starts from 1
                         item={commentActivity}
                         canEdit={authState.address === commentActivity.author}
                       />

@@ -24,10 +24,9 @@ export default function ReadMe({ readmeTxId }: { readmeTxId: string }) {
   const { id } = useParams()
   const [submitting, setSubmitting] = React.useState(false)
   const [mode, setMode] = React.useState<'READ' | 'EDIT'>('READ')
-  const [address, isLoggedIn, userDetails, saveUserDetails] = useGlobalStore((state) => [
+  const [address, isLoggedIn, saveUserDetails] = useGlobalStore((state) => [
     state.authState.address,
     state.authState.isLoggedIn,
-    state.userState.userDetails,
     state.userActions.saveUserDetails
   ])
   const [selectedTab, setSelectedTab] = React.useState<'write' | 'preview'>('write')
@@ -49,7 +48,7 @@ export default function ReadMe({ readmeTxId }: { readmeTxId: string }) {
 
       if (response) {
         //
-        await saveUserDetails({ ...userDetails, readmeTxId: response }, id!)
+        await saveUserDetails({ readmeTxId: response }, id!)
         setMode('READ')
       }
     }

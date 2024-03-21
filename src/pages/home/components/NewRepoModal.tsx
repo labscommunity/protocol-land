@@ -61,7 +61,7 @@ export default function NewRepoModal({ setIsOpen, isOpen }: NewRepoModalProps) {
     const { title, description } = data
     const owner = authState.address || 'Protocol.Land user'
 
-    const { response: isAvailable, error } = await withAsync(() => isRepositoryNameAvailable(title, authState.address!))
+    const { response: isAvailable, error } = await withAsync(() => isRepositoryNameAvailable(title))
 
     if (!error && isAvailable === false) {
       toast.error(`The repository ${title} already exists.`)

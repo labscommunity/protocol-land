@@ -64,6 +64,14 @@ export default function Contributors() {
         return
       }
 
+      const inviteExists = repo?.contributorInvites.find(
+        (invite) => invite.address === data.address && invite.status === 'INVITED'
+      )
+      if (inviteExists) {
+        toast.error('Invite already exists')
+        return
+      }
+
       try {
         setIsLoading(true)
         const result = await inviteContributor(data.address)

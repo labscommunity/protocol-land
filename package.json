@@ -25,6 +25,7 @@
     "@isomorphic-git/lightning-fs": "^4.6.0",
     "@markdoc/markdoc": "^0.4.0",
     "@othent/kms": "^1.0.8",
+    "@permaweb/aoconnect": "^0.0.45",
     "@uiw/codemirror-extensions-langs": "^4.21.11",
     "@uiw/codemirror-theme-github": "^4.21.11",
     "@uiw/react-codemirror": "^4.21.11",
