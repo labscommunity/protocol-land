@@ -7,7 +7,14 @@ import * as yup from 'yup'
 
 import { Button } from '@/components/common/buttons'
 import { withAsync } from '@/helpers/withAsync'
-import { getARBalance, getArNSNameFees, getIOBalance, registerArNSName, searchArNSName } from '@/lib/dragondeploy/arns'
+import {
+  formatIOBalance,
+  getARBalance,
+  getArNSNameFees,
+  getIOBalance,
+  registerArNSName,
+  searchArNSName
+} from '@/lib/dragondeploy/arns'
 import { useGlobalStore } from '@/stores/globalStore'
 
 const schema = yup
@@ -143,11 +150,11 @@ export default function ArNSRegister({ closeModal }: ArNSRegisterProps) {
               <h3 className="font-semibold">$IO Test</h3>
               <div className="mt-2">
                 <div className="text-gray-600">Balance</div>
-                <div>{balance.io}</div>
+                <div>{formatIOBalance(balance.io)}</div>
               </div>
               <div className="mt-2">
                 <div className="text-gray-600">Fee</div>
-                <div>{fees.io}</div>
+                <div>{formatIOBalance(fees.io)}</div>
               </div>
             </div>
             <div className="text-right">

@@ -10,6 +10,7 @@ const warp = WarpFactory.forMainnet(defaultCacheOptions, true).use(new DeployPlu
 
 const REGISTRY = 'bLAgYxAdX2Ry-nt6aH2ixgvJXbpsEYm28NgJgyqfs-U'
 const ANT_SOURCE = 'H2uxnw_oVIEzXeBeYmxDgJuxPqwBCGPO4OmQzdWQu3U'
+const IO_DECIMALS = 6
 
 const arweave = new Arweave({
   host: 'ar-io.net',
@@ -111,6 +112,10 @@ export async function updateArNSDomain({
   )
 
   return { success: true, id: result.originalTxId, message: 'Successfully updated domain' }
+}
+
+export function formatIOBalance(balance: number) {
+  return (balance / Math.pow(10, IO_DECIMALS)).toFixed(3)
 }
 
 export async function getIOBalance(owner: string) {
