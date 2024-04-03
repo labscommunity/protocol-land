@@ -6,6 +6,7 @@ import toast from 'react-hot-toast'
 import { useNavigate } from 'react-router-dom'
 
 import { Button } from '@/components/common/buttons'
+import rehypeAnchorOnClick from '@/helpers/rehypeAnchorOnClickPlugin'
 import { resolveUsernameOrShorten } from '@/helpers/resolveUsername'
 import { useGlobalStore } from '@/stores/globalStore'
 import { Issue, IssueActivityComment, PullRequest, PullRequestActivityComment } from '@/types/repository'
@@ -143,8 +144,9 @@ export default function Comment({ isIssue, issueOrPRId, commentId, item, canEdit
           </div>
         ) : (
           <MDEditor.Markdown
-            className="p-2"
+            className="p-4"
             source={item?.description || '<i style="color: #656D76;">No description provided.</i>'}
+            rehypePlugins={[[rehypeAnchorOnClick]]}
           />
         )}
       </div>

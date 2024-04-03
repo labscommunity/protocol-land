@@ -66,11 +66,23 @@
       "status": "published",
       "href": "/blog/personalize-every-detail",
       "file": "/blog/personalize-every-detail.md",
-      "featured": true,
+      "featured": false,
       "category": "ANNOUNCEMENT",
       "description": "See how you can customize and tailor your profile details on Protocol.Land.",
       "coverImage": "/blog/images/pl-custom-details.png",
       "publishedAt": "2024-03-23"
+    },
+    {
+      "id": 7,
+      "title": "BetterIDEa's Codebase finds its permanent home on Protocol.Land",
+      "status": "published",
+      "href": "/blog/betterideas-codebase-finds-its-permanent-home-on-protocolland",
+      "file": "/blog/betterideas-codebase-finds-its-permanent-home-on-protocolland.md",
+      "featured": true,
+      "category": "ANNOUNCEMENT",
+      "description": "Learn how BetterIDEa has ensured a permanent, complete, verifiable history of their IDE using Protocol.Land.",
+      "coverImage": "/blog/images/pl-betteridea.png",
+      "publishedAt": "2024-04-03"
     }
   ]
 }
