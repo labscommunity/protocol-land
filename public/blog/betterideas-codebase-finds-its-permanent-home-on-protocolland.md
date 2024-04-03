@@ -1,5 +1,5 @@
 ---
-title: 'BetterIDEa's Codebase finds its permanent home on Protocol.Land'
+title: "BetterIDEa's Codebase finds its permanent home on Protocol.Land"
 status: 'published'
 author:
   name: 'Jennifer Matthews'
@@ -18,6 +18,6 @@ publishedAt: '2024-04-03'
 
 [BetterIDEa](https://twitter.com/betteridea_dev), a unique online ao IDE/Notebook that empowers developers to write, deploy, and share ao programs, like snippets, has now backed up its codebase on Protocol.Land. BetterIDEa was able to easily upload their code repository using Protocol.Land's [Github Sync](https://docs.protocol.land/working-with-repositories/import-a-repository-from-github) feature which ensures repositories are permanently stored on Arweave without the need of manual uploads. This seamless process allows developers to quickly migrate their projects to Protocol.Land and harness Arweave's data permanence architecture to safeguard their codebases indefinitely.
 
-By backing up their code repository on Protocol.Land, BetterIDEa has ensured a permanent, complete, verifiable history of the project.  Furthermore, Protocol.Land gives BetterIDEa a robust alternative for code hosting, offering true ownership and resilience against data loss.
+By backing up their code repository on Protocol.Land, BetterIDEa has ensured a permanent, complete, verifiable history of the project. Furthermore, Protocol.Land gives BetterIDEa a robust alternative for code hosting, offering true ownership and resilience against data loss.
 
-Interested in trying out Protocol.Land?  To start your own repo or migrate from GitHub, check out the docs [here](https://docs.protocol.land/~/changes/xIM7A4SEiES9eebQAnPD/working-with-repositories/import-a-repository-from-github?utm_source=Blog&utm_medium=Post&utm_campaign=BetterIDEA+blog+announcement&utm_id=BetterIDEA+blog+announcement).
+Interested in trying out Protocol.Land? To start your own repo or migrate from GitHub, check out the docs [here](https://docs.protocol.land/~/changes/xIM7A4SEiES9eebQAnPD/working-with-repositories/import-a-repository-from-github?utm_source=Blog&utm_medium=Post&utm_campaign=BetterIDEA+blog+announcement&utm_id=BetterIDEA+blog+announcement).
