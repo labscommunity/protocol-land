@@ -78,11 +78,23 @@
       "status": "published",
       "href": "/blog/betterideas-codebase-finds-its-permanent-home-on-protocolland",
       "file": "/blog/betterideas-codebase-finds-its-permanent-home-on-protocolland.md",
-      "featured": true,
+      "featured": false,
       "category": "ANNOUNCEMENT",
       "description": "Learn how BetterIDEa has ensured a permanent, complete, verifiable history of their IDE using Protocol.Land.",
       "coverImage": "/blog/images/pl-betteridea.png",
       "publishedAt": "2024-04-03"
+    },
+    {
+      "id": 8,
+      "title": "LiteSeed secures access to its services",
+      "status": "published",
+      "href": "/blog/liteseed-secures-access-to-its-services",
+      "file": "/blog/liteseed-secures-access-to-its-services.md",
+      "featured": true,
+      "category": "ANNOUNCEMENT",
+      "description": "Explore what LiteSeed has to offer and how they are preserving access to their services with Protocol.Land.",
+      "coverImage": "/blog/images/liteseed-secures-access-to-its-services.png",
+      "publishedAt": "2024-04-17"
     }
   ]
 }
