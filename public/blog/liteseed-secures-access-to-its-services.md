@@ -26,8 +26,8 @@ Backing up your repositories on Protocol.Land does not merely mean safeguarding 
 
 You can checkout LiteSeed’s services and documentation here:
 
-- [LiteSeed Bundler’s repository](https://protocol.land/?utm_source=Protocol.Land+Twitter&utm_medium=Tweet&utm_campaign=LiteSeed+secures+access+to+its+services&utm_id=LiteSeed+secures+access+to+its+services#/repository/fbbfc568-c361-419d-b841-fd00c4608952)
-- [AOGO repository](https://protocol.land/?utm_source=Protocol.Land+Twitter&utm_medium=Tweet&utm_campaign=LiteSeed+secures+access+to+its+services&utm_id=LiteSeed+secures+access+to+its+services#/repository/d8e7b91b-1025-47a5-9ea8-364451f496f9)
+- [LiteSeed's Bundler repository](https://protocol.land/?utm_source=Protocol.Land+Blog&utm_medium=Post&utm_campaign=LiteSeed+secures+access+to+its+services&utm_id=LiteSeed+secures+access+to+its+services#/repository/fbbfc568-c361-419d-b841-fd00c4608952)
+- [AOGO repository](https://protocol.land/?utm_source=Protocol.Land+Blog&utm_medium=Post&utm_campaign=LiteSeed+secures+access+to+its+services&utm_id=LiteSeed+secures+access+to+its+services#/repository/e11363b6-0b51-4280-bb80-8ec806410388)
 - [LiteSeed Documentation](https://docs.liteseed.xyz/)
 
-Interested in preserving access to your technologies? Here’s a [quick guide](https://docs.protocol.land/working-with-repositories/import-a-repository-from-github) to get you started or simply reach out to us in our [community discord](https://discord.gg/4g65p2zYvG).
+Interested in preserving access to your technologies? Here’s a [quick guide](https://docs.protocol.land/working-with-repositories/import-a-repository-from-github?utm_source=Protocol.Land+Blog&utm_medium=Post&utm_campaign=LiteSeed+secures+access+to+its+services&utm_id=LiteSeed+secures+access+to+its+services) to get you started or simply reach out to us in our [community discord](https://discord.gg/4g65p2zYvG).
