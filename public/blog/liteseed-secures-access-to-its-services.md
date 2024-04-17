@@ -20,7 +20,7 @@ In a short span of just four months, LiteSeed has evolved from a mere concept in
 
 - LiteSeed Bundler: A service allowing anyone to join a network of bundlers on Arweave as a node operator. Currently, over 300 people have joined the waitlist to run their own nodes in this network.
 - LiteSeed API: A service streamlining the process of interacting with the Arweave network using a REST API.
-- AOGO - A package enabling easy interaction with AO processes using GoLang. One notable user is everVision, the team behind projects like everPay.
+- AOGO: A package enabling easy interaction with AO processes using GoLang. One notable user is everVision, the team behind projects like everPay.
 
 Backing up your repositories on Protocol.Land does not merely mean safeguarding your codebase, rather it is an act of preservation. Protecting access to technology and knowledge for existing and future users. For LiteSeed, this means ensuring you always have access to their bundling network, APIs and golang package.
 
