@@ -53,13 +53,13 @@ export async function postNewPullRequest({
     tags: getTags({
       Action: 'Create-PR',
       Title: title,
-      RepoId: repoId,
-      BaseBranch: baseBranch,
-      CompareBranch: compareBranch,
-      BaseBranchOid: oid,
-      LinkedIssueId: typeof linkedIssueId === 'number' ? linkedIssueId.toString() : '',
-      BaseRepo: JSON.stringify(baseRepo),
-      CompareRepo: JSON.stringify(compareRepo)
+      'Repo-Id': repoId,
+      'Base-Branch': baseBranch,
+      'Compare-Branch': compareBranch,
+      'Base-Branch-Oid': oid,
+      'Linked-Issue-Id': typeof linkedIssueId === 'number' ? linkedIssueId.toString() : '',
+      'Base-Repo': JSON.stringify(baseRepo),
+      'Compare-Repo': JSON.stringify(compareRepo)
     })
   } as any
 
@@ -190,8 +190,8 @@ export async function mergePullRequest({
     await sendMessage({
       tags: getTags({
         Action: 'Update-PR-Status',
-        RepoId: repoId,
-        PRId: prId.toString(),
+        'Repo-Id': repoId,
+        'PR-Id': prId.toString(),
         Status: 'MERGED'
       })
     })
@@ -216,8 +216,8 @@ export async function closePullRequest({ repoId, prId }: { repoId: string; prId:
   await sendMessage({
     tags: getTags({
       Action: 'Update-PR-Status',
-      RepoId: repoId,
-      PRId: prId.toString(),
+      'Repo-Id': repoId,
+      'PR-Id': prId.toString(),
       Status: 'CLOSED'
     })
   })
@@ -239,8 +239,8 @@ export async function reopenPullRequest({ repoId, prId }: { repoId: string; prId
   await sendMessage({
     tags: getTags({
       Action: 'Update-PR-Status',
-      RepoId: repoId,
-      PRId: prId.toString(),
+      'Repo-Id': repoId,
+      'PR-Id': prId.toString(),
       Status: 'REOPEN'
     })
   })
@@ -261,8 +261,8 @@ export async function reopenPullRequest({ repoId, prId }: { repoId: string; prId
 export async function updatePullRequestDetails(repoId: string, prId: number, pullRequest: Partial<PullRequest>) {
   let tags = {
     Action: 'Update-PR-Details',
-    RepoId: repoId,
-    PRId: prId.toString()
+    'Repo-Id': repoId,
+    'PR-Id': prId.toString()
   } as any
 
   let data = ''
@@ -286,8 +286,8 @@ export async function addReviewersToPR({ reviewers, repoId, prId }: AddReviewers
   await sendMessage({
     tags: getTags({
       Action: 'Add-PR-Reviewers',
-      RepoId: repoId,
-      PRId: prId.toString(),
+      'Repo-Id': repoId,
+      'PR-Id': prId.toString(),
       Reviewers: JSON.stringify(reviewers)
     })
   })
@@ -309,8 +309,8 @@ export async function approvePR({ repoId, prId }: ApprovePROptions) {
   await sendMessage({
     tags: getTags({
       Action: 'Approve-PR',
-      RepoId: repoId,
-      PRId: prId.toString()
+      'Repo-Id': repoId,
+      'PR-Id': prId.toString()
     })
   })
 
@@ -331,8 +331,8 @@ export async function addCommentToPR(repoId: string, prId: number, comment: stri
   await sendMessage({
     tags: getTags({
       Action: 'Add-PR-Comment',
-      RepoId: repoId,
-      PRId: prId.toString()
+      'Repo-Id': repoId,
+      'PR-Id': prId.toString()
     }),
     data: comment
   })
@@ -354,9 +354,9 @@ export async function updatePRComment(repoId: string, prId: number, comment: { i
   await sendMessage({
     tags: getTags({
       Action: 'Update-PR-Comment',
-      RepoId: repoId,
-      PRId: prId.toString(),
-      CommentId: comment.id.toString()
+      'Repo-Id': repoId,
+      'PR-Id': prId.toString(),
+      'Comment-Id': comment.id.toString()
     }),
     data: comment.description
   })
@@ -378,9 +378,9 @@ export async function linkIssueToPR(repoId: string, prId: number, issueId: numbe
   await sendMessage({
     tags: getTags({
       Action: 'Link-Issue-PR',
-      RepoId: repoId,
-      PRId: prId.toString(),
-      LinkedIssueId: issueId.toString()
+      'Repo-Id': repoId,
+      'PR-Id': prId.toString(),
+      'Linked-Issue-Id': issueId.toString()
     })
   })
 
