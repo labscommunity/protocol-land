@@ -48,11 +48,11 @@ export const handleAcceptContributor = async (
   } as any
 
   if (privateStateTxId) {
-    tags.PrivateStateTxId = privateStateTxId
+    tags['Private-State-TxId'] = privateStateTxId
   }
 
   if (ghSyncPrivateStateTxId) {
-    tags.GhSyncPrivateStateTxId = ghSyncPrivateStateTxId
+    tags['GhSync-Private-State-TxId'] = ghSyncPrivateStateTxId
   }
 
   await sendMessage({ tags: getTags(tags) })

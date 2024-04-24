@@ -106,7 +106,7 @@ export const fetchUserRepos = async (address: string) => {
       process: AOS_PROCESS_ID,
       tags: getTags({
         Action: 'Get-User-Owned-Contributed-Repos',
-        UserAddress: address as string
+        'User-Address': address as string
       })
     })
   )

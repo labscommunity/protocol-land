@@ -23,9 +23,8 @@ export async function createNewIssue(title: string, description: string, repoId:
     tags: getTags({
       Action: 'Create-Issue',
       Title: title,
-      RepoId: repoId
-    }),
-    data: description
+      'Repo-Id': repoId
+    })
   } as any
 
   if (description) {
@@ -58,8 +57,8 @@ export async function addAssigneeToIssue(repoId: string, issueId: number, assign
   await sendMessage({
     tags: getTags({
       Action: 'Add-Issue-Assignees',
-      RepoId: repoId,
-      IssueId: issueId.toString(),
+      'Repo-Id': repoId,
+      'Issue-Id': issueId.toString(),
       Assignees: JSON.stringify(assignees)
     })
   })
@@ -72,8 +71,8 @@ export async function addCommentToIssue(repoId: string, issueId: number, comment
   await sendMessage({
     tags: getTags({
       Action: 'Add-Issue-Comment',
-      RepoId: repoId,
-      IssueId: issueId.toString()
+      'Repo-Id': repoId,
+      'Issue-Id': issueId.toString()
     }),
     data: comment
   })
@@ -90,9 +89,9 @@ export async function updateIssueComment(
   await sendMessage({
     tags: getTags({
       Action: 'Update-Issue-Comment',
-      RepoId: repoId,
-      IssueId: issueId.toString(),
-      CommentId: comment.id.toString()
+      'Repo-Id': repoId,
+      'Issue-Id': issueId.toString(),
+      'Comment-Id': comment.id.toString()
     }),
     data: comment.description
   })
@@ -114,8 +113,8 @@ export async function closeIssue(repoId: string, issueId: number) {
   await sendMessage({
     tags: getTags({
       Action: 'Update-Issue-Status',
-      RepoId: repoId,
-      IssueId: issueId.toString(),
+      'Repo-Id': repoId,
+      'Issue-Id': issueId.toString(),
       Status: 'COMPLETED'
     })
   })
@@ -128,8 +127,8 @@ export async function reopenIssue(repoId: string, issueId: number) {
   await sendMessage({
     tags: getTags({
       Action: 'Update-Issue-Status',
-      RepoId: repoId,
-      IssueId: issueId.toString(),
+      'Repo-Id': repoId,
+      'Issue-Id': issueId.toString(),
       Status: 'REOPEN'
     })
   })
@@ -141,8 +140,8 @@ export async function reopenIssue(repoId: string, issueId: number) {
 export async function updateIssueDetails(repoId: string, issueId: number, issue: Partial<Issue>) {
   let tags = {
     Action: 'Update-Issue-Details',
-    RepoId: repoId,
-    IssueId: issueId.toString()
+    'Repo-Id': repoId,
+    'Issue-Id': issueId.toString()
   } as any
 
   let data = ''
@@ -166,8 +165,8 @@ export async function addBounty(repoId: string, issueId: number, amount: number,
   await sendMessage({
     tags: getTags({
       Action: 'Create-Bounty',
-      RepoId: repoId,
-      IssueId: issueId.toString(),
+      'Repo-Id': repoId,
+      'Issue-Id': issueId.toString(),
       Amount: amount.toString(),
       Expiry: expiry.toString(),
       Base: base
@@ -188,14 +187,14 @@ export async function closeBounty(
 ) {
   const tags = {
     Action: 'Update-Bounty',
-    RepoId: repoId,
-    IssueId: issueId.toString(),
-    BountyId: bountyId.toString(),
+    'Repo-Id': repoId,
+    'Issue-Id': issueId.toString(),
+    'Bounty-Id': bountyId.toString(),
     Status: status
   } as any
 
   if (paymentTxId) {
-    tags.PaymentTxId = paymentTxId
+    tags['Payment-TxId'] = paymentTxId
   }
   await sendMessage({ tags: getTags(tags) })
 

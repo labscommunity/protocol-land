@@ -98,9 +98,9 @@ export async function postNewRepo({ id, title, description, file, owner, visibil
       Id: id,
       Name: title,
       Description: description,
-      DataTxId: dataTxResponse,
+      'Data-TxId': dataTxResponse,
       Visibility: visibility,
-      PrivateStateTxId: privateStateTxId
+      'Private-State-TxId': privateStateTxId
     })
   })
 
@@ -168,7 +168,7 @@ export async function updateGithubSync({ id, currentGithubSync, githubSync }: an
     tags: getTags({
       Action: 'Update-Github-Sync',
       Id: id,
-      GithubSync: JSON.stringify(githubSync)
+      'Github-Sync': JSON.stringify(githubSync)
     })
   })
 
@@ -190,7 +190,7 @@ export async function createNewFork(data: ForkRepositoryOptions) {
       Id: uuid,
       Name: data.name,
       Description: data.description,
-      DataTxId: data.dataTxId,
+      'Data-TxId': data.dataTxId,
       Parent: data.parent
     })
   })
@@ -256,7 +256,7 @@ export async function postUpdatedRepo({ fs, dir, owner, id, isPrivate, privateSt
     tags: getTags({
       Action: 'Update-Repo-TxId',
       Id: id,
-      DataTxId: dataTxResponse
+      'Data-TxId': dataTxResponse
     })
   })
 
@@ -328,11 +328,11 @@ export async function rotateKeysAndUpdate({ id, currentPrivateStateTxId, type }:
 
   const tags = getTags(
     isRepoAction
-      ? { Action: 'Update-Repo-PrivateStateTx', Id: id, PrivateStateTxId: privateStateTxId }
+      ? { Action: 'Update-Repo-Private-State-TxId', Id: id, 'Private-State-TxId': privateStateTxId }
       : {
           Action: 'Update-Github-Sync',
           Id: id,
-          GithubSync: JSON.stringify({ privateStateTxId, allowPending: true, partialUpdate: true })
+          'Github-Sync': JSON.stringify({ privateStateTxId, allowPending: true, partialUpdate: true })
         }
   )
 
@@ -429,7 +429,7 @@ export async function updateRepoDeploymentBranch(deploymentBranch: string, repoI
     tags: getTags({
       Action: 'Update-Repo-Details',
       Id: repoId,
-      DeploymentBranch: deploymentBranch
+      'Deployment-Branch': deploymentBranch
     })
   })
 }
