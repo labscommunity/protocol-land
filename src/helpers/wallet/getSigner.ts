@@ -9,8 +9,7 @@ export async function getSigner({ injectedSigner } = { injectedSigner: true }) {
 
   if (strategy === 'othent') {
     wallet = Object.assign({}, othentSigner, {
-      getActiveAddress: () => othentSigner.getActiveKey(),
-      getAddress: () => othentSigner.getActiveKey(),
+      getAddress: () => othentSigner.getActiveAddress(),
       signer: (tx: any) => othentSigner.sign(tx),
       type: 'arweave'
     })
