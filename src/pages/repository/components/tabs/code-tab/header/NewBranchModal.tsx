@@ -53,6 +53,7 @@ export default function NewBranchModal({ setIsOpen, isOpen, addNewBranch }: NewB
   })
 
   function closeModal() {
+    if (isSubmitting) return
     setIsOpen(false)
   }
 

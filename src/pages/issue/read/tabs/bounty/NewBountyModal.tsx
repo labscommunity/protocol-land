@@ -10,6 +10,7 @@ import * as yup from 'yup'
 import ArweaveLogo from '@/assets/arweave.svg'
 import CloseCrossIcon from '@/assets/icons/close-cross.svg'
 import { Button } from '@/components/common/buttons'
+import { withAsync } from '@/helpers/withAsync'
 import { useGlobalStore } from '@/stores/globalStore'
 
 type NewBountyModalProps = {
@@ -49,14 +50,15 @@ export default function NewBountyModal({ isOpen, setIsOpen }: NewBountyModalProp
 
     const unixTimestampOfExpiry = Math.floor(data.expiry.getTime() / 1000)
 
-    await addBounty(+issueId!, data.amount, unixTimestampOfExpiry)
+    const { error } = await withAsync(() => addBounty(+issueId!, data.amount, unixTimestampOfExpiry))
 
     setIsSubmitting(false)
 
-    closeModal()
+    if (!error) closeModal()
   }
 
   function closeModal() {
+    if (isSubmitting) return
     setIsOpen(false)
   }
 

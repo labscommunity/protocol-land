@@ -51,6 +51,7 @@ export default function NewRepoModal({ setIsOpen, isOpen }: NewRepoModalProps) {
   })
 
   function closeModal() {
+    if (isSubmitting) return
     setIsOpen(false)
   }
 
@@ -96,7 +97,9 @@ export default function NewRepoModal({ setIsOpen, isOpen }: NewRepoModalProps) {
       }
     } catch (error) {
       trackGoogleAnalyticsEvent('Repository', 'Failed to create a new repo', 'Create new repo')
+      toast.error(`Failed to create new repository.`)
     }
+    setIsSubmitting(false)
   }
 
   function handleRepositoryVisibilityChange(event: ChangeEvent<HTMLInputElement>) {

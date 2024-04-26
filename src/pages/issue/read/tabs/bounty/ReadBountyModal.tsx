@@ -2,12 +2,14 @@ import { Dialog, Transition } from '@headlessui/react'
 import clsx from 'clsx'
 import { differenceInDays } from 'date-fns'
 import React, { Fragment } from 'react'
+import toast from 'react-hot-toast'
 import SVG from 'react-inlinesvg'
 import { useParams } from 'react-router-dom'
 
 import ArweaveLogo from '@/assets/arweave.svg'
 import CloseCrossIcon from '@/assets/icons/close-cross.svg'
 import { Button } from '@/components/common/buttons'
+import { withAsync } from '@/helpers/withAsync'
 import { useGlobalStore } from '@/stores/globalStore'
 import { Bounty } from '@/types/repository'
 
@@ -39,17 +41,25 @@ export default function ReadBountyModal({ isOpen, setIsOpen, bounty, author }: N
   async function handleCloseButtonClick() {
     setIsSubmitting(true)
 
+    let error
     if (bountyComplete && payTxId.length > 0) {
-      await completeBounty(+issueId!, bounty.id, payTxId)
+      ;({ error } = await withAsync(() => completeBounty(+issueId!, bounty.id, payTxId)))
+      if (error) {
+        toast.error('Failed to complete bounty.')
+      }
     } else {
-      await closeBounty(+issueId!, bounty.id)
+      ;({ error } = await withAsync(() => closeBounty(+issueId!, bounty.id)))
+      if (error) {
+        toast.error('Failed to close bounty.')
+      }
     }
 
     setIsSubmitting(false)
-    closeModal()
+    if (!error) closeModal()
   }
 
   function closeModal() {
+    if (isSubmitting) return
     setIsOpen(false)
   }
 

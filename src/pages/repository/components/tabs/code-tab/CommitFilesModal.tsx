@@ -63,6 +63,7 @@ export default function CommitFilesModal({ setIsOpen, setIsCommited, isOpen, fil
   }, [files])
 
   function closeModal() {
+    if (isSubmitting) return
     setIsOpen(false)
   }
 

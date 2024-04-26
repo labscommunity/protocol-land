@@ -62,6 +62,7 @@ export default function AddFilesModal({ setIsOpen, isOpen }: NewBranchModal) {
   }, [files])
 
   function closeModal() {
+    if (isSubmitting) return
     setIsOpen(false)
   }
 
@@ -75,33 +76,37 @@ export default function AddFilesModal({ setIsOpen, isOpen }: NewBranchModal) {
 
   async function handleCommitSubmit(data: yup.InferType<typeof schema>) {
     if (files.length > 0 && userRepo) {
-      setIsSubmitting(true)
+      try {
+        setIsSubmitting(true)
 
-      const basePath = getCurrentFolderPath()
+        const basePath = getCurrentFolderPath()
 
-      const updatedFiles = files.map((file) => {
-        const updatedPath = joinPaths(basePath, file.path!)
-        const updatedFile = new File([file], file.name, {
-          lastModified: file.lastModified,
-          type: file.type
+        const updatedFiles = files.map((file) => {
+          const updatedPath = joinPaths(basePath, file.path!)
+          const updatedFile = new File([file], file.name, {
+            lastModified: file.lastModified,
+            type: file.type
+          })
+          Object.defineProperty(updatedFile, 'path', { value: updatedPath })
+          return updatedFile as FileWithPath
         })
-        Object.defineProperty(updatedFile, 'path', { value: updatedPath })
-        return updatedFile as FileWithPath
-      })
 
-      await addFiles({
-        files: updatedFiles,
-        id: id!,
-        message: data.commit,
-        name: userRepo.name,
-        owner: address!,
-        defaultBranch: userRepo.defaultBranch || 'master'
-      })
+        await addFiles({
+          files: updatedFiles,
+          id: id!,
+          message: data.commit,
+          name: userRepo.name,
+          owner: address!,
+          defaultBranch: userRepo.defaultBranch || 'master'
+        })
 
-      await reloadFilesOnCurrentFolder()
+        await reloadFilesOnCurrentFolder()
 
+        closeModal()
+      } catch (error) {
+        toast.error(`Failed to upload new file${files.length > 1 ? 's' : ''}.`)
+      }
       setIsSubmitting(false)
-      closeModal()
     } else {
       toast.error('Please select atleast one file.')
     }

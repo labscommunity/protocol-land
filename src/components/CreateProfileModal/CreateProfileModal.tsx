@@ -41,6 +41,7 @@ export default function CreateProfileModal({ setIsOpen, isOpen }: NewRepoModalPr
   })
 
   function closeModal() {
+    if (isSubmitting) return
     setIsOpen(false)
   }
 

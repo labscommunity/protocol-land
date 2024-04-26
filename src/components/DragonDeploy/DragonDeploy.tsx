@@ -53,6 +53,7 @@ export default function DragonDeploy() {
   }, [isOpen])
 
   function closeModal() {
+    if (isDeploying) return
     setIsOpen(false)
   }
 

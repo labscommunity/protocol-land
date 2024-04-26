@@ -52,6 +52,7 @@ export default function ForkModal({ setIsOpen, isOpen, repo }: NewRepoModalProps
   })
 
   function closeModal() {
+    if (isSubmitting) return
     setIsOpen(false)
   }
 
