@@ -94,11 +94,10 @@
   resolved "https://registry.yarnpkg.com/@arweave-wallet-kit-beta/core/-/core-0.0.1-beta.4.tgz#66191b59473a0d03c0ab689c01c4fe5642ee32ee"
   integrity sha512-V/ni0CdAX8Mfp/Ta7yhhmGbklXNL83RPBn2q5tNOLJJRWyBl80TYQeLV/DuHtPz9zv9Fosjd5sc1uF5ijXqyVg==
 
-"@arweave-wallet-kit-beta/othent-strategy@^0.0.1-beta.12":
-  version "0.0.1-beta.12"
-  resolved "https://registry.yarnpkg.com/@arweave-wallet-kit-beta/othent-strategy/-/othent-strategy-0.0.1-beta.12.tgz#1a154555de29f4b8cc302199c8a6e22371194fc3"
-  integrity sha512-GJOp5nCgPW7iaMuMJmLxAXBqxJU0ththMJLS+xKpQ8telaRnrqMiHHgArU1fAQul480ZetVyDGL7Vx8gCIWUPQ==
+"@arweave-wallet-kit-beta/othent-strategy@/Users/blokchainaholic/Desktop/clabs/wallet-kit-othent":
+  version "0.0.1-beta.5"
   dependencies:
+    "@othent/kms" "^1.0.12"
     jwt-decode "^4.0.0"
 
 "@arweave-wallet-kit-beta/react@^0.0.1-beta.4":
@@ -114,7 +113,7 @@
     framer-motion "^8.1.9"
     react-helmet "^6.1.0"
 
-"@auth0/auth0-spa-js@^2.1.2":
+"@auth0/auth0-spa-js@^2.1.3":
   version "2.1.3"
   resolved "https://registry.yarnpkg.com/@auth0/auth0-spa-js/-/auth0-spa-js-2.1.3.tgz#aabf6f439e41edbeef0cf4766ad754e5b47616e5"
   integrity sha512-NMTBNuuG4g3rame1aCnNS5qFYIzsTUV5qTFPRfTyYFS1feS6jsCBR+eTq9YkxCp1yuoM2UIcjunPaoPl77U9xQ==
@@ -2515,12 +2514,12 @@
     "@nodelib/fs.scandir" "2.1.5"
     fastq "^1.6.0"
 
-"@othent/kms@^1.0.8":
-  version "1.0.8"
-  resolved "https://registry.npmjs.org/@othent/kms/-/kms-1.0.8.tgz#373bc39d8e22526cb286fb93f7c7c6546654be37"
-  integrity sha512-l5OxizVbNRbVrj8e/Ad4EFBjpSseMcbelREBGHk8NS7OMtUW3GCNA+5SMipcQ2zhZ2ZYkHK/ks4ri0GDFQbNbw==
+"@othent/kms@^1.0.12":
+  version "1.0.12"
+  resolved "https://registry.npmjs.org/@othent/kms/-/kms-1.0.12.tgz#6cbe6498fcc56eda2495c1704415b828536d1dd3"
+  integrity sha512-0T4DSqjEI9Lh0642Of/cGEvl2bx80ZsIIKJoHijAup0So2/o0rfirkxttmWfHOySWxLJ1PEwzoC+iflF5MFPzg==
   dependencies:
-    "@auth0/auth0-spa-js" "^2.1.2"
+    "@auth0/auth0-spa-js" "^2.1.3"
     arweave "^1.14.4"
     axios "^1.6.0"
     base64-js "^1.5.1"
