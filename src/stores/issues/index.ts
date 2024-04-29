@@ -374,6 +374,7 @@ const createPullRequestSlice: StateCreator<CombinedSlices, [['zustand/immer', ne
           bounty_amount: amount,
           result: 'FAILED'
         })
+        throw error
       }
     },
     closeBounty: async (issueId, bountyId) => {
@@ -403,6 +404,8 @@ const createPullRequestSlice: StateCreator<CombinedSlices, [['zustand/immer', ne
           bounty_id: bountyId,
           result: 'SUCCESS'
         })
+      } else {
+        throw error
       }
     },
     expireBounty: async (issueId, bountyId) => {
@@ -462,6 +465,8 @@ const createPullRequestSlice: StateCreator<CombinedSlices, [['zustand/immer', ne
           payment_tx: paymentTxId,
           result: 'SUCCESS'
         })
+      } else {
+        throw error
       }
     }
   }

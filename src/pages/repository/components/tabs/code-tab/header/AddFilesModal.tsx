@@ -13,6 +13,7 @@ import CloseCrossIcon from '@/assets/icons/close-cross.svg'
 import FolderBrowseIcon from '@/assets/icons/folder-browse.svg'
 import { Button } from '@/components/common/buttons'
 import CostEstimatesToolTip from '@/components/CostEstimatesToolTip'
+import useCursorNotAllowed from '@/helpers/hooks/useCursorNotAllowded'
 import { fsWithName } from '@/lib/git/helpers/fsWithName'
 import { packGitRepo } from '@/lib/git/helpers/zipUtils'
 import useCommit from '@/pages/repository/hooks/useCommit'
@@ -51,7 +52,7 @@ export default function AddFilesModal({ setIsOpen, isOpen }: NewBranchModal) {
   const [fileSizes, setFileSizes] = React.useState<number[]>([])
   const [repoBlobSize, setRepoBlobSize] = React.useState<number>(0)
   const [isSubmitting, setIsSubmitting] = React.useState(false)
-
+  const { cursorNotAllowed, closeModalCursor } = useCursorNotAllowed(isSubmitting)
   const { getRootProps, getInputProps, isDragActive, inputRef } = useDropzone({ onDrop })
 
   React.useEffect(() => {
@@ -62,6 +63,7 @@ export default function AddFilesModal({ setIsOpen, isOpen }: NewBranchModal) {
   }, [files])
 
   function closeModal() {
+    if (isSubmitting) return
     setIsOpen(false)
   }
 
@@ -75,33 +77,37 @@ export default function AddFilesModal({ setIsOpen, isOpen }: NewBranchModal) {
 
   async function handleCommitSubmit(data: yup.InferType<typeof schema>) {
     if (files.length > 0 && userRepo) {
-      setIsSubmitting(true)
+      try {
+        setIsSubmitting(true)
 
-      const basePath = getCurrentFolderPath()
+        const basePath = getCurrentFolderPath()
 
-      const updatedFiles = files.map((file) => {
-        const updatedPath = joinPaths(basePath, file.path!)
-        const updatedFile = new File([file], file.name, {
-          lastModified: file.lastModified,
-          type: file.type
+        const updatedFiles = files.map((file) => {
+          const updatedPath = joinPaths(basePath, file.path!)
+          const updatedFile = new File([file], file.name, {
+            lastModified: file.lastModified,
+            type: file.type
+          })
+          Object.defineProperty(updatedFile, 'path', { value: updatedPath })
+          return updatedFile as FileWithPath
         })
-        Object.defineProperty(updatedFile, 'path', { value: updatedPath })
-        return updatedFile as FileWithPath
-      })
 
-      await addFiles({
-        files: updatedFiles,
-        id: id!,
-        message: data.commit,
-        name: userRepo.name,
-        owner: address!,
-        defaultBranch: userRepo.defaultBranch || 'master'
-      })
+        await addFiles({
+          files: updatedFiles,
+          id: id!,
+          message: data.commit,
+          name: userRepo.name,
+          owner: address!,
+          defaultBranch: userRepo.defaultBranch || 'master'
+        })
 
-      await reloadFilesOnCurrentFolder()
+        await reloadFilesOnCurrentFolder()
 
+        closeModal()
+      } catch (error) {
+        toast.error(`Failed to upload new file${files.length > 1 ? 's' : ''}.`)
+      }
       setIsSubmitting(false)
-      closeModal()
     } else {
       toast.error('Please select atleast one file.')
     }
@@ -121,7 +127,7 @@ export default function AddFilesModal({ setIsOpen, isOpen }: NewBranchModal) {
 
   return (
     <Transition appear show={isOpen} as={Fragment}>
-      <Dialog as="div" className="relative z-10" onClose={closeModal}>
+      <Dialog as="div" className={clsx('relative z-10', cursorNotAllowed)} onClose={closeModal}>
         <Transition.Child
           as={Fragment}
           enter="ease-out duration-300"
@@ -150,15 +156,18 @@ export default function AddFilesModal({ setIsOpen, isOpen }: NewBranchModal) {
                   <Dialog.Title as="h3" className="text-xl font-medium text-gray-900">
                     Upload new Files/Folders
                   </Dialog.Title>
-                  <SVG onClick={closeModal} src={CloseCrossIcon} className="w-6 h-6 cursor-pointer" />
+                  <SVG onClick={closeModal} src={CloseCrossIcon} className={clsx('w-6 h-6', closeModalCursor)} />
                 </div>
                 <div className="mt-6 flex flex-col">
                   <span className="mb-2 font-medium text-sm text-gray-600">Upload files</span>
                   <div
-                    className="flex cursor-pointer flex-col overflow-auto items-center h-36 max-h-36 border-[1px] border-gray-300 rounded-lg border-dashed"
+                    className={clsx(
+                      'flex flex-col overflow-auto items-center h-36 max-h-36 border-[1px] border-gray-300 rounded-lg border-dashed',
+                      closeModalCursor
+                    )}
                     {...getRootProps()}
                   >
-                    <input {...getInputProps()} />
+                    <input {...getInputProps()} disabled={isSubmitting} />
                     {files.length === 0 && (
                       <div className="h-full w-full py-6 px-12 flex justify-center items-center">
                         {!isDragActive && (
@@ -201,9 +210,11 @@ export default function AddFilesModal({ setIsOpen, isOpen }: NewBranchModal) {
                       {...register('commit')}
                       className={clsx(
                         'bg-white border-[1px] text-gray-900 text-base rounded-lg hover:shadow-[0px_2px_4px_0px_rgba(0,0,0,0.10)] focus:border-primary-500 focus:border-[1.5px] block w-full px-3 py-[10px] outline-none',
-                        errors.commit ? 'border-red-500' : 'border-gray-300'
+                        errors.commit ? 'border-red-500' : 'border-gray-300',
+                        cursorNotAllowed
                       )}
                       placeholder="Example: Add README.md file"
+                      disabled={isSubmitting}
                     />
                     {errors.commit && <p className="text-red-500 text-sm italic mt-2">{errors.commit?.message}</p>}
                   </div>
@@ -215,7 +226,7 @@ export default function AddFilesModal({ setIsOpen, isOpen }: NewBranchModal) {
                   <Button
                     disabled={Object.keys(errors).length > 0 || isSubmitting}
                     isLoading={isSubmitting}
-                    className="w-full justify-center font-medium"
+                    className={clsx('w-full justify-center font-medium', cursorNotAllowed)}
                     onClick={handleSubmit(handleCommitSubmit)}
                     variant="primary-solid"
                   >

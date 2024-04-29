@@ -13,6 +13,7 @@ import CloseCrossIcon from '@/assets/icons/close-cross.svg'
 import { Button } from '@/components/common/buttons'
 import CostEstimatesToolTip from '@/components/CostEstimatesToolTip'
 import { trackGoogleAnalyticsEvent } from '@/helpers/google-analytics'
+import useCursorNotAllowed from '@/helpers/hooks/useCursorNotAllowded'
 import { withAsync } from '@/helpers/withAsync'
 import { createNewRepo, postNewRepo } from '@/lib/git'
 import { fsWithName } from '@/lib/git/helpers/fsWithName'
@@ -41,6 +42,7 @@ export default function NewRepoModal({ setIsOpen, isOpen }: NewRepoModalProps) {
   const [isSubmitting, setIsSubmitting] = React.useState(false)
   const [visibility, setVisibility] = React.useState('public')
   const navigate = useNavigate()
+  const { cursorNotAllowed, closeModalCursor } = useCursorNotAllowed(isSubmitting)
   const [authState] = useGlobalStore((state) => [state.authState])
   const {
     register,
@@ -51,6 +53,7 @@ export default function NewRepoModal({ setIsOpen, isOpen }: NewRepoModalProps) {
   })
 
   function closeModal() {
+    if (isSubmitting) return
     setIsOpen(false)
   }
 
@@ -96,16 +99,19 @@ export default function NewRepoModal({ setIsOpen, isOpen }: NewRepoModalProps) {
       }
     } catch (error) {
       trackGoogleAnalyticsEvent('Repository', 'Failed to create a new repo', 'Create new repo')
+      toast.error(`Failed to create new repository.`)
     }
+    setIsSubmitting(false)
   }
 
   function handleRepositoryVisibilityChange(event: ChangeEvent<HTMLInputElement>) {
+    if (isSubmitting) return
     setVisibility(event.target.value)
   }
 
   return (
     <Transition appear show={isOpen} as={Fragment}>
-      <Dialog as="div" className="relative z-10" onClose={closeModal}>
+      <Dialog as="div" className={clsx('relative z-10', cursorNotAllowed)} onClose={closeModal}>
         <Transition.Child
           as={Fragment}
           enter="ease-out duration-300"
@@ -134,7 +140,7 @@ export default function NewRepoModal({ setIsOpen, isOpen }: NewRepoModalProps) {
                   <Dialog.Title as="h3" className="text-xl font-medium text-gray-900">
                     Create a new Repository
                   </Dialog.Title>
-                  <SVG onClick={closeModal} src={CloseCrossIcon} className="w-6 h-6 cursor-pointer" />
+                  <SVG onClick={closeModal} src={CloseCrossIcon} className={clsx('w-6 h-6', closeModalCursor)} />
                 </div>
                 <div className="mt-6 flex flex-col gap-2.5">
                   <div>
@@ -146,9 +152,11 @@ export default function NewRepoModal({ setIsOpen, isOpen }: NewRepoModalProps) {
                       {...register('title')}
                       className={clsx(
                         'bg-white border-[1px] text-gray-900 text-base rounded-lg hover:shadow-[0px_2px_4px_0px_rgba(0,0,0,0.10)] focus:border-primary-500 focus:border-[1.5px] block w-full px-3 py-[10px] outline-none',
-                        errors.title ? 'border-red-500' : 'border-gray-300'
+                        errors.title ? 'border-red-500' : 'border-gray-300',
+                        cursorNotAllowed
                       )}
                       placeholder="my-cool-repo"
+                      disabled={isSubmitting}
                     />
                     {errors.title && <p className="text-red-500 text-sm italic mt-2">{errors.title?.message}</p>}
                   </div>
@@ -161,9 +169,11 @@ export default function NewRepoModal({ setIsOpen, isOpen }: NewRepoModalProps) {
                       {...register('description')}
                       className={clsx(
                         'bg-white border-[1px] text-gray-900 text-base rounded-lg hover:shadow-[0px_2px_4px_0px_rgba(0,0,0,0.10)] focus:border-primary-500 focus:border-[1.5px] block w-full px-3 py-[10px] outline-none',
-                        errors.description ? 'border-red-500' : 'border-gray-300'
+                        errors.description ? 'border-red-500' : 'border-gray-300',
+                        cursorNotAllowed
                       )}
                       placeholder="A really cool repo fully decentralized"
+                      disabled={isSubmitting}
                     />
                     {errors.description && (
                       <p className="text-red-500 text-sm italic mt-2">{errors.description?.message}</p>
@@ -179,7 +189,10 @@ export default function NewRepoModal({ setIsOpen, isOpen }: NewRepoModalProps) {
                           onChange={handleRepositoryVisibilityChange}
                           value="public"
                           defaultChecked
-                          className="mr-2 rounded-full h-4 w-4 checked:accent-primary-700 accent-primary-600 bg-white focus:ring-primary-600  outline-none"
+                          className={clsx(
+                            'mr-2 rounded-full h-4 w-4 checked:accent-primary-700 accent-primary-600 bg-white focus:ring-primary-600  outline-none',
+                            cursorNotAllowed
+                          )}
                         />
                         Public
                       </label>
@@ -190,7 +203,10 @@ export default function NewRepoModal({ setIsOpen, isOpen }: NewRepoModalProps) {
                           disabled={authState.method === 'othent'}
                           onChange={handleRepositoryVisibilityChange}
                           value="private"
-                          className="mr-2 rounded-full h-4 w-4 checked:accent-primary-700 accent-primary-600 bg-white focus:ring-primary-600  outline-none"
+                          className={clsx(
+                            'mr-2 rounded-full h-4 w-4 checked:accent-primary-700 accent-primary-600 bg-white focus:ring-primary-600  outline-none',
+                            cursorNotAllowed
+                          )}
                         />
                         Private
                       </label>
@@ -205,7 +221,7 @@ export default function NewRepoModal({ setIsOpen, isOpen }: NewRepoModalProps) {
                   <Button
                     isLoading={isSubmitting}
                     disabled={Object.keys(errors).length > 0 || isSubmitting}
-                    className="w-full justify-center font-medium"
+                    className={clsx('w-full justify-center font-medium', cursorNotAllowed)}
                     onClick={handleSubmit(handleCreateBtnClick)}
                     variant="primary-solid"
                   >

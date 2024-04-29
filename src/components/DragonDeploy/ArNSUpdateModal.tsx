@@ -7,6 +7,7 @@ import SVG from 'react-inlinesvg'
 
 import CloseCrossIcon from '@/assets/icons/close-cross.svg'
 import { Button } from '@/components/common/buttons'
+import useCursorNotAllowed from '@/helpers/hooks/useCursorNotAllowded'
 import { withAsync } from '@/helpers/withAsync'
 import { getANT, getDomainStatus, updateArNSDomain } from '@/lib/dragondeploy/arns'
 import { useGlobalStore } from '@/stores/globalStore'
@@ -19,7 +20,7 @@ export default function ArNSDomainModal() {
   const [isLoading, setIsLoading] = useState(false)
   const [domainTxId, setDomainTxId] = useState('')
   const [intervalValue, setIntervalValue] = useState<number>()
-
+  const { cursorNotAllowed, closeModalCursor } = useCursorNotAllowed(isLoading)
   const [connectedAddress, selectedRepo, updateDomain] = useGlobalStore((state) => [
     state.authState.address,
     state.repoCoreState.selectedRepo.repo,
@@ -41,6 +42,7 @@ export default function ArNSDomainModal() {
   }, [deployment, domainTxId, domain])
 
   function closeModal() {
+    if (isLoading) return
     setIsOpen(false)
   }
 
@@ -145,7 +147,7 @@ export default function ArNSDomainModal() {
         ArNS Domain
       </Button>
       <Transition appear show={isOpen} as={Fragment}>
-        <Dialog as="div" className="relative z-10" onClose={closeModal}>
+        <Dialog as="div" className={clsx('relative z-10', cursorNotAllowed)} onClose={closeModal}>
           <Transition.Child
             as={Fragment}
             enter="ease-out duration-300"
@@ -174,7 +176,7 @@ export default function ArNSDomainModal() {
                     <Dialog.Title as="h3" className="text-xl font-medium text-gray-900">
                       ArNS Domain
                     </Dialog.Title>
-                    <SVG onClick={closeModal} src={CloseCrossIcon} className="w-6 h-6 cursor-pointer" />
+                    <SVG onClick={closeModal} src={CloseCrossIcon} className={clsx('w-6 h-6', closeModalCursor)} />
                   </div>
                   <Dialog.Description className="mt-4">
                     <div className="flex justify-center items-center w-full">
@@ -198,12 +200,16 @@ export default function ArNSDomainModal() {
                           </div>
                           {!updateNeeded && !isUpdated && isOnline && <span>Update in progress...</span>}
                           {updateNeeded && <span>Update to latest deployment?</span>}
-                          {!isOnline && <span className='text-sm text-gray-600'>Note: It might take ~30 minutes for the domain to go live.</span>}
+                          {!isOnline && (
+                            <span className="text-sm text-gray-600">
+                              Note: It might take ~30 minutes for the domain to go live.
+                            </span>
+                          )}
                         </div>
                         <div className="flex flex-col gap-3 justify-center mt-6">
                           <div className="flex gap-2">
                             <Button
-                              className="w-full flex justify-center"
+                              className={clsx('w-full flex justify-center', cursorNotAllowed)}
                               variant="primary-solid"
                               isLoading={isLoading}
                               disabled={isLoading || !updateNeeded}
@@ -213,9 +219,10 @@ export default function ArNSDomainModal() {
                               Update
                             </Button>
                             <Button
-                              className="w-full flex justify-center"
+                              className={clsx('w-full flex justify-center', cursorNotAllowed)}
                               variant="secondary"
                               onClick={() => closeModal()}
+                              disabled={isLoading}
                             >
                               Cancel
                             </Button>
