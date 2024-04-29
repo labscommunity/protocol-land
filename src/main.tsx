@@ -1,8 +1,8 @@
 import './index.css'
 
+import OthentStrategy from '@arweave-wallet-kit/othent-strategy'
 import ArConnectStrategy from '@arweave-wallet-kit-beta/arconnect-strategy'
 import BrowserWalletStrategy from '@arweave-wallet-kit-beta/browser-wallet-strategy'
-import OthentStrategy from '@arweave-wallet-kit-beta/othent-strategy'
 import { ArweaveWalletKit } from '@arweave-wallet-kit-beta/react'
 import ReactDOM from 'react-dom/client'
 import { HelmetProvider } from 'react-helmet-async'
