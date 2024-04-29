@@ -94,12 +94,6 @@
   resolved "https://registry.yarnpkg.com/@arweave-wallet-kit-beta/core/-/core-0.0.1-beta.4.tgz#66191b59473a0d03c0ab689c01c4fe5642ee32ee"
   integrity sha512-V/ni0CdAX8Mfp/Ta7yhhmGbklXNL83RPBn2q5tNOLJJRWyBl80TYQeLV/DuHtPz9zv9Fosjd5sc1uF5ijXqyVg==
 
-"@arweave-wallet-kit-beta/othent-strategy@/Users/blokchainaholic/Desktop/clabs/wallet-kit-othent":
-  version "0.0.1-beta.5"
-  dependencies:
-    "@othent/kms" "^1.0.12"
-    jwt-decode "^4.0.0"
-
 "@arweave-wallet-kit-beta/react@^0.0.1-beta.4":
   version "0.0.1-beta.4"
   resolved "https://registry.yarnpkg.com/@arweave-wallet-kit-beta/react/-/react-0.0.1-beta.4.tgz#72d1c7c1a4d5b09ef4945da76d49bc4f84c8de3d"
@@ -112,6 +106,14 @@
     "@linaria/react" "^4.3.8"
     framer-motion "^8.1.9"
     react-helmet "^6.1.0"
+
+"@arweave-wallet-kit/othent-strategy@^0.0.1-beta.7":
+  version "0.0.1-beta.7"
+  resolved "https://registry.npmjs.org/@arweave-wallet-kit/othent-strategy/-/othent-strategy-0.0.1-beta.7.tgz#7f0d0ca110cf002758e8598b02d30e26f5ee1545"
+  integrity sha512-VvH1qFek15Ccy8xXYYzKwMImNtFN9tPfYfOfy+R4FKwrjxZPCv7/xlSdXI+RukuZj8XNP2E5FYJv/8j7x/WWCg==
+  dependencies:
+    "@othent/kms" "^1.0.12"
+    jwt-decode "^4.0.0"
 
 "@auth0/auth0-spa-js@^2.1.3":
   version "2.1.3"
