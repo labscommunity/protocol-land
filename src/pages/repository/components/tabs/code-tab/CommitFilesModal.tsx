@@ -12,6 +12,7 @@ import * as yup from 'yup'
 import CloseCrossIcon from '@/assets/icons/close-cross.svg'
 import { Button } from '@/components/common/buttons'
 import CostEstimatesToolTip from '@/components/CostEstimatesToolTip'
+import useCursorNotAllowed from '@/helpers/hooks/useCursorNotAllowded'
 import { withAsync } from '@/helpers/withAsync'
 import { fsWithName } from '@/lib/git/helpers/fsWithName'
 import { packGitRepo } from '@/lib/git/helpers/zipUtils'
@@ -53,6 +54,7 @@ export default function CommitFilesModal({ setIsOpen, setIsCommited, isOpen, fil
   const [fileSizes, setFileSizes] = React.useState<number[]>([])
   const [repoBlobSize, setRepoBlobSize] = React.useState<number>(0)
   const [isSubmitting, setIsSubmitting] = React.useState(false)
+  const { cursorNotAllowed, closeModalCursor } = useCursorNotAllowed(isSubmitting)
 
   React.useEffect(() => {
     if (files.length > 0) {
@@ -108,7 +110,7 @@ export default function CommitFilesModal({ setIsOpen, setIsCommited, isOpen, fil
 
   return (
     <Transition appear show={isOpen} as={Fragment}>
-      <Dialog as="div" className="relative z-10" onClose={closeModal}>
+      <Dialog as="div" className={clsx('relative z-10', cursorNotAllowed)} onClose={closeModal}>
         <Transition.Child
           as={Fragment}
           enter="ease-out duration-300"
@@ -137,7 +139,7 @@ export default function CommitFilesModal({ setIsOpen, setIsCommited, isOpen, fil
                   <Dialog.Title as="h3" className="text-xl font-medium text-gray-900">
                     Commit changes
                   </Dialog.Title>
-                  <SVG onClick={closeModal} src={CloseCrossIcon} className="w-6 h-6 cursor-pointer" />
+                  <SVG onClick={closeModal} src={CloseCrossIcon} className={clsx('w-6 h-6', closeModalCursor)} />
                 </div>
                 <div className="mt-3 flex flex-col">
                   <div>
@@ -149,9 +151,11 @@ export default function CommitFilesModal({ setIsOpen, setIsCommited, isOpen, fil
                       {...register('commit')}
                       className={clsx(
                         'bg-white border-[1px] text-gray-900 text-base rounded-lg hover:shadow-[0px_2px_4px_0px_rgba(0,0,0,0.10)] focus:border-primary-500 focus:border-[1.5px] block w-full px-3 py-[10px] outline-none',
-                        errors.commit ? 'border-red-500' : 'border-gray-300'
+                        errors.commit ? 'border-red-500' : 'border-gray-300',
+                        cursorNotAllowed
                       )}
                       placeholder="Example: Add README.md file"
+                      disabled={isSubmitting}
                     />
                     {errors.commit && <p className="text-red-500 text-sm italic mt-2">{errors.commit?.message}</p>}
                   </div>
@@ -163,7 +167,7 @@ export default function CommitFilesModal({ setIsOpen, setIsCommited, isOpen, fil
                   <Button
                     disabled={Object.keys(errors).length > 0 || isSubmitting}
                     isLoading={isSubmitting}
-                    className="w-full justify-center font-medium"
+                    className={clsx('w-full justify-center font-medium', cursorNotAllowed)}
                     onClick={handleSubmit(handleCommitSubmit)}
                     variant="primary-solid"
                   >

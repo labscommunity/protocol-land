@@ -11,6 +11,7 @@ import * as yup from 'yup'
 
 import CloseCrossIcon from '@/assets/icons/close-cross.svg'
 import { Button } from '@/components/common/buttons'
+import useCursorNotAllowed from '@/helpers/hooks/useCursorNotAllowded'
 import { withAsync } from '@/helpers/withAsync'
 import { rootTabConfig } from '@/pages/repository/config/rootTabConfig'
 
@@ -43,6 +44,7 @@ export default function NewBranchModal({ setIsOpen, isOpen, addNewBranch }: NewB
   const { id } = useParams()
   const navigate = useNavigate()
   const [isSubmitting, setIsSubmitting] = React.useState(false)
+  const { cursorNotAllowed, closeModalCursor } = useCursorNotAllowed(isSubmitting)
   const {
     register,
     handleSubmit,
@@ -101,7 +103,7 @@ export default function NewBranchModal({ setIsOpen, isOpen, addNewBranch }: NewB
 
   return (
     <Transition appear show={isOpen} as={Fragment}>
-      <Dialog as="div" className="relative z-10" onClose={closeModal}>
+      <Dialog as="div" className={clsx('relative z-10', cursorNotAllowed)} onClose={closeModal}>
         <Transition.Child
           as={Fragment}
           enter="ease-out duration-300"
@@ -130,7 +132,7 @@ export default function NewBranchModal({ setIsOpen, isOpen, addNewBranch }: NewB
                   <Dialog.Title as="h3" className="text-xl font-medium text-gray-900">
                     Create a new Branch
                   </Dialog.Title>
-                  <SVG onClick={closeModal} src={CloseCrossIcon} className="w-6 h-6 cursor-pointer" />
+                  <SVG onClick={closeModal} src={CloseCrossIcon} className={clsx('w-6 h-6', closeModalCursor)} />
                 </div>
                 <div className="mt-6 flex flex-col gap-2.5">
                   <div>
@@ -142,9 +144,11 @@ export default function NewBranchModal({ setIsOpen, isOpen, addNewBranch }: NewB
                       {...register('name')}
                       className={clsx(
                         'bg-white border-[1px] text-gray-900 text-base rounded-lg hover:shadow-[0px_2px_4px_0px_rgba(0,0,0,0.10)] focus:border-primary-500 focus:border-[1.5px] block w-full px-3 py-[10px] outline-none',
-                        errors.name ? 'border-red-500' : 'border-gray-300'
+                        errors.name ? 'border-red-500' : 'border-gray-300',
+                        cursorNotAllowed
                       )}
                       placeholder="feature/my-cool-feature"
+                      disabled={isSubmitting}
                     />
                     {errors.name && <p className="text-red-500 text-sm italic mt-2">{errors.name?.message}</p>}
                   </div>
@@ -153,7 +157,7 @@ export default function NewBranchModal({ setIsOpen, isOpen, addNewBranch }: NewB
                 <div className="mt-6">
                   <Button
                     disabled={Object.keys(errors).length > 0 || isSubmitting}
-                    className="w-full justify-center font-medium text-base"
+                    className={clsx('w-full justify-center font-medium text-base', cursorNotAllowed)}
                     onClick={handleSubmit(handleCreateBtnClick)}
                     variant="primary-solid"
                     isLoading={isSubmitting}

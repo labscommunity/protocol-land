@@ -10,6 +10,7 @@ import * as yup from 'yup'
 import ArweaveLogo from '@/assets/arweave.svg'
 import CloseCrossIcon from '@/assets/icons/close-cross.svg'
 import { Button } from '@/components/common/buttons'
+import useCursorNotAllowed from '@/helpers/hooks/useCursorNotAllowded'
 import { withAsync } from '@/helpers/withAsync'
 import { useGlobalStore } from '@/stores/globalStore'
 
@@ -37,6 +38,7 @@ export default function NewBountyModal({ isOpen, setIsOpen }: NewBountyModalProp
   const { issueId } = useParams()
   const [addBounty] = useGlobalStore((state) => [state.issuesActions.addBounty])
   const [isSubmitting, setIsSubmitting] = React.useState(false)
+  const { cursorNotAllowed, closeModalCursor } = useCursorNotAllowed(isSubmitting)
   const {
     register,
     handleSubmit,
@@ -64,7 +66,7 @@ export default function NewBountyModal({ isOpen, setIsOpen }: NewBountyModalProp
 
   return (
     <Transition appear show={isOpen} as={Fragment}>
-      <Dialog as="div" className="relative z-10" onClose={closeModal}>
+      <Dialog as="div" className={clsx('relative z-10', cursorNotAllowed)} onClose={closeModal}>
         <Transition.Child
           as={Fragment}
           enter="ease-out duration-300"
@@ -93,7 +95,7 @@ export default function NewBountyModal({ isOpen, setIsOpen }: NewBountyModalProp
                   <Dialog.Title as="h3" className="text-xl font-medium text-gray-900">
                     Add bounty
                   </Dialog.Title>
-                  <SVG onClick={closeModal} src={CloseCrossIcon} className="w-6 h-6 cursor-pointer" />
+                  <SVG onClick={closeModal} src={CloseCrossIcon} className={clsx('w-6 h-6', closeModalCursor)} />
                 </div>
                 <div className="mt-6 flex flex-col gap-2.5">
                   <div className="flex flex-col gap-1">
@@ -117,12 +119,14 @@ export default function NewBountyModal({ isOpen, setIsOpen }: NewBountyModalProp
                         {...register('amount')}
                         className={clsx(
                           'bg-white border-[1px] text-gray-900 text-base rounded-lg hover:shadow-[0px_2px_4px_0px_rgba(0,0,0,0.10)] focus:border-primary-500 focus:border-[1.5px] block w-full px-3 py-[10px] outline-none',
-                          errors.amount ? 'border-red-500' : 'border-gray-300'
+                          errors.amount ? 'border-red-500' : 'border-gray-300',
+                          cursorNotAllowed
                         )}
                         step="0.5"
                         type="number"
                         placeholder="2"
                         min={'0'}
+                        disabled={isSubmitting}
                       />
                       <div className="h-full absolute right-4 top-0 flex items-center">
                         <span className="font-medium text-gray-600">AR</span>
@@ -139,11 +143,13 @@ export default function NewBountyModal({ isOpen, setIsOpen }: NewBountyModalProp
                         {...register('expiry')}
                         className={clsx(
                           'bg-white border-[1px] text-gray-900 text-base rounded-lg hover:shadow-[0px_2px_4px_0px_rgba(0,0,0,0.10)] focus:border-primary-500 focus:border-[1.5px] block w-full px-3 py-[10px] outline-none',
-                          errors.expiry ? 'border-red-500' : 'border-gray-300'
+                          errors.expiry ? 'border-red-500' : 'border-gray-300',
+                          cursorNotAllowed
                         )}
                         type="date"
                         min={new Date().toISOString().split('T')[0]}
                         placeholder="2"
+                        disabled={isSubmitting}
                       />
                     </div>
                     {errors.expiry && <p className="text-red-500 text-sm italic mt-2">{errors.expiry.message}</p>}
@@ -153,7 +159,7 @@ export default function NewBountyModal({ isOpen, setIsOpen }: NewBountyModalProp
                 <div className="mt-6">
                   <Button
                     disabled={Object.keys(errors).length > 0 || isSubmitting}
-                    className="w-full justify-center font-medium"
+                    className={clsx('w-full justify-center font-medium', cursorNotAllowed)}
                     onClick={handleSubmit(handleAddButtonClick)}
                     variant="primary-solid"
                     isLoading={isSubmitting}

@@ -1,4 +1,5 @@
 import { Dialog, Transition } from '@headlessui/react'
+import clsx from 'clsx'
 import { useEffect, useState } from 'react'
 import { Fragment } from 'react'
 import toast from 'react-hot-toast'
@@ -7,6 +8,7 @@ import SVG from 'react-inlinesvg'
 import CloseCrossIcon from '@/assets/icons/close-cross.svg'
 import { Button } from '@/components/common/buttons'
 import CostEstimatesToolTip from '@/components/CostEstimatesToolTip'
+import useCursorNotAllowed from '@/helpers/hooks/useCursorNotAllowded'
 import {
   type Commit,
   type File,
@@ -28,6 +30,7 @@ export default function DragonDeploy() {
   const [currentDeployment, setCurrentDeployment] = useState<Deployment>()
   const [uploadPercent, setUploadPercent] = useState(0)
   const [branchToRestore, setBranchToRestore] = useState('')
+  const { cursorNotAllowed, closeModalCursor } = useCursorNotAllowed(isDeploying)
   const [currentBranch, selectedRepo, branchState, branchActions, addDeployment] = useGlobalStore((state) => [
     state.branchState.currentBranch,
     state.repoCoreState.selectedRepo.repo,
@@ -116,7 +119,7 @@ export default function DragonDeploy() {
         Dragon Deploy
       </Button>
       <Transition appear show={isOpen} as={Fragment}>
-        <Dialog as="div" className="relative z-10" onClose={closeModal}>
+        <Dialog as="div" className={clsx('relative z-10', cursorNotAllowed)} onClose={closeModal}>
           <Transition.Child
             as={Fragment}
             enter="ease-out duration-300"
@@ -145,7 +148,7 @@ export default function DragonDeploy() {
                     <Dialog.Title as="h3" className="text-xl font-medium text-gray-900">
                       Dragon Deploy
                     </Dialog.Title>
-                    <SVG onClick={closeModal} src={CloseCrossIcon} className="w-6 h-6 cursor-pointer" />
+                    <SVG onClick={closeModal} src={CloseCrossIcon} className={clsx('w-6 h-6', closeModalCursor)} />
                   </div>
                   <Dialog.Description className="mt-4">
                     <div className="flex flex-col text-md gap-2">
@@ -189,7 +192,7 @@ export default function DragonDeploy() {
                       <Button
                         isLoading={isDeploying}
                         disabled={isDeploying || isProcessing || !!currentDeployment}
-                        className="w-full justify-center font-medium"
+                        className={clsx('w-full justify-center font-medium', cursorNotAllowed)}
                         onClick={deploy}
                         loadingText="Deploying"
                         variant="primary-solid"

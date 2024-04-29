@@ -10,6 +10,7 @@ import * as yup from 'yup'
 
 import CloseCrossIcon from '@/assets/icons/close-cross.svg'
 import { Button } from '@/components/common/buttons'
+import useCursorNotAllowed from '@/helpers/hooks/useCursorNotAllowded'
 import { withAsync } from '@/helpers/withAsync'
 import { createNewFork } from '@/lib/git'
 import { useGlobalStore } from '@/stores/globalStore'
@@ -39,6 +40,7 @@ export default function ForkModal({ setIsOpen, isOpen, repo }: NewRepoModalProps
   const [isSubmitting, setIsSubmitting] = React.useState(false)
   const connectedAddress = useGlobalStore((state) => state.authState.address)
   const navigate = useNavigate()
+  const { cursorNotAllowed, closeModalCursor } = useCursorNotAllowed(isSubmitting)
   const {
     register,
     handleSubmit,
@@ -106,7 +108,7 @@ export default function ForkModal({ setIsOpen, isOpen, repo }: NewRepoModalProps
 
   return (
     <Transition appear show={isOpen} as={Fragment}>
-      <Dialog as="div" className="relative z-10" onClose={closeModal}>
+      <Dialog as="div" className={clsx('relative z-10', cursorNotAllowed)} onClose={closeModal}>
         <Transition.Child
           as={Fragment}
           enter="ease-out duration-300"
@@ -135,7 +137,7 @@ export default function ForkModal({ setIsOpen, isOpen, repo }: NewRepoModalProps
                   <Dialog.Title as="h3" className="text-xl font-medium text-gray-900">
                     Create a new Fork
                   </Dialog.Title>
-                  <SVG onClick={closeModal} src={CloseCrossIcon} className="w-6 h-6 cursor-pointer" />
+                  <SVG onClick={closeModal} src={CloseCrossIcon} className={clsx('w-6 h-6', closeModalCursor)} />
                 </div>
                 <div className="mt-6 flex flex-col gap-2.5">
                   <div>
@@ -147,9 +149,11 @@ export default function ForkModal({ setIsOpen, isOpen, repo }: NewRepoModalProps
                       {...register('title')}
                       className={clsx(
                         'bg-white border-[1px] text-gray-900 text-base rounded-lg hover:shadow-[0px_2px_4px_0px_rgba(0,0,0,0.10)] focus:border-primary-500 focus:border-[1.5px] block w-full px-3 py-[10px] outline-none',
-                        errors.title ? 'border-red-500' : 'border-gray-300'
+                        errors.title ? 'border-red-500' : 'border-gray-300',
+                        cursorNotAllowed
                       )}
                       placeholder="my-cool-repo"
+                      disabled={isSubmitting}
                     />
                     {errors.title && <p className="text-red-500 text-sm italic mt-2">{errors.title?.message}</p>}
                   </div>
@@ -162,9 +166,11 @@ export default function ForkModal({ setIsOpen, isOpen, repo }: NewRepoModalProps
                       {...register('description')}
                       className={clsx(
                         'bg-white border-[1px] text-gray-900 text-base rounded-lg hover:shadow-[0px_2px_4px_0px_rgba(0,0,0,0.10)] focus:border-primary-500 focus:border-[1.5px] block w-full px-3 py-[10px] outline-none',
-                        errors.description ? 'border-red-500' : 'border-gray-300'
+                        errors.description ? 'border-red-500' : 'border-gray-300',
+                        cursorNotAllowed
                       )}
                       placeholder="A really cool repo fully decentralized"
+                      disabled={isSubmitting}
                     />
                     {errors.description && (
                       <p className="text-red-500 text-sm italic mt-2">{errors.description?.message}</p>
@@ -176,7 +182,7 @@ export default function ForkModal({ setIsOpen, isOpen, repo }: NewRepoModalProps
                   <Button
                     isLoading={isSubmitting}
                     disabled={Object.keys(errors).length > 0 || isSubmitting}
-                    className="w-full justify-center font-medium"
+                    className={clsx('w-full justify-center font-medium', cursorNotAllowed)}
                     onClick={handleSubmit(handleCreateFork)}
                     variant="primary-solid"
                   >

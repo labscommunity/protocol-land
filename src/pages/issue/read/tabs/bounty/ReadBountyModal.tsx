@@ -9,6 +9,7 @@ import { useParams } from 'react-router-dom'
 import ArweaveLogo from '@/assets/arweave.svg'
 import CloseCrossIcon from '@/assets/icons/close-cross.svg'
 import { Button } from '@/components/common/buttons'
+import useCursorNotAllowed from '@/helpers/hooks/useCursorNotAllowded'
 import { withAsync } from '@/helpers/withAsync'
 import { useGlobalStore } from '@/stores/globalStore'
 import { Bounty } from '@/types/repository'
@@ -37,6 +38,7 @@ export default function ReadBountyModal({ isOpen, setIsOpen, bounty, author }: N
     state.issuesActions.completeBounty
   ])
   const [isSubmitting, setIsSubmitting] = React.useState(false)
+  const { cursorNotAllowed, closeModalCursor } = useCursorNotAllowed(isSubmitting)
 
   async function handleCloseButtonClick() {
     setIsSubmitting(true)
@@ -65,7 +67,7 @@ export default function ReadBountyModal({ isOpen, setIsOpen, bounty, author }: N
 
   return (
     <Transition appear show={isOpen} as={Fragment}>
-      <Dialog as="div" className="relative z-10" onClose={closeModal}>
+      <Dialog as="div" className={clsx('relative z-10', cursorNotAllowed)} onClose={closeModal}>
         <Transition.Child
           as={Fragment}
           enter="ease-out duration-300"
@@ -94,7 +96,7 @@ export default function ReadBountyModal({ isOpen, setIsOpen, bounty, author }: N
                   <Dialog.Title as="h3" className="text-xl font-medium text-gray-900">
                     Reward#{bounty.id}
                   </Dialog.Title>
-                  <SVG onClick={closeModal} src={CloseCrossIcon} className="w-6 h-6 cursor-pointer" />
+                  <SVG onClick={closeModal} src={CloseCrossIcon} className={clsx('w-6 h-6', closeModalCursor)} />
                 </div>
                 <div className="mt-6 flex flex-col gap-4">
                   <div className="flex flex-col gap-1">
@@ -117,7 +119,8 @@ export default function ReadBountyModal({ isOpen, setIsOpen, bounty, author }: N
                       <input
                         className={clsx(
                           'bg-white border-[1px] text-gray-900 text-base rounded-lg hover:shadow-[0px_2px_4px_0px_rgba(0,0,0,0.10)] focus:border-primary-500 focus:border-[1.5px] block w-full px-3 py-[10px] outline-none',
-                          'border-gray-300'
+                          'border-gray-300',
+                          cursorNotAllowed
                         )}
                         value={bounty.amount}
                         type="number"
@@ -151,6 +154,7 @@ export default function ReadBountyModal({ isOpen, setIsOpen, bounty, author }: N
                         value=""
                         id="checkboxChecked"
                         onChange={(evt) => setBountyComplete(evt.target.checked)}
+                        disabled={isSubmitting}
                       />
                       Mark this bounty complete?
                     </div>
@@ -159,18 +163,20 @@ export default function ReadBountyModal({ isOpen, setIsOpen, bounty, author }: N
                         <input
                           className={clsx(
                             'bg-white border-[1px] text-gray-900 text-base rounded-lg hover:shadow-[0px_2px_4px_0px_rgba(0,0,0,0.10)] focus:border-primary-500 focus:border-[1.5px] block w-full px-3 py-[10px] outline-none',
-                            'border-gray-300'
+                            'border-gray-300',
+                            cursorNotAllowed
                           )}
                           type="text"
                           placeholder="Payment TX ID"
                           onChange={(evt) => setPayTxId(evt.target.value)}
+                          disabled={isSubmitting}
                         />
                       </div>
                     )}
                     <div className="flex w-full gap-4">
                       <Button
                         disabled={(bountyComplete && payTxId.length === 0) || isSubmitting}
-                        className="justify-center w-full"
+                        className={clsx('justify-center w-full', cursorNotAllowed)}
                         onClick={handleCloseButtonClick}
                         variant="primary-solid"
                         isLoading={isSubmitting}
