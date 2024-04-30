@@ -162,6 +162,7 @@ export default function Activities({ filters }: ActivitiesProps) {
       .reduce((accumulator, interaction, index) => {
         const action = getValueFromTags(interaction.tags, 'Action')
         const repoId = getValueFromTags(interaction.tags, 'Repo-Id')
+        const recipient = getValueFromTags(interaction.tags, 'Recipient') || interaction.recipient
         const repo = repos[index]
 
         if (repo?.private) return accumulator
@@ -181,13 +182,13 @@ export default function Activities({ filters }: ActivitiesProps) {
               repo,
               created,
               timestamp,
-              author: interaction.recipient
+              author: recipient
             } as RepositoryActivityType)
           }
         } else if (deploymentActions.includes(action) && repoId) {
           const created = action === 'Deployment-Added'
           const deployment = {
-            deployedBy: interaction.recipient,
+            deployedBy: recipient,
             commitOid: '',
             timestamp,
             ...JSON.parse(getValueFromTags(interaction.tags, 'Deployment'))
@@ -208,7 +209,7 @@ export default function Activities({ filters }: ActivitiesProps) {
                 txId: parsedDomain.txId,
                 name: parsedDomain.name,
                 contractTxId: parsedDomain.contractTxId,
-                controller: interaction.recipient,
+                controller: recipient,
                 timestamp
               }
             : repo.domain
@@ -228,7 +229,7 @@ export default function Activities({ filters }: ActivitiesProps) {
                 id: +issueParsed.id,
                 title: issueParsed.title,
                 description: issueParsed.description ?? '',
-                author: interaction.recipient,
+                author: recipient,
                 status: 'OPEN',
                 timestamp,
                 comments: 0
@@ -242,7 +243,7 @@ export default function Activities({ filters }: ActivitiesProps) {
               ...issue,
               timestamp,
               completedTimestamp: timestamp,
-              author: interaction.recipient,
+              author: recipient,
               status: created ? 'OPEN' : issueParsed.status
             },
             created,
@@ -255,7 +256,7 @@ export default function Activities({ filters }: ActivitiesProps) {
             ? {
                 id: +prParsed.id,
                 title: prParsed.title,
-                author: interaction.recipient,
+                author: recipient,
                 status: 'OPEN',
                 comments: 0,
                 timestamp
@@ -268,7 +269,7 @@ export default function Activities({ filters }: ActivitiesProps) {
             pullRequest: {
               ...pullRequest,
               timestamp,
-              author: interaction.recipient,
+              author: recipient,
               status: created ? 'OPEN' : prParsed.status
             },
             created,
