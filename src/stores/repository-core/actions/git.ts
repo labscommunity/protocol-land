@@ -1,11 +1,14 @@
 import Arweave from 'arweave'
 import toast from 'react-hot-toast'
 
-import { getArrayBufSize } from '@/helpers/getArrayBufSize'
+import { getRepoSize } from '@/helpers/getArrayBufSize'
 import { waitFor } from '@/helpers/waitFor'
 import { getActivePublicKey } from '@/helpers/wallet/getPublicKey'
 import { withAsync } from '@/helpers/withAsync'
-import { importRepoFromBlob, unmountRepoFromBrowser } from '@/lib/git'
+import singletonArfs from '@/lib/arfs/arfsSingleton'
+import { getArFS } from '@/lib/arfs/getArFS'
+import { getBifrost } from '@/lib/arfs/getBifrost'
+import { unmountRepoFromBrowser } from '@/lib/git'
 import { getAllCommits } from '@/lib/git/commit'
 import { fsWithName } from '@/lib/git/helpers/fsWithName'
 import { getOidFromRef, readFileFromOid, readFilesFromOid } from '@/lib/git/helpers/oid'
@@ -57,27 +60,33 @@ export async function saveRepository(id: string, name: string) {
   document.body.removeChild(downloadLink)
 }
 
-export async function loadRepository(id: string, dataTxId: string, uploadStrategy: string, privateStateTxId?: string) {
-  await unmountRepository(id)
+export async function loadRepository(id: string) {
+  const arfs = getArFS()
 
-  const gatewayUrl = uploadStrategy === 'ARSEEDING' ? 'https://arseed.web3infra.dev' : 'https://arweave.net'
-  const response = await fetch(`${gatewayUrl}/${dataTxId}`)
-  let repoArrayBuf = await response.arrayBuffer()
+  const drive = await arfs.drive.get(id)
+  const bifrost = getBifrost(drive!, arfs)
+  await bifrost.buildDriveState()
+  await waitFor(500)
 
-  if (privateStateTxId) {
-    repoArrayBuf = await decryptRepo(repoArrayBuf, privateStateTxId)
+  await bifrost.syncDrive()
+
+  singletonArfs.setArFS(arfs)
+  singletonArfs.setDrive(drive!)
+  singletonArfs.setBifrost(bifrost)
+
+  let repoSize = 0
+
+  if (bifrost.driveState) {
+    for (const entry in bifrost.driveState) {
+      const entity = bifrost.driveState[entry]
+
+      if (entity.entityType === 'folder' || !entity.size) continue
+
+      repoSize += entity.size
+    }
   }
 
-  const fs = fsWithName(id)
-  const dir = `/${id}`
-
-  const repoSize = getArrayBufSize(repoArrayBuf)
-
-  const success = await importRepoFromBlob(fs, dir, new Blob([repoArrayBuf]))
-
-  await waitFor(1000)
-
-  return { success, repoSize }
+  return { success: true, repoSize: getRepoSize(repoSize) }
 }
 
 export async function renameRepoDir(id: string, currentName: string, newName: string) {

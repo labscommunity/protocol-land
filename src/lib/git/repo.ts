@@ -33,64 +33,64 @@ const arweave = new Arweave({
   protocol: 'https'
 })
 
-export async function postNewRepo({ id, title, description, file, owner, visibility }: any) {
-  const publicKey = await getActivePublicKey()
+export async function postNewRepo({ id, dataTxId, title, description, visibility }: any) {
+  // const publicKey = await getActivePublicKey()
 
   const userSigner = await getSigner()
 
-  let data = (await toArrayBuffer(file)) as ArrayBuffer
+  // let data = (await toArrayBuffer(file)) as ArrayBuffer
 
-  const inputTags = [
-    { name: 'App-Name', value: 'Protocol.Land' },
-    { name: 'Content-Type', value: file.type },
-    { name: 'Creator', value: owner },
-    { name: 'Title', value: title },
-    { name: 'Description', value: description },
-    { name: 'Repo-Id', value: id },
-    { name: 'Type', value: 'repo-create' },
-    { name: 'Visibility', value: visibility }
-  ] as Tag[]
+  // const inputTags = [
+  //   { name: 'App-Name', value: 'Protocol.Land' },
+  //   { name: 'Content-Type', value: file.type },
+  //   { name: 'Creator', value: owner },
+  //   { name: 'Title', value: title },
+  //   { name: 'Description', value: description },
+  //   { name: 'Repo-Id', value: id },
+  //   { name: 'Type', value: 'repo-create' },
+  //   { name: 'Visibility', value: visibility }
+  // ] as Tag[]
 
-  let privateStateTxId = ''
-  if (visibility === 'private') {
-    const pubKeyArray = [strToJwkPubKey(publicKey)]
-    // Encrypt
-    const { aesKey, encryptedFile, iv } = await encryptFileWithAesGcm(data)
-    const encryptedAesKeysArray = await encryptAesKeyWithPublicKeys(aesKey, pubKeyArray)
-    // // Store 'encrypted', 'iv', and 'encryptedKeyArray' securely
+  const privateStateTxId = ''
+  // if (visibility === 'private') {
+  //   const pubKeyArray = [strToJwkPubKey(publicKey)]
+  //   // Encrypt
+  //   const { aesKey, encryptedFile, iv } = await encryptFileWithAesGcm(data)
+  //   const encryptedAesKeysArray = await encryptAesKeyWithPublicKeys(aesKey, pubKeyArray)
+  //   // // Store 'encrypted', 'iv', and 'encryptedKeyArray' securely
 
-    const privateState = {
-      version: '0.1',
-      iv,
-      encKeys: encryptedAesKeysArray,
-      pubKeys: [publicKey]
-    }
+  //   const privateState = {
+  //     version: '0.1',
+  //     iv,
+  //     encKeys: encryptedAesKeysArray,
+  //     pubKeys: [publicKey]
+  //   }
 
-    const privateInputTags = [
-      { name: 'App-Name', value: 'Protocol.Land' },
-      { name: 'Content-Type', value: 'application/json' },
-      { name: 'Type', value: 'private-state' },
-      { name: 'ID', value: id }
-    ] as Tag[]
+  //   const privateInputTags = [
+  //     { name: 'App-Name', value: 'Protocol.Land' },
+  //     { name: 'Content-Type', value: 'application/json' },
+  //     { name: 'Type', value: 'private-state' },
+  //     { name: 'ID', value: id }
+  //   ] as Tag[]
 
-    const privateStateTxResponse = await signAndSendTx(JSON.stringify(privateState), privateInputTags, userSigner)
+  //   const privateStateTxResponse = await signAndSendTx(JSON.stringify(privateState), privateInputTags, userSigner)
 
-    if (!privateStateTxResponse) {
-      throw new Error('Failed to post Private State')
-    }
+  //   if (!privateStateTxResponse) {
+  //     throw new Error('Failed to post Private State')
+  //   }
 
-    privateStateTxId = privateStateTxResponse
+  //   privateStateTxId = privateStateTxResponse
 
-    data = encryptedFile
-  }
+  //   data = encryptedFile
+  // }
 
-  await waitFor(500)
+  // await waitFor(500)
 
-  const dataTxResponse = await signAndSendTx(data, inputTags, userSigner, true)
+  // const dataTxResponse = await signAndSendTx(data, inputTags, userSigner, true)
 
-  if (!dataTxResponse) {
-    throw new Error('Failed to post Git repository')
-  }
+  // if (!dataTxResponse) {
+  //   throw new Error('Failed to post Git repository')
+  // }
 
   const contract = await getWarpContract(CONTRACT_TX_ID, userSigner)
 
@@ -100,13 +100,13 @@ export async function postNewRepo({ id, title, description, file, owner, visibil
       id,
       name: title,
       description,
-      dataTxId: dataTxResponse,
+      dataTxId,
       visibility,
       privateStateTxId
     }
   })
 
-  return { txResponse: dataTxResponse }
+  return { txResponse: id }
 }
 
 export async function updateGithubSync({ id, currentGithubSync, githubSync }: any) {
@@ -398,9 +398,9 @@ export async function createNewRepo(title: string, fs: FSType, owner: string, id
 
     await waitFor(1000)
 
-    const repoBlob = await packGitRepo({ fs, dir })
+    // const repoBlob = await packGitRepo({ fs, dir })
 
-    return { repoBlob, commit: sha }
+    return { commit: sha }
   } catch (error) {
     console.error('failed to create repo')
   }

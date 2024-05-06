@@ -6,7 +6,7 @@ import { useForm } from 'react-hook-form'
 import toast from 'react-hot-toast'
 import SVG from 'react-inlinesvg'
 import { useNavigate } from 'react-router-dom'
-import { v4 as uuidv4 } from 'uuid'
+// import { v4 as uuidv4 } from 'uuid'
 import * as yup from 'yup'
 
 import CloseCrossIcon from '@/assets/icons/close-cross.svg'
@@ -14,8 +14,10 @@ import { Button } from '@/components/common/buttons'
 import CostEstimatesToolTip from '@/components/CostEstimatesToolTip'
 import { trackGoogleAnalyticsEvent } from '@/helpers/google-analytics'
 import { withAsync } from '@/helpers/withAsync'
+import { getArFS } from '@/lib/arfs/getArFS'
+import { getBifrost } from '@/lib/arfs/getBifrost'
 import { createNewRepo, postNewRepo } from '@/lib/git'
-import { fsWithName } from '@/lib/git/helpers/fsWithName'
+// import { fsWithName } from '@/lib/git/helpers/fsWithName'
 import { useGlobalStore } from '@/stores/globalStore'
 import { isRepositoryNameAvailable } from '@/stores/repository-core/actions/repoMeta'
 
@@ -57,7 +59,8 @@ export default function NewRepoModal({ setIsOpen, isOpen }: NewRepoModalProps) {
   async function handleCreateBtnClick(data: yup.InferType<typeof schema>) {
     setIsSubmitting(true)
 
-    const id = uuidv4()
+    const arfs = getArFS()
+
     const { title, description } = data
     const owner = authState.address || 'Protocol.Land user'
 
@@ -70,28 +73,26 @@ export default function NewRepoModal({ setIsOpen, isOpen }: NewRepoModalProps) {
     }
 
     try {
-      const fs = fsWithName(id)
-      const createdRepo = await createNewRepo(title, fs, owner, id)
+      const drive = await arfs.drive.create(title)
+      const bifrost = getBifrost(drive, arfs)
+      const createdRepo = await createNewRepo(title, bifrost.fs, owner, drive.driveId!)
 
-      if (createdRepo && createdRepo.commit && createdRepo.repoBlob) {
-        const { repoBlob } = createdRepo
-
+      if (createdRepo && createdRepo.commit) {
         const result = await postNewRepo({
-          id,
+          id: drive.driveId!,
           title,
           description,
-          file: repoBlob,
-          owner: authState.address,
-          visibility
+          visibility,
+          dataTxId: drive.id!
         })
 
         if (result.txResponse) {
           trackGoogleAnalyticsEvent('Repository', 'Successfully created a repo', 'Create new repo', {
-            repo_id: id,
+            repo_id: drive.id!,
             repo_name: title
           })
 
-          navigate(`/repository/${id}`)
+          navigate(`/repository/${drive.driveId!}`)
         }
       }
     } catch (error) {
