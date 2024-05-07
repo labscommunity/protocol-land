@@ -64,6 +64,7 @@ export async function loadRepository(id: string) {
   const arfs = getArFS()
 
   const drive = await arfs.drive.get(id)
+
   const bifrost = getBifrost(drive!, arfs)
   await bifrost.buildDriveState()
   await waitFor(500)
