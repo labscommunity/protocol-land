@@ -3307,10 +3307,10 @@ are-we-there-yet@~1.1.2:
     delegates "^1.0.0"
     readable-stream "^2.0.6"
 
-arfs-js@^1.2.6:
-  version "1.2.6"
-  resolved "https://registry.yarnpkg.com/arfs-js/-/arfs-js-1.2.6.tgz#bae7823da1514b2f2fec24f2188f2dc4ef97a3ed"
-  integrity sha512-G+9jejcPQKQMdNIq4FyBSwRgD9IGGUTB58f60mGYflqBjbkQ3P/CYz4ZR4CNYZTw3/MTMtpgzh49JNFLHBg81Q==
+arfs-js@^1.2.7:
+  version "1.2.7"
+  resolved "https://registry.yarnpkg.com/arfs-js/-/arfs-js-1.2.7.tgz#3dce0e900b27bcc64b5cc4a96d4f00283a48c0c1"
+  integrity sha512-xmQbaclTulyJYN8C3CD/mPeAfu4Ja3pyP4xbQHPKYYII9jnAGZQhGj9FBVQn6U4FCGtd6vdsikqb66NfYKq58A==
   dependencies:
     "@isomorphic-git/idb-keyval" "^3.3.2"
     "@isomorphic-git/lightning-fs" "^4.6.0"
