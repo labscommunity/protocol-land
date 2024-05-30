@@ -17,6 +17,7 @@ import { withAsync } from '@/helpers/withAsync'
 import { getArFS } from '@/lib/arfs/getArFS'
 import { getBifrost } from '@/lib/arfs/getBifrost'
 import { createNewRepo, postNewRepo } from '@/lib/git'
+import taskQueueSingleton from '@/lib/queue/TaskQueue'
 // import { fsWithName } from '@/lib/git/helpers/fsWithName'
 import { useGlobalStore } from '@/stores/globalStore'
 import { isRepositoryNameAvailable } from '@/stores/repository-core/actions/repoMeta'
@@ -76,8 +77,15 @@ export default function NewRepoModal({ setIsOpen, isOpen }: NewRepoModalProps) {
       const drive = await arfs.drive.create(title)
       const bifrost = getBifrost(drive, arfs)
       const createdRepo = await createNewRepo(title, bifrost.fs, owner, drive.driveId!)
+      const taskQueueItemsLength = taskQueueSingleton.getPending().length
 
-      if (createdRepo && createdRepo.commit) {
+      if (createdRepo && createdRepo.commit && taskQueueItemsLength > 0) {
+        const uploadedToArFS = await taskQueueSingleton.execute(drive.id!)
+
+        if (uploadedToArFS.length !== taskQueueItemsLength) {
+          throw new Error('Failed to upload.')
+        }
+
         const result = await postNewRepo({
           id: drive.driveId!,
           title,
