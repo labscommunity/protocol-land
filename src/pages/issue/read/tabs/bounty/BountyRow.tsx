@@ -4,7 +4,7 @@ import SVG from 'react-inlinesvg'
 
 import ArweaveLogo from '@/assets/arweave.svg'
 import { resolveUsernameOrShorten } from '@/helpers/resolveUsername'
-import { BountyStatus } from '@/types/repository'
+import { BountyBase, BountyStatus } from '@/types/repository'
 
 type Props = {
   status: BountyStatus
@@ -13,6 +13,7 @@ type Props = {
   author: string
   timestamp: number
   expiry: number
+  base: BountyBase
   onClick: () => void
 }
 
@@ -30,7 +31,7 @@ const STATUS_TO_TEXT = {
   CLAIMED: 'been completed'
 }
 
-export default function BountyRow({ status, author, id, amount, expiry, timestamp, onClick }: Props) {
+export default function BountyRow({ status, author, id, amount, expiry, timestamp, onClick, base }: Props) {
   const Icon = STATUS_TO_ICON_MAP[status]
 
   const isActive = status === 'ACTIVE'
@@ -45,7 +46,9 @@ export default function BountyRow({ status, author, id, amount, expiry, timestam
           src={ArweaveLogo}
           className="w-5 h-5 [&>circle]:stroke-gray-900 [&>circle]:stroke-[2.5] [&>circle]:fill-none [&>path]:fill-gray-900"
         />
-        <span className="font-medium text-lg">{amount.toFixed(2)} AR</span>
+        <span className="font-medium text-lg">
+          {amount.toFixed(2)} {base}
+        </span>
       </div>
       <div className="flex gap-3 text-gray-900">
         <span className="font-semibold">Reward#{id}</span>

@@ -10,8 +10,10 @@ import { useParams } from 'react-router-dom'
 import ArweaveLogo from '@/assets/arweave.svg'
 import CloseCrossIcon from '@/assets/icons/close-cross.svg'
 import { Button } from '@/components/common/buttons'
+import { getArweaveUSD } from '@/helpers/prices'
 import { useGlobalStore } from '@/stores/globalStore'
-import { Bounty } from '@/types/repository'
+import { Bounty, BountyBase } from '@/types/repository'
+
 type NewBountyModalProps = {
   setIsOpen: (val: boolean) => void
   isOpen: boolean
@@ -33,6 +35,9 @@ const arweave = new Arweave({
 })
 
 export default function ReadBountyModal({ isOpen, setIsOpen, bounty, author }: NewBountyModalProps) {
+  const [amount, setAmount] = React.useState(bounty.amount)
+  const [oppositePrice, setOppositePrice] = React.useState<null | number>(null)
+  const [base, setBase] = React.useState<BountyBase>(bounty.base)
   const [bountyComplete, setBountyComplete] = React.useState(false)
   const [payTxId, setPayTxId] = React.useState('')
   const { issueId } = useParams()
@@ -42,6 +47,42 @@ export default function ReadBountyModal({ isOpen, setIsOpen, bounty, author }: N
     state.issuesActions.completeBounty
   ])
   const [isSubmitting, setIsSubmitting] = React.useState(false)
+
+  React.useEffect(() => {
+    if (bounty.base === 'AR') {
+      //fetch usd
+      fetchOppositePrice('AR')
+    }
+
+    if (bounty.base === 'USD') {
+      fetchOppositePrice('USD')
+    }
+  }, [])
+
+  React.useEffect(() => {
+    if (base !== bounty.base && oppositePrice) {
+      setAmount(oppositePrice)
+    }
+
+    if (base === bounty.base) {
+      setAmount(bounty.amount)
+    }
+  }, [base])
+
+  async function fetchOppositePrice(side: string) {
+    const arUSD = await getArweaveUSD()
+
+    if (side === 'AR') {
+      //set USD
+      setOppositePrice(arUSD)
+    }
+
+    if (side === 'USD') {
+      //set AR
+      const usdAR = (bounty.amount / arUSD).toPrecision(3)
+      setOppositePrice(+usdAR)
+    }
+  }
 
   async function handleCloseButtonClick() {
     setIsSubmitting(true)
@@ -87,6 +128,10 @@ export default function ReadBountyModal({ isOpen, setIsOpen, bounty, author }: N
 
   function closeModal() {
     setIsOpen(false)
+  }
+
+  function handleBaseChange(newBase: BountyBase) {
+    setBase(newBase)
   }
 
   return (
@@ -135,6 +180,37 @@ export default function ReadBountyModal({ isOpen, setIsOpen, bounty, author }: N
                       <span>Arweave</span>
                     </div>
                   </div>
+                  <div className="mt-2">
+                    <label htmlFor="amount" className="block mb-1 text-sm font-medium text-gray-600">
+                      Base
+                    </label>
+                    <div className="flex items-center p-1 bg-gray-100 border-[1px] border-gray-300 rounded-lg gap-1 h-10 order-1">
+                      <div
+                        onClick={() => handleBaseChange('AR')}
+                        className={clsx(
+                          'cursor-pointer text-gray-700 w-1/2 h-full flex items-center justify-center font-semibold',
+                          {
+                            'px-2': base !== 'AR',
+                            'px-3 bg-primary-600 text-white rounded-md': base === 'AR'
+                          }
+                        )}
+                      >
+                        AR
+                      </div>
+                      <div
+                        onClick={() => handleBaseChange('USD')}
+                        className={clsx(
+                          'cursor-pointer text-gray-700  w-1/2 h-full flex items-center justify-center font-semibold',
+                          {
+                            'px-2': base === 'AR',
+                            'px-3 bg-primary-600 text-white rounded-md': base !== 'AR'
+                          }
+                        )}
+                      >
+                        USD
+                      </div>
+                    </div>
+                  </div>
                   <div>
                     <label htmlFor="amount" className="block mb-1 text-sm font-medium text-gray-600">
                       Amount
@@ -145,12 +221,12 @@ export default function ReadBountyModal({ isOpen, setIsOpen, bounty, author }: N
                           'bg-white border-[1px] text-gray-900 text-base rounded-lg hover:shadow-[0px_2px_4px_0px_rgba(0,0,0,0.10)] focus:border-primary-500 focus:border-[1.5px] block w-full px-3 py-[10px] outline-none',
                           'border-gray-300'
                         )}
-                        value={bounty.amount}
+                        value={amount}
                         type="number"
                         disabled
                       />
                       <div className="h-full absolute right-4 top-0 flex items-center">
-                        <span className="font-medium text-gray-900">AR</span>
+                        <span className="font-medium text-gray-900">{base}</span>
                       </div>
                     </div>
                   </div>
