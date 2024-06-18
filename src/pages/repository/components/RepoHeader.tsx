@@ -13,7 +13,6 @@ import IconStarOutline from '@/assets/icons/star-outline.svg'
 import { Button } from '@/components/common/buttons'
 import { trackGoogleAnalyticsPageView } from '@/helpers/google-analytics'
 import { resolveUsernameOrShorten } from '@/helpers/resolveUsername'
-import { useGlobalStore } from '@/stores/globalStore'
 import { Repo } from '@/types/repository'
 
 import useRepository from '../hooks/useRepository'
@@ -30,7 +29,6 @@ type Props = {
 }
 
 export default function RepoHeader({ repo, isLoading, owner, parentRepo }: Props) {
-  const getUserFromAddress = useGlobalStore((state) => state.userActions.getUserFromAddress)
   const [isForkModalOpen, setIsForkModalOpen] = React.useState(false)
   const [showCloneDropdown, setShowCloneDropdown] = React.useState(false)
   const cloneRef = React.useRef<HTMLDivElement | null>(null)
@@ -91,8 +89,6 @@ export default function RepoHeader({ repo, isLoading, owner, parentRepo }: Props
 
     navigate(`/repository/${parentRepo.id}`)
   }
-
-  const repoOwner = getUserFromAddress(repo?.owner)
 
   return (
     <div className="flex flex-col">
