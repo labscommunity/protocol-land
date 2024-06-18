@@ -1,15 +1,14 @@
 import git, { Errors } from 'isomorphic-git'
 
-import { CONTRACT_TX_ID } from '@/helpers/constants'
-import getWarpContract from '@/helpers/getWrapContract'
+import { getTags } from '@/helpers/getTags'
 import { trackGoogleAnalyticsEvent } from '@/helpers/google-analytics'
 import { isInvalidInput } from '@/helpers/isInvalidInput'
 import { waitFor } from '@/helpers/waitFor'
-import { getSigner } from '@/helpers/wallet/getSigner'
 import { withAsync } from '@/helpers/withAsync'
 import { useGlobalStore } from '@/stores/globalStore'
 import { PullRequest } from '@/types/repository'
 
+import { getRepo, sendMessage } from '../contract'
 import { postPRStatDataTxToArweave } from '../user'
 import { postUpdatedRepo } from '.'
 import { checkoutBranch, deleteBranch } from './branch'
@@ -43,7 +42,6 @@ export async function postNewPullRequest({
   compareRepo,
   linkedIssueId
 }: PostNewPROptions) {
-  const userSigner = await getSigner()
   const address = useGlobalStore.getState().authState.address
 
   const baseFS = fsWithName(baseRepo.repoId)
@@ -51,30 +49,29 @@ export async function postNewPullRequest({
 
   const oid = await git.resolveRef({ fs: baseFS, dir: baseDir, ref: baseBranch })
 
-  const contract = await getWarpContract(CONTRACT_TX_ID, userSigner)
+  const args = {
+    tags: getTags({
+      Action: 'Create-PR',
+      Title: title,
+      'Repo-Id': repoId,
+      'Base-Branch': baseBranch,
+      'Compare-Branch': compareBranch,
+      'Base-Branch-Oid': oid,
+      'Linked-Issue-Id': typeof linkedIssueId === 'number' ? linkedIssueId.toString() : '',
+      'Base-Repo': JSON.stringify(baseRepo),
+      'Compare-Repo': JSON.stringify(compareRepo)
+    })
+  } as any
 
-  await contract.writeInteraction({
-    function: 'createPullRequest',
-    payload: {
-      title,
-      description,
-      repoId,
-      baseBranch,
-      compareBranch,
-      baseBranchOid: oid,
-      linkedIssueId,
-      baseRepo,
-      compareRepo
-    }
-  })
+  if (description) {
+    args.data = description
+  } else {
+    args.tags.push({ name: 'Description', value: description || '' })
+  }
 
-  const {
-    cachedValue: {
-      state: { repos }
-    }
-  } = await contract.readState()
+  await sendMessage(args)
 
-  const repo = repos[repoId]
+  const repo = await getRepo(repoId)
 
   if (!repo) return
 
@@ -190,26 +187,18 @@ export async function mergePullRequest({
 
     await waitFor(1000)
 
-    const userSigner = await getSigner()
-
-    const contract = await getWarpContract(CONTRACT_TX_ID, userSigner)
-
-    await contract.writeInteraction({
-      function: 'updatePullRequestStatus',
-      payload: {
-        repoId,
-        prId,
-        status: 'MERGED'
-      }
+    await sendMessage({
+      tags: getTags({
+        Action: 'Update-PR-Status',
+        'Repo-Id': repoId,
+        'PR-Id': prId.toString(),
+        Status: 'MERGED'
+      })
     })
 
-    const {
-      cachedValue: {
-        state: { repos }
-      }
-    } = await contract.readState()
+    const repo = await getRepo(repoId)
 
-    const PRs = repos[repoId]?.pullRequests
+    const PRs = repo?.pullRequests
 
     if (!PRs) return
 
@@ -224,26 +213,18 @@ export async function mergePullRequest({
 }
 
 export async function closePullRequest({ repoId, prId }: { repoId: string; prId: number }) {
-  const userSigner = await getSigner()
-
-  const contract = await getWarpContract(CONTRACT_TX_ID, userSigner)
-
-  await contract.writeInteraction({
-    function: 'updatePullRequestStatus',
-    payload: {
-      repoId,
-      prId,
-      status: 'CLOSED'
-    }
+  await sendMessage({
+    tags: getTags({
+      Action: 'Update-PR-Status',
+      'Repo-Id': repoId,
+      'PR-Id': prId.toString(),
+      Status: 'CLOSED'
+    })
   })
 
-  const {
-    cachedValue: {
-      state: { repos }
-    }
-  } = await contract.readState()
+  const repo = await getRepo(repoId)
 
-  const PRs = repos[repoId]?.pullRequests
+  const PRs = repo?.pullRequests
 
   if (!PRs) return
 
@@ -255,26 +236,18 @@ export async function closePullRequest({ repoId, prId }: { repoId: string; prId:
 }
 
 export async function reopenPullRequest({ repoId, prId }: { repoId: string; prId: number }) {
-  const userSigner = await getSigner()
-
-  const contract = await getWarpContract(CONTRACT_TX_ID, userSigner)
-
-  await contract.writeInteraction({
-    function: 'updatePullRequestStatus',
-    payload: {
-      repoId,
-      prId,
-      status: 'REOPEN'
-    }
+  await sendMessage({
+    tags: getTags({
+      Action: 'Update-PR-Status',
+      'Repo-Id': repoId,
+      'PR-Id': prId.toString(),
+      Status: 'REOPEN'
+    })
   })
 
-  const {
-    cachedValue: {
-      state: { repos }
-    }
-  } = await contract.readState()
+  const repo = await getRepo(repoId)
 
-  const PRs = repos[repoId]?.pullRequests
+  const PRs = repo?.pullRequests
 
   if (!PRs) return
 
@@ -286,49 +259,42 @@ export async function reopenPullRequest({ repoId, prId }: { repoId: string; prId
 }
 
 export async function updatePullRequestDetails(repoId: string, prId: number, pullRequest: Partial<PullRequest>) {
-  const userSigner = await getSigner()
-
-  const contract = await getWarpContract(CONTRACT_TX_ID, userSigner)
-  let payload = {
-    repoId,
-    prId
+  let tags = {
+    Action: 'Update-PR-Details',
+    'Repo-Id': repoId,
+    'PR-Id': prId.toString()
   } as any
 
+  let data = ''
+
   if (!isInvalidInput(pullRequest.title, 'string')) {
-    payload = { ...payload, title: pullRequest.title }
+    tags = { ...tags, Title: pullRequest.title }
   }
 
   if (!isInvalidInput(pullRequest.description, 'string', true)) {
-    payload = { ...payload, description: pullRequest.description }
+    if (pullRequest.description) {
+      data = pullRequest.description
+    } else {
+      tags = { ...tags, Description: pullRequest.description }
+    }
   }
 
-  await contract.writeInteraction({
-    function: 'updatePullRequestDetails',
-    payload: payload
-  })
+  await sendMessage({ tags: getTags(tags), data })
 }
 
 export async function addReviewersToPR({ reviewers, repoId, prId }: AddReviewersToPROptions) {
-  const userSigner = await getSigner()
-
-  const contract = await getWarpContract(CONTRACT_TX_ID, userSigner)
-
-  await contract.writeInteraction({
-    function: 'addReviewersToPR',
-    payload: {
-      repoId,
-      prId,
-      reviewers
-    }
+  await sendMessage({
+    tags: getTags({
+      Action: 'Add-PR-Reviewers',
+      'Repo-Id': repoId,
+      'PR-Id': prId.toString(),
+      Reviewers: JSON.stringify(reviewers)
+    })
   })
 
-  const {
-    cachedValue: {
-      state: { repos }
-    }
-  } = await contract.readState()
+  const repo = await getRepo(repoId)
 
-  const PRs = repos[repoId]?.pullRequests
+  const PRs = repo?.pullRequests
 
   if (!PRs) return
 
@@ -340,25 +306,17 @@ export async function addReviewersToPR({ reviewers, repoId, prId }: AddReviewers
 }
 
 export async function approvePR({ repoId, prId }: ApprovePROptions) {
-  const userSigner = await getSigner()
-
-  const contract = await getWarpContract(CONTRACT_TX_ID, userSigner)
-
-  await contract.writeInteraction({
-    function: 'approvePR',
-    payload: {
-      repoId,
-      prId
-    }
+  await sendMessage({
+    tags: getTags({
+      Action: 'Approve-PR',
+      'Repo-Id': repoId,
+      'PR-Id': prId.toString()
+    })
   })
 
-  const {
-    cachedValue: {
-      state: { repos }
-    }
-  } = await contract.readState()
+  const repo = await getRepo(repoId)
 
-  const PRs = repos[repoId]?.pullRequests
+  const PRs = repo?.pullRequests
 
   if (!PRs) return
 
@@ -370,26 +328,18 @@ export async function approvePR({ repoId, prId }: ApprovePROptions) {
 }
 
 export async function addCommentToPR(repoId: string, prId: number, comment: string) {
-  const userSigner = await getSigner()
-
-  const contract = await getWarpContract(CONTRACT_TX_ID, userSigner)
-
-  await contract.writeInteraction({
-    function: 'addCommentToPR',
-    payload: {
-      repoId,
-      prId,
-      comment
-    }
+  await sendMessage({
+    tags: getTags({
+      Action: 'Add-PR-Comment',
+      'Repo-Id': repoId,
+      'PR-Id': prId.toString()
+    }),
+    data: comment
   })
 
-  const {
-    cachedValue: {
-      state: { repos }
-    }
-  } = await contract.readState()
+  const repo = await getRepo(repoId)
 
-  const PRs = repos[repoId]?.pullRequests
+  const PRs = repo?.pullRequests
 
   if (!PRs) return
 
@@ -400,27 +350,20 @@ export async function addCommentToPR(repoId: string, prId: number, comment: stri
   return PR
 }
 
-export async function updatePRComment(repoId: string, prId: number, comment: object) {
-  const userSigner = await getSigner()
-
-  const contract = await getWarpContract(CONTRACT_TX_ID, userSigner)
-
-  await contract.writeInteraction({
-    function: 'updatePRComment',
-    payload: {
-      repoId,
-      prId,
-      comment
-    }
+export async function updatePRComment(repoId: string, prId: number, comment: { id: number; description: string }) {
+  await sendMessage({
+    tags: getTags({
+      Action: 'Update-PR-Comment',
+      'Repo-Id': repoId,
+      'PR-Id': prId.toString(),
+      'Comment-Id': comment.id.toString()
+    }),
+    data: comment.description
   })
 
-  const {
-    cachedValue: {
-      state: { repos }
-    }
-  } = await contract.readState()
+  const repo = await getRepo(repoId)
 
-  const PRs = repos[repoId]?.pullRequests
+  const PRs = repo?.pullRequests
 
   if (!PRs) return
 
@@ -432,26 +375,18 @@ export async function updatePRComment(repoId: string, prId: number, comment: obj
 }
 
 export async function linkIssueToPR(repoId: string, prId: number, issueId: number) {
-  const userSigner = await getSigner()
-
-  const contract = await getWarpContract(CONTRACT_TX_ID, userSigner)
-
-  await contract.writeInteraction({
-    function: 'linkIssueToPR',
-    payload: {
-      repoId,
-      prId,
-      linkedIssueId: issueId
-    }
+  await sendMessage({
+    tags: getTags({
+      Action: 'Link-Issue-PR',
+      'Repo-Id': repoId,
+      'PR-Id': prId.toString(),
+      'Linked-Issue-Id': issueId.toString()
+    })
   })
 
-  const {
-    cachedValue: {
-      state: { repos }
-    }
-  } = await contract.readState()
+  const repo = await getRepo(repoId)
 
-  const PRs = repos[repoId]?.pullRequests
+  const PRs = repo?.pullRequests
 
   if (!PRs) return
 

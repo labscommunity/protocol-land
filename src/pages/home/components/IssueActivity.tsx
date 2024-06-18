@@ -11,7 +11,7 @@ import ActivityHeader from './ActivityHeader'
 export default function IssueActivity({ activity, setIsForkModalOpen, setRepo }: ActivityProps<IssueActivityType>) {
   const issue = activity.issue!
   const isOpen = issue.status === 'OPEN'
-  const commentsCount = issue.activities.filter((act) => act.type === 'COMMENT').length
+  const commentsCount = issue.comments
 
   return (
     <div className="w-full flex justify-between items-start border border-primary-500 rounded-md p-4">

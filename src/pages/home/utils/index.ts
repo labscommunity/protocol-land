@@ -6,7 +6,7 @@ const arweave = new Arweave({
   port: 443,
   protocol: 'https'
 })
-const ardb = new ArDB(arweave)
+export const ardb = new ArDB(arweave)
 
 export async function getRepoContributionsCount(repoName: string) {
   try {

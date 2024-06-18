@@ -1,49 +1,37 @@
-import { CONTRACT_TX_ID } from '@/helpers/constants'
-import getWarpContract from '@/helpers/getWrapContract'
-import { getSigner } from '@/helpers/wallet/getSigner'
-import { Repo, WarpReadState } from '@/types/repository'
+import { dryrun } from '@permaweb/aoconnect'
+
+import { AOS_PROCESS_ID } from '@/helpers/constants'
+import { getTags } from '@/helpers/getTags'
+import { getRepo, sendMessage } from '@/lib/contract'
+import { useGlobalStore } from '@/stores/globalStore'
+import { Repo } from '@/types/repository'
 // Repo Meta
 
 export const getRepositoryMetaFromContract = async (id: string): Promise<{ result: Repo }> => {
-  const contract = await getWarpContract(CONTRACT_TX_ID)
-
-  return contract.viewState({
-    function: 'getRepository',
-    payload: {
-      id
-    }
-  })
+  const repo = await getRepo(id)
+  return { result: repo }
 }
 
-export const isRepositoryNameAvailable = async (name: string, caller: string): Promise<boolean> => {
-  const contract = await getWarpContract(CONTRACT_TX_ID)
+export const isRepositoryNameAvailable = async (name: string): Promise<boolean> => {
+  const { Messages } = await dryrun({
+    process: AOS_PROCESS_ID,
+    tags: getTags({
+      Action: 'Get-Repo-Availability',
+      Name: name
+    }),
+    Owner: useGlobalStore.getState().authState.address as string
+  })
 
-  const { result: isAvailable } = await contract.viewState(
-    {
-      function: 'isRepositoryNameAvailable',
-      payload: { name }
-    },
-    undefined,
-    undefined,
-    caller
-  )
-
-  return isAvailable
+  return JSON.parse(Messages[0].Data).result
 }
 
 export const searchRepositories = async (query: string): Promise<{ result: Repo[] }> => {
-  const contract = await getWarpContract(CONTRACT_TX_ID)
+  const { Messages } = await dryrun({
+    process: AOS_PROCESS_ID,
+    tags: getTags({ Action: 'Get-Repos-By-Name', Query: query })
+  })
 
-  const {
-    cachedValue: {
-      state: { repos }
-    }
-  }: WarpReadState = await contract.readState()
-
-  const repoList = Object.values(repos)
-  const ownerRepos = repoList.filter((item) => item.name.toLowerCase().includes(query.toLowerCase()))
-
-  return { result: ownerRepos }
+  return JSON.parse(Messages[0].Data)
 }
 
 export const handleAcceptContributor = async (
@@ -53,66 +41,52 @@ export const handleAcceptContributor = async (
   ghSyncPrivateStateTxId: string | null
 ) => {
   //rotate keys
-  const userSigner = await getSigner()
+  const tags = {
+    Action: 'Accept-Contributor-Invite',
+    Id: id,
+    Visibility: visibility
+  } as any
 
-  const contract = await getWarpContract(CONTRACT_TX_ID, userSigner)
+  if (privateStateTxId) {
+    tags['Private-State-TxId'] = privateStateTxId
+  }
 
-  await contract.writeInteraction({
-    function: 'acceptContributorInvite',
-    payload: { id, visibility, privateStateTxId, ghSyncPrivateStateTxId }
-  })
+  if (ghSyncPrivateStateTxId) {
+    tags['GhSync-Private-State-TxId'] = ghSyncPrivateStateTxId
+  }
 
-  const {
-    cachedValue: {
-      state: { repos }
-    }
-  } = await contract.readState()
+  await sendMessage({ tags: getTags(tags) })
 
-  const repo = repos[id] as Repo
+  const repo = await getRepo(id)
 
   return { contributorInvites: repo.contributorInvites, contributors: repo.contributors, githubSync: repo.githubSync }
 }
 
 export const handleRejectContributor = async (id: string) => {
   //rotate keys
-  const userSigner = await getSigner()
-
-  const contract = await getWarpContract(CONTRACT_TX_ID, userSigner)
-
-  await contract.writeInteraction({
-    function: 'rejectContributorInvite',
-    payload: { id }
+  await sendMessage({
+    tags: getTags({
+      Action: 'Reject-Contributor-Invite',
+      Id: id
+    })
   })
 
-  const {
-    cachedValue: {
-      state: { repos }
-    }
-  } = await contract.readState()
-
-  const repo = repos[id] as Repo
+  const repo = await getRepo(id)
 
   return { contributorInvites: repo.contributorInvites, contributors: repo.contributors }
 }
 
 export const handleCancelContributorInvite = async (id: string, contributor: string) => {
   //rotate keys
-  const userSigner = await getSigner()
-
-  const contract = await getWarpContract(CONTRACT_TX_ID, userSigner)
-
-  await contract.writeInteraction({
-    function: 'cancelContributorInvite',
-    payload: { id, contributor }
+  await sendMessage({
+    tags: getTags({
+      Action: 'Cancel-Contributor-Invite',
+      Id: id,
+      Contributor: contributor
+    })
   })
 
-  const {
-    cachedValue: {
-      state: { repos }
-    }
-  } = await contract.readState()
-
-  const repo = repos[id] as Repo
+  const repo = await getRepo(id)
 
   return repo.contributorInvites
 }

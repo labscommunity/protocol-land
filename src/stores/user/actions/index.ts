@@ -1,16 +1,21 @@
-import { CONTRACT_TX_ID } from '@/helpers/constants'
-import getWarpContract from '@/helpers/getWrapContract'
-import { getSigner } from '@/helpers/wallet/getSigner'
+import { dryrun } from '@permaweb/aoconnect'
+
+import { AOS_PROCESS_ID } from '@/helpers/constants'
+import { getTags } from '@/helpers/getTags'
 import { withAsync } from '@/helpers/withAsync'
+import { sendMessage } from '@/lib/contract'
 import { useGlobalStore } from '@/stores/globalStore'
-import { RepoWithParent } from '@/types/repository'
+import { Repo, RepoWithParent } from '@/types/repository'
 import { User } from '@/types/user'
 
 export const getUserAddressToUserMap = async () => {
   const userMap = new Map<string, User>()
-  const contract = await getWarpContract(CONTRACT_TX_ID)
-  const state = (await contract.readState()).cachedValue.state
-  const users = state.users
+
+  const { Messages } = await dryrun({
+    process: AOS_PROCESS_ID,
+    tags: getTags({ Action: 'Get-Users' })
+  })
+  const users = JSON.parse(Messages[0].Data)?.result
   Object.entries(users).forEach(([address, user]) => {
     userMap.set(address, user as User)
   })
@@ -18,23 +23,23 @@ export const getUserAddressToUserMap = async () => {
 }
 
 export const getUserDetailsFromContract = async (): Promise<{ result: User }> => {
-  const contract = await getWarpContract(CONTRACT_TX_ID)
-
-  return contract.viewState({
-    function: 'getUserDetails'
+  const { Messages } = await dryrun({
+    process: AOS_PROCESS_ID,
+    tags: getTags({ Action: 'Get-User-Details' }),
+    Owner: useGlobalStore.getState().authState.address as string
   })
+
+  return JSON.parse(Messages[0].Data)
 }
 
 export const getUserDetailsByAddressFromContract = async (address: string): Promise<{ result: User }> => {
-  const contract = await getWarpContract(CONTRACT_TX_ID)
+  const { Messages } = await dryrun({
+    process: AOS_PROCESS_ID,
+    tags: getTags({ Action: 'Get-User-Details' }),
+    Owner: address
+  })
 
-  const {
-    cachedValue: {
-      state: { users }
-    }
-  } = await contract.readState()
-
-  const userDetails = users[address] as User
+  const userDetails = JSON.parse(Messages[0].Data)?.result as User
 
   if (!userDetails)
     return {
@@ -52,34 +57,31 @@ export const getUserDetailsByAddressFromContract = async (address: string): Prom
 }
 
 export const saveUserDetails = async (details: Partial<User>, address: string): Promise<{ result: User }> => {
-  const userSigner = await getSigner()
-  userSigner.getAddress = () => userSigner.signer.getActiveAddress()
-
-  const contract = await getWarpContract(CONTRACT_TX_ID, userSigner)
-
   if (details.username && details.username !== useGlobalStore.getState().userState.userDetails.username) {
-    const { result: isAvailable } = await contract.viewState({
-      function: 'isUsernameAvailable',
-      payload: { username: details.username }
+    const { Messages } = await dryrun({
+      process: AOS_PROCESS_ID,
+      tags: getTags({
+        Action: 'Get-Username-Availability',
+        Username: details.username
+      })
     })
+
+    const { result: isAvailable } = JSON.parse(Messages[0].Data)
 
     if (!isAvailable) {
       throw new Error(`Username ${details.username} is not available.`)
     }
   }
 
-  await contract.writeInteraction({
-    function: 'updateProfileDetails',
-    payload: details || {}
+  await sendMessage({ tags: getTags({ Action: 'Update-Profile-Details', Payload: JSON.stringify(details || {}) }) })
+
+  const { Messages } = await dryrun({
+    process: AOS_PROCESS_ID,
+    tags: getTags({ Action: 'Get-User-Details' }),
+    Owner: address
   })
 
-  const {
-    cachedValue: {
-      state: { users }
-    }
-  } = await contract.readState()
-
-  const userDetails = users[address]
+  const userDetails = JSON.parse(Messages[0].Data)?.result as User
 
   if (!userDetails)
     return {
@@ -99,32 +101,18 @@ export const saveUserDetails = async (details: Partial<User>, address: string): 
 export const fetchUserRepos = async (address: string) => {
   let repos: RepoWithParent[] = []
 
-  const contract = await getWarpContract(CONTRACT_TX_ID)
-
   const { response: ownerReposResponse } = await withAsync(() =>
-    contract.viewState({
-      function: 'getRepositoriesByOwner',
-      payload: {
-        owner: address
-      }
-    })
-  )
-
-  const { response: collabResponse } = await withAsync(() =>
-    contract.viewState({
-      function: 'getRepositoriesByContributor',
-      payload: {
-        contributor: address
-      }
+    dryrun({
+      process: AOS_PROCESS_ID,
+      tags: getTags({
+        Action: 'Get-User-Owned-Contributed-Repos',
+        'User-Address': address as string
+      })
     })
   )
 
   if (ownerReposResponse) {
-    repos = [...repos, ...ownerReposResponse.result]
-  }
-
-  if (collabResponse) {
-    repos = [...repos, ...collabResponse.result]
+    repos = [...repos, ...(JSON.parse(ownerReposResponse?.Messages[0].Data)?.result as Repo[])]
   }
 
   return repos

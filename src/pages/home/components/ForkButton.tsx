@@ -16,7 +16,7 @@ interface ForkButtonProps {
 export default function ForkButton({ activity, setIsForkModalOpen, setRepo }: ForkButtonProps) {
   const [connectedAddress] = useGlobalStore((state) => [state.authState.address])
   const disabled = activity.repo.owner === connectedAddress || !connectedAddress
-  const forkCount = Object.keys(activity.repo.forks).length
+  const forkCount = activity.repo.forks
 
   return (
     <div>
