@@ -1,7 +1,7 @@
 import { Dialog, Transition } from '@headlessui/react'
 import Arweave from 'arweave/web'
 import clsx from 'clsx'
-import { differenceInDays } from 'date-fns'
+import { differenceInDays, startOfToday } from 'date-fns'
 import React, { Fragment } from 'react'
 import toast from 'react-hot-toast'
 import SVG from 'react-inlinesvg'
@@ -237,7 +237,7 @@ export default function ReadBountyModal({ isOpen, setIsOpen, bounty, author }: N
                       </label>
 
                       <div className="font-medium text-gray-900">
-                        {differenceInDays(new Date(bounty.expiry * 1000), new Date())} Days
+                        {differenceInDays(new Date(bounty.expiry * 1000), startOfToday())} Days
                       </div>
                     </div>
                   )}

@@ -1,4 +1,4 @@
-import { differenceInDays, formatDistanceToNow } from 'date-fns'
+import { differenceInDays, formatDistanceToNow, startOfToday } from 'date-fns'
 import { TbMoneybag } from 'react-icons/tb'
 import SVG from 'react-inlinesvg'
 
@@ -35,6 +35,7 @@ export default function BountyRow({ status, author, id, amount, expiry, timestam
   const Icon = STATUS_TO_ICON_MAP[status]
 
   const isActive = status === 'ACTIVE'
+
   return (
     <div
       onClick={onClick}
@@ -57,7 +58,7 @@ export default function BountyRow({ status, author, id, amount, expiry, timestam
         {expiry && isActive && (
           <>
             and expires in
-            <span className="font-medium">{differenceInDays(new Date(expiry * 1000), new Date())} Days</span>
+            <span className="font-medium">{differenceInDays(new Date(expiry * 1000), startOfToday())} Days</span>
           </>
         )}
         {expiry && !isActive && <>and has {STATUS_TO_TEXT[status]}!</>}
