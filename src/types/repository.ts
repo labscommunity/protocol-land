@@ -123,7 +123,9 @@ export type Bounty = {
   status: BountyStatus
   paymentTxId: string | null
   timestamp: number
+  base: BountyBase
 }
+export type BountyBase = 'USD' | 'AR'
 
 export type IssueActivity = IssueActivityStatus | IssueActivityComment
 

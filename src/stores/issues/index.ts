@@ -337,7 +337,7 @@ const createPullRequestSlice: StateCreator<CombinedSlices, [['zustand/immer', ne
         })
       }
     },
-    addBounty: async (id, amount, expiry) => {
+    addBounty: async (id, amount, expiry, base) => {
       const repo = get().repoCoreState.selectedRepo.repo
 
       if (!repo) {
@@ -346,7 +346,7 @@ const createPullRequestSlice: StateCreator<CombinedSlices, [['zustand/immer', ne
         return
       }
 
-      const { error, response } = await withAsync(() => addBounty(repo.id, id, amount, expiry))
+      const { error, response } = await withAsync(() => addBounty(repo.id, id, amount, expiry, base))
 
       if (!error && response) {
         const bounties = response?.bounties
@@ -362,6 +362,7 @@ const createPullRequestSlice: StateCreator<CombinedSlices, [['zustand/immer', ne
           repo_id: repo.id,
           issue_id: id,
           bounty_amount: amount,
+          base,
           result: 'SUCCESS'
         })
       }
@@ -372,6 +373,7 @@ const createPullRequestSlice: StateCreator<CombinedSlices, [['zustand/immer', ne
           repo_id: repo.id,
           issue_id: id,
           bounty_amount: amount,
+          base,
           result: 'FAILED'
         })
       }
