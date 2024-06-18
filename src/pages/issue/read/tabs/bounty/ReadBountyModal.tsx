@@ -1,7 +1,9 @@
 import { Dialog, Transition } from '@headlessui/react'
+import Arweave from 'arweave/web'
 import clsx from 'clsx'
 import { differenceInDays } from 'date-fns'
 import React, { Fragment } from 'react'
+import toast from 'react-hot-toast'
 import SVG from 'react-inlinesvg'
 import { useParams } from 'react-router-dom'
 
@@ -10,7 +12,6 @@ import CloseCrossIcon from '@/assets/icons/close-cross.svg'
 import { Button } from '@/components/common/buttons'
 import { useGlobalStore } from '@/stores/globalStore'
 import { Bounty } from '@/types/repository'
-
 type NewBountyModalProps = {
   setIsOpen: (val: boolean) => void
   isOpen: boolean
@@ -25,6 +26,12 @@ const STATUS_TO_TEXT = {
   CLAIMED: 'Completed'
 }
 
+const arweave = new Arweave({
+  host: 'ar-io.net',
+  port: 443,
+  protocol: 'https'
+})
+
 export default function ReadBountyModal({ isOpen, setIsOpen, bounty, author }: NewBountyModalProps) {
   const [bountyComplete, setBountyComplete] = React.useState(false)
   const [payTxId, setPayTxId] = React.useState('')
@@ -38,9 +45,38 @@ export default function ReadBountyModal({ isOpen, setIsOpen, bounty, author }: N
 
   async function handleCloseButtonClick() {
     setIsSubmitting(true)
-
     if (bountyComplete && payTxId.length > 0) {
-      await completeBounty(+issueId!, bounty.id, payTxId)
+      try {
+        const res = await fetch(`https://arweave.net/tx/${payTxId}`)
+        if (!res.ok) {
+          throw new Error(await res.text())
+        }
+        const data = await res.json()
+
+        if (!data || !data.target || !data.quantity) {
+          toast.error('Invalid Arweave transaction hash. Please check and try again.')
+          setIsSubmitting(false)
+          return
+        }
+
+        const bountyAmountWinston = arweave.ar.arToWinston(bounty.amount.toString())
+
+        if (data.quantity !== bountyAmountWinston) {
+          toast.error('Incorrect amount was sent in this transaction. Please provide correct transaction hash.')
+          setIsSubmitting(false)
+
+          return
+        }
+
+        await completeBounty(+issueId!, bounty.id, payTxId)
+        toast.success('Bounty completed successfully.')
+      } catch (error: any) {
+        //
+        toast.error(error && error.message ? error.message : 'Something went wrong. Please try again.')
+        setIsSubmitting(false)
+
+        return
+      }
     } else {
       await closeBounty(+issueId!, bounty.id)
     }
@@ -165,7 +201,7 @@ export default function ReadBountyModal({ isOpen, setIsOpen, bounty, author }: N
                         variant="primary-solid"
                         isLoading={isSubmitting}
                       >
-                        {isSubmitting ? 'Processing...' : 'Close Bounty'}
+                        {isSubmitting ? 'Processing...' : bountyComplete ? 'Verify & Close Bounty' : 'Close Bounty'}
                       </Button>
                     </div>
                   </div>
@@ -173,7 +209,15 @@ export default function ReadBountyModal({ isOpen, setIsOpen, bounty, author }: N
                 {bounty.status !== 'ACTIVE' && (
                   <div className="py-2">
                     <span>Status: </span>
-                    <span className="font-medium">{STATUS_TO_TEXT[bounty.status]}</span>
+                    <span className="font-medium text-green-600">{STATUS_TO_TEXT[bounty.status]}</span>
+                  </div>
+                )}
+                {bounty.status === 'CLAIMED' && (
+                  <div className="py-2">
+                    <span>Transaction: </span>
+                    <span className="font-medium text-primary-700 underline">
+                      <a target='_blank' href={`https://viewblock.io/arweave/tx/${bounty.paymentTxId}`}>View Block</a>
+                    </span>
                   </div>
                 )}
               </Dialog.Panel>
