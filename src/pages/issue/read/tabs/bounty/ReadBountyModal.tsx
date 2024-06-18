@@ -74,7 +74,7 @@ export default function ReadBountyModal({ isOpen, setIsOpen, bounty, author }: N
 
     if (side === 'AR') {
       //set USD
-      setOppositePrice(arUSD)
+      setOppositePrice(arUSD * bounty.amount)
     }
 
     if (side === 'USD') {
@@ -100,7 +100,16 @@ export default function ReadBountyModal({ isOpen, setIsOpen, bounty, author }: N
           return
         }
 
-        const bountyAmountWinston = arweave.ar.arToWinston(bounty.amount.toString())
+        const queryAmount = bounty.base === 'USD' ? oppositePrice : bounty.amount
+
+        if (!queryAmount) {
+          toast.error('Something went wrong. Try again.')
+          setIsSubmitting(false)
+
+          return
+        }
+
+        const bountyAmountWinston = arweave.ar.arToWinston(queryAmount.toString())
 
         if (data.quantity !== bountyAmountWinston) {
           toast.error('Incorrect amount was sent in this transaction. Please provide correct transaction hash.')
@@ -292,7 +301,9 @@ export default function ReadBountyModal({ isOpen, setIsOpen, bounty, author }: N
                   <div className="py-2">
                     <span>Transaction: </span>
                     <span className="font-medium text-primary-700 underline">
-                      <a target='_blank' href={`https://viewblock.io/arweave/tx/${bounty.paymentTxId}`}>View Block</a>
+                      <a target="_blank" href={`https://viewblock.io/arweave/tx/${bounty.paymentTxId}`}>
+                        View Block
+                      </a>
                     </span>
                   </div>
                 )}
