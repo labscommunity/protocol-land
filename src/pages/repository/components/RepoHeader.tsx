@@ -13,7 +13,6 @@ import IconStarOutline from '@/assets/icons/star-outline.svg'
 import { Button } from '@/components/common/buttons'
 import { trackGoogleAnalyticsPageView } from '@/helpers/google-analytics'
 import { resolveUsernameOrShorten } from '@/helpers/resolveUsername'
-import { useGlobalStore } from '@/stores/globalStore'
 import { Repo } from '@/types/repository'
 
 import useRepository from '../hooks/useRepository'
@@ -30,7 +29,6 @@ type Props = {
 }
 
 export default function RepoHeader({ repo, isLoading, owner, parentRepo }: Props) {
-  const getUserFromAddress = useGlobalStore((state) => state.userActions.getUserFromAddress)
   const [isForkModalOpen, setIsForkModalOpen] = React.useState(false)
   const [showCloneDropdown, setShowCloneDropdown] = React.useState(false)
   const cloneRef = React.useRef<HTMLDivElement | null>(null)
@@ -91,8 +89,6 @@ export default function RepoHeader({ repo, isLoading, owner, parentRepo }: Props
 
     navigate(`/repository/${parentRepo.id}`)
   }
-
-  const repoOwner = getUserFromAddress(repo?.owner)
 
   return (
     <div className="flex flex-col">
@@ -180,9 +176,10 @@ export default function RepoHeader({ repo, isLoading, owner, parentRepo }: Props
                     <div className="flex w-full px-2 py-1 gap-1 justify-between items-center border-[0.5px] border-gray-300 bg-gray-200 rounded-md overflow-hidden">
                       <div className="pr-2 overflow-scroll [&::-webkit-scrollbar]:hidden whitespace-nowrap">
                         <div ref={cloneRef} className="text-gray-900 w-full flex">
-                          {repoOwner?.username
+                          {/* {repoOwner?.username
                             ? `git clone proland://${repoOwner.username}/${repo.name}`
-                            : `git clone proland://${repo.id} ${repo.name}`}
+                            : `git clone proland://${repo.id} ${repo.name}`} */}
+                          git clone proland://{repo.id} {repo.name}
                         </div>
                       </div>
                       <div onClick={handleCopyClone} className="text-gray-900 bg-gray-200 h-full px-1 cursor-pointer">

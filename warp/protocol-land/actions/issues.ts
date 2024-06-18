@@ -387,10 +387,15 @@ export async function createNewBounty(
     throw new ContractError('Error: You dont have permissions for this operation.')
   }
 
+  if (!payload.base) {
+    payload.base = 'AR'
+  }
+
   const bounty: Bounty = {
     id: 1,
     amount: payload.amount,
     expiry: payload.expiry,
+    base: payload.base,
     paymentTxId: null,
     status: 'ACTIVE',
     timestamp: getBlockTimeStamp()

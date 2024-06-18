@@ -89,6 +89,11 @@ export default function BountyTab() {
     setViewBountyOpen(true)
   }
 
+  function handleClose() {
+    setSelectedBounty(null)
+    setViewBountyOpen(false)
+  }
+
   const hasBounties = bountiesList.length > 0
 
   return (
@@ -111,6 +116,7 @@ export default function BountyTab() {
               timestamp={bounty.timestamp}
               expiry={bounty.expiry}
               onClick={() => handleRowClick(bounty)}
+              base={bounty.base}
             />
           ))}
         </div>
@@ -120,7 +126,7 @@ export default function BountyTab() {
           author={selectedIssue?.author || ''}
           bounty={selectedBounty}
           isOpen={isViewBountyOpen}
-          setIsOpen={setViewBountyOpen}
+          setIsOpen={handleClose}
         />
       )}
     </div>

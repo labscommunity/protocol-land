@@ -3,7 +3,7 @@ import getWarpContract from '@/helpers/getWrapContract'
 import { isInvalidInput } from '@/helpers/isInvalidInput'
 import { getSigner } from '@/helpers/wallet/getSigner'
 import { postIssueStatDataTxToArweave } from '@/lib/user'
-import { Issue } from '@/types/repository'
+import { BountyBase, Issue } from '@/types/repository'
 
 async function getContract() {
   const userSigner = await getSigner()
@@ -182,7 +182,7 @@ export async function updateIssueDetails(repoId: string, issueId: number, issue:
   })
 }
 
-export async function addBounty(repoId: string, issueId: number, amount: number, expiry: number) {
+export async function addBounty(repoId: string, issueId: number, amount: number, expiry: number, base: BountyBase) {
   const contract = await getContract()
 
   await contract.writeInteraction({
@@ -191,7 +191,8 @@ export async function addBounty(repoId: string, issueId: number, amount: number,
       repoId,
       issueId,
       amount,
-      expiry
+      expiry,
+      base
     }
   })
 

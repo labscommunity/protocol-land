@@ -11,6 +11,7 @@ import ArweaveLogo from '@/assets/arweave.svg'
 import CloseCrossIcon from '@/assets/icons/close-cross.svg'
 import { Button } from '@/components/common/buttons'
 import { useGlobalStore } from '@/stores/globalStore'
+import { BountyBase } from '@/types/repository'
 
 type NewBountyModalProps = {
   setIsOpen: (val: boolean) => void
@@ -33,6 +34,7 @@ const schema = yup
   .required()
 
 export default function NewBountyModal({ isOpen, setIsOpen }: NewBountyModalProps) {
+  const [base, setBase] = React.useState<BountyBase>('AR')
   const { issueId } = useParams()
   const [addBounty] = useGlobalStore((state) => [state.issuesActions.addBounty])
   const [isSubmitting, setIsSubmitting] = React.useState(false)
@@ -49,7 +51,7 @@ export default function NewBountyModal({ isOpen, setIsOpen }: NewBountyModalProp
 
     const unixTimestampOfExpiry = Math.floor(data.expiry.getTime() / 1000)
 
-    await addBounty(+issueId!, data.amount, unixTimestampOfExpiry)
+    await addBounty(+issueId!, data.amount, unixTimestampOfExpiry, base)
 
     setIsSubmitting(false)
 
@@ -58,6 +60,10 @@ export default function NewBountyModal({ isOpen, setIsOpen }: NewBountyModalProp
 
   function closeModal() {
     setIsOpen(false)
+  }
+
+  function handleBaseChange(newBase: BountyBase) {
+    setBase(newBase)
   }
 
   return (
@@ -108,6 +114,37 @@ export default function NewBountyModal({ isOpen, setIsOpen }: NewBountyModalProp
                   </div>
                   <div className="mt-2">
                     <label htmlFor="amount" className="block mb-1 text-sm font-medium text-gray-600">
+                      Base
+                    </label>
+                    <div className="flex items-center p-1 bg-gray-100 border-[1px] border-gray-300 rounded-lg gap-1 h-10 order-1">
+                      <div
+                        onClick={() => handleBaseChange('AR')}
+                        className={clsx(
+                          'cursor-pointer text-gray-700 w-1/2 h-full flex items-center justify-center font-semibold',
+                          {
+                            'px-2': base !== 'AR',
+                            'px-3 bg-primary-600 text-white rounded-md': base === 'AR'
+                          }
+                        )}
+                      >
+                        AR
+                      </div>
+                      <div
+                        onClick={() => handleBaseChange('USD')}
+                        className={clsx(
+                          'cursor-pointer text-gray-700  w-1/2 h-full flex items-center justify-center font-semibold',
+                          {
+                            'px-2': base === 'AR',
+                            'px-3 bg-primary-600 text-white rounded-md': base !== 'AR'
+                          }
+                        )}
+                      >
+                        USD
+                      </div>
+                    </div>
+                  </div>
+                  <div className="mt-2">
+                    <label htmlFor="amount" className="block mb-1 text-sm font-medium text-gray-600">
                       Amount
                     </label>
                     <div className="relative flex items-center">
@@ -123,7 +160,7 @@ export default function NewBountyModal({ isOpen, setIsOpen }: NewBountyModalProp
                         min={'0'}
                       />
                       <div className="h-full absolute right-4 top-0 flex items-center">
-                        <span className="font-medium text-gray-600">AR</span>
+                        <span className="font-medium text-gray-600">{base}</span>
                       </div>
                     </div>
                     {errors.amount && <p className="text-red-500 text-sm italic mt-2">{errors.amount.message}</p>}
