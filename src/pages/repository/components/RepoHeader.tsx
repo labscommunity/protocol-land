@@ -180,9 +180,10 @@ export default function RepoHeader({ repo, isLoading, owner, parentRepo }: Props
                     <div className="flex w-full px-2 py-1 gap-1 justify-between items-center border-[0.5px] border-gray-300 bg-gray-200 rounded-md overflow-hidden">
                       <div className="pr-2 overflow-scroll [&::-webkit-scrollbar]:hidden whitespace-nowrap">
                         <div ref={cloneRef} className="text-gray-900 w-full flex">
-                          {repoOwner?.username
+                          {/* {repoOwner?.username
                             ? `git clone proland://${repoOwner.username}/${repo.name}`
-                            : `git clone proland://${repo.id} ${repo.name}`}
+                            : `git clone proland://${repo.id} ${repo.name}`} */}
+                          git clone proland://{repo.id} {repo.name}
                         </div>
                       </div>
                       <div onClick={handleCopyClone} className="text-gray-900 bg-gray-200 h-full px-1 cursor-pointer">
