@@ -1,5 +1,13 @@
-export function getArrayBufSize(arrayBuffer: ArrayBuffer): GetArrayBufSizeReturnType {
-  const byteSize = arrayBuffer.byteLength
+export function getRepoSize(arrayBufferOrSize: ArrayBuffer | number): GetArrayBufSizeReturnType {
+  let byteSize = 0
+
+  if (arrayBufferOrSize instanceof ArrayBuffer) {
+    byteSize = arrayBufferOrSize.byteLength
+  }
+
+  if (typeof arrayBufferOrSize === 'number') {
+    byteSize = arrayBufferOrSize
+  }
 
   if (byteSize >= 1073741824) {
     return {

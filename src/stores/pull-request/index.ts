@@ -52,10 +52,8 @@ const createPullRequestSlice: StateCreator<CombinedSlices, [['zustand/immer', ne
         return error || !response || !response.result ? null : response.result
       }
 
-      const loadRepoWithStatus = async ({ id, dataTxId, uploadStrategy, privateStateTxId }: Repo) => {
-        const { error, response } = await withAsync(() =>
-          loadRepository(id, dataTxId, uploadStrategy, privateStateTxId)
-        )
+      const loadRepoWithStatus = async ({ id }: Repo) => {
+        const { error, response } = await withAsync(() => loadRepository(id))
         return !error && response && response.success ? { success: true } : { success: false }
       }
 

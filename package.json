@@ -30,6 +30,7 @@
     "@uiw/react-codemirror": "^4.21.11",
     "@uiw/react-md-editor": "^3.23.5",
     "ardb": "^1.1.10",
+    "arfs-js": "^1.2.7",
     "arweave": "^1.14.4",
     "clsx": "^2.0.0",
     "date-fns": "^2.30.0",
