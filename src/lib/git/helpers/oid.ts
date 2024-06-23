@@ -49,8 +49,14 @@ export async function readFilesFromCommit({ fs, dir, oid, prefix }: ReadFilesFro
   }[] = []
   const oids: string[] = []
 
-  async function traverseTree(tree: TreeEntry[], currentPrefix: string) {
-    for (const entry of tree) {
+  const stack: { tree: TreeEntry[]; prefix: string }[] = []
+  const { tree } = await git.readTree({ fs, dir, oid })
+  stack.push({ tree, prefix })
+
+  while (stack.length > 0) {
+    const { tree: currentTree, prefix: currentPrefix } = stack.pop()!
+
+    for (const entry of currentTree) {
       const updatedPrefix = join(currentPrefix, entry.path)
       const _oid = entry.oid
       const path = entry.path
@@ -58,10 +64,9 @@ export async function readFilesFromCommit({ fs, dir, oid, prefix }: ReadFilesFro
       oids.push(_oid)
 
       if (entry.type === 'tree') {
-        // If it's a tree, recurse and list its contents
+        // If it's a tree, add its contents to the stack
         const { tree: treeNested } = await git.readTree({ fs, dir, oid: _oid })
-        const nestedObjects = await traverseTree(treeNested, updatedPrefix)
-        objects.push(...nestedObjects)
+        stack.push({ tree: treeNested, prefix: updatedPrefix })
       } else {
         // If it's a blob, add it to the objects array
         objects.push({
@@ -73,11 +78,7 @@ export async function readFilesFromCommit({ fs, dir, oid, prefix }: ReadFilesFro
         })
       }
     }
-    return objects
   }
-
-  const { tree } = await git.readTree({ fs, dir, oid })
-  await traverseTree(tree, prefix)
 
   return {
     objects,
