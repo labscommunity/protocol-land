@@ -84,7 +84,7 @@ export default function CreateHackathon() {
   const [hostLogoUrl, setHostLogoUrl] = React.useState<string | null>(null)
   const [hackathonLogoFile, setHackathonLogoFile] = React.useState<null | File>(null)
   const [hostLogoFile, setHostLogoFile] = React.useState<File | null>(null)
-
+  const [createdHackathonItem, setCreatedHackathonItem] = React.useState<any>(null)
   const [rewardBase, setRewardBase] = React.useState<string>('USD')
   const {
     register,
@@ -103,7 +103,7 @@ export default function CreateHackathon() {
     }
   })
   const { fields, append, remove } = useFieldArray({ name: 'prizes', control })
-  const [createNewHackathon] = useGlobalStore((state) => [
+  const [createNewHackathon, status] = useGlobalStore((state) => [
     state.hackathonActions.createNewHackathon,
     state.hackathonState.status
   ])
@@ -124,6 +124,12 @@ export default function CreateHackathon() {
   function goBack() {
     navigate(`/hackathon`)
   }
+
+  React.useEffect(() => {
+    if (status === 'SUCCESS' && createdHackathonItem) {
+      navigate(`/hackathon/${createdHackathonItem.id}`)
+    }
+  }, [createdHackathonItem, status])
 
   async function handleHackathonLogoChange(evt: React.ChangeEvent<HTMLInputElement>) {
     if (evt.target.files && evt.target.files[0]) {
@@ -208,7 +214,7 @@ export default function CreateHackathon() {
     const preparedHackItem = await prepareHackathonItemToPost({ ...dataCopy })
     await createNewHackathon(preparedHackItem)
 
-    navigate(`/hackathon/${preparedHackItem.id}`)
+    setCreatedHackathonItem(preparedHackItem)
   }
 
   return (
@@ -436,7 +442,7 @@ export default function CreateHackathon() {
                   className="flex relative flex-col p-6 pt-12 bg-white rounded-lg gap-4 border-[1px] border-gray-300"
                 >
                   <div onClick={() => remove(idx)} className="absolute top-0 right-0 p-4 cursor-pointer">
-                    <IoMdClose className='w-6 h-6' />
+                    <IoMdClose className="w-6 h-6" />
                   </div>
                   <div>
                     <label htmlFor="prize-name" className="block mb-1 text-sm font-medium text-gray-600">

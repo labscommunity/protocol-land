@@ -12,6 +12,8 @@ export async function getAllHackathons(): Promise<Hackathon[]> {
     }
   } = await contract.readState()
 
+  if (!hackathons) return []
+
   if (Object.keys(hackathons).length === 0) {
     return []
   }
