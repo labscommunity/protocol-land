@@ -6,6 +6,7 @@ import { useFieldArray, useForm } from 'react-hook-form'
 import toast from 'react-hot-toast'
 import { AiFillCamera } from 'react-icons/ai'
 import { FaArrowLeft, FaPlus } from 'react-icons/fa'
+import { IoMdClose } from 'react-icons/io'
 import { useNavigate } from 'react-router-dom'
 import { v4 as uuid } from 'uuid'
 import * as yup from 'yup'
@@ -101,7 +102,7 @@ export default function CreateHackathon() {
       prizes: []
     }
   })
-  const { fields, append } = useFieldArray({ name: 'prizes', control })
+  const { fields, append, remove } = useFieldArray({ name: 'prizes', control })
   const [createNewHackathon] = useGlobalStore((state) => [
     state.hackathonActions.createNewHackathon,
     state.hackathonState.status
@@ -432,8 +433,11 @@ export default function CreateHackathon() {
               {fields.map((field, idx) => (
                 <div
                   key={field.id}
-                  className="flex flex-col p-6 bg-white rounded-lg gap-4 border-[1px] border-gray-300"
+                  className="flex relative flex-col p-6 pt-12 bg-white rounded-lg gap-4 border-[1px] border-gray-300"
                 >
+                  <div onClick={() => remove(idx)} className="absolute top-0 right-0 p-4 cursor-pointer">
+                    <IoMdClose className='w-6 h-6' />
+                  </div>
                   <div>
                     <label htmlFor="prize-name" className="block mb-1 text-sm font-medium text-gray-600">
                       Prize Name
@@ -449,7 +453,7 @@ export default function CreateHackathon() {
                         placeholder="Ex: First Prize"
                       />
                     </div>
-                    
+
                     {errors.prizes && errors.prizes[idx] && errors.prizes![idx]?.name && (
                       <p className="text-red-500 text-sm italic mt-2">{errors?.prizes![idx]?.name?.message}</p>
                     )}
