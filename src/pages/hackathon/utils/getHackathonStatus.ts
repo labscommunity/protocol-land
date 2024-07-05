@@ -1,8 +1,8 @@
 import { differenceInDays, formatDistanceToNow, isFuture, isPast } from 'date-fns/esm'
 
 export function getHackathonStatus(startsAt: number, endsAt: number, setStatus: any) {
-  const startDateObj = new Date(startsAt)
-  const endDateObj = new Date(endsAt)
+  const startDateObj = new Date(startsAt * 1000)
+  const endDateObj = new Date(endsAt * 1000)
   if (isPast(endDateObj)) {
     setStatus('ENDED')
     return 'ENDED'

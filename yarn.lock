@@ -7861,6 +7861,11 @@ react-smooth@^2.0.4:
     fast-equals "^5.0.0"
     react-transition-group "2.9.0"
 
+react-spinners@^0.14.1:
+  version "0.14.1"
+  resolved "https://registry.yarnpkg.com/react-spinners/-/react-spinners-0.14.1.tgz#de7d7d6b3e6d4f29d9620c65495b502c7dd90812"
+  integrity sha512-2Izq+qgQ08HTofCVEdcAQCXFEYfqTDdfeDQJeo/HHQiQJD4imOicNLhkfN2eh1NYEWVOX4D9ok2lhuDB0z3Aag==
+
 react-stickynode@^4.1.1:
   version "4.1.1"
   resolved "https://registry.npmjs.org/react-stickynode/-/react-stickynode-4.1.1.tgz#ea63509a1d83195a7846d8f39be1e4e9ccbf1d3e"

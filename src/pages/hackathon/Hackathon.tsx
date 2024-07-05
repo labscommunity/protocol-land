@@ -3,13 +3,21 @@ import { BiSearch } from 'react-icons/bi'
 import { useNavigate } from 'react-router-dom'
 
 import { Button } from '@/components/common/buttons'
+import { useGlobalStore } from '@/stores/globalStore'
 
 import Dropdown from './components/filters/Dropdown'
 import HackathonItem from './components/HackathonItem'
-import { HACKATHON_ITEMS } from './utils/constants'
 
 export default function Hackathon() {
   const navigate = useNavigate()
+  const [hackathons, fetchAllHackathons] = useGlobalStore((state) => [
+    state.hackathonState.hackathons,
+    state.hackathonActions.fetchAllHackathons
+  ])
+
+  React.useEffect(() => {
+    fetchAllHackathons()
+  }, [])
 
   function handleCreateHackathonClick() {
     navigate('/hackathon/create')
@@ -21,6 +29,7 @@ export default function Hackathon() {
           <BiSearch className="w-6 h-6 text-primary-600 relative top-[1px]" />
           <input
             type="text"
+            disabled
             placeholder="Find your first hackathon"
             className="w-full pl-2 text-base outline-none font-medium focus:outline-none bg-transparent text-primary-900 placeholder:text-primary-600"
           />
@@ -48,7 +57,7 @@ export default function Hackathon() {
 
       <div className="flex flex-col w-full gap-4">
         <div className="py-2 flex items-center justify-between">
-          <h1 className="text-xl font-semibold text-gray-600">Showing 2 results</h1>
+          <h1 className="text-xl font-semibold text-gray-600">Showing {hackathons.length || 0} results</h1>
           <div>
             <Button onClick={handleCreateHackathonClick} variant="primary-solid">
               Create Hackathon
@@ -57,7 +66,7 @@ export default function Hackathon() {
         </div>
         <div className="flex flex-col w-full gap-4">
           {/* hackathon items here */}
-          {HACKATHON_ITEMS.map((item) => {
+          {hackathons.map((item) => {
             return <HackathonItem details={item} />
           })}
         </div>

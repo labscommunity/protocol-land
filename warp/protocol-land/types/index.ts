@@ -43,7 +43,7 @@ export type Hackathon = {
   title: string
   shortDescription: string
   descriptionTxId: string
-  prizes: Array<Prize>
+  prizes: Record<string, Prize>
   totalRewardsBase: BountyBase
   totalRewards: number
   startsAt: number
@@ -66,9 +66,6 @@ export type Team = {
 
 export type Participant = {
   address: string
-  email?: string
-  twitter: string
-  discord?: string
   timestamp: number
   teamId?: string
 }
@@ -81,12 +78,15 @@ export type Submission = {
   technologiesUsed: string
   submittedBy: string //teamid or individual address
   images: string[]
-  links: []
+  links: string[]
   video: string
-  timestamp: string
+  timestamp: number
+  isWinner: boolean
+  prizeIds: string[]
 }
 
 export type Prize = {
+  id: string
   name: string
   description: string
   amount: number
@@ -311,7 +311,10 @@ const repoFnList = [
   'postEvolve',
   'updatePrivateStateTx',
   'cancelContributorInvite',
-  'createNewHackathon'
+  'createNewHackathon',
+  'participateInHackathon',
+  'postSubmissionInHackathon',
+  'postJudgementInHackathon'
 ] as const
 
 export type RepositoryFunction = (typeof repoFnList)[number] // more types will be added later

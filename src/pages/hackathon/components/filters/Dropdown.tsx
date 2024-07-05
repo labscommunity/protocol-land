@@ -13,6 +13,7 @@ export default function Dropdown({ name }: Props) {
         <>
           <div>
             <Menu.Button
+              disabled
               className={`w-[178px] border-[1.5px] border-primary-600 rounded-[8px] shadow-[0px_2px_4px_0px_rgba(0,0,0,0.05)] inline-flex justify-between items-center px-4 h-10 ${
                 open ? 'bg-primary-50' : 'bg-white'
               } tracking-wide text-primary-700  font-medium focus:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-opacity-75`}

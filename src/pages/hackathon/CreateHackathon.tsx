@@ -1,18 +1,26 @@
 import { yupResolver } from '@hookform/resolvers/yup'
+import MDEditor from '@uiw/react-md-editor'
 import clsx from 'clsx'
 import React from 'react'
 import { useFieldArray, useForm } from 'react-hook-form'
+import toast from 'react-hot-toast'
 import { AiFillCamera } from 'react-icons/ai'
 import { FaArrowLeft, FaPlus } from 'react-icons/fa'
 import { useNavigate } from 'react-router-dom'
+import { v4 as uuid } from 'uuid'
 import * as yup from 'yup'
 
 import { Button } from '@/components/common/buttons'
+import { useGlobalStore } from '@/stores/globalStore'
+import { Prize } from '@/types/hackathon'
+
+import { prepareHackathonItemToPost } from './utils/prepareHackathonItemToPost'
 
 const schema = yup
   .object({
     title: yup.string().required('Title is required'),
     shortDescription: yup.string().required('Description is required'),
+    details: yup.string().required('Details is required'),
     startsAt: yup
       .date()
       .min(new Date(), 'Start date must be in the future')
@@ -20,6 +28,8 @@ const schema = yup
       .required('Start date is required'),
     endsAt: yup
       .date()
+      .typeError('Invalid end date')
+      .required('Start date is required')
       .test('same_dates_test', 'Start and end dates must not be equal.', function (value: Date | undefined) {
         const { startsAt } = this.parent
 
@@ -43,6 +53,7 @@ const schema = yup
       .array()
       .of(
         yup.object({
+          id: yup.string().required('ID is required'),
           name: yup.string().required('Name is required'),
           description: yup.string().required('Description is required'),
           amount: yup
@@ -80,6 +91,7 @@ export default function CreateHackathon() {
     formState: { errors },
     setValue,
     watch,
+    trigger,
     control
   } = useForm({
     resolver: yupResolver(schema),
@@ -90,7 +102,12 @@ export default function CreateHackathon() {
     }
   })
   const { fields, append } = useFieldArray({ name: 'prizes', control })
+  const [createNewHackathon] = useGlobalStore((state) => [
+    state.hackathonActions.createNewHackathon,
+    state.hackathonState.status
+  ])
   const watchPrizeBases = watch('prizes', []) || []
+  const watchDetails = watch('details', '# Hello') || ''
 
   React.useEffect(() => {
     setValue('totalRewardsBase', rewardBase)
@@ -156,18 +173,47 @@ export default function CreateHackathon() {
   }
 
   function appendEmptyPrize() {
-    append({ name: '', description: '', amount: 0, base: 'USD', winningParticipantsCount: 1 })
+    append({ id: uuid(), name: '', description: '', amount: 0, base: 'USD', winningParticipantsCount: 1 })
   }
 
   async function handleHackathonSubmit(data: yup.InferType<typeof schema>) {
-    //
-    console.log({data})
+    const tags = data.tags ? data.tags.split(',') : []
+    const startsAt = 1720044000
+    const endsAt = Math.floor(data.endsAt.getTime() / 1000)
+    const prizes: Record<string, Prize> = data.prizes.reduce(
+      (acc, curr) => {
+        acc[curr.id] = curr
+
+        return acc
+      },
+      {} as Record<string, Prize>
+    )
+
+    if (!hostLogoFile || !hackathonLogoFile) {
+      toast.error('Host Logo and HackathonLogo are mandatory.')
+      return
+    }
+
+    const dataCopy = {
+      ...data,
+      startsAt,
+      endsAt,
+      tags,
+      hostLogoFile,
+      hackathonLogoFile,
+      prizes
+    }
+
+    const preparedHackItem = await prepareHackathonItemToPost({ ...dataCopy })
+    await createNewHackathon(preparedHackItem)
+
+    navigate(`/hackathon/${preparedHackItem.id}`)
   }
 
   return (
     <div className="h-full flex-1 flex flex-col max-w-[960px] px-8 mx-auto w-full my-6 gap-2">
       <div className="flex relative">
-        <Button onClick={goBack} variant="primary-solid" className='cursor-pointer z-40'>
+        <Button onClick={goBack} variant="primary-solid" className="cursor-pointer z-40">
           <FaArrowLeft className="h-4 w-4 text-white" />
         </Button>
         <div className="absolute w-full flex items-center justify-center h-full z-10">
@@ -360,8 +406,25 @@ export default function CreateHackathon() {
               {errors.location && <p className="text-red-500 text-sm italic mt-2">{errors.location?.message}</p>}
             </div>
           </div>
+          <div className="w-full flex flex-col">
+            <span className="block mb-1 text-sm font-medium text-gray-600">Details</span>
+            <div className="mt-2">
+              <MDEditor
+                className={clsx({
+                  'border-red-500 border-[1px]': errors.details
+                })}
+                height={700}
+                preview="edit"
+                value={watchDetails}
+                onChange={(val) => {
+                  setValue('details', val!)
+                  trigger('details')
+                }}
+              />
+              {errors.details && <p className="text-red-500 text-sm italic mt-2">{errors.details.message}</p>}
+            </div>
+          </div>
           {/* PRICES */}
-
           <div className="w-full flex flex-col gap-4">
             <span className="block mb-1 text-sm font-medium text-gray-600">Prizes</span>
 
@@ -480,7 +543,7 @@ export default function CreateHackathon() {
                 onClick={appendEmptyPrize}
                 className="cursor-pointer min-h-[478px] flex items-center justify-center flex-col p-6 bg-white bg-opacity-50 hover:border-primary-600 rounded-lg gap-4 border-[1px] border-gray-300"
               >
-                <FaPlus className="w-14 h-14 text-primary-800" />
+                <FaPlus className="w-10 h-10 text-primary-800" />
                 <h1 className="text-primary-800 text-lg font-medium">Add new prize</h1>
               </div>
             </div>
@@ -564,7 +627,13 @@ export default function CreateHackathon() {
         </div>
 
         <div className="w-full flex items-center justify-center">
-          <Button onClick={handleSubmit(handleHackathonSubmit)} variant="primary-solid" className="w-44 justify-center">
+          <Button
+            // isLoading={status === 'PENDING'}
+            // disabled={status === 'PENDING'}
+            onClick={handleSubmit(handleHackathonSubmit)}
+            variant="primary-solid"
+            className="w-44 justify-center"
+          >
             Submit
           </Button>
         </div>

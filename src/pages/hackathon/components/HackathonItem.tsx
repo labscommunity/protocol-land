@@ -3,21 +3,12 @@ import React from 'react'
 import { FaDotCircle } from 'react-icons/fa'
 import { useNavigate } from 'react-router-dom'
 
+import { Hackathon } from '@/types/hackathon'
+
 import { getHackathonStatus } from '../utils/getHackathonStatus'
 
 type Props = {
-  details: {
-    hostLogo: string
-    hackathonLogo: string
-    startsAt: number
-    endsAt: number
-    title: string
-    reward: string
-    token: string
-    hostedBy: string
-    location: string
-    tags: string[]
-  }
+  details: Hackathon
 }
 
 export default function HackathonItem({ details }: Props) {
@@ -49,9 +40,9 @@ export default function HackathonItem({ details }: Props) {
       <div className="flex flex-col w-full bg-white py-[10px] px-4 gap-4">
         <div className="w-full flex justify-between">
           <div className="flex items-center gap-2">
-            <img src={details.hackathonLogo} className="w-6 h-6 rounded-full" />
+            <img src={'https://arweave.net/' + details.hackathonLogo} className="w-6 h-6 rounded-full" />
             <h1
-              onClick={() => navigate(`/hackathon/1`)}
+              onClick={() => navigate(`/hackathon/${details.id}`)}
               className="font-medium text-gray-900 hover:underline hover:cursor-pointer"
             >
               {details.title}
@@ -59,7 +50,7 @@ export default function HackathonItem({ details }: Props) {
           </div>
           <div className="flex">
             <h1 className="font-medium text-gray-900">
-              ${details.reward} in {details.token}
+              ${details.totalRewards} in {details.totalRewardsBase}
             </h1>
           </div>
         </div>
@@ -71,7 +62,7 @@ export default function HackathonItem({ details }: Props) {
           <div className="flex gap-1 text-sm items-center">
             <h1>Hosted by </h1>
             <span className="flex items-center gap-1">
-              <img src={details.hostLogo} className="w-4 h-4 rounded-full" />
+              <img src={'https://arweave.net/' + details.hostLogo} className="w-4 h-4 rounded-full" />
               <h1 className="font-semibold">{details.hostedBy}</h1>
             </span>
           </div>

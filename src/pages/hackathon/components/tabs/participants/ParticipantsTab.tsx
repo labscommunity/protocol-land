@@ -3,15 +3,13 @@ import { FiGitCommit } from 'react-icons/fi'
 import { Link } from 'react-router-dom'
 
 import { resolveUsernameOrShorten } from '@/helpers/resolveUsername'
+import { Hackathon } from '@/types/hackathon'
 
-export default function ParticipantsTab() {
-  const participants = [
-    {
-      id: 'test',
-      address: 'z4abYaM3uelSicEouKoD3prH6K6WKaUO3WzCQbifuz0',
-      timestamp: 1718887629858
-    }
-  ]
+type Props = {
+  selectedHackathon: Hackathon
+}
+export default function ParticipantsTab({ selectedHackathon }: Props) {
+  const participants = Object.values(selectedHackathon.participants)
   return (
     <div className="flex flex-col w-full">
       {participants.map((participant) => (
