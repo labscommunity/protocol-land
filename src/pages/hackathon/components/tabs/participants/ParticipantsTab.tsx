@@ -12,6 +12,11 @@ export default function ParticipantsTab({ selectedHackathon }: Props) {
   const participants = Object.values(selectedHackathon.participants)
   return (
     <div className="flex flex-col w-full">
+      {participants.length === 0 && (
+        <div className="w-full py-16 flex justify-center items-center">
+          <h1 className="text-gray-600 text-2xl font-thin tracking-wider">No participants at the moment</h1>
+        </div>
+      )}
       {participants.map((participant) => (
         <div className="w-full py-2 flex gap-4 relative items-center before:bg-gray-300 before:content-[''] before:absolute before:left-0 before:top-0 before:w-[2px] before:h-full before:block">
           <div className="ml-2 z-[1] relative">

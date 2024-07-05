@@ -1,6 +1,7 @@
 import React from 'react'
 import { BiSearch } from 'react-icons/bi'
 import { useNavigate } from 'react-router-dom'
+import { FadeLoader } from 'react-spinners'
 
 import { Button } from '@/components/common/buttons'
 import { useGlobalStore } from '@/stores/globalStore'
@@ -10,8 +11,9 @@ import HackathonItem from './components/HackathonItem'
 
 export default function Hackathon() {
   const navigate = useNavigate()
-  const [hackathons, fetchAllHackathons] = useGlobalStore((state) => [
+  const [hackathons, status, fetchAllHackathons] = useGlobalStore((state) => [
     state.hackathonState.hackathons,
+    state.hackathonState.status,
     state.hackathonActions.fetchAllHackathons
   ])
 
@@ -66,6 +68,11 @@ export default function Hackathon() {
         </div>
         <div className="flex flex-col w-full gap-4">
           {/* hackathon items here */}
+          {status === 'PENDING' && (
+            <div className="min-h-[200px] flex items-center justify-center w-full">
+              <FadeLoader color="#56ADD9" />
+            </div>
+          )}
           {hackathons.map((item) => {
             return <HackathonItem details={item} />
           })}

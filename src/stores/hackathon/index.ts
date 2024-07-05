@@ -28,13 +28,16 @@ const createHackathonSlice: StateCreator<CombinedSlices, [['zustand/immer', neve
 
       if (error) {
         toast.error('Failed to fetch hackathons.')
-
+        set((state) => {
+          state.hackathonState.status = 'ERROR'
+        })
         return
       }
 
       if (response) {
         set((state) => {
           state.hackathonState.hackathons = response
+          state.hackathonState.status = 'SUCCESS'
         })
       }
     },
