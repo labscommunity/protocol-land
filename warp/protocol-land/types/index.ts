@@ -1,6 +1,7 @@
 export type ContractState = {
   users: Record<Address, User>
   repos: Repositories
+  hackathons: Hackathons
   userRepoIdMap: Record<Address, Record<string, string>>
   canEvolve: boolean
   evolve: null | any
@@ -32,6 +33,66 @@ export type Timezone = {
 type Address = string
 
 export type Repositories = Record<Address, Repo>
+export type Hackathons = Record<Address, Hackathon>
+
+export type Hackathon = {
+  id: string
+  timestamp: number
+  createdBy: string
+  hackathonLogo: string
+  title: string
+  shortDescription: string
+  descriptionTxId: string
+  prizes: Record<string, Prize>
+  totalRewardsBase: BountyBase
+  totalRewards: number
+  startsAt: number
+  endsAt: number
+  hostLogo: string
+  hostedBy: string
+  location: string
+  tags: Array<string>
+  teams: Record<string, Team>
+  participants: Record<Address, Participant>
+  submissions: Record<Address, Submission>
+}
+
+export type Team = {
+  name: string
+  members: Array<string>
+  owner: string
+  timestamp: string
+}
+
+export type Participant = {
+  address: string
+  timestamp: number
+  teamId?: string
+}
+
+export type Submission = {
+  logo: string
+  projectName: string
+  shortDescription: string
+  descriptionTxId: string
+  technologiesUsed: string
+  submittedBy: string //teamid or individual address
+  images: string[]
+  links: string[]
+  video: string
+  timestamp: number
+  isWinner: boolean
+  prizeIds: string[]
+}
+
+export type Prize = {
+  id: string
+  name: string
+  description: string
+  amount: number
+  base: BountyBase
+  winningParticipantsCount: number
+}
 
 export type Repo = {
   id: string
@@ -249,7 +310,12 @@ const repoFnList = [
   'isUsernameAvailable',
   'postEvolve',
   'updatePrivateStateTx',
-  'cancelContributorInvite'
+  'cancelContributorInvite',
+  'createNewHackathon',
+  'participateInHackathon',
+  'postSubmissionInHackathon',
+  'postJudgementInHackathon',
+  'updateHackathon'
 ] as const
 
 export type RepositoryFunction = (typeof repoFnList)[number] // more types will be added later

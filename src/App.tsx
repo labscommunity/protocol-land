@@ -4,6 +4,9 @@ import { HashRouter, Route, Routes } from 'react-router-dom'
 import AppLayout from './layouts/AppLayout'
 import Article from './pages/blog/Article'
 import Blog from './pages/blog/BlogList'
+import CreateHackathon from './pages/hackathon/CreateHackathon'
+import Hackathon from './pages/hackathon/Hackathon'
+import HackathonDetails from './pages/hackathon/HackathonDetails'
 import Home from './pages/home/Home'
 import { CreateIssuePage, ReadIssuePage } from './pages/issue'
 import Profile from './pages/profile/Profile'
@@ -17,6 +20,13 @@ const repositoryRoutes = [
   { path: '/repository/:id/pull/:pullId', element: <ReadPullRequest /> },
   { path: '/repository/:id/issue/new', element: <CreateIssuePage /> },
   { path: '/repository/:id/issue/:issueId', element: <ReadIssuePage /> }
+]
+
+const hackathonRoutes = [
+  { path: '/hackathon', element: <Hackathon /> },
+  { path: '/hackathon/create', element: <CreateHackathon /> },
+  { path: '/hackathon/:id/:tabName?', element: <HackathonDetails /> },
+  { path: '/hackathon/:id/submit', element: <NewPullRequest /> }
 ]
 
 function App() {
@@ -33,6 +43,9 @@ function App() {
             path={path}
             element={<AppLayout Component={() => <RepositoryWrapper element={element} />} />}
           />
+        ))}
+        {hackathonRoutes.map(({ path, element }, index) => (
+          <Route key={index} path={path} element={<AppLayout Component={() => element} />} />
         ))}
       </Routes>
 

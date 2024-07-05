@@ -1,5 +1,12 @@
 import { evolveContract } from './actions/evolve'
 import {
+  createNewHackathon,
+  participateInHackathon,
+  postJudgementInHackathon,
+  postSubmissionInHackathon,
+  updateHackathon
+} from './actions/hackathon'
+import {
   addAssigneeToIssue,
   addCommentToIssue,
   createNewBounty,
@@ -122,6 +129,16 @@ export async function handle(state: ContractState, action: RepositoryAction | Ev
       return await getUserDetails(state, action as RepositoryAction)
     case 'isUsernameAvailable':
       return await isUsernameAvailable(state, action as RepositoryAction)
+    case 'createNewHackathon':
+      return await createNewHackathon(state, action as RepositoryAction)
+    case 'participateInHackathon':
+      return await participateInHackathon(state, action as RepositoryAction)
+    case 'postSubmissionInHackathon':
+      return await postSubmissionInHackathon(state, action as RepositoryAction)
+    case 'postJudgementInHackathon':
+      return await postJudgementInHackathon(state, action as RepositoryAction)
+    case 'updateHackathon':
+      return await updateHackathon(state, action as RepositoryAction)
     case 'evolve':
       return await evolveContract(state, action as EvolveAction)
     default:

@@ -7,6 +7,7 @@ import { createWithEqualityFn } from 'zustand/traditional'
 
 import createAuthSlice from './auth'
 import createBranchSlice from './branch'
+import createHackathonSlice from './hackathon'
 import createIssuesSlice from './issues'
 import createPullRequestSlice from './pull-request'
 import createRepoCoreSlice from './repository-core'
@@ -24,7 +25,8 @@ export const useGlobalStore = createWithEqualityFn(
     ...createRepoCoreSlice(...args),
     ...createBranchSlice(...args),
     ...createPullRequestSlice(...args),
-    ...createIssuesSlice(...args)
+    ...createIssuesSlice(...args),
+    ...createHackathonSlice(...args)
   })),
   shallow
 )
