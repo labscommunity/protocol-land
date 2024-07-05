@@ -4,7 +4,7 @@ import { StateCreator } from 'zustand'
 import { withAsync } from '@/helpers/withAsync'
 
 import { CombinedSlices } from '../types'
-import { getAllHackathons, getHackathonById, participate, postNewHackathon } from './actions'
+import { getAllHackathons, getHackathonById, participate, postNewHackathon, postUpdatedHackathon } from './actions'
 import { HackathonSlice, HackathonState } from './types'
 const initialHackathonState: HackathonState = {
   hackathons: [],
@@ -87,6 +87,40 @@ const createHackathonSlice: StateCreator<CombinedSlices, [['zustand/immer', neve
       }
 
       set((state) => {
+        state.hackathonState.status = 'SUCCESS'
+      })
+    },
+    updateHackathon: async (hackathon) => {
+      const address = get().authState.address
+      const selectedHackathon = get().hackathonState.selectedHackathon
+
+      if (!address || !selectedHackathon) {
+        set((state) => {
+          state.hackathonState.status = 'ERROR'
+        })
+
+        return
+      }
+
+      set((state) => {
+        state.hackathonState.status = 'PENDING'
+      })
+
+      const { error } = await withAsync(() => postUpdatedHackathon(hackathon))
+
+      if (error) {
+        toast.error('Failed to post hackathon.')
+        set((state) => {
+          state.hackathonState.status = 'ERROR'
+        })
+
+        return
+      }
+
+      set((state) => {
+        if (hackathon.descriptionTxId && state.hackathonState.selectedHackathon) {
+          state.hackathonState.selectedHackathon.descriptionTxId = hackathon.descriptionTxId
+        }
         state.hackathonState.status = 'SUCCESS'
       })
     },

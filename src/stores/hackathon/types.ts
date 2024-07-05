@@ -18,4 +18,5 @@ export type HackathonActions = {
   createNewHackathon: (hackathon: NewHackatonItem) => Promise<void>
   setSelectedHackathon: (hackathon: Hackathon) => void
   participateInHackathon: (id: string) => Promise<void>
+  updateHackathon: (hackathon: Partial<Hackathon>) => Promise<void>
 }

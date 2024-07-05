@@ -1,6 +1,7 @@
 import { ContractResult, ContractState, Hackathon, RepositoryAction } from '../types'
 import { getBlockTimeStamp } from '../utils/getBlockTimeStamp'
 import { isInvalidInput } from '../utils/isInvalidInput'
+import { pickKeys } from '../utils/pickKeys'
 
 declare const ContractError
 
@@ -76,6 +77,70 @@ export async function createNewHackathon(
   }
 
   state.hackathons[hackathon.id] = hackathon
+
+  return { state }
+}
+
+export async function updateHackathon(
+  state: ContractState,
+  { caller, input: { payload } }: RepositoryAction
+): Promise<ContractResult<ContractState>> {
+  if (
+    isInvalidInput(payload, 'object') ||
+    isInvalidInput(payload.id, 'uuid') ||
+    (payload.title !== undefined && isInvalidInput(payload.title, 'string')) ||
+    (payload.shortDescription !== undefined && isInvalidInput(payload.shortDescription, 'string')) ||
+    (payload.descriptionTxId !== undefined && isInvalidInput(payload.descriptionTxId, 'string')) ||
+    (payload.startsAt !== undefined && isInvalidInput(payload.startsAt, 'number')) ||
+    (payload.endsAt !== undefined && isInvalidInput(payload.endsAt, 'number')) ||
+    (payload.totalRewards !== undefined && isInvalidInput(payload.totalRewards, 'number')) ||
+    (payload.totalRewardsBase !== undefined && isInvalidInput(payload.totalRewardsBase, 'string')) ||
+    (payload.location !== undefined && isInvalidInput(payload.location, 'string')) ||
+    (payload.prizes !== undefined && isInvalidInput(payload.prizes, 'array')) ||
+    (payload.hostedBy !== undefined && isInvalidInput(payload.hostedBy, 'string')) ||
+    (payload.tags !== undefined && isInvalidInput(payload.tags, 'array')) ||
+    (payload.hostLogo !== undefined && isInvalidInput(payload.hostLogo, 'string')) ||
+    (payload.hackathonLogo !== undefined && isInvalidInput(payload.hackathonLogo, 'string'))
+  ) {
+    throw new ContractError('Invalid inputs supplied.')
+  }
+
+  const hackathon = state.hackathons[payload.id]
+  if (!hackathon) {
+    throw new ContractError('Hackathon doesnt exists.')
+  }
+
+  if (hackathon.createdBy !== caller) {
+    throw new ContractError('Only owner of hackathon can edit it.')
+  }
+
+  const currentTimeStamp = getBlockTimeStamp()
+  if (hackathon.startsAt * 1000 < currentTimeStamp) {
+    throw new ContractError('Hackathon has started already. Cannot edit.')
+  }
+
+  // Filter the payload to only include allowed keys
+  const filteredPayload = pickKeys(payload, [
+    'title',
+    'shortDescription',
+    'descriptionTxId',
+    'startsAt',
+    'endsAt',
+    'totalRewards',
+    'totalRewardsBase',
+    'location',
+    'prizes',
+    'hostedBy',
+    'tags',
+    'hostLogo',
+    'hackathonLogo'
+  ])
+
+  if (Object.keys(filteredPayload).length === 0) {
+    throw new ContractError('Invalid inputs supplied.')
+  }
+
+  state.hackathons[payload.id] = { ...hackathon, ...filteredPayload }
 
   return { state }
 }

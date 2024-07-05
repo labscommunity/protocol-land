@@ -3,7 +3,8 @@ import {
   createNewHackathon,
   participateInHackathon,
   postJudgementInHackathon,
-  postSubmissionInHackathon
+  postSubmissionInHackathon,
+  updateHackathon
 } from './actions/hackathon'
 import {
   addAssigneeToIssue,
@@ -136,6 +137,8 @@ export async function handle(state: ContractState, action: RepositoryAction | Ev
       return await postSubmissionInHackathon(state, action as RepositoryAction)
     case 'postJudgementInHackathon':
       return await postJudgementInHackathon(state, action as RepositoryAction)
+    case 'updateHackathon':
+      return await updateHackathon(state, action as RepositoryAction)
     case 'evolve':
       return await evolveContract(state, action as EvolveAction)
     default:

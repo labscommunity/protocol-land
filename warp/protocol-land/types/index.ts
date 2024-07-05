@@ -314,7 +314,8 @@ const repoFnList = [
   'createNewHackathon',
   'participateInHackathon',
   'postSubmissionInHackathon',
-  'postJudgementInHackathon'
+  'postJudgementInHackathon',
+  'updateHackathon'
 ] as const
 
 export type RepositoryFunction = (typeof repoFnList)[number] // more types will be added later

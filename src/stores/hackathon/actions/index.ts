@@ -56,6 +56,17 @@ export async function postNewHackathon(hackathon: NewHackatonItem): Promise<void
   })
 }
 
+export async function postUpdatedHackathon(hackathon: Partial<Hackathon>): Promise<void> {
+  const userSigner = await getSigner()
+
+  const contract = await getWarpContract(CONTRACT_TX_ID, userSigner)
+
+  await contract.writeInteraction({
+    function: 'updateHackathon',
+    payload: hackathon
+  })
+}
+
 export async function participate(hackathonId: string): Promise<void> {
   const userSigner = await getSigner()
 
