@@ -1,5 +1,6 @@
 import { useConnection } from '@arweave-wallet-kit-beta/react'
 import React from 'react'
+import { useNavigate } from 'react-router-dom'
 
 import { Button } from '@/components/common/buttons'
 import CreateProfileModal from '@/components/CreateProfileModal/CreateProfileModal'
@@ -17,6 +18,7 @@ import Sidebar from './components/Sidebar'
 import { useFetchUserRepos } from './hooks/useFetchUserRepos'
 
 export default function Home() {
+  const navigate = useNavigate()
   const [authState] = useGlobalStore((state) => [state.authState])
   const { initFetchUserRepos, fetchUserReposStatus, userRepos } = useFetchUserRepos()
   const [isOpen, setIsOpen] = React.useState(false)
@@ -60,6 +62,10 @@ export default function Home() {
     window.open('https://docs.protocol.land/working-with-repositories/import-a-repository-from-github', '_blank')
   }
 
+  function handleHackathonExploreClick() {
+    navigate('/hackathon')
+  }
+
   if (!strategy) {
     return <Landing />
   }
@@ -71,6 +77,23 @@ export default function Home() {
         <Sidebar repos={userRepos} isLoading={fetchUserReposStatus === 'PENDING'} setIsRepoModalOpen={setIsOpen} />
         <MainContent>
           <div className="lg:w-[85%] xl:w-[80%] 2xl:w-[70%] py-8 flex flex-col gap-8">
+            <div className="flex flex-col md:flex-row gap-8 w-full">
+              <div
+                className={
+                  'bg-primary-100 p-6 min-h-[200px] w-full flex flex-col items-center gap-4 justify-center rounded-2xl border-[1px] border-primary-200'
+                }
+              >
+                <div className="flex flex-col text-center gap-2">
+                  <h1 className="text-2xl font-bold tracking-wide text-primary-600">Participate in Hackathons</h1>
+                  <p className="text-base font-medium text-primary-500">
+                    Host or Participate in Hackathons, build within the deadlines and earn prizes.
+                  </p>
+                </div>
+                <Button onClick={handleHackathonExploreClick} variant="primary-solid">
+                  Explore
+                </Button>
+              </div>
+            </div>
             <div className="flex flex-col md:flex-row gap-8 w-full">
               <div
                 className={
