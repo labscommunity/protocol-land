@@ -449,8 +449,9 @@ export default function CreateHackathon() {
                         placeholder="Ex: First Prize"
                       />
                     </div>
-                    {errors.prizes && errors.prizes![idx]?.name && (
-                      <p className="text-red-500 text-sm italic mt-2">{errors?.prizes![idx]?.name.message}</p>
+                    
+                    {errors.prizes && errors.prizes[idx] && errors.prizes![idx]?.name && (
+                      <p className="text-red-500 text-sm italic mt-2">{errors?.prizes![idx]?.name?.message}</p>
                     )}
                   </div>
                   <div className="w-full">
@@ -491,7 +492,7 @@ export default function CreateHackathon() {
                       </div>
                     </div>
                     {errors.prizes && errors.prizes![idx]?.amount && (
-                      <p className="text-red-500 text-sm italic mt-2">{errors.prizes![idx]?.amount.message}</p>
+                      <p className="text-red-500 text-sm italic mt-2">{errors.prizes![idx]?.amount?.message}</p>
                     )}
                   </div>
                   <div className="w-full">
@@ -514,7 +515,7 @@ export default function CreateHackathon() {
                     </div>
                     {errors.prizes && errors.prizes[idx]?.winningParticipantsCount && (
                       <p className="text-red-500 text-sm italic mt-2">
-                        {errors.prizes[idx]?.winningParticipantsCount.message}
+                        {errors.prizes[idx]?.winningParticipantsCount?.message}
                       </p>
                     )}
                   </div>
@@ -532,8 +533,8 @@ export default function CreateHackathon() {
                         )}
                       />
                     </div>
-                    {errors.prizes && errors.prizes[idx]?.description && (
-                      <p className="text-red-500 text-sm italic mt-2">{errors.prizes[idx]?.description.message}</p>
+                    {errors.prizes && errors.prizes[idx] && errors.prizes[idx]?.description && (
+                      <p className="text-red-500 text-sm italic mt-2">{errors.prizes[idx]?.description?.message}</p>
                     )}
                   </div>
                 </div>

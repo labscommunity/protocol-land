@@ -1,5 +1,3 @@
-import React from 'react'
-
 import { Hackathon } from '@/types/hackathon'
 
 type Props = {
