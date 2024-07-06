@@ -3,7 +3,6 @@ import React from 'react'
 import { FadeLoader } from 'react-spinners'
 
 import { Button } from '@/components/common/buttons'
-import rehypeAnchorOnClickPlugin from '@/helpers/rehypeAnchorOnClickPlugin'
 import { withAsync } from '@/helpers/withAsync'
 import { uploadDetailsReadme } from '@/pages/hackathon/utils/uploadDetailsReadme'
 import { useGlobalStore } from '@/stores/globalStore'
@@ -71,7 +70,7 @@ export default function DetailsTab({ selectedHackathon }: Props) {
             <MDEditor.Markdown
               className="!min-h-[200px] rounded-b-lg !bg-transparent"
               source={details}
-              rehypePlugins={[[rehypeAnchorOnClickPlugin]]}
+              // rehypePlugins={[[rehypeAnchorOnClickPlugin]]}
             />
           </div>
         </div>
