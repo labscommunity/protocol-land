@@ -56,8 +56,9 @@ export default function HackathonItem({ details }: Props) {
         </div>
         <div className="flex justify-between w-full">
           <div className="flex gap-2">
-            <div className="flex px-4 py-[1px] items-center bg-primary-600 rounded-full text-white">ao</div>
-            <div className="flex px-4 py-[1px] items-center bg-primary-600 rounded-full text-white">Arweave</div>
+            {details.tags.map((tag) => (
+              <div className="flex px-4 py-[1px] items-center bg-primary-600 rounded-full text-white">{tag}</div>
+            ))}
           </div>
           <div className="flex gap-1 text-sm items-center">
             <h1>Hosted by </h1>
