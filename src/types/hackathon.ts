@@ -42,6 +42,7 @@ export type Hackathon = {
 }
 
 export type Team = {
+  id: string
   name: string
   members: Array<string>
   owner: string
@@ -50,9 +51,6 @@ export type Team = {
 
 export type Participant = {
   address: string
-  email?: string
-  twitter: string
-  discord?: string
   timestamp: number
   teamId?: string
 }

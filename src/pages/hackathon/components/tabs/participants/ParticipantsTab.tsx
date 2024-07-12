@@ -9,7 +9,16 @@ type Props = {
   selectedHackathon: Hackathon
 }
 export default function ParticipantsTab({ selectedHackathon }: Props) {
-  const participants = Object.values(selectedHackathon.participants)
+  const participants = Object.values(selectedHackathon?.participants || {})
+
+  function getTeamName(teamId: string | undefined) {
+    if (!teamId) return null
+
+    const teams = selectedHackathon.teams
+    const team = teams[teamId]
+
+    return team.name
+  }
   return (
     <div className="flex flex-col w-full">
       {participants.length === 0 && (
@@ -30,7 +39,12 @@ export default function ParticipantsTab({ selectedHackathon }: Props) {
               >
                 {resolveUsernameOrShorten(participant.address)}
               </Link>
-              <span> has joined </span>
+              <span>
+                {' '}
+                has joined {participant.teamId && (
+                  <span className="font-bold">{getTeamName(participant.teamId)}</span>
+                )}{' '}
+              </span>
               <span className="font-medium">
                 {formatDistanceToNow(new Date(participant.timestamp), { addSuffix: true })}
               </span>
