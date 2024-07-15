@@ -42,7 +42,7 @@ export default function WinnerModal({ setIsOpen, isOpen, participantAddress }: W
 
   React.useEffect(() => {
     if (selectedHackathon) {
-      let hackathonPrizes = selectedHackathon.prizes || {}
+      let hackathonPrizes: Record<string, Prize> | Prize[] = selectedHackathon.prizes || {}
       hackathonPrizes = Object.values(hackathonPrizes)
       const filteredPrizes = hackathonPrizes.filter((prize) => {
         const assignedCount = Object.values(selectedHackathon.submissions).filter((submission) =>

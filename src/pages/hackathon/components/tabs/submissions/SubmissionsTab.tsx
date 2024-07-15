@@ -1,5 +1,6 @@
 import clsx from 'clsx'
 import { format } from 'date-fns/esm'
+import { GiLaurelsTrophy } from 'react-icons/gi'
 import { useNavigate } from 'react-router-dom'
 
 import { Button } from '@/components/common/buttons'
@@ -54,6 +55,14 @@ export default function SubmissionsTab({ selectedHackathon }: Props) {
     navigate(`/hackathon/${selectedHackathon.id}/submission/${submission.submittedBy}`)
   }
 
+  function getPrizeById(id: string) {
+    return selectedHackathon.prizes[id]
+  }
+
+  function handlePrizeTabRedirection() {
+    navigate(`/hackathon/${selectedHackathon.id}/prizes`)
+  }
+
   return (
     <div className="flex flex-col w-full">
       {submissions.length === 0 && (
@@ -104,13 +113,38 @@ export default function SubmissionsTab({ selectedHackathon }: Props) {
                 </div>
               </div>
             </div>
-            <div className="w-[30%] flex flex-col items-end ">
+            <div className="w-[30%] flex flex-col items-end gap-1">
+              <div className="flex flex-col gap-1">
+                {submission.prizeIds.map((prizeId) => {
+                  const prize = getPrizeById(prizeId)
+                  if (!prize) return null
+                  return (
+                    <div
+                      onClick={handlePrizeTabRedirection}
+                      style={{
+                        border: '1px solid #caa173',
+                        background: ``,
+                        boxShadow:
+                          '2px 2px 0.5em rgba(155, 122, 89, 0.55),inset 1px 1px 0 rgba(255, 255, 255, 0.9),inset -1px -1px 0 rgba(0, 0, 0, 0.5)'
+                      }}
+                      className="border-[1px] cursor-pointer border-white text-white font-medium text-base rounded-[64px] px-4 py-[2px] flex items-center gap-1"
+                    >
+                      <GiLaurelsTrophy className="text-white w-4 h-4" />
+                      {prize.name}
+                    </div>
+                  )
+                })}
+              </div>
               <div className="flex flex-col">
                 <span>Submitted on {format(+submission.timestamp, 'MMM dd, yyyy')}</span>
               </div>
               <div onClick={() => handleSubmissionViewClick(submission)} className="flex flex-1 items-center">
                 <Button
-                  className="h-[35px] text-white "
+                  style={{
+                    boxShadow:
+                      '2px 2px 0.5em rgba(155, 122, 89, 0.55),inset 1px 1px 0 rgba(255, 255, 255, 0.9),inset -1px -1px 0 rgba(0, 0, 0, 0.5)'
+                  }}
+                  className="h-[35px] text-white bg-transparent font-medium hover:bg-transparent"
                   variant={submission.isWinner ? 'primary-solid' : 'primary-solid'}
                 >
                   View

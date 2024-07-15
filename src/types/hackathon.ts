@@ -27,7 +27,7 @@ export type Hackathon = {
   title: string
   shortDescription: string
   descriptionTxId: string
-  prizes: Array<Prize>
+  prizes: Record<string, Prize>
   totalRewardsBase: BountyBase
   totalRewards: number
   startsAt: number
