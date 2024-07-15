@@ -85,6 +85,25 @@ export async function participate(hackathonId: string, teamId?: string): Promise
   })
 }
 
+export async function selectPrizeWinner(
+  hackathonId: string,
+  prizeId: string,
+  participantAddress: string
+): Promise<void> {
+  const userSigner = await getSigner()
+
+  const contract = await getWarpContract(CONTRACT_TX_ID, userSigner)
+
+  await contract.writeInteraction({
+    function: 'postJudgementInHackathon',
+    payload: {
+      id: hackathonId,
+      prizeId,
+      participantAddress
+    }
+  })
+}
+
 export async function createHackathonTeam(payload: CreateHackathonTeam): Promise<Team> {
   const id = v4()
   const userSigner = await getSigner()

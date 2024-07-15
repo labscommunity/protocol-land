@@ -63,12 +63,15 @@ export type Submission = {
   technologiesUsed: string
   submittedBy: string //teamid or individual address
   images: string[]
-  links: []
+  links: string[]
   video: string
-  timestamp: string
+  timestamp: number
+  isWinner: boolean
+  prizeIds: string[]
 }
 
 export type Prize = {
+  id: string
   name: string
   description: string
   amount: number

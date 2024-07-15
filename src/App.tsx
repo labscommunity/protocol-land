@@ -8,6 +8,7 @@ import CreateHackathon from './pages/hackathon/CreateHackathon'
 import Hackathon from './pages/hackathon/Hackathon'
 import HackathonDetails from './pages/hackathon/HackathonDetails'
 import HackathonParticipate from './pages/hackathon/HackathonParticipate'
+import SubmissionDetails from './pages/hackathon/SubmissionDetails'
 import Home from './pages/home/Home'
 import { CreateIssuePage, ReadIssuePage } from './pages/issue'
 import Profile from './pages/profile/Profile'
@@ -28,7 +29,8 @@ const hackathonRoutes = [
   { path: '/hackathon/create', element: <CreateHackathon /> },
   { path: '/hackathon/:id/:tabName?', element: <HackathonDetails /> },
   { path: '/hackathon/:id/submit', element: <NewPullRequest /> },
-  { path: '/hackathon/:id/participate', element: <HackathonParticipate /> }
+  { path: '/hackathon/:id/participate', element: <HackathonParticipate /> },
+  { path: '/hackathon/:id/submission/:address', element: <SubmissionDetails /> }
 ]
 
 function App() {

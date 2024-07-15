@@ -10,7 +10,8 @@ import {
   getHackathonById,
   participate,
   postNewHackathon,
-  postUpdatedHackathon
+  postUpdatedHackathon,
+  selectPrizeWinner
 } from './actions'
 import { HackathonSlice, HackathonState } from './types'
 const initialHackathonState: HackathonState = {
@@ -138,6 +139,18 @@ const createHackathonSlice: StateCreator<CombinedSlices, [['zustand/immer', neve
       set((state) => {
         state.hackathonState.selectedHackathon = hackathon
       })
+    },
+    assignPrizeToSubmission: async (hackathonId, prizeId, participantAddress) => {
+      const { error } = await withAsync(() => selectPrizeWinner(hackathonId, prizeId, participantAddress))
+
+      if (error) {
+        toast.error('Failed to assign prize to submission.')
+        return
+      }
+
+      await get().hackathonActions.fetchHackathonById(hackathonId)
+
+      return true
     },
     participateInHackathon: async (id, teamId) => {
       const { error } = await withAsync(() => participate(id, teamId))

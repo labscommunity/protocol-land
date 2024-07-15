@@ -20,4 +20,5 @@ export type HackathonActions = {
   participateInHackathon: (id: string, teamId?: string) => Promise<void>
   updateHackathon: (hackathon: Partial<Hackathon>) => Promise<void>
   createNewTeam: (name: string) => Promise<void | Team>
+  assignPrizeToSubmission: (hackathonId: string, prizeId: string, participantAddress: string) => Promise<boolean | void>
 }
