@@ -1,7 +1,9 @@
+import { v4 } from 'uuid'
+
 import { CONTRACT_TX_ID } from '@/helpers/constants'
 import getWarpContract from '@/helpers/getWrapContract'
 import { getSigner } from '@/helpers/wallet/getSigner'
-import { Hackathon, NewHackatonItem } from '@/types/hackathon'
+import { Hackathon, NewHackatonItem, Team } from '@/types/hackathon'
 
 export async function getAllHackathons(): Promise<Hackathon[]> {
   const contract = await getWarpContract(CONTRACT_TX_ID)
@@ -69,7 +71,7 @@ export async function postUpdatedHackathon(hackathon: Partial<Hackathon>): Promi
   })
 }
 
-export async function participate(hackathonId: string): Promise<void> {
+export async function participate(hackathonId: string, teamId?: string): Promise<void> {
   const userSigner = await getSigner()
 
   const contract = await getWarpContract(CONTRACT_TX_ID, userSigner)
@@ -77,7 +79,55 @@ export async function participate(hackathonId: string): Promise<void> {
   await contract.writeInteraction({
     function: 'participateInHackathon',
     payload: {
-      id: hackathonId
+      id: hackathonId,
+      teamId
     }
   })
+}
+
+export async function selectPrizeWinner(
+  hackathonId: string,
+  prizeId: string,
+  participantAddress: string
+): Promise<void> {
+  const userSigner = await getSigner()
+
+  const contract = await getWarpContract(CONTRACT_TX_ID, userSigner)
+
+  await contract.writeInteraction({
+    function: 'postJudgementInHackathon',
+    payload: {
+      id: hackathonId,
+      prizeId,
+      participantAddress
+    }
+  })
+}
+
+export async function createHackathonTeam(payload: CreateHackathonTeam): Promise<Team> {
+  const id = v4()
+  const userSigner = await getSigner()
+
+  const contract = await getWarpContract(CONTRACT_TX_ID, userSigner)
+
+  await contract.writeInteraction({
+    function: 'createHackathonTeam',
+    payload: { ...payload, id }
+  })
+
+  const {
+    cachedValue: {
+      state: { hackathons }
+    }
+  } = await contract.readState()
+
+  const hackathon = hackathons[payload.hackathonId] as Hackathon
+
+  return hackathon.teams[id]
+}
+
+type CreateHackathonTeam = {
+  hackathonId: string
+  name: string
+  members: string[]
 }
