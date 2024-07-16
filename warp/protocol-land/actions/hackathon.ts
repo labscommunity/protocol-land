@@ -1,4 +1,4 @@
-import { ContractResult, ContractState, Hackathon, RepositoryAction } from '../types'
+import { ContractResult, ContractState, Hackathon, RepositoryAction, Team } from '../types'
 import { getBlockTimeStamp } from '../utils/getBlockTimeStamp'
 import { isInvalidInput } from '../utils/isInvalidInput'
 import { pickKeys } from '../utils/pickKeys'
@@ -149,7 +149,11 @@ export async function participateInHackathon(
   state: ContractState,
   { caller, input: { payload } }: RepositoryAction
 ): Promise<ContractResult<ContractState>> {
-  if (isInvalidInput(payload, 'object') || isInvalidInput(payload.id, 'uuid')) {
+  if (
+    isInvalidInput(payload, 'object') ||
+    isInvalidInput(payload.id, 'uuid') ||
+    (payload.teamId !== undefined && isInvalidInput(payload.teamId))
+  ) {
     throw new ContractError('Invalid inputs supplied.')
   }
 
@@ -175,7 +179,8 @@ export async function participateInHackathon(
 
   hackathon.participants[caller] = {
     address: caller,
-    timestamp: currentTimeStamp
+    timestamp: currentTimeStamp,
+    teamId: payload.teamId
   }
 
   return { state }
@@ -304,6 +309,100 @@ export async function postJudgementInHackathon(
 
   submission.isWinner = true
   submission.prizeIds.push(prize.id)
+
+  return { state }
+}
+
+export async function createHackathonTeam(
+  state: ContractState,
+  { caller, input: { payload } }: RepositoryAction
+): Promise<ContractResult<ContractState>> {
+  if (
+    isInvalidInput(payload, 'object') ||
+    isInvalidInput(payload.hackathonId, 'uuid') ||
+    isInvalidInput(payload.id, 'uuid') ||
+    isInvalidInput(payload.name, 'string') ||
+    isInvalidInput(payload.members, 'array')
+  ) {
+    throw new ContractError('Invalid inputs supplied.')
+  }
+
+  const hackathon = state.hackathons[payload.hackathonId]
+  if (!hackathon) {
+    throw new ContractError('Hackathon doesnt exists.')
+  }
+
+  const currentTimeStamp = getBlockTimeStamp()
+  if (hackathon.startsAt * 1000 > currentTimeStamp) {
+    throw new ContractError('Hackathon has not yet started.')
+  }
+
+  if (hackathon.endsAt * 1000 <= currentTimeStamp) {
+    throw new ContractError('Hackathon has ended.')
+  }
+
+  const team = hackathon.teams[payload.id]
+  if (team) {
+    throw new ContractError('Team already exists.')
+  }
+
+  const newTeam: Team = {
+    id: payload.id,
+    members: payload.members,
+    name: payload.name,
+    owner: caller,
+    timestamp: currentTimeStamp
+  }
+
+  hackathon.teams[payload.id] = newTeam
+
+  return { state }
+}
+
+export async function updateHackathonTeam(
+  state: ContractState,
+  { caller, input: { payload } }: RepositoryAction
+): Promise<ContractResult<ContractState>> {
+  if (
+    isInvalidInput(payload, 'object') ||
+    isInvalidInput(payload.id, 'uuid') ||
+    isInvalidInput(payload.hackathonId, 'uuid') ||
+    (payload.name !== undefined && isInvalidInput(payload.name, 'string')) ||
+    (payload.members !== undefined && isInvalidInput(payload.name, 'array'))
+  ) {
+    throw new ContractError('Invalid inputs supplied.')
+  }
+
+  const hackathon = state.hackathons[payload.hackathonId]
+  if (!hackathon) {
+    throw new ContractError('Hackathon doesnt exists.')
+  }
+
+  const currentTimeStamp = getBlockTimeStamp()
+  if (hackathon.startsAt * 1000 > currentTimeStamp) {
+    throw new ContractError('Hackathon has not yet started.')
+  }
+
+  if (hackathon.endsAt * 1000 <= currentTimeStamp) {
+    throw new ContractError('Hackathon has ended.')
+  }
+
+  const team = hackathon.teams[payload.id]
+  if (!team) {
+    throw new ContractError('Team doesnt exists.')
+  }
+
+  if (caller !== team.owner) {
+    throw new ContractError('Only team owner can edit the team details.')
+  }
+
+  if (payload.name) {
+    team.name = payload.name
+  }
+
+  if (payload.members) {
+    team.members = payload.members
+  }
 
   return { state }
 }

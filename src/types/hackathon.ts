@@ -27,7 +27,7 @@ export type Hackathon = {
   title: string
   shortDescription: string
   descriptionTxId: string
-  prizes: Array<Prize>
+  prizes: Record<string, Prize>
   totalRewardsBase: BountyBase
   totalRewards: number
   startsAt: number
@@ -42,6 +42,7 @@ export type Hackathon = {
 }
 
 export type Team = {
+  id: string
   name: string
   members: Array<string>
   owner: string
@@ -50,9 +51,6 @@ export type Team = {
 
 export type Participant = {
   address: string
-  email?: string
-  twitter: string
-  discord?: string
   timestamp: number
   teamId?: string
 }
@@ -65,12 +63,15 @@ export type Submission = {
   technologiesUsed: string
   submittedBy: string //teamid or individual address
   images: string[]
-  links: []
+  links: string[]
   video: string
-  timestamp: string
+  timestamp: number
+  isWinner: boolean
+  prizeIds: string[]
 }
 
 export type Prize = {
+  id: string
   name: string
   description: string
   amount: number

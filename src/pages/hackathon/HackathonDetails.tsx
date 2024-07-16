@@ -10,20 +10,16 @@ import { trackGoogleAnalyticsEvent } from '@/helpers/google-analytics'
 import { useGlobalStore } from '@/stores/globalStore'
 
 import { detailsTabConfig } from './config/detailsTabConfig'
-import { HACKATHON_ITEMS } from './utils/constants'
 import { getHackathonStatus } from './utils/getHackathonStatus'
 
 export default function HackathonDetails() {
   const { tabName, id } = useParams()
-  const [address, selectedHackathon, loadingStatus, fetchHackathonById, participateInHackathon] = useGlobalStore(
-    (state) => [
-      state.authState.address,
-      state.hackathonState.selectedHackathon,
-      state.hackathonState.status,
-      state.hackathonActions.fetchHackathonById,
-      state.hackathonActions.participateInHackathon
-    ]
-  )
+  const [address, selectedHackathon, loadingStatus, fetchHackathonById] = useGlobalStore((state) => [
+    state.authState.address,
+    state.hackathonState.selectedHackathon,
+    state.hackathonState.status,
+    state.hackathonActions.fetchHackathonById
+  ])
   const [status, setStatus] = React.useState('NOT_STARTED')
   const navigate = useNavigate()
 
@@ -33,7 +29,6 @@ export default function HackathonDetails() {
     }
   }, [id])
 
-  const details = HACKATHON_ITEMS[0]
   const statusText = React.useMemo<string>(() => {
     if (selectedHackathon) {
       return getHackathonStatus(selectedHackathon.startsAt, selectedHackathon.endsAt, setStatus)
@@ -64,8 +59,8 @@ export default function HackathonDetails() {
     if (tab) {
       trackGoogleAnalyticsEvent('Hackathon Details', 'Tab click to change active tab', 'Change tab', {
         tab: tab.title,
-        hackathon_name: details.title,
-        hackathon_id: details.id
+        hackathon_name: selectedHackathon.title,
+        hackathon_id: selectedHackathon.id
       })
     }
   }
@@ -73,7 +68,7 @@ export default function HackathonDetails() {
   async function handleParticipate() {
     if (!selectedHackathon) return
 
-    await participateInHackathon(selectedHackathon.id)
+    navigate(`/hackathon/${selectedHackathon.id}/participate`)
   }
 
   const activeClasses = 'border-b-[2px] border-primary-600 text-gray-900 font-medium'

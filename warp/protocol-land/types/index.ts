@@ -58,10 +58,11 @@ export type Hackathon = {
 }
 
 export type Team = {
+  id: string
   name: string
   members: Array<string>
   owner: string
-  timestamp: string
+  timestamp: number
 }
 
 export type Participant = {
@@ -315,7 +316,9 @@ const repoFnList = [
   'participateInHackathon',
   'postSubmissionInHackathon',
   'postJudgementInHackathon',
-  'updateHackathon'
+  'updateHackathon',
+  'createHackathonTeam',
+  'updateHackathonTeam'
 ] as const
 
 export type RepositoryFunction = (typeof repoFnList)[number] // more types will be added later

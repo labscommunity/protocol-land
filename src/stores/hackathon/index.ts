@@ -4,7 +4,15 @@ import { StateCreator } from 'zustand'
 import { withAsync } from '@/helpers/withAsync'
 
 import { CombinedSlices } from '../types'
-import { getAllHackathons, getHackathonById, participate, postNewHackathon, postUpdatedHackathon } from './actions'
+import {
+  createHackathonTeam,
+  getAllHackathons,
+  getHackathonById,
+  participate,
+  postNewHackathon,
+  postUpdatedHackathon,
+  selectPrizeWinner
+} from './actions'
 import { HackathonSlice, HackathonState } from './types'
 const initialHackathonState: HackathonState = {
   hackathons: [],
@@ -132,8 +140,20 @@ const createHackathonSlice: StateCreator<CombinedSlices, [['zustand/immer', neve
         state.hackathonState.selectedHackathon = hackathon
       })
     },
-    participateInHackathon: async (id) => {
-      const { error } = await withAsync(() => participate(id))
+    assignPrizeToSubmission: async (hackathonId, prizeId, participantAddress) => {
+      const { error } = await withAsync(() => selectPrizeWinner(hackathonId, prizeId, participantAddress))
+
+      if (error) {
+        toast.error('Failed to assign prize to submission.')
+        return
+      }
+
+      await get().hackathonActions.fetchHackathonById(hackathonId)
+
+      return true
+    },
+    participateInHackathon: async (id, teamId) => {
+      const { error } = await withAsync(() => participate(id, teamId))
 
       if (error) {
         toast.error('Failed to participate in hackathon.')
@@ -145,6 +165,46 @@ const createHackathonSlice: StateCreator<CombinedSlices, [['zustand/immer', neve
       }
 
       await get().hackathonActions.fetchHackathonById(id)
+    },
+    createNewTeam: async (name) => {
+      const address = get().authState.address
+      const selectedHackathon = get().hackathonState.selectedHackathon
+
+      if (!address || !selectedHackathon) {
+        set((state) => {
+          state.hackathonState.status = 'ERROR'
+        })
+
+        return
+      }
+
+      set((state) => {
+        state.hackathonState.status = 'PENDING'
+      })
+
+      const { error, response } = await withAsync(() =>
+        createHackathonTeam({ hackathonId: selectedHackathon.id, members: [], name })
+      )
+
+      if (error) {
+        toast.error('Failed to post hackathon.')
+        set((state) => {
+          state.hackathonState.status = 'ERROR'
+        })
+
+        return
+      }
+
+      if (response) {
+        set((state) => {
+          if (state.hackathonState.selectedHackathon) {
+            state.hackathonState.selectedHackathon.teams[response.id] = response
+            state.hackathonState.status = 'SUCCESS'
+          }
+        })
+
+        return response
+      }
     }
   }
 })
