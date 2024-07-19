@@ -1,7 +1,7 @@
 import clsx from 'clsx'
 import { format } from 'date-fns/esm'
 import { GiLaurelsTrophy } from 'react-icons/gi'
-import { useNavigate } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 
 import { Button } from '@/components/common/buttons'
 import { resolveUsernameOrShorten } from '@/helpers/resolveUsername'
@@ -70,7 +70,7 @@ export default function SubmissionsTab({ selectedHackathon }: Props) {
           <h1 className="text-gray-600 text-2xl font-thin tracking-wider">No submissions at the moment</h1>
         </div>
       )}
-      <div className="w-full flex flex-col">
+      <div className="w-full flex flex-col gap-4">
         {submissions.map((submission, idx) => (
           <div
             key={idx + 1}
@@ -98,14 +98,26 @@ export default function SubmissionsTab({ selectedHackathon }: Props) {
               </div>
               <div className="w-full flex flex-col">
                 <div className="w-full flex flex-col gap-2">
-                  <div className="relative flex items-center">
+                  <div className="relative flex justify-center flex-col">
                     <p
                       className={clsx('text-sm whitespace-pre-line', {
                         'text-gray-600': !submission.isWinner
                       })}
+                      style={{
+                        display: '-webkit-box',
+                        WebkitBoxOrient: 'vertical',
+                        WebkitLineClamp: 3,
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis'
+                      }}
                     >
                       {submission.shortDescription}
                     </p>
+                    {submission.shortDescription.length > 100 && ( // Adjust the length check as needed
+                      <Link to={`/hackathon/${selectedHackathon.id}/submission/${submission.submittedBy}`} className="text-primary-700 font-medium hover:underline text-sm">
+                        Read more
+                      </Link>
+                    )}
                   </div>
                   <div>
                     <p className="text-sm">By {getSubmissionBy(submission)}</p>
@@ -141,11 +153,16 @@ export default function SubmissionsTab({ selectedHackathon }: Props) {
               <div onClick={() => handleSubmissionViewClick(submission)} className="flex flex-1 items-center">
                 <Button
                   style={{
-                    boxShadow:
-                      '2px 2px 0.5em rgba(155, 122, 89, 0.55),inset 1px 1px 0 rgba(255, 255, 255, 0.9),inset -1px -1px 0 rgba(0, 0, 0, 0.5)'
+                    boxShadow: submission.isWinner
+                      ? '2px 2px 0.5em rgba(155, 122, 89, 0.55),inset 1px 1px 0 rgba(255, 255, 255, 0.9),inset -1px -1px 0 rgba(0, 0, 0, 0.5)'
+                      : undefined
                   }}
-                  className="h-[35px] text-white bg-transparent font-medium hover:bg-transparent"
-                  variant={submission.isWinner ? 'primary-solid' : 'primary-solid'}
+                  className={
+                    submission.isWinner
+                      ? 'h-[35px] text-white bg-transparent font-medium hover:bg-transparent'
+                      : undefined
+                  }
+                  variant={'primary-solid'}
                 >
                   View
                 </Button>

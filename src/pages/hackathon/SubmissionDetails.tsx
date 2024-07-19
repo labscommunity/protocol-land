@@ -13,17 +13,20 @@ export default function SubmissionDetails() {
   const { address } = useParams()
   const [isModalOpen, setIsModalOpen] = React.useState(false)
 
-  const [selectedHackathon, loggedInUserAddress] = useGlobalStore((state) => [state.hackathonState.selectedHackathon, state.authState.address])
+  const [selectedHackathon, loggedInUserAddress] = useGlobalStore((state) => [
+    state.hackathonState.selectedHackathon,
+    state.authState.address
+  ])
 
   React.useEffect(() => {
-    if (!selectedHackathon) goBack()
+    if (!selectedHackathon) navigate(`/hackathon`)
   }, [selectedHackathon])
 
   const navigate = useNavigate()
 
   function goBack() {
     if (!selectedHackathon) return
-    navigate(`/hackathon/${selectedHackathon.id}`)
+    navigate(-1)
   }
 
   const submission = selectedHackathon?.submissions[address!]
@@ -77,14 +80,18 @@ export default function SubmissionDetails() {
             className="w-24 h-24 rounded-full"
           />
         </div>
-        <div className="flex flex-col gap-1">
-          <h2 className="text-lg font-medium text-gray-900">Technologies Used</h2>
-          <div className="flex gap-2">
-            {strToArray(submission.technologiesUsed).map((tag) => (
-              <div className="flex px-4 py-[1px] items-center bg-primary-600 rounded-full text-white">{tag}</div>
-            ))}
+        {submission?.technologiesUsed && (
+          <div className="flex flex-col gap-1">
+            <h2 className="text-lg font-medium text-gray-900">Technologies Used</h2>
+            <div className="flex gap-2">
+              {strToArray(submission.technologiesUsed).map((tag) =>
+                tag ? (
+                  <div className="flex px-4 py-[1px] items-center bg-primary-600 rounded-full text-white">{tag}</div>
+                ) : null
+              )}
+            </div>
           </div>
-        </div>
+        )}
         <div className="flex flex-col gap-1">
           <h2 className="text-lg font-medium text-gray-9000">Links</h2>
           <div className="gap-2  flex flex-col">
@@ -111,7 +118,7 @@ export default function SubmissionDetails() {
           <div className="flex flex-col gap-1">
             <h2 className="text-lg font-medium text-gray-900">Video</h2>
             <div className="flex gap-2">
-              <div className="relative justify-center flex flex-col ">
+              <div className="relative justify-center flex flex-col w-full">
                 <input
                   type="text"
                   className={
