@@ -26,7 +26,8 @@ export default defineConfig({
   resolve: {
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url)),
-      '@codemirror': path.resolve(__dirname, 'node_modules/@codemirror/')
+      '@codemirror': path.resolve(__dirname, 'node_modules/@codemirror/'),
+      '@arweave-wallet-kit': path.resolve(__dirname, 'node_modules/@arweave-wallet-kit-beta/')
     }
   }
 })
