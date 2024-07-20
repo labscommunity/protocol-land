@@ -4,7 +4,6 @@ import toast from 'react-hot-toast'
 
 import { trackGoogleAnalyticsEvent } from '@/helpers/google-analytics'
 import { withAsync } from '@/helpers/withAsync'
-import { postUpdatedRepo } from '@/lib/git'
 import { getCurrentBranch } from '@/lib/git/branch'
 import {
   addFilesForCommit,
@@ -15,6 +14,7 @@ import {
   stageFilesForCommit
 } from '@/lib/git/commit'
 import { fsWithName } from '@/lib/git/helpers/fsWithName'
+import taskQueueSingleton from '@/lib/queue/TaskQueue'
 import { postCommitStatDataTxToArweave } from '@/lib/user'
 import { useGlobalStore } from '@/stores/globalStore'
 import { CommitResult } from '@/types/commit'
@@ -31,8 +31,7 @@ type AddFilesOptions = {
 }
 
 export default function useCommit() {
-  const [selectedRepo, repoCommitsG, setRepoCommitsG, triggerGithubSync] = useGlobalStore((state) => [
-    state.repoCoreState.selectedRepo,
+  const [repoCommitsG, setRepoCommitsG, triggerGithubSync] = useGlobalStore((state) => [
     state.repoCoreState.git.commits,
     state.repoCoreActions.git.setCommits,
     state.repoCoreActions.triggerGithubSync
@@ -85,11 +84,9 @@ export default function useCommit() {
 
     if (commitError || !commitSHA) throw trackAndThrowError('Failed to commit files', name, id)
 
-    const isPrivate = selectedRepo.repo?.private || false
-    const privateStateTxId = selectedRepo.repo?.privateStateTxId
-    const { error, response } = await withAsync(() =>
-      postUpdatedRepo({ fs, dir, owner, id, isPrivate, privateStateTxId })
-    )
+    // const isPrivate = selectedRepo.repo?.private || false
+    // const privateStateTxId = selectedRepo.repo?.privateStateTxId
+    const { error, response } = await withAsync(() => taskQueueSingleton.execute(id))
 
     if (error) throw trackAndThrowError('Failed to update repository', name, id)
 

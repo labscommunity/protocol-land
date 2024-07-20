@@ -2145,7 +2145,7 @@
     base64-js "^1.5.1"
     bignumber.js "^9.1.1"
 
-"@isomorphic-git/idb-keyval@3.3.2":
+"@isomorphic-git/idb-keyval@3.3.2", "@isomorphic-git/idb-keyval@^3.3.2":
   version "3.3.2"
   resolved "https://registry.yarnpkg.com/@isomorphic-git/idb-keyval/-/idb-keyval-3.3.2.tgz#c0509a6c5987d8a62efb3e47f2815bcc5eda2489"
   integrity sha512-r8/AdpiS0/WJCNR/t/gsgL+M8NMVj/ek7s60uz3LmpCaTF2mEVlZJlB01ZzalgYzRLXwSPC92o+pdzjM7PN/pA==
@@ -3289,6 +3289,11 @@ aproba@^1.0.3:
   resolved "https://registry.npmjs.org/aproba/-/aproba-1.2.0.tgz#6802e6264efd18c790a1b0d517f0f2627bf2c94a"
   integrity sha512-Y9J6ZjXtoYh8RnXVCMOU/ttDmk1aBjunq9vO0ta5x85WDQiQfUF9sIPBITdbiiIVcBo03Hi3jMxigBtsddlXRw==
 
+ar-gql@^1.2.9:
+  version "1.2.9"
+  resolved "https://registry.yarnpkg.com/ar-gql/-/ar-gql-1.2.9.tgz#423583dbebef7e8c838b7634d9d3ffb6d972aa3c"
+  integrity sha512-LZu4Mt92oFTA+JJ0PdiowJEFS2t6FhKWeYRBo9LTqx9shrIMGRb3iP5SvPbqLREXSSBriJOyyM3tgQ4wDYKr/w==
+
 arbundles@^0.10.0:
   version "0.10.1"
   resolved "https://registry.npmjs.org/arbundles/-/arbundles-0.10.1.tgz#1f542d9edf185a8a272994aef501a8ee12aaaa46"
@@ -3395,6 +3400,21 @@ are-we-there-yet@~1.1.2:
   dependencies:
     delegates "^1.0.0"
     readable-stream "^2.0.6"
+
+arfs-js@^1.2.7:
+  version "1.2.7"
+  resolved "https://registry.yarnpkg.com/arfs-js/-/arfs-js-1.2.7.tgz#3dce0e900b27bcc64b5cc4a96d4f00283a48c0c1"
+  integrity sha512-xmQbaclTulyJYN8C3CD/mPeAfu4Ja3pyP4xbQHPKYYII9jnAGZQhGj9FBVQn6U4FCGtd6vdsikqb66NfYKq58A==
+  dependencies:
+    "@isomorphic-git/idb-keyval" "^3.3.2"
+    "@isomorphic-git/lightning-fs" "^4.6.0"
+    ar-gql "^1.2.9"
+    arweave "^1.14.4"
+    isomorphic-textencoder "^1.0.1"
+    just-debounce-it "^3.2.0"
+    uuid "^9.0.0"
+    warp-arbundles "^1.0.4"
+    warp-contracts-plugin-signature "^1.0.20"
 
 arg@^5.0.2:
   version "5.0.2"
@@ -6121,7 +6141,7 @@ isomorphic-git@^1.24.5:
     sha.js "^2.4.9"
     simple-get "^4.0.1"
 
-isomorphic-textencoder@1.0.1:
+isomorphic-textencoder@1.0.1, isomorphic-textencoder@^1.0.1:
   version "1.0.1"
   resolved "https://registry.yarnpkg.com/isomorphic-textencoder/-/isomorphic-textencoder-1.0.1.tgz#38dcd3b4416d29cd33e274f64b99ae567cd15e83"
   integrity sha512-676hESgHullDdHDsj469hr+7t3i/neBKU9J7q1T4RHaWwLAsaQnywC0D1dIUId0YZ+JtVrShzuBk1soo0+GVcQ==
@@ -6228,6 +6248,11 @@ just-debounce-it@1.1.0:
   version "1.1.0"
   resolved "https://registry.yarnpkg.com/just-debounce-it/-/just-debounce-it-1.1.0.tgz#8e92578effc155358a44f458c52ffbee66983bef"
   integrity sha512-87Nnc0qZKgBZuhFZjYVjSraic0x7zwjhaTMrCKlj0QYKH6lh0KbFzVnfu6LHan03NO7J8ygjeBeD0epejn5Zcg==
+
+just-debounce-it@^3.2.0:
+  version "3.2.0"
+  resolved "https://registry.yarnpkg.com/just-debounce-it/-/just-debounce-it-3.2.0.tgz#4352265f4af44188624ce9fdbc6bff4d49c63a80"
+  integrity sha512-WXzwLL0745uNuedrCsCs3rpmfD6DBaf7uuVwaq98/8dafURfgQaBsSpjiPp5+CW6Vjltwy9cOGI6qE71b3T8iQ==
 
 just-once@1.1.0:
   version "1.1.0"
