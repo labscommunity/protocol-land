@@ -18,7 +18,6 @@
     "@arweave-wallet-kit-beta/browser-wallet-strategy": "^0.0.1-beta.4",
     "@arweave-wallet-kit-beta/core": "^0.0.1-beta.4",
     "@arweave-wallet-kit-beta/react": "^0.0.1-beta.4",
-    "@arweave-wallet-kit/othent-strategy": "^0.0.1-beta.7",
     "@floating-ui/react": "^0.26.8",
     "@headlessui/react": "^2.1.2",
     "@hookform/resolvers": "^3.2.0",
