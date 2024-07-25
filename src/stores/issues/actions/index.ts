@@ -2,7 +2,7 @@ import { getTags } from '@/helpers/getTags'
 import { isInvalidInput } from '@/helpers/isInvalidInput'
 import { getRepo, sendMessage } from '@/lib/contract'
 import { postIssueStatDataTxToArweave } from '@/lib/user'
-import { BountyBase, Issue } from '@/types/repository'
+import { Issue } from '@/types/repository'
 
 async function getIssue(repoId: string, issueId: number) {
   const repo = await getRepo(repoId)
@@ -159,45 +159,4 @@ export async function updateIssueDetails(repoId: string, issueId: number, issue:
   }
 
   await sendMessage({ tags: getTags(tags), data })
-}
-
-export async function addBounty(repoId: string, issueId: number, amount: number, expiry: number, base: BountyBase) {
-  await sendMessage({
-    tags: getTags({
-      Action: 'Create-Bounty',
-      'Repo-Id': repoId,
-      'Issue-Id': issueId.toString(),
-      Amount: amount.toString(),
-      Expiry: expiry.toString(),
-      Base: base
-    }),
-  })
-
-
-  const issue = await getIssue(repoId, issueId)
-  return issue
-}
-
-export async function closeBounty(
-  repoId: string,
-  issueId: number,
-  bountyId: number,
-  status: string,
-  paymentTxId?: string
-) {
-  const tags = {
-    Action: 'Update-Bounty',
-    'Repo-Id': repoId,
-    'Issue-Id': issueId.toString(),
-    'Bounty-Id': bountyId.toString(),
-    Status: status
-  } as any
-
-  if (paymentTxId) {
-    tags['Payment-TxId'] = paymentTxId
-  }
-  await sendMessage({ tags: getTags(tags) })
-
-  const issue = await getIssue(repoId, issueId)
-  return issue
 }
