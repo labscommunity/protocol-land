@@ -34,11 +34,9 @@ const arweave = new Arweave({
 })
 
 export async function postNewRepo({ id, title, description, file, owner, visibility }: any) {
-  const publicKey = await getActivePublicKey()
-
   const userSigner = await getSigner()
 
-  let data = (await toArrayBuffer(file)) as ArrayBuffer
+  const data = (await toArrayBuffer(file)) as ArrayBuffer
 
   const inputTags = [
     { name: 'App-Name', value: 'Protocol.Land' },
@@ -50,39 +48,6 @@ export async function postNewRepo({ id, title, description, file, owner, visibil
     { name: 'Type', value: 'repo-create' },
     { name: 'Visibility', value: visibility }
   ] as Tag[]
-
-  let privateStateTxId = ''
-  if (visibility === 'private') {
-    const pubKeyArray = [strToJwkPubKey(publicKey)]
-    // Encrypt
-    const { aesKey, encryptedFile, iv } = await encryptFileWithAesGcm(data)
-    const encryptedAesKeysArray = await encryptAesKeyWithPublicKeys(aesKey, pubKeyArray)
-    // // Store 'encrypted', 'iv', and 'encryptedKeyArray' securely
-
-    const privateState = {
-      version: '0.1',
-      iv,
-      encKeys: encryptedAesKeysArray,
-      pubKeys: [publicKey]
-    }
-
-    const privateInputTags = [
-      { name: 'App-Name', value: 'Protocol.Land' },
-      { name: 'Content-Type', value: 'application/json' },
-      { name: 'Type', value: 'private-state' },
-      { name: 'ID', value: id }
-    ] as Tag[]
-
-    const privateStateTxResponse = await signAndSendTx(JSON.stringify(privateState), privateInputTags, userSigner)
-
-    if (!privateStateTxResponse) {
-      throw new Error('Failed to post Private State')
-    }
-
-    privateStateTxId = privateStateTxResponse
-
-    data = encryptedFile
-  }
 
   await waitFor(500)
 
@@ -100,7 +65,7 @@ export async function postNewRepo({ id, title, description, file, owner, visibil
       Description: description,
       'Data-TxId': dataTxResponse,
       Visibility: visibility,
-      'Private-State-TxId': privateStateTxId
+      'Private-State-TxId': ''
     })
   })
 
@@ -198,7 +163,7 @@ export async function createNewFork(data: ForkRepositoryOptions) {
   return uuid
 }
 
-export async function postUpdatedRepo({ fs, dir, owner, id, isPrivate, privateStateTxId }: PostUpdatedRepoOptions) {
+export async function postUpdatedRepo({ fs, dir, owner, id }: PostUpdatedRepoOptions) {
   const { error: initialError, result: initialBranch } = await getCurrentBranch({ fs, dir })
 
   if (initialError || (initialBranch && initialBranch !== 'master')) {
@@ -218,25 +183,9 @@ export async function postUpdatedRepo({ fs, dir, owner, id, isPrivate, privateSt
 
   const userSigner = await getSigner()
 
-  let data = (await toArrayBuffer(repoBlob)) as ArrayBuffer
+  const data = (await toArrayBuffer(repoBlob)) as ArrayBuffer
 
   await waitFor(500)
-
-  if (isPrivate && privateStateTxId) {
-    const pubKey = await getActivePublicKey()
-    const address = await deriveAddress(pubKey)
-
-    const response = await fetch(`https://arweave.net/${privateStateTxId}`)
-    const privateState = (await response.json()) as PrivateState
-
-    const encAesKeyStr = privateState.encKeys[address]
-    const encAesKeyBuf = arweave.utils.b64UrlToBuffer(encAesKeyStr)
-
-    const aesKey = (await decryptAesKeyWithPrivateKey(encAesKeyBuf)) as unknown as ArrayBuffer
-    const ivArrBuff = arweave.utils.b64UrlToBuffer(privateState.iv)
-
-    data = await encryptDataWithExistingKey(data, aesKey, ivArrBuff)
-  }
 
   const inputTags = [
     { name: 'App-Name', value: 'Protocol.Land' },
