@@ -1,7 +1,7 @@
 import { Tag } from 'arweave/web/lib/transaction'
 import { Dispatch, SetStateAction } from 'react'
 
-import { Bounty, Deployment, Domain, Issue, PullRequest, Repo, RepoWithParent } from '@/types/repository'
+import { Bounty, Deployment, Domain, Issue, PullRequest, Repo } from '@/types/repository'
 
 export type ActivityType = 'REPOSITORY' | 'ISSUE' | 'PULL_REQUEST' | 'BOUNTY' | 'DEPLOYMENT' | 'DOMAIN'
 
@@ -16,25 +16,6 @@ export interface Interaction {
   tags: Tag[]
 }
 
-export type Interactions = Array<{
-  interaction: Interaction
-}>
-
-export interface Paging {
-  total: number
-  limit: number
-  items: number
-  page: number
-  pages: number
-}
-
-export interface ValidityResponse {
-  validity: Record<string, boolean>
-  state: {
-    repos: { [key: string]: Repo }
-  }
-}
-
 export type Filters = {
   Repositories: boolean
   'Pull Requests': boolean
@@ -44,9 +25,21 @@ export type Filters = {
   Deployments: boolean
 }
 
+export type ActivityRepo = Repo & {
+  parentRepo?: Pick<Repo, 'id' | 'name' | 'owner'>
+  forks: number
+  issue?: Issue & { comments?: number; bounty?: Bounty; bounties?: number }
+  issues?: number
+  pullRequest?: PullRequest & { comments: number }
+  pullRequests?: number
+  domain: Domain
+  deployment?: Deployment
+  deployments?: number
+}
+
 export type ActivityBase = {
   type: ActivityType
-  repo: RepoWithParent
+  repo: ActivityRepo
   timestamp: number
   created: boolean
 }
@@ -58,17 +51,17 @@ export interface RepositoryActivityType extends ActivityBase {
 
 export interface IssueActivityType extends ActivityBase {
   type: 'ISSUE'
-  issue: Issue
+  issue: Issue & { comments?: number }
 }
 
 export interface PullRequestActivityType extends ActivityBase {
   type: 'PULL_REQUEST'
-  pullRequest: PullRequest
+  pullRequest: PullRequest & { comments: number }
 }
 
 export interface BountyActivityType extends ActivityBase {
   type: 'BOUNTY'
-  issue: Issue
+  issue: Issue & { bounties?: number }
   bounty: Bounty
 }
 

@@ -13,7 +13,7 @@ export default function DeploymentActivity({
   setRepo
 }: ActivityProps<DeploymentActivityType>) {
   const deployment = activity.deployment!
-  const deploymentsCount = activity.repo.deployments.length
+  const deploymentsCount = activity.repo.deployments
 
   return (
     <div className="w-full flex justify-between items-start border border-primary-500 rounded-md p-4">
@@ -35,7 +35,7 @@ export default function DeploymentActivity({
                 {resolveUsernameOrShorten(deployment.deployedBy)}
               </Link>
             </UserPopover>{' '}
-            {formatDistanceToNow(new Date(activity.timestamp * 1000), { addSuffix: true })}
+            {formatDistanceToNow(new Date(activity.timestamp), { addSuffix: true })}
           </span>
 
           <span>{deploymentsCount} Deployments</span>

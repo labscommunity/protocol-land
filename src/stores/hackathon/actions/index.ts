@@ -1,46 +1,43 @@
+import { dryrun } from '@permaweb/aoconnect'
 import { v4 } from 'uuid'
 
-import { CONTRACT_TX_ID } from '@/helpers/constants'
-import getWarpContract from '@/helpers/getWrapContract'
-import { getSigner } from '@/helpers/wallet/getSigner'
+import { AOS_PROCESS_ID } from '@/helpers/constants'
+import { getTags } from '@/helpers/getTags'
+import { sendMessage } from '@/lib/contract'
 import { Hackathon, NewHackatonItem, Team } from '@/types/hackathon'
 
 export async function getAllHackathons(): Promise<Hackathon[]> {
-  const contract = await getWarpContract(CONTRACT_TX_ID)
+  const args = {
+    tags: getTags({
+      Action: 'Get-All-Hackathons'
+    })
+  } as any
+  const { Messages } = await dryrun({
+    process: AOS_PROCESS_ID,
+    ...args
+  })
 
-  const {
-    cachedValue: {
-      state: { hackathons }
-    }
-  } = await contract.readState()
+  const hackathons = JSON.parse(Messages[0].Data) as Hackathon[]
 
   if (!hackathons) return []
 
-  if (Object.keys(hackathons).length === 0) {
-    return []
-  }
-
-  const hackathonsList = []
-
-  for (const hackId in hackathons) {
-    const hackathon = hackathons[hackId]
-
-    hackathonsList.push(hackathon)
-  }
-
-  return hackathonsList
+  return hackathons
 }
 
 export async function getHackathonById(id: string): Promise<Hackathon | null> {
-  const contract = await getWarpContract(CONTRACT_TX_ID)
+  const args = {
+    tags: getTags({
+      Action: "Get-Hackathon-By-Id",
+      Id: id
+    })
+  } as any
 
-  const {
-    cachedValue: {
-      state: { hackathons }
-    }
-  } = await contract.readState()
+  const { Messages } = await dryrun({
+    process: AOS_PROCESS_ID,
+    ...args
+  })
 
-  const hackathon = hackathons[id]
+  const hackathon = JSON.parse(Messages[0].Data) as Hackathon
 
   if (!hackathon) {
     return null
@@ -50,39 +47,42 @@ export async function getHackathonById(id: string): Promise<Hackathon | null> {
 }
 
 export async function postNewHackathon(hackathon: NewHackatonItem): Promise<void> {
-  const userSigner = await getSigner()
+  const args = {
+    tags: getTags({
+      Action: 'Create-Hackathon'
+    }),
+    data: hackathon
+  } as any
 
-  const contract = await getWarpContract(CONTRACT_TX_ID, userSigner)
-
-  await contract.writeInteraction({
-    function: 'createNewHackathon',
-    payload: hackathon
-  })
+  await sendMessage(args)
 }
 
 export async function postUpdatedHackathon(hackathon: Partial<Hackathon>): Promise<void> {
-  const userSigner = await getSigner()
+  const args = {
+    tags: getTags({
+      Action: 'Update-Hackathon'
+    }),
+    data: hackathon
+  } as any
 
-  const contract = await getWarpContract(CONTRACT_TX_ID, userSigner)
-
-  await contract.writeInteraction({
-    function: 'updateHackathon',
-    payload: hackathon
-  })
+  await sendMessage(args)
 }
 
 export async function participate(hackathonId: string, teamId?: string): Promise<void> {
-  const userSigner = await getSigner()
-
-  const contract = await getWarpContract(CONTRACT_TX_ID, userSigner)
-
-  await contract.writeInteraction({
-    function: 'participateInHackathon',
-    payload: {
-      id: hackathonId,
-      teamId
+  const args = {
+    tags: {
+      Action: 'Participate-In-Hackathon',
+      Id: hackathonId
     }
-  })
+  } as any
+
+  if (teamId) {
+    args.tags.TeamId = teamId
+  }
+
+  args.tags = getTags(args.tags)
+
+  await sendMessage(args)
 }
 
 export async function selectPrizeWinner(
@@ -90,38 +90,37 @@ export async function selectPrizeWinner(
   prizeId: string,
   participantAddress: string
 ): Promise<void> {
-  const userSigner = await getSigner()
+  const args = {
+    tags: getTags({
+      Action: 'Post-Hackathon-Judgement',
+      Id: hackathonId,
+      'Prize-Id': prizeId,
+      'Participant-Address': participantAddress
+    })
+  } as any
 
-  const contract = await getWarpContract(CONTRACT_TX_ID, userSigner)
-
-  await contract.writeInteraction({
-    function: 'postJudgementInHackathon',
-    payload: {
-      id: hackathonId,
-      prizeId,
-      participantAddress
-    }
-  })
+  await sendMessage(args)
 }
 
 export async function createHackathonTeam(payload: CreateHackathonTeam): Promise<Team> {
   const id = v4()
-  const userSigner = await getSigner()
+  const args = {
+    tags: getTags({
+      Action: 'Create-Hackathon-Team',
+      Id: id,
+      Name: payload.name,
+      'Hackathon-Id': payload.hackathonId,
+      Members: JSON.stringify(payload.members)
+    })
+  } as any
 
-  const contract = await getWarpContract(CONTRACT_TX_ID, userSigner)
+  await sendMessage(args)
 
-  await contract.writeInteraction({
-    function: 'createHackathonTeam',
-    payload: { ...payload, id }
-  })
+  const hackathon = await getHackathonById(payload.hackathonId)
 
-  const {
-    cachedValue: {
-      state: { hackathons }
-    }
-  } = await contract.readState()
-
-  const hackathon = hackathons[payload.hackathonId] as Hackathon
+  if (!hackathon) {
+    throw new Error('Hackathon not found')
+  }
 
   return hackathon.teams[id]
 }

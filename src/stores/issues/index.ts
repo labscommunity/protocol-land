@@ -7,9 +7,7 @@ import { Issue } from '@/types/repository'
 import { CombinedSlices } from '../types'
 import {
   addAssigneeToIssue,
-  addBounty,
   addCommentToIssue,
-  closeBounty,
   closeIssue,
   createNewIssue,
   reopenIssue,
@@ -83,9 +81,9 @@ const createPullRequestSlice: StateCreator<CombinedSlices, [['zustand/immer', ne
         trackGoogleAnalyticsEvent('Repository', 'Create a new issue', 'Create issue', {
           repo_name: repo.name,
           repo_id: repo.id,
-          issue_id: response.id,
           result: 'FAILED'
         })
+        throw error
       }
     },
     reopenIssue: async (id) => {
@@ -125,6 +123,7 @@ const createPullRequestSlice: StateCreator<CombinedSlices, [['zustand/immer', ne
           issue_id: id,
           result: 'FAILED'
         })
+        throw error
       }
     },
     closeIssue: async (id) => {
@@ -165,6 +164,7 @@ const createPullRequestSlice: StateCreator<CombinedSlices, [['zustand/immer', ne
           issue_id: id,
           result: 'FAILED'
         })
+        throw error
       }
     },
     updateIssueDetails: async (id, updateData: Partial<Issue>) => {
@@ -259,6 +259,7 @@ const createPullRequestSlice: StateCreator<CombinedSlices, [['zustand/immer', ne
           issue_id: id,
           result: 'FAILED'
         })
+        throw error
       }
     },
     addComment: async (id, comment) => {
@@ -296,6 +297,7 @@ const createPullRequestSlice: StateCreator<CombinedSlices, [['zustand/immer', ne
           issue_id: id,
           result: 'FAILED'
         })
+        throw error
       }
     },
     updateComment: async (id, comment) => {
@@ -335,135 +337,7 @@ const createPullRequestSlice: StateCreator<CombinedSlices, [['zustand/immer', ne
           comment_id: comment.id,
           result: 'FAILED'
         })
-      }
-    },
-    addBounty: async (id, amount, expiry, base) => {
-      const repo = get().repoCoreState.selectedRepo.repo
-
-      if (!repo) {
-        set((state) => (state.issuesState.status = 'ERROR'))
-
-        return
-      }
-
-      const { error, response } = await withAsync(() => addBounty(repo.id, id, amount, expiry, base))
-
-      if (!error && response) {
-        const bounties = response?.bounties
-
-        if (!bounties || !Array.isArray(bounties)) return
-
-        set((state) => {
-          state.repoCoreState.selectedRepo.repo!.issues[id - 1].bounties = bounties
-        })
-
-        trackGoogleAnalyticsEvent('Repository', 'Add bounty to issue', 'Add issue bounty', {
-          repo_name: repo.name,
-          repo_id: repo.id,
-          issue_id: id,
-          bounty_amount: amount,
-          base,
-          result: 'SUCCESS'
-        })
-      }
-
-      if (error) {
-        trackGoogleAnalyticsEvent('Repository', 'Add bounty to issue', 'Add issue bounty', {
-          repo_name: repo.name,
-          repo_id: repo.id,
-          issue_id: id,
-          bounty_amount: amount,
-          base,
-          result: 'FAILED'
-        })
-      }
-    },
-    closeBounty: async (issueId, bountyId) => {
-      const repo = get().repoCoreState.selectedRepo.repo
-
-      if (!repo) {
-        set((state) => (state.issuesState.status = 'ERROR'))
-
-        return
-      }
-
-      const { error, response } = await withAsync(() => closeBounty(repo.id, issueId, bountyId, 'CLOSED'))
-
-      if (!error && response) {
-        const bounties = response?.bounties
-
-        if (!bounties || !Array.isArray(bounties)) return
-
-        set((state) => {
-          state.repoCoreState.selectedRepo.repo!.issues[issueId - 1].bounties = bounties
-        })
-
-        trackGoogleAnalyticsEvent('Repository', 'Close bounty on issue', 'Close issue bounty', {
-          repo_name: repo.name,
-          repo_id: repo.id,
-          issue_id: issueId,
-          bounty_id: bountyId,
-          result: 'SUCCESS'
-        })
-      }
-    },
-    expireBounty: async (issueId, bountyId) => {
-      const repo = get().repoCoreState.selectedRepo.repo
-
-      if (!repo) {
-        set((state) => (state.issuesState.status = 'ERROR'))
-
-        return
-      }
-
-      const { error, response } = await withAsync(() => closeBounty(repo.id, issueId, bountyId, 'EXPIRED'))
-
-      if (!error && response) {
-        const bounties = response?.bounties
-
-        if (!bounties || !Array.isArray(bounties)) return
-
-        set((state) => {
-          state.repoCoreState.selectedRepo.repo!.issues[issueId - 1].bounties = bounties
-        })
-
-        trackGoogleAnalyticsEvent('Repository', 'Expire bounty on issue', 'Expire issue bounty', {
-          repo_name: repo.name,
-          repo_id: repo.id,
-          issue_id: issueId,
-          bounty_id: bountyId,
-          result: 'SUCCESS'
-        })
-      }
-    },
-    completeBounty: async (issueId, bountyId, paymentTxId) => {
-      const repo = get().repoCoreState.selectedRepo.repo
-
-      if (!repo) {
-        set((state) => (state.issuesState.status = 'ERROR'))
-
-        return
-      }
-
-      const { error, response } = await withAsync(() => closeBounty(repo.id, issueId, bountyId, 'CLAIMED', paymentTxId))
-
-      if (!error && response) {
-        const bounties = response?.bounties
-
-        if (!bounties || !Array.isArray(bounties)) return
-
-        set((state) => {
-          state.repoCoreState.selectedRepo.repo!.issues[issueId - 1].bounties = bounties
-        })
-
-        trackGoogleAnalyticsEvent('Repository', 'Claim bounty on issue', 'Claim issue bounty', {
-          repo_name: repo.name,
-          repo_id: repo.id,
-          issue_id: issueId,
-          bounty_id: bountyId,
-          payment_tx: paymentTxId,
-          result: 'SUCCESS'
-        })
+        throw error
       }
     }
   }

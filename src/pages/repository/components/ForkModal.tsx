@@ -79,7 +79,7 @@ export default function ForkModal({ setIsOpen, isOpen, repo }: NewRepoModalProps
       setIsOpen(false)
     } else {
       const { response: isAvailable, error: checkError } = await withAsync(() =>
-        isRepositoryNameAvailable(payload.name, connectedAddress as string)
+        isRepositoryNameAvailable(payload.name)
       )
 
       if (!checkError && isAvailable === false) {

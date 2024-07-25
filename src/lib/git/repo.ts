@@ -4,8 +4,7 @@ import Dexie from 'dexie'
 import git from 'isomorphic-git'
 import { v4 as uuidv4 } from 'uuid'
 
-import { CONTRACT_TX_ID } from '@/helpers/constants'
-import getWarpContract from '@/helpers/getWrapContract'
+import { getTags } from '@/helpers/getTags'
 import { toArrayBuffer } from '@/helpers/toArrayBuffer'
 import { waitFor } from '@/helpers/waitFor'
 import { getActivePublicKey } from '@/helpers/wallet/getPublicKey'
@@ -14,8 +13,9 @@ import { signAndSendTx } from '@/helpers/wallet/signAndSend'
 import { withAsync } from '@/helpers/withAsync'
 import { useGlobalStore } from '@/stores/globalStore'
 import { ForkRepositoryOptions } from '@/stores/repository-core/types'
-import { Deployment, Domain, PrivateState, Repo } from '@/types/repository'
+import { Deployment, Domain, PrivateState } from '@/types/repository'
 
+import { getRepo, sendMessage } from '../contract'
 import { decryptAesKeyWithPrivateKey } from '../private-repos/crypto/decrypt'
 import {
   encryptAesKeyWithPublicKeys,
@@ -34,11 +34,9 @@ const arweave = new Arweave({
 })
 
 export async function postNewRepo({ id, title, description, file, owner, visibility }: any) {
-  const publicKey = await getActivePublicKey()
-
   const userSigner = await getSigner()
 
-  let data = (await toArrayBuffer(file)) as ArrayBuffer
+  const data = (await toArrayBuffer(file)) as ArrayBuffer
 
   const inputTags = [
     { name: 'App-Name', value: 'Protocol.Land' },
@@ -51,39 +49,6 @@ export async function postNewRepo({ id, title, description, file, owner, visibil
     { name: 'Visibility', value: visibility }
   ] as Tag[]
 
-  let privateStateTxId = ''
-  if (visibility === 'private') {
-    const pubKeyArray = [strToJwkPubKey(publicKey)]
-    // Encrypt
-    const { aesKey, encryptedFile, iv } = await encryptFileWithAesGcm(data)
-    const encryptedAesKeysArray = await encryptAesKeyWithPublicKeys(aesKey, pubKeyArray)
-    // // Store 'encrypted', 'iv', and 'encryptedKeyArray' securely
-
-    const privateState = {
-      version: '0.1',
-      iv,
-      encKeys: encryptedAesKeysArray,
-      pubKeys: [publicKey]
-    }
-
-    const privateInputTags = [
-      { name: 'App-Name', value: 'Protocol.Land' },
-      { name: 'Content-Type', value: 'application/json' },
-      { name: 'Type', value: 'private-state' },
-      { name: 'ID', value: id }
-    ] as Tag[]
-
-    const privateStateTxResponse = await signAndSendTx(JSON.stringify(privateState), privateInputTags, userSigner)
-
-    if (!privateStateTxResponse) {
-      throw new Error('Failed to post Private State')
-    }
-
-    privateStateTxId = privateStateTxResponse
-
-    data = encryptedFile
-  }
-
   await waitFor(500)
 
   const dataTxResponse = await signAndSendTx(data, inputTags, userSigner, true)
@@ -92,18 +57,16 @@ export async function postNewRepo({ id, title, description, file, owner, visibil
     throw new Error('Failed to post Git repository')
   }
 
-  const contract = await getWarpContract(CONTRACT_TX_ID, userSigner)
-
-  await contract.writeInteraction({
-    function: 'initialize',
-    payload: {
-      id,
-      name: title,
-      description,
-      dataTxId: dataTxResponse,
-      visibility,
-      privateStateTxId
-    }
+  await sendMessage({
+    tags: getTags({
+      Action: 'Initialize-Repo',
+      Id: id,
+      Name: title,
+      Description: description,
+      'Data-TxId': dataTxResponse,
+      Visibility: visibility,
+      'Private-State-TxId': ''
+    })
   })
 
   return { txResponse: dataTxResponse }
@@ -166,23 +129,15 @@ export async function updateGithubSync({ id, currentGithubSync, githubSync }: an
 
   githubSync.partialUpdate = !!currentGithubSync
 
-  const contract = await getWarpContract(CONTRACT_TX_ID, userSigner)
-
-  await contract.writeInteraction({
-    function: 'updateGithubSync',
-    payload: {
-      id,
-      githubSync
-    }
+  await sendMessage({
+    tags: getTags({
+      Action: 'Update-Github-Sync',
+      Id: id,
+      'Github-Sync': JSON.stringify(githubSync)
+    })
   })
 
-  const {
-    cachedValue: {
-      state: { repos }
-    }
-  } = await contract.readState()
-
-  const repo = repos[id] as Repo
+  const repo = await getRepo(id)
 
   if (!repo) return
 
@@ -192,26 +147,23 @@ export async function updateGithubSync({ id, currentGithubSync, githubSync }: an
 }
 
 export async function createNewFork(data: ForkRepositoryOptions) {
-  const userSigner = await getSigner()
-
-  const contract = await getWarpContract(CONTRACT_TX_ID, userSigner)
-
   const uuid = uuidv4()
-  await contract.writeInteraction({
-    function: 'forkRepository',
-    payload: {
-      id: uuid,
-      name: data.name,
-      description: data.description,
-      dataTxId: data.dataTxId,
-      parent: data.parent
-    }
+
+  await sendMessage({
+    tags: getTags({
+      Action: 'Fork-Repo',
+      Id: uuid,
+      Name: data.name,
+      Description: data.description,
+      'Data-TxId': data.dataTxId,
+      Parent: data.parent
+    })
   })
 
   return uuid
 }
 
-export async function postUpdatedRepo({ fs, dir, owner, id, isPrivate, privateStateTxId }: PostUpdatedRepoOptions) {
+export async function postUpdatedRepo({ fs, dir, owner, id }: PostUpdatedRepoOptions) {
   const { error: initialError, result: initialBranch } = await getCurrentBranch({ fs, dir })
 
   if (initialError || (initialBranch && initialBranch !== 'master')) {
@@ -231,25 +183,9 @@ export async function postUpdatedRepo({ fs, dir, owner, id, isPrivate, privateSt
 
   const userSigner = await getSigner()
 
-  let data = (await toArrayBuffer(repoBlob)) as ArrayBuffer
+  const data = (await toArrayBuffer(repoBlob)) as ArrayBuffer
 
   await waitFor(500)
-
-  if (isPrivate && privateStateTxId) {
-    const pubKey = await getActivePublicKey()
-    const address = await deriveAddress(pubKey)
-
-    const response = await fetch(`https://arweave.net/${privateStateTxId}`)
-    const privateState = (await response.json()) as PrivateState
-
-    const encAesKeyStr = privateState.encKeys[address]
-    const encAesKeyBuf = arweave.utils.b64UrlToBuffer(encAesKeyStr)
-
-    const aesKey = (await decryptAesKeyWithPrivateKey(encAesKeyBuf)) as unknown as ArrayBuffer
-    const ivArrBuff = arweave.utils.b64UrlToBuffer(privateState.iv)
-
-    data = await encryptDataWithExistingKey(data, aesKey, ivArrBuff)
-  }
 
   const inputTags = [
     { name: 'App-Name', value: 'Protocol.Land' },
@@ -265,14 +201,12 @@ export async function postUpdatedRepo({ fs, dir, owner, id, isPrivate, privateSt
     throw new Error('Failed to post Git repository')
   }
 
-  const contract = await getWarpContract(CONTRACT_TX_ID, userSigner)
-
-  await contract.writeInteraction({
-    function: 'updateRepositoryTxId',
-    payload: {
-      id,
-      dataTxId: dataTxResponse
-    }
+  await sendMessage({
+    tags: getTags({
+      Action: 'Update-Repo-TxId',
+      Id: id,
+      'Data-TxId': dataTxResponse
+    })
   })
 
   return dataTxResponse
@@ -341,30 +275,23 @@ export async function rotateKeysAndUpdate({ id, currentPrivateStateTxId, type }:
     throw new Error('Failed to post Private State')
   }
 
-  const contract = await getWarpContract(CONTRACT_TX_ID, userSigner)
+  const tags = getTags(
+    isRepoAction
+      ? { Action: 'Update-Repo-Private-State-TxId', Id: id, 'Private-State-TxId': privateStateTxId }
+      : {
+          Action: 'Update-Github-Sync',
+          Id: id,
+          'Github-Sync': JSON.stringify({ privateStateTxId, allowPending: true, partialUpdate: true })
+        }
+  )
 
-  const input = isRepoAction
-    ? { function: 'updatePrivateStateTx', payload: { id, privateStateTxId } }
-    : {
-        function: 'updateGithubSync',
-        payload: { id, githubSync: { privateStateTxId, allowPending: true, partialUpdate: true } }
-      }
-
-  await contract.writeInteraction(input)
+  await sendMessage({ tags })
 }
 
 export async function githubSyncAllowPending(id: string, currentPrivateStateTxId: string) {
   await rotateKeysAndUpdate({ id, currentPrivateStateTxId, type: 'GITHUB_SYNC' })
 
-  const contract = await getWarpContract(CONTRACT_TX_ID)
-
-  const {
-    cachedValue: {
-      state: { repos }
-    }
-  } = await contract.readState()
-
-  const repo = repos[id] as Repo
+  const repo = await getRepo(id)
 
   if (!repo) return
 
@@ -427,67 +354,45 @@ export async function unmountRepoFromBrowser(name: string) {
 }
 
 export async function updateRepoName(repoId: string, newName: string) {
-  const userSigner = await getSigner()
-
-  const contract = await getWarpContract(CONTRACT_TX_ID, userSigner)
-
-  await contract.writeInteraction({
-    function: 'updateRepositoryDetails',
-    payload: {
-      id: repoId,
-      name: newName
-    }
+  await sendMessage({
+    tags: getTags({
+      Action: 'Update-Repo-Details',
+      Id: repoId,
+      Name: newName
+    })
   })
 }
 
 export async function updateRepoDescription(description: string, repoId: string) {
-  const userSigner = await getSigner()
-
-  const contract = await getWarpContract(CONTRACT_TX_ID, userSigner)
-
-  await contract.writeInteraction({
-    function: 'updateRepositoryDetails',
-    payload: {
-      id: repoId,
-      description
-    }
+  await sendMessage({
+    tags: getTags({
+      Action: 'Update-Repo-Details',
+      Id: repoId,
+      Description: description
+    })
   })
 }
 
 export async function updateRepoDeploymentBranch(deploymentBranch: string, repoId: string) {
-  const userSigner = await getSigner()
-
-  const contract = await getWarpContract(CONTRACT_TX_ID, userSigner)
-
-  await contract.writeInteraction({
-    function: 'updateRepositoryDetails',
-    payload: {
-      id: repoId,
-      deploymentBranch
-    }
+  await sendMessage({
+    tags: getTags({
+      Action: 'Update-Repo-Details',
+      Id: repoId,
+      'Deployment-Branch': deploymentBranch
+    })
   })
 }
 
 export async function addDeployment(deployment: Partial<Deployment>, repoId: string) {
-  const userSigner = await getSigner()
-
-  const contract = await getWarpContract(CONTRACT_TX_ID, userSigner)
-
-  await contract.writeInteraction({
-    function: 'addDeployment',
-    payload: {
-      id: repoId,
-      deployment
-    }
+  await sendMessage({
+    tags: getTags({
+      Action: 'Add-Deployment',
+      Id: repoId,
+      Deployment: JSON.stringify(deployment)
+    })
   })
 
-  const {
-    cachedValue: {
-      state: { repos }
-    }
-  } = await contract.readState()
-
-  const repo = repos[repoId] as Repo
+  const repo = await getRepo(repoId)
 
   if (!repo) return
 
@@ -500,105 +405,54 @@ export async function addDeployment(deployment: Partial<Deployment>, repoId: str
 }
 
 export async function inviteContributor(address: string, repoId: string) {
-  const userSigner = await getSigner()
-
-  const caller = useGlobalStore.getState().authState.address!
-
-  const contract = await getWarpContract(CONTRACT_TX_ID, userSigner)
-
-  const dryRunResult = await contract.dryWrite(
-    {
-      function: 'inviteContributor',
-      payload: {
-        id: repoId,
-        contributor: address
-      }
-    },
-    caller
-  )
-
-  if (dryRunResult.type === 'error') {
-    throw dryRunResult.errorMessage
-  }
-
-  await contract.writeInteraction({
-    function: 'inviteContributor',
-    payload: {
-      id: repoId,
-      contributor: address
-    }
+  await sendMessage({
+    tags: getTags({
+      Action: 'Invite-Contributor',
+      Id: repoId,
+      Contributor: address
+    })
   })
 
-  const {
-    cachedValue: {
-      state: { repos }
-    }
-  } = await contract.readState()
-
-  const repo = repos[repoId] as Repo
+  const repo = await getRepo(repoId)
 
   return repo.contributorInvites
 }
 
 export async function addDomain(domain: Omit<Domain, 'timestamp'>, repoId: string) {
-  const userSigner = await getSigner()
-
-  const contract = await getWarpContract(CONTRACT_TX_ID, userSigner)
-
-  await contract.writeInteraction({
-    function: 'addDomain',
-    payload: {
-      id: repoId,
-      domain
-    }
+  await sendMessage({
+    tags: getTags({
+      Action: 'Add-Domain',
+      Id: repoId,
+      Domain: JSON.stringify(domain)
+    })
   })
 
-  const {
-    cachedValue: {
-      state: { repos }
-    }
-  } = await contract.readState()
-
-  const repo = repos[repoId] as Repo
+  const repo = await getRepo(repoId)
 
   return repo.domains
 }
 
 export async function updateDomain(domain: Omit<Domain, 'controller' | 'timestamp'>, repoId: string) {
-  const userSigner = await getSigner()
-
-  const contract = await getWarpContract(CONTRACT_TX_ID, userSigner)
-
-  await contract.writeInteraction({
-    function: 'updateDomain',
-    payload: {
-      id: repoId,
-      domain
-    }
+  await sendMessage({
+    tags: getTags({
+      Action: 'Update-Domain',
+      Id: repoId,
+      Domain: JSON.stringify(domain)
+    })
   })
 
-  const {
-    cachedValue: {
-      state: { repos }
-    }
-  } = await contract.readState()
-
-  const repo = repos[repoId] as Repo
+  const repo = await getRepo(repoId)
 
   return repo.domains
 }
 
 export async function addContributor(address: string, repoId: string) {
-  const userSigner = await getSigner()
-
-  const contract = await getWarpContract(CONTRACT_TX_ID, userSigner)
-
-  await contract.writeInteraction({
-    function: 'addContributor',
-    payload: {
-      id: repoId,
-      contributor: address
-    }
+  await sendMessage({
+    tags: getTags({
+      Action: 'Grant-Contributor-Invite',
+      Id: repoId,
+      Contributor: address
+    })
   })
 }
 

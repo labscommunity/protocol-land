@@ -1,26 +1,13 @@
-import { CONTRACT_TX_ID } from '@/helpers/constants'
-import getWarpContract from '@/helpers/getWrapContract'
+import { getTags } from '@/helpers/getTags'
 import { isInvalidInput } from '@/helpers/isInvalidInput'
-import { getSigner } from '@/helpers/wallet/getSigner'
+import { getRepo, sendMessage } from '@/lib/contract'
 import { postIssueStatDataTxToArweave } from '@/lib/user'
-import { BountyBase, Issue } from '@/types/repository'
+import { Issue } from '@/types/repository'
 
-async function getContract() {
-  const userSigner = await getSigner()
+async function getIssue(repoId: string, issueId: number) {
+  const repo = await getRepo(repoId)
 
-  const contract = await getWarpContract(CONTRACT_TX_ID, userSigner)
-
-  return contract
-}
-
-async function getIssue(contract: any, repoId: string, issueId: number) {
-  const {
-    cachedValue: {
-      state: { repos }
-    }
-  } = await contract.readState()
-
-  const issues = repos[repoId]?.issues
+  const issues = repo?.issues
 
   if (!issues) return
 
@@ -32,24 +19,23 @@ async function getIssue(contract: any, repoId: string, issueId: number) {
 }
 
 export async function createNewIssue(title: string, description: string, repoId: string, address: string) {
-  const contract = await getContract()
+  const args = {
+    tags: getTags({
+      Action: 'Create-Issue',
+      Title: title,
+      'Repo-Id': repoId
+    })
+  } as any
 
-  await contract.writeInteraction({
-    function: 'createIssue',
-    payload: {
-      title,
-      description,
-      repoId
-    }
-  })
+  if (description) {
+    args.data = description
+  } else {
+    args.tags.push({ name: 'Description', value: description || '' })
+  }
 
-  const {
-    cachedValue: {
-      state: { repos }
-    }
-  } = await contract.readState()
+  await sendMessage(args)
 
-  const repo = repos[repoId]
+  const repo = await getRepo(repoId)
 
   if (!repo) return
 
@@ -68,56 +54,51 @@ export async function createNewIssue(title: string, description: string, repoId:
 }
 
 export async function addAssigneeToIssue(repoId: string, issueId: number, assignees: string[]) {
-  const contract = await getContract()
-
-  await contract.writeInteraction({
-    function: 'addAssigneeToIssue',
-    payload: {
-      repoId,
-      issueId,
-      assignees
-    }
+  await sendMessage({
+    tags: getTags({
+      Action: 'Add-Issue-Assignees',
+      'Repo-Id': repoId,
+      'Issue-Id': issueId.toString(),
+      Assignees: JSON.stringify(assignees)
+    })
   })
 
-  const issue = await getIssue(contract, repoId, issueId)
+  const issue = await getIssue(repoId, issueId)
   return issue
 }
 
 export async function addCommentToIssue(repoId: string, issueId: number, comment: string) {
-  const contract = await getContract()
-
-  await contract.writeInteraction({
-    function: 'addCommentToIssue',
-    payload: {
-      repoId,
-      issueId,
-      comment
-    }
+  await sendMessage({
+    tags: getTags({
+      Action: 'Add-Issue-Comment',
+      'Repo-Id': repoId,
+      'Issue-Id': issueId.toString()
+    }),
+    data: comment
   })
 
-  const issue = await getIssue(contract, repoId, issueId)
+  const issue = await getIssue(repoId, issueId)
   return issue
 }
 
-export async function updateIssueComment(repoId: string, issueId: number, comment: object) {
-  const contract = await getContract()
-
-  await contract.writeInteraction({
-    function: 'updateIssueComment',
-    payload: {
-      repoId,
-      issueId,
-      comment
-    }
+export async function updateIssueComment(
+  repoId: string,
+  issueId: number,
+  comment: { id: number; description: string }
+) {
+  await sendMessage({
+    tags: getTags({
+      Action: 'Update-Issue-Comment',
+      'Repo-Id': repoId,
+      'Issue-Id': issueId.toString(),
+      'Comment-Id': comment.id.toString()
+    }),
+    data: comment.description
   })
 
-  const {
-    cachedValue: {
-      state: { repos }
-    }
-  } = await contract.readState()
+  const repo = await getRepo(repoId)
 
-  const issues = repos[repoId]?.issues
+  const issues = repo?.issues
 
   if (!issues) return
 
@@ -129,97 +110,53 @@ export async function updateIssueComment(repoId: string, issueId: number, commen
 }
 
 export async function closeIssue(repoId: string, issueId: number) {
-  const contract = await getContract()
-
-  await contract.writeInteraction({
-    function: 'updateIssueStatus',
-    payload: {
-      repoId,
-      issueId,
-      status: 'COMPLETED'
-    }
+  await sendMessage({
+    tags: getTags({
+      Action: 'Update-Issue-Status',
+      'Repo-Id': repoId,
+      'Issue-Id': issueId.toString(),
+      Status: 'COMPLETED'
+    })
   })
 
-  const issue = await getIssue(contract, repoId, issueId)
+  const issue = await getIssue(repoId, issueId)
   return issue
 }
 
 export async function reopenIssue(repoId: string, issueId: number) {
-  const contract = await getContract()
-
-  await contract.writeInteraction({
-    function: 'updateIssueStatus',
-    payload: {
-      repoId,
-      issueId,
-      status: 'REOPEN'
-    }
+  await sendMessage({
+    tags: getTags({
+      Action: 'Update-Issue-Status',
+      'Repo-Id': repoId,
+      'Issue-Id': issueId.toString(),
+      Status: 'REOPEN'
+    })
   })
 
-  const issue = await getIssue(contract, repoId, issueId)
+  const issue = await getIssue(repoId, issueId)
   return issue
 }
 
 export async function updateIssueDetails(repoId: string, issueId: number, issue: Partial<Issue>) {
-  const contract = await getContract()
-
-  let payload = {
-    repoId,
-    issueId
+  let tags = {
+    Action: 'Update-Issue-Details',
+    'Repo-Id': repoId,
+    'Issue-Id': issueId.toString()
   } as any
 
+  let data = ''
+
   if (!isInvalidInput(issue.title, 'string')) {
-    payload = { ...payload, title: issue.title }
+    tags = { ...tags, Title: issue.title }
   }
 
   if (!isInvalidInput(issue.description, 'string', true)) {
-    payload = { ...payload, description: issue.description }
+    if (issue.description) {
+      data = issue.description as string
+    } else {
+      tags = { ...tags, Description: issue.description }
+    }
   }
 
-  await contract.writeInteraction({
-    function: 'updateIssueDetails',
-    payload: payload
-  })
-}
-
-export async function addBounty(repoId: string, issueId: number, amount: number, expiry: number, base: BountyBase) {
-  const contract = await getContract()
-
-  await contract.writeInteraction({
-    function: 'createNewBounty',
-    payload: {
-      repoId,
-      issueId,
-      amount,
-      expiry,
-      base
-    }
-  })
-
-  const issue = await getIssue(contract, repoId, issueId)
-  return issue
-}
-
-export async function closeBounty(
-  repoId: string,
-  issueId: number,
-  bountyId: number,
-  status: string,
-  paymentTxId?: string
-) {
-  const contract = await getContract()
-
-  await contract.writeInteraction({
-    function: 'updateBounty',
-    payload: {
-      repoId,
-      issueId,
-      bountyId,
-      status,
-      paymentTxId
-    }
-  })
-
-  const issue = await getIssue(contract, repoId, issueId)
-  return issue
+  await sendMessage({ tags: getTags(tags), data })
 }

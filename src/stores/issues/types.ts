@@ -1,4 +1,4 @@
-import { BountyBase, Issue } from '@/types/repository'
+import { Issue } from '@/types/repository'
 
 export interface IssuesSlice {
   issuesState: IssuesState
@@ -24,8 +24,4 @@ export type IssuesActions = {
   addAssignee: (id: number, assignees: string[]) => Promise<void>
   addComment: (id: number, comment: string) => Promise<void>
   updateComment: (id: number, comment: { id: number; description: string }) => Promise<void>
-  addBounty: (id: number, amount: number, expiry: number, base: BountyBase) => Promise<void>
-  closeBounty: (issueId: number, bountyId: number) => Promise<void>
-  expireBounty: (issueId: number, bountyId: number) => Promise<void>
-  completeBounty: (issueId: number, bountyId: number, paymentTxId: string) => Promise<void>
 }

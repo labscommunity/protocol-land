@@ -15,8 +15,8 @@ export default function RepositoryActivity({
   setRepo
 }: ActivityProps<RepositoryActivityType>) {
   const [contributionsCount, setContributionsCount] = useState(0)
-  const openPullsCount = activity.repo.pullRequests.filter((pull) => pull.status === 'OPEN').length
-  const openIssuesCount = activity.repo.issues.filter((issue) => issue.status === 'OPEN').length
+  const openPullsCount = activity.repo.pullRequests
+  const openIssuesCount = activity.repo.issues
 
   useEffect(() => {
     getRepoContributionsCount(activity.repo.name).then((count) => {
@@ -38,7 +38,7 @@ export default function RepositoryActivity({
                 {resolveUsernameOrShorten(activity.author)}
               </Link>
             </UserPopover>{' '}
-            {formatDistanceToNow(new Date(activity.timestamp * 1000), { addSuffix: true })}
+            {formatDistanceToNow(new Date(activity.timestamp), { addSuffix: true })}
           </span>
           <div className="flex gap-3 items-center">
             <span>{openPullsCount} Open Pull Requests</span>
