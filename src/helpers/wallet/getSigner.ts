@@ -1,19 +1,7 @@
-import * as othentSigner from '@othent/kms'
 import { InjectedArweaveSigner } from 'warp-contracts-plugin-signature'
 
-import { useGlobalStore } from '@/stores/globalStore'
-
 export async function getSigner({ injectedSigner } = { injectedSigner: true }) {
-  const strategy = useGlobalStore.getState().authState.method
-  let wallet: any = window.arweaveWallet
-
-  if (strategy === 'othent') {
-    wallet = Object.assign({}, othentSigner, {
-      getAddress: () => othentSigner.getActiveAddress(),
-      signer: (tx: any) => othentSigner.sign(tx),
-      type: 'arweave'
-    })
-  }
+  const wallet: any = window.arweaveWallet
 
   if (!injectedSigner) return wallet
 

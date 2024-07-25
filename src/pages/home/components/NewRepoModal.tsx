@@ -183,17 +183,6 @@ export default function NewRepoModal({ setIsOpen, isOpen }: NewRepoModalProps) {
                         />
                         Public
                       </label>
-                      <label htmlFor="radio-2" className="flex items-center">
-                        <input
-                          type="radio"
-                          name="radio-group"
-                          disabled={authState.method === 'othent'}
-                          onChange={handleRepositoryVisibilityChange}
-                          value="private"
-                          className="mr-2 rounded-full h-4 w-4 checked:accent-primary-700 accent-primary-600 bg-white focus:ring-primary-600  outline-none"
-                        />
-                        Private
-                      </label>
                     </div>
                   </div>
                   <div className="py-1">
