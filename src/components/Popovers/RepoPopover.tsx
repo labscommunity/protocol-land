@@ -5,12 +5,12 @@ import { RiGitRepositoryFill } from 'react-icons/ri'
 import { Link } from 'react-router-dom'
 
 import { resolveUsernameOrShorten } from '@/helpers/resolveUsername'
-import { RepoWithParent } from '@/types/repository'
+import { ActivityRepo } from '@/types/explore'
 
 import Popover from './Popover'
 
 interface RepoPopoverProps {
-  repo: RepoWithParent
+  repo: ActivityRepo
   children: React.ReactNode
 }
 
@@ -45,7 +45,7 @@ export default function RepoPopover({ repo, children }: RepoPopoverProps) {
         <span className="text-gray-600">{repo.description}</span>
         <div className="flex text-sm gap-2">
           <div className="flex items-center gap-1">
-            <span className="text-gray-600">{Object.keys(repo.forks).length}</span>
+            <span className="text-gray-600">{repo.forks}</span>
             <GoRepoForked />
           </div>
           {repo.updatedTimestamp && (

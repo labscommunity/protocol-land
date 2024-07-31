@@ -61,7 +61,7 @@ export default function NewRepoModal({ setIsOpen, isOpen }: NewRepoModalProps) {
     const { title, description } = data
     const owner = authState.address || 'Protocol.Land user'
 
-    const { response: isAvailable, error } = await withAsync(() => isRepositoryNameAvailable(title, authState.address!))
+    const { response: isAvailable, error } = await withAsync(() => isRepositoryNameAvailable(title))
 
     if (!error && isAvailable === false) {
       toast.error(`The repository ${title} already exists.`)
@@ -182,17 +182,6 @@ export default function NewRepoModal({ setIsOpen, isOpen }: NewRepoModalProps) {
                           className="mr-2 rounded-full h-4 w-4 checked:accent-primary-700 accent-primary-600 bg-white focus:ring-primary-600  outline-none"
                         />
                         Public
-                      </label>
-                      <label htmlFor="radio-2" className="flex items-center">
-                        <input
-                          type="radio"
-                          name="radio-group"
-                          disabled={authState.method === 'othent'}
-                          onChange={handleRepositoryVisibilityChange}
-                          value="private"
-                          className="mr-2 rounded-full h-4 w-4 checked:accent-primary-700 accent-primary-600 bg-white focus:ring-primary-600  outline-none"
-                        />
-                        Private
                       </label>
                     </div>
                   </div>

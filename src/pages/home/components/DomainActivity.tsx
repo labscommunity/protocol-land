@@ -27,7 +27,7 @@ export default function DomainActivity({ activity, setIsForkModalOpen, setRepo }
                 {resolveUsernameOrShorten(domain.controller)}
               </Link>
             </UserPopover>{' '}
-            {formatDistanceToNow(new Date(activity.timestamp * 1000), { addSuffix: true })}
+            {formatDistanceToNow(new Date(activity.timestamp), { addSuffix: true })}
           </span>
 
           <span>1 Active Domain</span>
