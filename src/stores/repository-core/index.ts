@@ -607,15 +607,7 @@ const createRepoCoreSlice: StateCreator<CombinedSlices, [['zustand/immer', never
           state.repoCoreState.selectedRepo.repo = metaResponse.result
         })
 
-        const {
-          id: repoId,
-          dataTxId,
-          fork,
-          parent,
-          privateStateTxId,
-          contributorInvites,
-          uploadStrategy
-        } = metaResponse.result
+        const { id: repoId, fork, parent, privateStateTxId, contributorInvites } = metaResponse.result
 
         try {
           const address = get().authState.address
@@ -653,9 +645,7 @@ const createRepoCoreSlice: StateCreator<CombinedSlices, [['zustand/immer', never
           await get().repoCoreActions.fetchAndLoadParentRepository(parentMetaResponse.result)
         }
 
-        const { error: repoFetchError, response: repoFetchResponse } = await withAsync(() =>
-          loadRepository(repoId, dataTxId, uploadStrategy, privateStateTxId)
-        )
+        const { error: repoFetchError, response: repoFetchResponse } = await withAsync(() => loadRepository(repoId))
 
         if (fork && parentRepoId && repoId !== parentRepoId) {
           const renamed = await renameRepoDir(repoId, parentRepoId, repoId)
@@ -708,9 +698,7 @@ const createRepoCoreSlice: StateCreator<CombinedSlices, [['zustand/immer', never
         state.repoCoreState.parentRepo.status = 'PENDING'
       })
 
-      const { error: repoFetchError, response: repoFetchResponse } = await withAsync(() =>
-        loadRepository(repo.id, repo.dataTxId, repo.uploadStrategy, repo.privateStateTxId)
-      )
+      const { error: repoFetchError, response: repoFetchResponse } = await withAsync(() => loadRepository(repo.id))
 
       if (repoFetchError) {
         set((state) => {
@@ -742,12 +730,7 @@ const createRepoCoreSlice: StateCreator<CombinedSlices, [['zustand/immer', never
 
       if (metaResponse) {
         const { error: repoFetchError, response: repoFetchResponse } = await withAsync(() =>
-          loadRepository(
-            metaResponse.result.id,
-            metaResponse.result.dataTxId,
-            metaResponse.result.uploadStrategy,
-            metaResponse.result.privateStateTxId
-          )
+          loadRepository(metaResponse.result.id)
         )
 
         if (repoFetchError) {
