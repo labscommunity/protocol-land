@@ -1,7 +1,7 @@
 import ArDB from 'ardb'
 import Arweave from 'arweave'
 import { Tag } from 'arweave/web/lib/transaction'
-import git, { WORKDIR } from 'isomorphic-git'
+import git, { WORKDIR } from '@protocol.land/isomorphic-git'
 import mime from 'mime'
 import type { Dispatch, SetStateAction } from 'react'
 

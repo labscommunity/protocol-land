@@ -4,7 +4,6 @@ import React, { useEffect, useState } from 'react'
 import { LiaReadme } from 'react-icons/lia'
 import Sticky from 'react-stickynode'
 
-import rehypeAnchorOnClickPlugin from '@/helpers/rehypeAnchorOnClickPlugin'
 import { getFileContent } from '@/pages/repository/helpers/filenameHelper'
 import { useGlobalStore } from '@/stores/globalStore'
 import { FileObject } from '@/stores/repository-core/types'
@@ -55,11 +54,7 @@ export default function Readme({ fileObject }: { fileObject?: FileObject }) {
           <div className="font-medium">README</div>
         </div>
       </Sticky>
-      <MDEditor.Markdown
-        className="p-8 !min-h-[200px] rounded-b-lg"
-        source={isLoading ? 'Loading...' : fileContent}
-        rehypePlugins={[[rehypeAnchorOnClickPlugin]]}
-      />
+      <MDEditor.Markdown className="p-8 !min-h-[200px] rounded-b-lg" source={isLoading ? 'Loading...' : fileContent} />
     </div>
   )
 }

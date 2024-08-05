@@ -1,8 +1,7 @@
+import git from '@protocol.land/isomorphic-git'
 import Arweave from 'arweave'
 import { Tag } from 'arweave/web/lib/transaction'
 import Dexie from 'dexie'
-import git from 'isomorphic-git'
-import { v4 as uuidv4 } from 'uuid'
 
 import { getTags } from '@/helpers/getTags'
 import { toArrayBuffer } from '@/helpers/toArrayBuffer'
@@ -33,43 +32,20 @@ const arweave = new Arweave({
   protocol: 'https'
 })
 
-export async function postNewRepo({ id, title, description, file, owner, visibility }: any) {
-  const userSigner = await getSigner()
-
-  const data = (await toArrayBuffer(file)) as ArrayBuffer
-
-  const inputTags = [
-    { name: 'App-Name', value: 'Protocol.Land' },
-    { name: 'Content-Type', value: file.type },
-    { name: 'Creator', value: owner },
-    { name: 'Title', value: title },
-    { name: 'Description', value: description },
-    { name: 'Repo-Id', value: id },
-    { name: 'Type', value: 'repo-create' },
-    { name: 'Visibility', value: visibility }
-  ] as Tag[]
-
-  await waitFor(500)
-
-  const dataTxResponse = await signAndSendTx(data, inputTags, userSigner, true)
-
-  if (!dataTxResponse) {
-    throw new Error('Failed to post Git repository')
-  }
-
+export async function postNewRepo({ id, dataTxId, title, description }: any) {
   await sendMessage({
     tags: getTags({
       Action: 'Initialize-Repo',
       Id: id,
       Name: title,
       Description: description,
-      'Data-TxId': dataTxResponse,
-      Visibility: visibility,
+      'Data-TxId': dataTxId,
+      Visibility: 'public',
       'Private-State-TxId': ''
     })
   })
 
-  return { txResponse: dataTxResponse }
+  return { txResponse: dataTxId }
 }
 
 export async function updateGithubSync({ id, currentGithubSync, githubSync }: any) {
@@ -147,12 +123,10 @@ export async function updateGithubSync({ id, currentGithubSync, githubSync }: an
 }
 
 export async function createNewFork(data: ForkRepositoryOptions) {
-  const uuid = uuidv4()
-
   await sendMessage({
     tags: getTags({
       Action: 'Fork-Repo',
-      Id: uuid,
+      Id: data.id,
       Name: data.name,
       Description: data.description,
       'Data-TxId': data.dataTxId,
@@ -160,7 +134,7 @@ export async function createNewFork(data: ForkRepositoryOptions) {
     })
   })
 
-  return uuid
+  return data.id
 }
 
 export async function postUpdatedRepo({ fs, dir, owner, id }: PostUpdatedRepoOptions) {
@@ -325,9 +299,7 @@ export async function createNewRepo(title: string, fs: FSType, owner: string, id
 
     await waitFor(1000)
 
-    const repoBlob = await packGitRepo({ fs, dir })
-
-    return { repoBlob, commit: sha }
+    return { commit: sha }
   } catch (error) {
     console.error('failed to create repo')
   }

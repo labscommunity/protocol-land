@@ -1,6 +1,7 @@
 import JSZip from 'jszip'
 
 import { waitFor } from '@/helpers/waitFor'
+import { withAsync } from '@/helpers/withAsync'
 
 import { FSType } from './fsWithName'
 
@@ -31,6 +32,41 @@ export async function unpackGitRepo({ fs, blob }: UnpackGitRepoOptions) {
   await waitFor(1000)
 
   return true
+}
+
+export async function copyFilesToTargetRepo(
+  sourceDirPath: string,
+  sourceFS: FSType,
+  targetFS: FSType,
+  targetDir: string
+) {
+  // ensure targetFS is initialized with dir
+  const { error } = await withAsync(() => targetFS.promises.readdir(targetDir))
+  if (error) {
+    await targetFS.promises.mkdir(targetDir)
+  }
+
+  const dirItems = await sourceFS.promises.readdir(sourceDirPath)
+
+  dirItems.forEach(async (item) => {
+    const srcPath = `${sourceDirPath}/${item}`
+    const destPath = `${targetDir}/${item}`
+
+    const stats = await sourceFS.promises.stat(srcPath)
+
+    if (stats.isDirectory()) {
+      try {
+        await targetFS.promises.mkdir(destPath)
+      } catch (error) {
+        // ignore
+      }
+
+      await copyFilesToTargetRepo(srcPath, sourceFS, targetFS, destPath)
+    } else {
+      const fileContent = await sourceFS.promises.readFile(srcPath)
+      await targetFS.promises.writeFile(destPath, fileContent)
+    }
+  })
 }
 
 async function addFilesToZip(zip: JSZip, path: string, fs: FSType) {
