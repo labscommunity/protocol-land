@@ -47,7 +47,8 @@ export async function checkoutBranch({ fs, dir, name }: CommonBranchOptions & { 
       dir,
       ref: name,
       force: true,
-      track: false
+      track: false,
+      noUpdateHead: true
     })
   )
 }

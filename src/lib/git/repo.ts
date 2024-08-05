@@ -2,7 +2,6 @@ import git from '@protocol.land/isomorphic-git'
 import Arweave from 'arweave'
 import { Tag } from 'arweave/web/lib/transaction'
 import Dexie from 'dexie'
-import { v4 as uuidv4 } from 'uuid'
 
 import { getTags } from '@/helpers/getTags'
 import { toArrayBuffer } from '@/helpers/toArrayBuffer'
@@ -124,12 +123,10 @@ export async function updateGithubSync({ id, currentGithubSync, githubSync }: an
 }
 
 export async function createNewFork(data: ForkRepositoryOptions) {
-  const uuid = uuidv4()
-
   await sendMessage({
     tags: getTags({
       Action: 'Fork-Repo',
-      Id: uuid,
+      Id: data.id,
       Name: data.name,
       Description: data.description,
       'Data-TxId': data.dataTxId,
@@ -137,7 +134,7 @@ export async function createNewFork(data: ForkRepositoryOptions) {
     })
   })
 
-  return uuid
+  return data.id
 }
 
 export async function postUpdatedRepo({ fs, dir, owner, id }: PostUpdatedRepoOptions) {

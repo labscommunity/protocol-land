@@ -31,7 +31,6 @@ import {
   handleCancelContributorInvite,
   handleRejectContributor,
   loadRepository,
-  renameRepoDir,
   saveRepository
 } from './actions'
 import { RepoCoreSlice, RepoCoreState } from './types'
@@ -627,8 +626,6 @@ const createRepoCoreSlice: StateCreator<CombinedSlices, [['zustand/immer', never
           console.log(`Error: ${err}`)
         }
 
-        let parentRepoId = null
-
         if (fork) {
           const { error: parentMetaError, response: parentMetaResponse } = await withAsync(() =>
             getRepositoryMetaFromContract(parent!)
@@ -638,20 +635,16 @@ const createRepoCoreSlice: StateCreator<CombinedSlices, [['zustand/immer', never
             throw new Error('Error fetching repository meta.')
           }
 
-          if (repoId !== parentMetaResponse.result.id) {
-            parentRepoId = parentMetaResponse.result.id
-          }
-
           await get().repoCoreActions.fetchAndLoadParentRepository(parentMetaResponse.result)
         }
 
         const { error: repoFetchError, response: repoFetchResponse } = await withAsync(() => loadRepository(repoId))
 
-        if (fork && parentRepoId && repoId !== parentRepoId) {
-          const renamed = await renameRepoDir(repoId, parentRepoId, repoId)
+        // if (fork && parentRepoId && repoId !== parentRepoId) {
+        //   const renamed = await renameRepoDir(repoId, parentRepoId, repoId)
 
-          if (!renamed) throw new Error('Error loading the repository.')
-        }
+        //   if (!renamed) throw new Error('Error loading the repository.')
+        // }
 
         // Always checkout default master branch if available
         if (!repoFetchError && repoFetchResponse && repoFetchResponse.success) {

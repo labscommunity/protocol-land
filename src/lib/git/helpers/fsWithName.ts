@@ -1,10 +1,14 @@
-import singletonArfs from '@/lib/arfs/arfsSingleton'
+import arfsSingletonMap from '@/lib/arfs/arfsSingletonMap'
 
 export function fsWithName(name: string) {
-  const bifrost = singletonArfs.getBifrostInstance()
+  const arfsSingleton = arfsSingletonMap.getArFSSingleton(name)
+
+  if (!arfsSingleton) throw new Error('ArFS uninitialized.')
+
+  const bifrost = arfsSingleton.getBifrostInstance()
 
   if (!bifrost) throw new Error('Bifrost uninitialized.')
-  console.log({ name })
+
   return bifrost.fs
 }
 

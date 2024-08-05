@@ -5,7 +5,8 @@ import { getRepoSize } from '@/helpers/getArrayBufSize'
 import { waitFor } from '@/helpers/waitFor'
 import { getActivePublicKey } from '@/helpers/wallet/getPublicKey'
 import { withAsync } from '@/helpers/withAsync'
-import singletonArfs from '@/lib/arfs/arfsSingleton'
+import { ArFSSingleton } from '@/lib/arfs/arfsSingleton'
+import arfsSingletonMap from '@/lib/arfs/arfsSingletonMap'
 import { getArFS } from '@/lib/arfs/getArFS'
 import { getBifrost } from '@/lib/arfs/getBifrost'
 import { unmountRepoFromBrowser } from '@/lib/git'
@@ -71,9 +72,13 @@ export async function loadRepository(id: string) {
 
   await bifrost.syncDrive()
 
-  singletonArfs.setArFS(arfs)
-  singletonArfs.setDrive(drive!)
-  singletonArfs.setBifrost(bifrost)
+  const arfsSingleton = new ArFSSingleton()
+
+  arfsSingleton.setArFS(arfs)
+  arfsSingleton.setDrive(drive!)
+  arfsSingleton.setBifrost(bifrost)
+
+  arfsSingletonMap.setArFSSingleton(id, arfsSingleton)
 
   let repoSize = 0
 

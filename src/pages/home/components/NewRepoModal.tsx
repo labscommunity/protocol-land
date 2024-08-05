@@ -77,7 +77,7 @@ export default function NewRepoModal({ setIsOpen, isOpen }: NewRepoModalProps) {
 
       const taskQueueItemsLength = taskQueueSingleton.getPending().length
       if (createdRepo && createdRepo.commit && taskQueueItemsLength > 0) {
-        const uploadedToArFS = await taskQueueSingleton.execute(drive.id!)
+        const uploadedToArFS = await taskQueueSingleton.execute(drive.driveId!)
 
         if (uploadedToArFS.length !== taskQueueItemsLength) {
           throw new Error('Failed to upload.')
