@@ -68,6 +68,7 @@ export type RepoCoreActions = {
   loadFilesFromRepo: () => Promise<void>
   reloadFilesOnCurrentFolder: () => Promise<void>
   setRepoContributionStats: (data: UserContributionData) => void
+  setRepoDecentralized: (decentralized: boolean) => void
   isRepoOwner: () => boolean
   isContributor: () => boolean
   reset: () => void

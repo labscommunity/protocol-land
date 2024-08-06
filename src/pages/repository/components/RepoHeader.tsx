@@ -4,6 +4,7 @@ import { FaRegFileZipper } from 'react-icons/fa6'
 import { PiCaretDownBold } from 'react-icons/pi'
 import SVG from 'react-inlinesvg'
 import { useLocation, useNavigate } from 'react-router-dom'
+import { BeatLoader } from 'react-spinners'
 
 import IconCloneOutline from '@/assets/icons/clone-outline.svg'
 import IconCommitOutline from '@/assets/icons/commit-outline.svg'
@@ -13,8 +14,10 @@ import IconStarOutline from '@/assets/icons/star-outline.svg'
 import { Button } from '@/components/common/buttons'
 import { trackGoogleAnalyticsPageView } from '@/helpers/google-analytics'
 import { resolveUsernameOrShorten } from '@/helpers/resolveUsername'
+import { decentralizeRepo } from '@/lib/decentralize'
 import { Repo } from '@/types/repository'
 
+import { createConfetti } from '../helpers/createConfetti'
 import useRepository from '../hooks/useRepository'
 import { useRepoHeaderStore } from '../store/repoHeader'
 import ActivityGraph from './ActivityGraph'
@@ -29,6 +32,8 @@ type Props = {
 }
 
 export default function RepoHeader({ repo, isLoading, owner, parentRepo }: Props) {
+  const [isDecentralized, setIsDecentralized] = React.useState(repo?.decentralized || false)
+  const [isDecentralizedLoading, setIsDecentralizedLoading] = React.useState(false)
   const [isForkModalOpen, setIsForkModalOpen] = React.useState(false)
   const [showCloneDropdown, setShowCloneDropdown] = React.useState(false)
   const cloneRef = React.useRef<HTMLDivElement | null>(null)
@@ -46,6 +51,12 @@ export default function RepoHeader({ repo, isLoading, owner, parentRepo }: Props
       })
     }
   }, [repo])
+
+  React.useEffect(() => {
+    if (repo && repo?.decentralized === true && !isLoading) {
+      setIsDecentralized(true)
+    }
+  }, [repo, isLoading])
 
   if (isLoading) {
     return <RepoHeaderLoading />
@@ -90,6 +101,26 @@ export default function RepoHeader({ repo, isLoading, owner, parentRepo }: Props
     navigate(`/repository/${parentRepo.id}`)
   }
 
+  async function handleRepoDecentralize(evt: React.ChangeEvent<HTMLInputElement>) {
+    if (!repo) return
+
+    if (repo.decentralized && repo.decentralized === true) {
+      toast.error('Repository is already decentralized.')
+      return
+    }
+
+    setIsDecentralizedLoading(true)
+    try {
+      await decentralizeRepo(repo.id)
+      createConfetti()
+      setIsDecentralized(evt.target.checked)
+    } catch (error) {
+      toast.error('Failed to decentralize repository.')
+    } finally {
+      setIsDecentralizedLoading(false)
+    }
+  }
+
   return (
     <div className="flex flex-col">
       <div className="flex justify-between">
@@ -98,12 +129,37 @@ export default function RepoHeader({ repo, isLoading, owner, parentRepo }: Props
             <div className="bg-white rounded-full w-12 h-12 flex justify-center items-center border-[1px] border-gray-300">
               <h4 className="text-2xl font-bold tracking-wide text-gray-900">SK</h4>
             </div>
-            <div>
+            <div className="gap-1 flex flex-col">
               <div className="flex items-center gap-4">
                 <h1 className="text-xl font-bold text-gray-900">{repo.name}</h1>
                 <span className={`border-[1px] border-primary-600 text-primary-600 rounded-full px-2 text-sm`}>
                   {repo.private ? 'Private' : 'Public'}
                 </span>
+                {isDecentralized && (
+                  <span
+                    className={`border-[1px] border-primary-600 bg-primary-600 text-white rounded-full px-2 text-sm`}
+                  >
+                    Decentralized
+                  </span>
+                )}
+                {!isDecentralized && (
+                  <div className="flex items-center">
+                    <span className="mr-2 text-primary-800 font-medium">Decentralize</span>
+                    {isDecentralizedLoading && <BeatLoader size={8} color="#56ADD9" />}
+                    {!isDecentralizedLoading && (
+                      <label className="inline-flex relative items-center cursor-pointer">
+                        <input
+                          type="checkbox"
+                          className="sr-only peer cursor-pointer"
+                          checked={isDecentralized}
+                          disabled={repo.decentralized === true}
+                          onChange={handleRepoDecentralize}
+                        />
+                        <div className="w-11 h-[22px] bg-gray-200 rounded-full peer peer-focus:none cursor-pointer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[6px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-[18px] after:w-[18px] after:transition-all peer-checked:bg-primary-600"></div>
+                      </label>
+                    )}
+                  </div>
+                )}
               </div>
               <p className="text-gray-900 text-base">
                 <span className="text-gray-600">Transaction ID:</span> {repo.dataTxId}
