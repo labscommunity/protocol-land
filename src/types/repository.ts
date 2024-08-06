@@ -30,6 +30,7 @@ export type Repo = {
   privateStateTxId?: string
   contributorInvites: ContributorInvite[]
   githubSync: GithubSync | null
+  decentralized?: boolean
 }
 
 export interface GithubSync {

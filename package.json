@@ -30,6 +30,7 @@
     "@uiw/react-md-editor": "^3.23.5",
     "ardb": "^1.1.10",
     "arweave": "^1.14.4",
+    "canvas-confetti": "^1.9.3",
     "clsx": "^2.0.0",
     "date-fns": "^2.30.0",
     "dexie": "^3.2.4",
@@ -73,6 +74,7 @@
     "zustand": "^4.4.0"
   },
   "devDependencies": {
+    "@types/canvas-confetti": "^1.6.4",
     "@types/clean-git-ref": "^2.0.2",
     "@types/js-yaml": "^4.0.9",
     "@types/node": "^20.4.6",
