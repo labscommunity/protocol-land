@@ -230,7 +230,7 @@ export default function Contributors() {
               />
               <Button
                 isLoading={isLoading}
-                disabled={!repoOwner || isLoading}
+                disabled={!repoOwner || isLoading || repo?.decentralized}
                 onClick={handleSubmit(handleAddButtonClick)}
                 variant="primary-solid"
               >

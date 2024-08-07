@@ -115,7 +115,9 @@ export default function General() {
               />
               <Button
                 isLoading={isSubmittingName}
-                disabled={isSubmittingName || !repoOwner || !isTitleValid || !isTitleDirty}
+                disabled={
+                  isSubmittingName || !repoOwner || !isTitleValid || !isTitleDirty || selectedRepo?.decentralized
+                }
                 onClick={handleTitleSubmit(handleRenameButtonClick)}
                 variant="primary-solid"
               >
@@ -140,7 +142,7 @@ export default function General() {
                   descriptionErrors.description ? 'border-red-500' : 'border-gray-300'
                 )}
                 placeholder="my-cool-repo"
-                disabled={!repoOwner}
+                disabled={!repoOwner || selectedRepo?.decentralized}
               />
               <Button
                 isLoading={isSubmittingDescription}

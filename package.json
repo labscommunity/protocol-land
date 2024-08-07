@@ -24,6 +24,7 @@
     "@isomorphic-git/lightning-fs": "^4.6.0",
     "@markdoc/markdoc": "^0.4.0",
     "@permaweb/aoconnect": "^0.0.52",
+    "@protocol.land/isomorphic-git": "^1.1.0",
     "@uiw/codemirror-extensions-langs": "^4.21.11",
     "@uiw/codemirror-theme-github": "^4.21.11",
     "@uiw/react-codemirror": "^4.21.11",
@@ -31,6 +32,7 @@
     "ardb": "^1.1.10",
     "arfs-js": "^1.4.2",
     "arweave": "^1.14.4",
+    "canvas-confetti": "^1.9.3",
     "clsx": "^2.0.0",
     "date-fns": "^2.30.0",
     "dexie": "^3.2.4",
@@ -39,7 +41,6 @@
     "framer-motion": "^10.15.0",
     "headless-stepper": "^1.9.1",
     "immer": "^10.0.2",
-    "@protocol.land/isomorphic-git": "^1.1.0",
     "js-yaml": "^4.1.0",
     "jszip": "^3.10.1",
     "lang-exts-map": "^0.4.0",
@@ -74,6 +75,7 @@
     "zustand": "^4.4.0"
   },
   "devDependencies": {
+    "@types/canvas-confetti": "^1.6.4",
     "@types/clean-git-ref": "^2.0.2",
     "@types/js-yaml": "^4.0.9",
     "@types/node": "^20.4.6",

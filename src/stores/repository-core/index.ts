@@ -1,3 +1,4 @@
+import toast from 'react-hot-toast'
 import { StateCreator } from 'zustand'
 
 import { trackGoogleAnalyticsEvent } from '@/helpers/google-analytics'
@@ -82,6 +83,23 @@ const createRepoCoreSlice: StateCreator<CombinedSlices, [['zustand/immer', never
         state.repoCoreState = initialRepoCoreState
       })
     },
+    setRepoDecentralized: () => {
+      const repo = get().repoCoreState.selectedRepo.repo
+      const userAddress = get().authState.address
+
+      if (!repo || !userAddress) {
+        toast.error('Not authorized to toggle decentralization.')
+        return
+      }
+      if (repo.decentralized) {
+        toast.error('Repository is already decentralized')
+        return
+      }
+
+      set((state) => {
+        state.repoCoreState.selectedRepo.repo!.decentralized = true
+      })
+    },
     isRepoOwner: () => {
       const repo = get().repoCoreState.selectedRepo.repo
       const userAddress = get().authState.address
@@ -97,6 +115,12 @@ const createRepoCoreSlice: StateCreator<CombinedSlices, [['zustand/immer', never
       const userAddress = get().authState.address
 
       if (!repo || !userAddress) {
+        return false
+      }
+
+      const isRepoDecentralized = repo?.decentralized === true
+
+      if (isRepoDecentralized) {
         return false
       }
 

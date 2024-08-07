@@ -146,7 +146,7 @@ export default function GithubSync() {
           <div className="flex items-center gap-2">
             <Switch
               checked={enabled}
-              disabled={!repoOwner}
+              disabled={!repoOwner || selectedRepo?.decentralized}
               onChange={(checked) => {
                 setEnabled(checked)
                 setValue('enabled', checked)
@@ -248,7 +248,7 @@ export default function GithubSync() {
           </div>
           <div className="flex gap-3">
             <Button
-              disabled={!repoOwner || isUpdating}
+              disabled={!repoOwner || isUpdating || selectedRepo?.decentralized}
               isLoading={isUpdating}
               onClick={handleSubmit(handleUpdateButtonClick)}
               variant="primary-solid"
@@ -257,7 +257,7 @@ export default function GithubSync() {
             </Button>
             {repoOwner && githubSync?.pending && githubSync.pending.length > 0 && (
               <Button
-                disabled={!repoOwner || isAllowing}
+                disabled={!repoOwner || isAllowing || selectedRepo?.decentralized}
                 isLoading={isAllowing}
                 onClick={handleAllowPendingContributors}
                 variant="primary-solid"
@@ -273,6 +273,7 @@ export default function GithubSync() {
                 <Switch
                   checked={forcePush}
                   onChange={setForcePush}
+                  disabled={selectedRepo?.decentralized}
                   className={`${
                     forcePush ? 'bg-primary-900' : 'bg-primary-700'
                   } relative inline-flex h-6 w-12 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus-visible:ring-2  focus-visible:ring-white/75`}
@@ -287,7 +288,7 @@ export default function GithubSync() {
               </div>
               <Button
                 className="w-fit"
-                disabled={isTriggering}
+                disabled={isTriggering || selectedRepo?.decentralized}
                 isLoading={isTriggering}
                 loadingText="Triggering"
                 onClick={handleTriggerWorkflow}

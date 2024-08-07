@@ -13,7 +13,6 @@ import { MdOutlineEdit } from 'react-icons/md'
 import Sticky from 'react-stickynode'
 
 import { Button } from '@/components/common/buttons'
-import rehypeAnchorOnClick from '@/helpers/rehypeAnchorOnClickPlugin'
 import { isImage, isMarkdown } from '@/pages/repository/helpers/filenameHelper'
 import useLanguage from '@/pages/repository/hooks/useLanguage'
 import { useGlobalStore } from '@/stores/globalStore'
@@ -177,11 +176,7 @@ export default function FileView({ fileContent, setFileContent, filename, setFil
                 />
               </CodeMirrorMerge>
             ) : (
-              <MDEditor.Markdown
-                className="p-8 !min-h-[200px] rounded-b-lg"
-                source={fileContent.modified}
-                rehypePlugins={[[rehypeAnchorOnClick]]}
-              />
+              <MDEditor.Markdown className="p-8 !min-h-[200px] rounded-b-lg" source={fileContent.modified} />
             )
           ) : !isMarkdownFile ? (
             <CodeMirror
@@ -206,11 +201,7 @@ export default function FileView({ fileContent, setFileContent, filename, setFil
               onChange={(value) => setFileContent((content) => ({ ...content, modified: value! }))}
             />
           ) : (
-            <MDEditor.Markdown
-              className="p-8 !min-h-[200px] rounded-b-lg"
-              source={fileContent.modified}
-              rehypePlugins={[[rehypeAnchorOnClick]]}
-            />
+            <MDEditor.Markdown className="p-8 !min-h-[200px] rounded-b-lg" source={fileContent.modified} />
           )}
         </div>
       </div>
