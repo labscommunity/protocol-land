@@ -49,7 +49,7 @@ export default function RepoHeader({ repo, isLoading, owner, parentRepo }: Props
   const location = useLocation()
   const navigate = useNavigate()
   const { downloadRepository } = useRepository(repo?.id, repo?.name)
-  const [setRepoDecentralized] = useGlobalStore((state) => [state.repoCoreActions.setRepoDecentralized])
+  const [setRepoDecentralized, isRepoOwner] = useGlobalStore((state) => [state.repoCoreActions.setRepoDecentralized, state.repoCoreActions.isRepoOwner])
   const [repoHeaderState] = useRepoHeaderStore((state) => [state.repoHeaderState])
 
   React.useEffect(() => {
@@ -294,7 +294,7 @@ export default function RepoHeader({ repo, isLoading, owner, parentRepo }: Props
                     type="checkbox"
                     className="sr-only peer cursor-pointer"
                     checked={isDecentralized}
-                    disabled={repo.decentralized === true}
+                    disabled={repo.decentralized === true || !isRepoOwner()}
                     onChange={handleRepoDecentralize}
                   />
                   <div className="w-10 h-[22px] bg-gray-200 rounded-full peer peer-focus:none cursor-pointer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-[18px] after:w-[18px] after:transition-all peer-checked:bg-primary-600"></div>
