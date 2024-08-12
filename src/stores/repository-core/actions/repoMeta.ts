@@ -3,7 +3,7 @@ import { AOS_PROCESS_ID } from '@/helpers/constants'
 import { getTags } from '@/helpers/getTags'
 import { getRepo, sendMessage } from '@/lib/contract'
 import { useGlobalStore } from '@/stores/globalStore'
-import { Repo } from '@/types/repository'
+import { Repo, RepoToken } from '@/types/repository'
 // Repo Meta
 
 export const getRepositoryMetaFromContract = async (id: string): Promise<{ result: Repo }> => {
@@ -88,4 +88,24 @@ export const handleCancelContributorInvite = async (id: string, contributor: str
   const repo = await getRepo(id)
 
   return repo.contributorInvites
+}
+
+export const handleSaveRepoToken = async (id: string, repoToken: Partial<RepoToken>, address: string) => {
+  await sendMessage({
+    tags: getTags({
+      Action: 'Save-Token-Settings',
+      Id: id
+    }),
+    data: JSON.stringify(repoToken)
+  })
+
+  const { Messages } = await dryrun({
+    process: AOS_PROCESS_ID,
+    tags: getTags({ Action: 'Get-Repo-Token-Details', Id: id }),
+    Owner: address
+  })
+
+  const repoTokenDetails = JSON.parse(Messages[0].Data)?.result as RepoToken
+
+  return repoTokenDetails
 }
