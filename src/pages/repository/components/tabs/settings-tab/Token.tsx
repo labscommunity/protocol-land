@@ -15,16 +15,25 @@ import { Allocation, RepoToken } from '@/types/repository'
 const tokenSchema = yup
   .object({
     tokenName: yup.string().required('Token name is required'),
-    tokenTicker: yup.string().required('Ticker is required'),
-    denomination: yup.string().required('Denomination is required'),
-    totalSupply: yup.string().required('Total supply is required'),
-    tokenImage: yup.string().required('Image is required'),
+    tokenTicker: yup
+      .string()
+      .required('Ticker is required')
+      .matches(/^[A-Z]+$/, 'Must be uppercase letters and one word only'),
+    denomination: yup.string().required('Denomination is required').matches(/^\d+$/, 'Must be a number'),
+    totalSupply: yup.string().required('Total supply is required').matches(/^\d+$/, 'Must be a number'),
+    tokenImage: yup
+      .string()
+      .required('Image is required')
+      .matches(/^(https?):\/\/[^\s/$.?#].[^\s]*$/, 'Must be a valid URL'),
     allocations: yup
       .array()
       .of(
         yup.object({
-          address: yup.string().required('Wallet Address is required'),
-          percentage: yup.string().required('Percentage is required')
+          address: yup
+            .string()
+            .required('Wallet Address is required')
+            .matches(/^[a-z0-9-_]{43}$/i, 'Must be a valid Arweave address'),
+          percentage: yup.string().required('Percentage is required').matches(/^\d+$/, 'Must be a number')
         })
       )
       .required()
@@ -259,7 +268,7 @@ export default function Token() {
                   <div key={field.id} className="flex flex-col gap-2 w-full">
                     <div className="flex items-center gap-4">
                       <h1 className="text-gray-6000 text-sm font-medium">Allocation #{idx + 1}</h1>
-                      {fields.length > 1 && (
+                      {fields.length > 1 && !selectedRepo?.decentralized && repoOwner && (
                         <span
                           onClick={() => handleDeleteAllocation(idx)}
                           className="text-primary-700 text-sm font-medium !p-0 flex items-center cursor-pointer hover:underline"
@@ -272,6 +281,7 @@ export default function Token() {
                       <div className="w-[50%]">
                         <div className="flex items-center gap-4">
                           <input
+                            disabled={!repoOwner || selectedRepo?.decentralized}
                             type="text"
                             {...register(`allocations.${idx}.address`)}
                             className={clsx(
@@ -292,6 +302,7 @@ export default function Token() {
                       <div className="w-[50%]">
                         <div className="flex items-center gap-4">
                           <input
+                            disabled={!repoOwner || selectedRepo?.decentralized}
                             type="text"
                             {...register(`allocations.${idx}.percentage`)}
                             className={clsx(
@@ -314,6 +325,7 @@ export default function Token() {
                       <div className="w-full flex items-center gap-4">
                         <Button
                           onClick={appendEmptyRecipient}
+                          disabled={!repoOwner || selectedRepo?.decentralized}
                           variant="link"
                           className="text-primary-600 text-sm font-medium"
                         >
