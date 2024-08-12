@@ -28,7 +28,7 @@ export async function decentralizeRepo(repoId: string, tokenId: string) {
 
 export async function createRepoToken(token: RepoToken) {
   try {
-    const pid = await spawnTokenProcess()
+    const pid = await spawnTokenProcess(token.tokenName)
     await loadTokenProcess(token, pid)
 
     return pid
@@ -38,12 +38,12 @@ export async function createRepoToken(token: RepoToken) {
   }
 }
 
-async function spawnTokenProcess() {
+async function spawnTokenProcess(tokenName: string) {
   const signer = await getSigner({ injectedSigner: false })
   const aosDetails = await getAosDetails()
   const tags = [
     { name: 'App-Name', value: 'aos' },
-    { name: 'Name', value: 'Protocol.Land Repo Token' },
+    { name: 'Name', value: tokenName || 'Protocol.Land Repo Token' },
     { name: 'Process-Type', value: 'token' },
     { name: 'aos-Version', value: aosDetails.version }
   ] as Tag[]
