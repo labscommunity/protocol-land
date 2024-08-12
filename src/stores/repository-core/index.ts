@@ -31,6 +31,7 @@ import {
   handleAcceptContributor,
   handleCancelContributorInvite,
   handleRejectContributor,
+  handleSaveRepoToken,
   loadRepository,
   saveRepository
 } from './actions'
@@ -99,6 +100,29 @@ const createRepoCoreSlice: StateCreator<CombinedSlices, [['zustand/immer', never
       set((state) => {
         state.repoCoreState.selectedRepo.repo!.decentralized = true
       })
+    },
+    saveRepoTokenDetails: async (token) => {
+      const repo = get().repoCoreState.selectedRepo.repo
+      const userAddress = get().authState.address
+
+      if (!repo || !userAddress) {
+        toast.error('Not authorized to update token.')
+        return
+      }
+
+      const { error, response } = await withAsync(() => handleSaveRepoToken(repo.id, token, userAddress))
+
+      if (error) {
+        toast.error('Failed to save token.')
+        return
+      }
+
+      if (response) {
+        set((state) => {
+          state.repoCoreState.selectedRepo.repo!.token = response
+        })
+        toast.success('Token saved.')
+      }
     },
     isRepoOwner: () => {
       const repo = get().repoCoreState.selectedRepo.repo

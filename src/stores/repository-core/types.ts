@@ -1,6 +1,6 @@
 import { UserCommit, UserContributionData, UserPROrIssue } from '@/lib/user'
 import { CommitResult } from '@/types/commit'
-import { Deployment, Domain, GithubSync, Repo } from '@/types/repository'
+import { Deployment, Domain, GithubSync, Repo, RepoToken } from '@/types/repository'
 
 export interface RepoCoreSlice {
   repoCoreState: RepoCoreState
@@ -68,7 +68,8 @@ export type RepoCoreActions = {
   loadFilesFromRepo: () => Promise<void>
   reloadFilesOnCurrentFolder: () => Promise<void>
   setRepoContributionStats: (data: UserContributionData) => void
-  setRepoDecentralized: (decentralized: boolean) => void
+  setRepoDecentralized: () => void
+  saveRepoTokenDetails: (token: Partial<RepoToken>) => Promise<void>
   isRepoOwner: () => boolean
   isContributor: () => boolean
   reset: () => void
