@@ -41,7 +41,7 @@ export default function RepoHeader({ repo, isLoading, owner, parentRepo }: Props
   const [tokenBalLoading, setTokenBalLoading] = React.useState(false)
   const [tokenBal, setTokenBal] = React.useState<string>('0')
   const [decentralizeError, setDecentralizeError] = React.useState<ErrorMessageTypes | null>(null)
-  const [isDecentralized, setIsDecentralized] = React.useState(repo?.decentralized || false)
+  const [isDecentralized, setIsDecentralized] = React.useState(false)
   const [decentralizeStatus, setDecentralizeStatus] = React.useState<ApiStatus>('IDLE')
   const [isForkModalOpen, setIsForkModalOpen] = React.useState(false)
   const [showCloneDropdown, setShowCloneDropdown] = React.useState(false)
@@ -49,7 +49,11 @@ export default function RepoHeader({ repo, isLoading, owner, parentRepo }: Props
   const location = useLocation()
   const navigate = useNavigate()
   const { downloadRepository } = useRepository(repo?.id, repo?.name)
-  const [setRepoDecentralized, isRepoOwner] = useGlobalStore((state) => [state.repoCoreActions.setRepoDecentralized, state.repoCoreActions.isRepoOwner])
+  const [setRepoDecentralized, isRepoOwner, setRepoTokenProcessId] = useGlobalStore((state) => [
+    state.repoCoreActions.setRepoDecentralized,
+    state.repoCoreActions.isRepoOwner,
+    state.repoCoreActions.setRepoTokenProcessId
+  ])
   const [repoHeaderState] = useRepoHeaderStore((state) => [state.repoHeaderState])
 
   React.useEffect(() => {
@@ -60,6 +64,12 @@ export default function RepoHeader({ repo, isLoading, owner, parentRepo }: Props
       })
     }
   }, [repo])
+
+  React.useEffect(() => {
+    if (isLoading === true) {
+      setIsDecentralized(false)
+    }
+  }, [isLoading])
 
   React.useEffect(() => {
     if (repo && repo?.decentralized === true && !isLoading) {
@@ -138,6 +148,7 @@ export default function RepoHeader({ repo, isLoading, owner, parentRepo }: Props
       }
 
       await decentralizeRepo(repo.id, tokenId)
+      setRepoTokenProcessId(tokenId)
       createConfetti()
       setIsDecentralized(evt.target.checked)
       setDecentralizeStatus('SUCCESS')
@@ -195,7 +206,7 @@ export default function RepoHeader({ repo, isLoading, owner, parentRepo }: Props
 
     window.open(`https://www.ao.link/#/token/${repo.token.processId}`, '_blank')
   }
-
+  console.log({ isDecentralized })
   return (
     <div className="flex flex-col">
       <div className="flex justify-between">

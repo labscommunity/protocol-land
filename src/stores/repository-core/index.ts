@@ -125,6 +125,26 @@ const createRepoCoreSlice: StateCreator<CombinedSlices, [['zustand/immer', never
         toast.success('Token saved.')
       }
     },
+    setRepoTokenProcessId: (processId) => {
+      const repo = get().repoCoreState.selectedRepo.repo
+      const userAddress = get().authState.address
+
+      if (!repo || !userAddress) {
+        toast.error('Not authorized to update token.')
+        return
+      }
+
+      const token = repo.token
+
+      if (!token) {
+        toast.error('Token not found.')
+        return
+      }
+
+      set((state) => {
+        state.repoCoreState.selectedRepo.repo!.token!.processId = processId
+      })
+    },
     isRepoOwner: () => {
       const repo = get().repoCoreState.selectedRepo.repo
       const userAddress = get().authState.address
