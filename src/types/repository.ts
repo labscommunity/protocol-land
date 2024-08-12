@@ -13,6 +13,7 @@ export type Repo = {
   description: string
   defaultBranch: string
   dataTxId: string
+  token: RepoToken | null | undefined
   uploadStrategy: 'DEFAULT' | 'ARSEEDING'
   owner: string
   pullRequests: PullRequest[]
@@ -30,6 +31,22 @@ export type Repo = {
   privateStateTxId?: string
   contributorInvites: ContributorInvite[]
   githubSync: GithubSync | null
+  decentralized?: boolean
+}
+
+export type RepoToken = {
+  tokenName: string
+  tokenTicker: string
+  denomination: string
+  totalSupply: string
+  tokenImage: string
+  allocations: Allocation[]
+  processId?: string
+}
+
+export type Allocation = {
+  address: string
+  percentage: string
 }
 
 export interface GithubSync {
