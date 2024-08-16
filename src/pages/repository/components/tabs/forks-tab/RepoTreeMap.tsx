@@ -1,6 +1,6 @@
 import '@xyflow/react/dist/base.css'
 
-import { addEdge, Position, ReactFlow, useEdgesState, useNodesState, useReactFlow } from '@xyflow/react'
+import { addEdge, ReactFlow, useEdgesState, useNodesState, useReactFlow } from '@xyflow/react'
 import React from 'react'
 import { useCallback } from 'react'
 
@@ -15,7 +15,8 @@ const nodeTypes = {
 export default function RepoTreeMap() {
   const reactFlow = useReactFlow()
   const [repoHierarchy] = useGlobalStore((state) => [state.repoCoreState.selectedRepo.repoHierarchy])
-  const [nodes, test, onNodesChange] = useNodesState(repoHierarchy.nodes)
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [nodes, _, onNodesChange] = useNodesState(repoHierarchy.nodes)
   const [edges, setEdges, onEdgesChange] = useEdgesState(repoHierarchy.edges)
   const onConnect = useCallback((params: any) => setEdges((els) => addEdge(params, els)), [])
   React.useEffect(() => {
