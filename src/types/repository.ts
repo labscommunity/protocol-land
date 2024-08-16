@@ -32,6 +32,7 @@ export type Repo = {
   contributorInvites: ContributorInvite[]
   githubSync: GithubSync | null
   decentralized?: boolean
+  primary?: boolean
 }
 
 export type RepoToken = {

@@ -109,3 +109,12 @@ export const handleSaveRepoToken = async (id: string, repoToken: Partial<RepoTok
 
   return repoTokenDetails
 }
+
+export const fetchRepoHierarchy = async (id: string) => {
+  const { Messages } = await dryrun({
+    process: AOS_PROCESS_ID,
+    tags: getTags({ Action: 'Get-Repo-Hierarchy', Id: id })
+  })
+
+  return JSON.parse(Messages[0].Data)
+}
