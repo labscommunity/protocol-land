@@ -27,7 +27,7 @@ export async function getAllHackathons(): Promise<Hackathon[]> {
 export async function getHackathonById(id: string): Promise<Hackathon | null> {
   const args = {
     tags: getTags({
-      Action: "Get-Hackathon-By-Id",
+      Action: 'Get-Hackathon-By-Id',
       Id: id
     })
   } as any
@@ -51,7 +51,7 @@ export async function postNewHackathon(hackathon: NewHackatonItem): Promise<void
     tags: getTags({
       Action: 'Create-Hackathon'
     }),
-    data: hackathon
+    data: JSON.stringify(hackathon)
   } as any
 
   await sendMessage(args)
@@ -62,7 +62,7 @@ export async function postUpdatedHackathon(hackathon: Partial<Hackathon>): Promi
     tags: getTags({
       Action: 'Update-Hackathon'
     }),
-    data: hackathon
+    data: JSON.stringify(hackathon)
   } as any
 
   await sendMessage(args)
@@ -77,7 +77,7 @@ export async function participate(hackathonId: string, teamId?: string): Promise
   } as any
 
   if (teamId) {
-    args.tags.TeamId = teamId
+    args.tags['Team-Id'] = teamId
   }
 
   args.tags = getTags(args.tags)
