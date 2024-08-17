@@ -7,7 +7,7 @@ import { uploadDetailsReadme } from './uploadDetailsReadme'
 import { uploadLogo } from './uploadLogo'
 
 export async function prepareHackathonItemToPost(hackathonItem: PrepareHackathonItemProps): Promise<NewHackatonItem> {
-  const { hackathonLogoFile, hostLogoFile, details } = hackathonItem
+  const { hackathonLogoFile, hostLogoFile, details, ...rest } = hackathonItem
 
   const id = uuid()
   const { response: hackathonLogo } = await withAsync(() => uploadLogo(hackathonLogoFile, id, 'hackathon-logo'))
@@ -21,7 +21,7 @@ export async function prepareHackathonItemToPost(hackathonItem: PrepareHackathon
   if (!descriptionTxId) throw 'Error posting hackathon details'
 
   return {
-    ...hackathonItem,
+    ...rest,
     id,
     hackathonLogo: hackathonLogo,
     hostLogo: hostLogo,
