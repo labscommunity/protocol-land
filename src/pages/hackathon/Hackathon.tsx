@@ -73,6 +73,11 @@ export default function Hackathon() {
               <FadeLoader color="#56ADD9" />
             </div>
           )}
+          {hackathons.length === 0 && status !== 'PENDING' && (
+            <div className="w-full py-16 flex justify-center items-center">
+              <h1 className="text-gray-600 text-2xl font-thin tracking-wider">No Hackathons at the moment</h1>
+            </div>
+          )}
           {hackathons.map((item) => {
             return <HackathonItem details={item} />
           })}

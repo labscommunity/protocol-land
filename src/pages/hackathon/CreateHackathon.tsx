@@ -639,8 +639,8 @@ export default function CreateHackathon() {
 
         <div className="w-full flex items-center justify-center">
           <Button
-            // isLoading={status === 'PENDING'}
-            // disabled={status === 'PENDING'}
+            isLoading={status === 'PENDING'}
+            disabled={status === 'PENDING'}
             onClick={handleSubmit(handleHackathonSubmit)}
             variant="primary-solid"
             className="w-44 justify-center"
