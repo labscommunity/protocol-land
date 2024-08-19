@@ -14,7 +14,10 @@ const nodeTypes = {
 
 export default function RepoTreeMap() {
   const reactFlow = useReactFlow()
-  const [repoHierarchy] = useGlobalStore((state) => [state.repoCoreState.selectedRepo.repoHierarchy])
+  const [repoHierarchy, fetchRepoHierarchy] = useGlobalStore((state) => [
+    state.repoCoreState.selectedRepo.repoHierarchy,
+    state.repoCoreActions.fetchRepoHierarchy
+  ])
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [nodes, _, onNodesChange] = useNodesState(repoHierarchy.nodes)
   const [edges, setEdges, onEdgesChange] = useEdgesState(repoHierarchy.edges)
@@ -22,6 +25,11 @@ export default function RepoTreeMap() {
   React.useEffect(() => {
     reactFlow.setViewport({ x: 10, y: 200, zoom: 0.7 })
   }, [reactFlow])
+
+  React.useEffect(() => {
+    fetchRepoHierarchy()
+  }, [])
+  
   return (
     <>
       <ReactFlow

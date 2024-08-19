@@ -17,9 +17,7 @@ export const CustomNode = memo(({ data }: { data: TreeNodeData }) => {
         <div className="rounded-full w-12 h-12 flex justify-center items-center bg-gray-100 text-lg font-bold">SK</div>
         <div className="ml-2 flex-1">
           <div className="line-clamp-1 text-lg font-semibold">{data.name}</div>
-          <div className="text-gray-500 italic line-clamp-1">
-            test test test test test test test test test test test tgest test test
-          </div>
+          <div className="text-gray-500 italic line-clamp-1">{data.description || 'No description'}</div>
         </div>
 
         {data.isCurrentRepo && (
