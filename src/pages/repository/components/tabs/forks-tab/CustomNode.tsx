@@ -20,16 +20,10 @@ export const CustomNode = memo(({ data }: { data: TreeNodeData }) => {
           <div className="text-gray-500 italic line-clamp-1">{data.description || 'No description'}</div>
         </div>
 
-        {data.isCurrentRepo && (
-          <div className="absolute bottom-[-38px] w-full flex items-center justify-center left-0 text-lg font-semibold">
-            You
-          </div>
-        )}
-        {data.origin && (
-          <div className="absolute bottom-[-38px] w-full flex items-center justify-center left-0 text-lg font-semibold">
-            Origin
-          </div>
-        )}
+        <div className="flex items-center gap-6 absolute left-0 bottom-[-38px] w-full justify-center">
+          {data.origin && <div className="flex items-center justify-center text-lg font-semibold">Origin</div>}
+          {data.isCurrentRepo && <div className="flex items-center justify-center text-lg font-semibold">You</div>}
+        </div>
       </div>
       <div className="w-full flex mt-2 items-center gap-2 py-1">
         {data.primary && (
