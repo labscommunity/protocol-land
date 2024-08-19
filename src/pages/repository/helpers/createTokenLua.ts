@@ -3,7 +3,6 @@ import { RepoToken } from '@/types/repository'
 export function createTokenLua(token: RepoToken): string {
   let luaCode = `
 local bint = require('.bint')(256)
-local ao = require('ao')
 local json = require('json')
 
 utils = {
