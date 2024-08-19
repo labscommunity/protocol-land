@@ -44,7 +44,7 @@ export default function HackathonDetails() {
     return tabNames.indexOf(tabName)
   }, [tabName])
   function goBack() {
-    navigate(`/hackathon`)
+    navigate(-1)
   }
 
   function handleTabChangeEventTracking(idx: number) {
@@ -69,6 +69,12 @@ export default function HackathonDetails() {
     if (!selectedHackathon) return
 
     navigate(`/hackathon/${selectedHackathon.id}/participate`)
+  }
+
+  async function handleSubmitButton() {
+    if (!selectedHackathon) return
+
+    navigate(`/hackathon/${selectedHackathon.id}/submit`)
   }
 
   const activeClasses = 'border-b-[2px] border-primary-600 text-gray-900 font-medium'
@@ -129,7 +135,7 @@ export default function HackathonDetails() {
           </div>
           {address && status === 'RUNNING' && (
             <div className="flex flex-col">
-              {isAlreadyParticipant && <Button variant="primary-solid">Submit</Button>}
+              {isAlreadyParticipant && <Button variant="primary-solid" onClick={handleSubmitButton}>Submit</Button>}
               {!isAlreadyParticipant && (
                 <Button onClick={handleParticipate} variant="primary-solid">
                   Participate

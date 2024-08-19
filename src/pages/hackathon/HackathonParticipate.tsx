@@ -16,8 +16,7 @@ const HackathonParticipate = () => {
   const Component = participateHackathonSteps[stepsComplete as keyof typeof participateHackathonSteps]
 
   function goBack() {
-    if (!selectedHackathon) return
-    navigate(`/hackathon/${selectedHackathon.id}`)
+    navigate(-1)
   }
 
   return (

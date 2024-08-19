@@ -68,7 +68,10 @@ export type Submission = {
   timestamp: number
   isWinner: boolean
   prizeIds: string[]
+  status: HackathonSubmissionStatus
 }
+
+export type HackathonSubmissionStatus = 'DRAFT' | 'PUBLISHED'
 
 export type Prize = {
   id: string

@@ -8,15 +8,18 @@ import {
   createHackathonTeam,
   getAllHackathons,
   getHackathonById,
+  getHackathonSubmission,
   participate,
   postNewHackathon,
   postUpdatedHackathon,
+  saveHackathonSubmission,
   selectPrizeWinner
 } from './actions'
 import { HackathonSlice, HackathonState } from './types'
 const initialHackathonState: HackathonState = {
   hackathons: [],
   selectedHackathon: null,
+  selectedSubmission: null,
   status: 'IDLE',
   error: null
 }
@@ -27,6 +30,11 @@ const createHackathonSlice: StateCreator<CombinedSlices, [['zustand/immer', neve
 ) => ({
   hackathonState: initialHackathonState,
   hackathonActions: {
+    resetSelectedSubmission: () => {
+      set((state) => {
+        state.hackathonState.selectedSubmission = null
+      })
+    },
     fetchAllHackathons: async () => {
       set((state) => {
         state.hackathonState.status = 'PENDING'
@@ -205,6 +213,41 @@ const createHackathonSlice: StateCreator<CombinedSlices, [['zustand/immer', neve
 
         return response
       }
+    },
+    fetchHackathonSubmission: async (hackathonId) => {
+      const selectedHackathon = get().hackathonState.selectedHackathon
+      const address = get().authState.address
+
+      if (!selectedHackathon || !address) {
+        return
+      }
+
+      const { response } = await withAsync(() => getHackathonSubmission(hackathonId, address))
+
+      if (!response) {
+        return
+      }
+
+      set((state) => {
+        state.hackathonState.selectedSubmission = response
+      })
+    },
+    saveSubmission: async (hackathonId, submission) => {
+      const { error } = await withAsync(() => saveHackathonSubmission(hackathonId, submission))
+
+      if (error) {
+        toast.error('Failed to save submission.')
+        return
+      }
+
+      set((state) => {
+        state.hackathonState.selectedSubmission = {
+          ...state.hackathonState.selectedSubmission,
+          ...submission
+        }
+      })
+
+      toast.success('Submission saved successfully.')
     }
   }
 })
