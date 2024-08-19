@@ -1,5 +1,5 @@
 import { BiCodeAlt } from 'react-icons/bi'
-import { BsRocketTakeoff } from "react-icons/bs";
+import { BsRocketTakeoff } from 'react-icons/bs'
 import { FiGitBranch, FiGitCommit, FiGitPullRequest, FiSettings } from 'react-icons/fi'
 import { VscIssues } from 'react-icons/vsc'
 
@@ -38,10 +38,10 @@ export const rootTabConfig = [
     getPath: (id: string, _?: string) => `/repository/${id}/pulls`
   },
   {
-    title: 'Forks',
+    title: 'Journey',
     Component: ForksTab,
     Icon: FiGitBranch,
-    getPath: (id: string, _?: string) => `/repository/${id}/forks`
+    getPath: (id: string, _?: string) => `/repository/${id}/journey`
   },
   {
     title: 'Deployments',

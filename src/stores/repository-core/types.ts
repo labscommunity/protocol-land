@@ -1,3 +1,5 @@
+import { Edge, Node } from '@xyflow/react'
+
 import { UserCommit, UserContributionData, UserPROrIssue } from '@/lib/user'
 import { CommitResult } from '@/types/commit'
 import { Deployment, Domain, GithubSync, Repo, RepoToken } from '@/types/repository'
@@ -12,6 +14,7 @@ export type RepoCoreState = {
     status: ApiStatus
     error: unknown | null
     repo: Repo | null
+    repoHierarchy: RepoHierarchy
     statistics: {
       commits: UserCommit[]
       pullRequests: UserPROrIssue[]
@@ -43,6 +46,11 @@ export type RepoCoreState = {
   }
 }
 
+export type RepoHierarchy = {
+  nodes: Node[]
+  edges: Edge[]
+}
+
 export type RepoCoreActions = {
   updateRepoName: (name: string) => Promise<void>
   updateRepoDescription: (description: string) => Promise<void>
@@ -65,6 +73,7 @@ export type RepoCoreActions = {
   fetchAndLoadRepository: (id: string, branchName?: string) => Promise<string>
   fetchAndLoadParentRepository: (repo: Repo) => Promise<void>
   fetchAndLoadForkRepository: (id: string) => Promise<void>
+  fetchRepoHierarchy: () => Promise<void>
   loadFilesFromRepo: () => Promise<void>
   reloadFilesOnCurrentFolder: () => Promise<void>
   setRepoContributionStats: (data: UserContributionData) => void
