@@ -373,15 +373,15 @@ export default function SubmitHackathon() {
                       {...register(`images.${idx}.url`)}
                       className={clsx(
                         'bg-white border-[1px] text-gray-900 text-base rounded-lg hover:shadow-[0px_2px_4px_0px_rgba(0,0,0,0.10)] focus:border-primary-5000 focus:border-[1.5px] block w-full px-3 py-[10px] outline-none',
-                        errors.images && errors.images[idx] && errors.images[idx].url
+                        errors.images && errors.images[idx] && errors.images[idx]?.url
                           ? 'border-red-500'
                           : 'border-gray-300'
                       )}
                       placeholder="Ex: https://example.com/image.png"
                     />
                   </div>
-                  {errors.images && errors.images[idx] && errors.images[idx].url && (
-                    <p className="text-red-500 text-sm italic mt-2">{errors.images[idx].url?.message}</p>
+                  {errors.images && errors.images[idx] && errors.images[idx]?.url && (
+                    <p className="text-red-500 text-sm italic mt-2">{errors.images[idx]?.url?.message}</p>
                   )}
                 </div>
               ))}
@@ -422,15 +422,15 @@ export default function SubmitHackathon() {
                       {...register(`links.${idx}.url`)}
                       className={clsx(
                         'bg-white border-[1px] text-gray-900 text-base rounded-lg hover:shadow-[0px_2px_4px_0px_rgba(0,0,0,0.10)] focus:border-primary-5000 focus:border-[1.5px] block w-full px-3 py-[10px] outline-none',
-                        errors.links && errors.links[idx] && errors.links[idx].url
+                        errors.links && errors.links[idx] && errors.links[idx]?.url
                           ? 'border-red-500'
                           : 'border-gray-300'
                       )}
                       placeholder="Ex: https://protocol.land/#/repository/6ace6247-d267-463d-b5bd-7e50d98c3693"
                     />
                   </div>
-                  {errors.links && errors.links[idx] && errors.links[idx].url && (
-                    <p className="text-red-500 text-sm italic mt-2">{errors.links[idx].url?.message}</p>
+                  {errors.links && errors.links[idx] && errors.links[idx]?.url && (
+                    <p className="text-red-500 text-sm italic mt-2">{errors.links[idx]?.url?.message}</p>
                   )}
                 </div>
               ))}
