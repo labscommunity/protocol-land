@@ -1,4 +1,4 @@
-import { Hackathon, NewHackatonItem, Submission, Team } from '@/types/hackathon'
+import { Hackathon, NewHackatonItem, Participant, Submission, Team } from '@/types/hackathon'
 
 export interface HackathonSlice {
   hackathonState: HackathonState
@@ -11,6 +11,7 @@ export type HackathonState = {
   hackathons: Hackathon[]
   selectedHackathon: Hackathon | null
   selectedSubmission: Partial<Submission> | null
+  participant: Partial<Participant> | null
 }
 
 export type HackathonActions = {
@@ -23,6 +24,9 @@ export type HackathonActions = {
   createNewTeam: (name: string) => Promise<void | Team>
   assignPrizeToSubmission: (hackathonId: string, prizeId: string, participantAddress: string) => Promise<boolean | void>
   fetchHackathonSubmission: (hackathonId: string) => Promise<void>
-  saveSubmission: (hackathonId: string, submission: Partial<Submission>) => Promise<void>
+  saveSubmission: (hackathonId: string, submission: Partial<Submission>, publish?: boolean) => Promise<void>
+  publishSubmission: (hackathonId: string) => Promise<void>
   resetSelectedSubmission: () => void
+  isParticipant: () => Promise<boolean>
+  setParticipant: () => void
 }

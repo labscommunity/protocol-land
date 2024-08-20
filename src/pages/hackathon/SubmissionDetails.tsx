@@ -19,7 +19,7 @@ export default function SubmissionDetails() {
   ])
 
   React.useEffect(() => {
-    if (!selectedHackathon) navigate(`/hackathon`)
+    if (!selectedHackathon) navigate(-1)
   }, [selectedHackathon])
 
   const navigate = useNavigate()

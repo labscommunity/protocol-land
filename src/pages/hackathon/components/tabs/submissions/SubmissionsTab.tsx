@@ -66,6 +66,10 @@ export default function SubmissionsTab({ selectedHackathon }: Props) {
     navigate(`/hackathon/${selectedHackathon.id}/submission/${submission.submittedBy}`)
   }
 
+  function handleSubmissionEditClick() {
+    navigate(`/hackathon/${selectedHackathon.id}/submit`)
+  }
+
   function getPrizeById(id: string) {
     return selectedHackathon.prizes[id]
   }
@@ -77,7 +81,7 @@ export default function SubmissionsTab({ selectedHackathon }: Props) {
   return (
     <div className="flex flex-col w-full">
       {draftSubmissions.length > 0 && (
-        <div className="w-full flex flex-col gap-3 border-b-[1px] border-b-gray-200 pb-6">
+        <div className="w-full flex flex-col gap-3 border-b-[1px] mb-6 border-b-gray-200 pb-6">
           <h1 className="text-xl font-medium text-gray-600">My Submission Draft</h1>
           {draftSubmissions.map((submission, idx) => (
             <div
@@ -113,14 +117,6 @@ export default function SubmissionsTab({ selectedHackathon }: Props) {
                       >
                         {submission?.shortDescription || 'No short description'}
                       </p>
-                      {submission?.shortDescription?.length > 100 && ( // Adjust the length check as needed
-                        <Link
-                          to={`/hackathon/${selectedHackathon.id}/submission/${submission.submittedBy}`}
-                          className="text-primary-700 font-medium hover:underline text-sm"
-                        >
-                          Edit
-                        </Link>
-                      )}
                     </div>
                     <div>
                       <p className="text-sm">By {getSubmissionBy(submission)}</p>
@@ -129,7 +125,7 @@ export default function SubmissionsTab({ selectedHackathon }: Props) {
                 </div>
               </div>
               <div className="w-[30%] flex flex-col items-end gap-1">
-                <div onClick={() => handleSubmissionViewClick(submission)} className="flex flex-1 items-center">
+                <div onClick={() => handleSubmissionEditClick()} className="flex flex-1 items-center">
                   <Button variant={'primary-solid'}>Edit</Button>
                 </div>
               </div>
@@ -183,9 +179,9 @@ export default function SubmissionsTab({ selectedHackathon }: Props) {
                         textOverflow: 'ellipsis'
                       }}
                     >
-                      {submission.shortDescription}
+                      {submission?.shortDescription || 'No short description'}
                     </p>
-                    {submission.shortDescription.length > 100 && ( // Adjust the length check as needed
+                    {submission?.shortDescription?.length > 100 && ( // Adjust the length check as needed
                       <Link
                         to={`/hackathon/${selectedHackathon.id}/submission/${submission.submittedBy}`}
                         className="text-primary-700 font-medium hover:underline text-sm"
@@ -202,7 +198,7 @@ export default function SubmissionsTab({ selectedHackathon }: Props) {
             </div>
             <div className="w-[30%] flex flex-col items-end gap-1">
               <div className="flex flex-col gap-1">
-                {submission.prizeIds.map((prizeId) => {
+                {submission?.prizeIds.map((prizeId) => {
                   const prize = getPrizeById(prizeId)
                   if (!prize) return null
                   return (
@@ -225,8 +221,29 @@ export default function SubmissionsTab({ selectedHackathon }: Props) {
               <div className="flex flex-col">
                 <span>Submitted on {format(+submission.timestamp, 'MMM dd, yyyy')}</span>
               </div>
-              <div onClick={() => handleSubmissionViewClick(submission)} className="flex flex-1 items-center">
+              <div className="flex flex-1 items-center gap-4">
+                {submission.submittedBy &&
+                  (submission.submittedBy === participant?.address ||
+                    submission.submittedBy === participant?.teamId) && (
+                    <Button
+                      onClick={() => handleSubmissionEditClick()}
+                      style={{
+                        boxShadow: submission.isWinner
+                          ? '2px 2px 0.5em rgba(155, 122, 89, 0.55),inset 1px 1px 0 rgba(255, 255, 255, 0.9),inset -1px -1px 0 rgba(0, 0, 0, 0.5)'
+                          : undefined
+                      }}
+                      className={
+                        submission.isWinner
+                          ? 'h-[35px] text-white bg-transparent font-medium hover:bg-transparent'
+                          : undefined
+                      }
+                      variant={'primary-solid'}
+                    >
+                      Edit
+                    </Button>
+                  )}
                 <Button
+                  onClick={() => handleSubmissionViewClick(submission)}
                   style={{
                     boxShadow: submission.isWinner
                       ? '2px 2px 0.5em rgba(155, 122, 89, 0.55),inset 1px 1px 0 rgba(255, 255, 255, 0.9),inset -1px -1px 0 rgba(0, 0, 0, 0.5)'

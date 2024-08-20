@@ -7,6 +7,7 @@ import toast from 'react-hot-toast'
 import { AiFillCamera } from 'react-icons/ai'
 import { FaArrowLeft, FaPlus, FaTrash } from 'react-icons/fa'
 import { useNavigate, useParams } from 'react-router-dom'
+import { FadeLoader } from 'react-spinners'
 
 import { Button } from '@/components/common/buttons'
 import { isInvalidInput } from '@/helpers/isInvalidInput'
@@ -18,7 +19,9 @@ import { prepareHackathonSubmissionToSave } from './utils/prepareHackathonSubmis
 import { prepareSubmissionToLoad } from './utils/prepareSubmissionToLoad'
 
 export default function SubmitHackathon() {
+  const [loadingStatus, setLoadingStatus] = React.useState<boolean>(false)
   const [status, setStatus] = React.useState<ApiStatus>('IDLE')
+  const [draftStatus, setDraftStatus] = React.useState<ApiStatus>('IDLE')
   const projectLogoInputRef = React.useRef<HTMLInputElement>(null)
   const { id } = useParams()
   const [projectLogoUrl, setProjectLogoUrl] = React.useState<string | null>(null)
@@ -41,11 +44,20 @@ export default function SubmitHackathon() {
     remove: removeImages
   } = useFieldArray({ name: 'images', control })
   const { fields: linksFields, append: appendLinks, remove: removeLinks } = useFieldArray({ name: 'links', control })
-  const [fetchHackathonSubmission, saveSubmission, selectedSubmission, selectedHackathon] = useGlobalStore((state) => [
+  const [
+    fetchHackathonById,
+    fetchHackathonSubmission,
+    saveSubmission,
+    selectedSubmission,
+    selectedHackathon,
+    fetchSubmissionStatus
+  ] = useGlobalStore((state) => [
+    state.hackathonActions.fetchHackathonById,
     state.hackathonActions.fetchHackathonSubmission,
     state.hackathonActions.saveSubmission,
     state.hackathonState.selectedSubmission,
-    state.hackathonState.selectedHackathon
+    state.hackathonState.selectedHackathon,
+    state.hackathonState.status
   ])
 
   const watchDetails = watch('details', '# My Project details') || ''
@@ -54,7 +66,29 @@ export default function SubmitHackathon() {
     if (id && selectedHackathon) {
       fetchHackathonSubmission(id)
     }
+
+    if (id && !selectedHackathon) {
+      fetchHackathonById(id)
+    }
   }, [id, selectedHackathon])
+
+  React.useEffect(() => {
+    if (loadingStatus) {
+      document.body.style.overflow = 'hidden'
+    } else {
+      document.body.style.overflow = 'auto'
+    }
+  }, [loadingStatus])
+
+  React.useEffect(() => {
+    if (fetchSubmissionStatus === 'PENDING') {
+      setLoadingStatus(true)
+    }
+
+    if (fetchSubmissionStatus === 'SUCCESS') {
+      setLoadingStatus(false)
+    }
+  }, [fetchSubmissionStatus])
 
   React.useEffect(() => {
     if (selectedSubmission) {
@@ -103,8 +137,8 @@ export default function SubmitHackathon() {
     setProjectLogoUrl(evt.target.value)
   }
 
-  async function handleProjectSubmit(data: HackathonSubmissionSchema) {
-    setStatus('PENDING')
+  async function handleProjectSave(data: HackathonSubmissionSchema) {
+    setDraftStatus('PENDING')
 
     if (data.details && selectedSubmission && selectedSubmission.descriptionTxId) {
       try {
@@ -127,11 +161,38 @@ export default function SubmitHackathon() {
     const updatedFields = getUpdatedFields(selectedSubmission || {}, preparedSubmissionToSave)
     if (Object.keys(updatedFields).length === 0) {
       toast.success('No changes to update.')
-      setStatus('SUCCESS')
+      setDraftStatus('SUCCESS')
 
       return
     }
     await saveSubmission(id!, updatedFields)
+    setDraftStatus('SUCCESS')
+  }
+
+  async function handleProjectSubmit(data: HackathonSubmissionSchema) {
+    setStatus('PENDING')
+
+    if (data.details && selectedSubmission && selectedSubmission.descriptionTxId) {
+      try {
+        const description = await fetch(`https://arweave.net/${selectedSubmission.descriptionTxId}`)
+        const originalDetails = await description.text()
+
+        if (originalDetails === data.details) {
+          delete data.details
+        }
+      } catch (error) {
+        console.log(error)
+      }
+    }
+
+    const preparedSubmissionToSave = await prepareHackathonSubmissionToSave({
+      ...data,
+      projectLogoFile: projectLogoFile || undefined
+    })
+
+    const updatedFields = getUpdatedFields(selectedSubmission || {}, preparedSubmissionToSave)
+
+    await saveSubmission(id!, updatedFields, true)
     setStatus('SUCCESS')
   }
 
@@ -166,6 +227,13 @@ export default function SubmitHackathon() {
 
   return (
     <div className="h-full flex-1 flex flex-col max-w-[960px] px-8 mx-auto w-full my-6 gap-2">
+      {loadingStatus && (
+        <div className="fixed w-screen h-screen top-0 left-0 bg-black/50 z-50 overflow-hidden">
+          <div className="w-full h-full flex items-center justify-center">
+            <FadeLoader color="#56ADD9" />
+          </div>
+        </div>
+      )}
       <div className="flex relative">
         <Button onClick={goBack} variant="primary-solid" className="cursor-pointer z-40">
           <FaArrowLeft className="h-4 w-4 text-white" />
@@ -414,17 +482,42 @@ export default function SubmitHackathon() {
           </div>
         </div>
 
-        <div className="w-full flex items-center justify-center">
-          <Button
-            isLoading={status === 'PENDING'}
-            disabled={status === 'PENDING'}
-            onClick={handleSubmit(handleProjectSubmit)}
-            variant="primary-solid"
-            className="w-44 justify-center"
-          >
-            Submit
-          </Button>
-        </div>
+        {!selectedSubmission ||
+          (selectedSubmission && selectedSubmission.status === 'DRAFT' && (
+            <div className="w-full flex items-center justify-center gap-8">
+              <Button
+                isLoading={draftStatus === 'PENDING'}
+                disabled={draftStatus === 'PENDING'}
+                onClick={handleSubmit(handleProjectSave)}
+                variant="primary-outline"
+                className="w-44 justify-center"
+              >
+                Save Draft
+              </Button>
+              <Button
+                isLoading={status === 'PENDING'}
+                disabled={status === 'PENDING'}
+                onClick={handleSubmit(handleProjectSubmit)}
+                variant="primary-solid"
+                className="w-44 justify-center"
+              >
+                Submit
+              </Button>
+            </div>
+          ))}
+        {selectedSubmission && selectedSubmission.status === 'PUBLISHED' && (
+          <div className="w-full flex items-center justify-center gap-8">
+            <Button
+              isLoading={draftStatus === 'PENDING'}
+              disabled={draftStatus === 'PENDING'}
+              onClick={handleSubmit(handleProjectSave)}
+              variant="primary-solid"
+              className="w-44 justify-center"
+            >
+              Update Submission
+            </Button>
+          </div>
+        )}
       </div>
     </div>
   )

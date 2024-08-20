@@ -28,7 +28,7 @@ export async function getHackathonById(id: string): Promise<Hackathon | null> {
   const args = {
     tags: getTags({
       Action: 'Get-Hackathon-By-Id',
-      Id: id,
+      Id: id
     })
   } as any
 
@@ -125,7 +125,10 @@ export async function createHackathonTeam(payload: CreateHackathonTeam): Promise
   return hackathon.teams[id]
 }
 
-export async function getHackathonSubmission(hackathonId: string, participantAddress: string): Promise<Submission | null> {
+export async function getHackathonSubmission(
+  hackathonId: string,
+  participantAddress: string
+): Promise<Submission | null> {
   const args = {
     tags: getTags({
       Action: 'Get-Hackathon-Submission',
@@ -154,6 +157,17 @@ export async function saveHackathonSubmission(hackathonId: string, submission: P
       Action: 'Save-Hackathon-Submission'
     }),
     data: JSON.stringify({ ...submission, id: hackathonId })
+  }
+
+  await sendMessage(args)
+}
+
+export async function publishHackathonSubmission(hackathonId: string): Promise<void> {
+  const args = {
+    tags: getTags({
+      Action: 'Publish-Hackathon-Submission',
+      Id: hackathonId
+    })
   }
 
   await sendMessage(args)
