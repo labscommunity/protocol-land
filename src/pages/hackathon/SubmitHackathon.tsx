@@ -482,29 +482,28 @@ export default function SubmitHackathon() {
           </div>
         </div>
 
-        {!selectedSubmission ||
-          (selectedSubmission && selectedSubmission.status === 'DRAFT' && (
-            <div className="w-full flex items-center justify-center gap-8">
-              <Button
-                isLoading={draftStatus === 'PENDING'}
-                disabled={draftStatus === 'PENDING'}
-                onClick={handleSubmit(handleProjectSave)}
-                variant="primary-outline"
-                className="w-44 justify-center"
-              >
-                Save Draft
-              </Button>
-              <Button
-                isLoading={status === 'PENDING'}
-                disabled={status === 'PENDING'}
-                onClick={handleSubmit(handleProjectSubmit)}
-                variant="primary-solid"
-                className="w-44 justify-center"
-              >
-                Submit
-              </Button>
-            </div>
-          ))}
+        {(!selectedSubmission || (selectedSubmission && selectedSubmission.status === 'DRAFT')) && (
+          <div className="w-full flex items-center justify-center gap-8">
+            <Button
+              isLoading={draftStatus === 'PENDING'}
+              disabled={draftStatus === 'PENDING'}
+              onClick={handleSubmit(handleProjectSave)}
+              variant="primary-outline"
+              className="w-44 justify-center"
+            >
+              Save Draft
+            </Button>
+            <Button
+              isLoading={status === 'PENDING'}
+              disabled={status === 'PENDING'}
+              onClick={handleSubmit(handleProjectSubmit)}
+              variant="primary-solid"
+              className="w-44 justify-center"
+            >
+              Submit
+            </Button>
+          </div>
+        )}
         {selectedSubmission && selectedSubmission.status === 'PUBLISHED' && (
           <div className="w-full flex items-center justify-center gap-8">
             <Button
