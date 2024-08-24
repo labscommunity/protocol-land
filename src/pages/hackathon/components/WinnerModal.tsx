@@ -45,8 +45,8 @@ export default function WinnerModal({ setIsOpen, isOpen, participantAddress }: W
       let hackathonPrizes: Record<string, Prize> | Prize[] = selectedHackathon.prizes || {}
       hackathonPrizes = Object.values(hackathonPrizes)
       const filteredPrizes = hackathonPrizes.filter((prize) => {
-        const assignedCount = Object.values(selectedHackathon.submissions).filter((submission) =>
-          submission.prizeIds.includes(prize.id)
+        const assignedCount = Object.values(selectedHackathon.submissions).filter(
+          (submission) => submission.status === 'PUBLISHED' && submission.prizeIds.includes(prize.id)
         ).length
         return assignedCount < prize.winningParticipantsCount
       })

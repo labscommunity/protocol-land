@@ -5,6 +5,7 @@ import { Link, useNavigate } from 'react-router-dom'
 
 import { Button } from '@/components/common/buttons'
 import { resolveUsernameOrShorten } from '@/helpers/resolveUsername'
+import { getHackathonStatus } from '@/pages/hackathon/utils/getHackathonStatus'
 import { useGlobalStore } from '@/stores/globalStore'
 import { Hackathon, Submission } from '@/types/hackathon'
 
@@ -18,11 +19,10 @@ export default function SubmissionsTab({ selectedHackathon }: Props) {
   const submissions = selectedHackathon?.submissions ? Object.values(selectedHackathon.submissions) : []
   const participant = selectedHackathon?.participants ? selectedHackathon.participants[address!] : null
   const publishedSubmissions = submissions.filter((submission) => submission.status === 'PUBLISHED')
-  const draftSubmissions = submissions.filter((submission) =>
-    submission.status === 'DRAFT' && participant?.teamId
-      ? participant.teamId === submission.submittedBy
-      : participant?.address === submission.submittedBy
+  const draftSubmissions = submissions.filter(
+    (submission) => submission.status === 'DRAFT' && participant?.address === submission.submittedBy
   )
+  const status = selectedHackathon && getHackathonStatus(selectedHackathon.startsAt, selectedHackathon.endsAt, () => {})
   function getSubmissionBy(submission: Submission) {
     //
     if (!submission || !selectedHackathon) return null
@@ -161,7 +161,7 @@ export default function SubmissionsTab({ selectedHackathon }: Props) {
                     'text-gray-600': !submission.isWinner
                   })}
                 >
-                  {submission.projectName}
+                  {submission.projectName || 'No project name'}
                 </h1>
               </div>
               <div className="w-full flex flex-col">
@@ -222,26 +222,24 @@ export default function SubmissionsTab({ selectedHackathon }: Props) {
                 <span>Submitted on {format(+submission.timestamp, 'MMM dd, yyyy')}</span>
               </div>
               <div className="flex flex-1 items-center gap-4">
-                {submission.submittedBy &&
-                  (submission.submittedBy === participant?.address ||
-                    submission.submittedBy === participant?.teamId) && (
-                    <Button
-                      onClick={() => handleSubmissionEditClick()}
-                      style={{
-                        boxShadow: submission.isWinner
-                          ? '2px 2px 0.5em rgba(155, 122, 89, 0.55),inset 1px 1px 0 rgba(255, 255, 255, 0.9),inset -1px -1px 0 rgba(0, 0, 0, 0.5)'
-                          : undefined
-                      }}
-                      className={
-                        submission.isWinner
-                          ? 'h-[35px] text-white bg-transparent font-medium hover:bg-transparent'
-                          : undefined
-                      }
-                      variant={'primary-solid'}
-                    >
-                      Edit
-                    </Button>
-                  )}
+                {submission.submittedBy && submission.submittedBy === participant?.address && status !== 'ENDED' && (
+                  <Button
+                    onClick={() => handleSubmissionEditClick()}
+                    style={{
+                      boxShadow: submission.isWinner
+                        ? '2px 2px 0.5em rgba(155, 122, 89, 0.55),inset 1px 1px 0 rgba(255, 255, 255, 0.9),inset -1px -1px 0 rgba(0, 0, 0, 0.5)'
+                        : undefined
+                    }}
+                    className={
+                      submission.isWinner
+                        ? 'h-[35px] text-white bg-transparent font-medium hover:bg-transparent'
+                        : undefined
+                    }
+                    variant={'primary-solid'}
+                  >
+                    Edit
+                  </Button>
+                )}
                 <Button
                   onClick={() => handleSubmissionViewClick(submission)}
                   style={{

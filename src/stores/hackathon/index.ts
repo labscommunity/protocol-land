@@ -240,6 +240,7 @@ const createHackathonSlice: StateCreator<CombinedSlices, [['zustand/immer', neve
       if (!response) {
         set((state) => {
           state.hackathonState.status = 'SUCCESS'
+          state.hackathonState.selectedSubmission = null  
         })
         return
       }
@@ -259,18 +260,13 @@ const createHackathonSlice: StateCreator<CombinedSlices, [['zustand/immer', neve
         }
       }
 
-      set((state) => {
-        state.hackathonState.selectedSubmission = {
-          ...(state.hackathonState.selectedSubmission || {}),
-          ...submission
-        }
-      })
-
       if (publish) {
         await get().hackathonActions.publishSubmission(hackathonId)
       } else {
         toast.success('Submission saved successfully.')
       }
+
+      await get().hackathonActions.fetchHackathonSubmission(hackathonId)
     },
     publishSubmission: async (hackathonId) => {
       const selectedSubmission = get().hackathonState.selectedSubmission
@@ -295,7 +291,7 @@ const createHackathonSlice: StateCreator<CombinedSlices, [['zustand/immer', neve
 
       toast.success('Submission published successfully.')
     },
-    isParticipant: async () => {
+    isParticipant: () => {
       const address = get().authState.address
       const selectedHackathon = get().hackathonState.selectedHackathon
       const participant = get().hackathonState.participant

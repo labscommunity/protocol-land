@@ -15,25 +15,16 @@ import { getHackathonStatus } from './utils/getHackathonStatus'
 
 export default function HackathonDetails() {
   const { tabName, id } = useParams()
-  const [
-    address,
-    participant,
-    selectedHackathon,
-    loadingStatus,
-    fetchHackathonById,
-    isTeamOwner,
-    reset,
-    isParticipant
-  ] = useGlobalStore((state) => [
-    state.authState.address,
-    state.hackathonState.participant,
-    state.hackathonState.selectedHackathon,
-    state.hackathonState.status,
-    state.hackathonActions.fetchHackathonById,
-    state.hackathonActions.isTeamOwner,
-    state.hackathonActions.reset,
-    state.hackathonActions.isParticipant
-  ])
+  const [address, participant, selectedHackathon, loadingStatus, fetchHackathonById, isTeamOwner, isParticipant] =
+    useGlobalStore((state) => [
+      state.authState.address,
+      state.hackathonState.participant,
+      state.hackathonState.selectedHackathon,
+      state.hackathonState.status,
+      state.hackathonActions.fetchHackathonById,
+      state.hackathonActions.isTeamOwner,
+      state.hackathonActions.isParticipant
+    ])
   const [status, setStatus] = React.useState('NOT_STARTED')
   const navigate = useNavigate()
 
@@ -41,8 +32,6 @@ export default function HackathonDetails() {
     if (id) {
       fetchHackathonById(id)
     }
-
-    return () => reset()
   }, [id])
 
   const statusText = React.useMemo<string>(() => {
@@ -60,7 +49,7 @@ export default function HackathonDetails() {
     return tabNames.indexOf(tabName)
   }, [tabName])
   function goBack() {
-    navigate(-1)
+    navigate('/hackathon')
   }
 
   function handleTabChangeEventTracking(idx: number) {

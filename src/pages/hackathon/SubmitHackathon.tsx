@@ -19,7 +19,6 @@ import { prepareHackathonSubmissionToSave } from './utils/prepareHackathonSubmis
 import { prepareSubmissionToLoad } from './utils/prepareSubmissionToLoad'
 
 export default function SubmitHackathon() {
-  const [loadingStatus, setLoadingStatus] = React.useState<boolean>(false)
   const [status, setStatus] = React.useState<ApiStatus>('IDLE')
   const [draftStatus, setDraftStatus] = React.useState<ApiStatus>('IDLE')
   const projectLogoInputRef = React.useRef<HTMLInputElement>(null)
@@ -44,57 +43,33 @@ export default function SubmitHackathon() {
     remove: removeImages
   } = useFieldArray({ name: 'images', control })
   const { fields: linksFields, append: appendLinks, remove: removeLinks } = useFieldArray({ name: 'links', control })
-  const [
-    fetchHackathonById,
-    fetchHackathonSubmission,
-    saveSubmission,
-    selectedSubmission,
-    selectedHackathon,
-    fetchSubmissionStatus
-  ] = useGlobalStore((state) => [
-    state.hackathonActions.fetchHackathonById,
-    state.hackathonActions.fetchHackathonSubmission,
-    state.hackathonActions.saveSubmission,
-    state.hackathonState.selectedSubmission,
-    state.hackathonState.selectedHackathon,
-    state.hackathonState.status
-  ])
+  const [fetchHackathonById, saveSubmission, selectedSubmission, selectedHackathon, fetchSubmissionStatus] =
+    useGlobalStore((state) => [
+      state.hackathonActions.fetchHackathonById,
+      state.hackathonActions.saveSubmission,
+      state.hackathonState.selectedSubmission,
+      state.hackathonState.selectedHackathon,
+      state.hackathonState.status
+    ])
 
   const watchDetails = watch('details', '# My Project details') || ''
 
   React.useEffect(() => {
-    if (id && selectedHackathon) {
-      fetchHackathonSubmission(id)
-    }
-
-    if (id && !selectedHackathon) {
+    if (id) {
       fetchHackathonById(id)
     }
-  }, [id, selectedHackathon])
-
-  React.useEffect(() => {
-    if (loadingStatus) {
-      document.body.style.overflow = 'hidden'
-    } else {
-      document.body.style.overflow = 'auto'
-    }
-  }, [loadingStatus])
+  }, [id])
 
   React.useEffect(() => {
     if (fetchSubmissionStatus === 'PENDING') {
-      setLoadingStatus(true)
-    }
-
-    if (fetchSubmissionStatus === 'SUCCESS') {
-      setLoadingStatus(false)
+      document.body.style.overflow = 'hidden'
+    } else {
+      document.body.style.overflow = 'auto'
+      if (selectedSubmission) {
+        handlePrepareSubmissionToLoad(selectedSubmission)
+      }
     }
   }, [fetchSubmissionStatus])
-
-  React.useEffect(() => {
-    if (selectedSubmission) {
-      handlePrepareSubmissionToLoad(selectedSubmission)
-    }
-  }, [selectedSubmission])
 
   const navigate = useNavigate()
 
@@ -225,9 +200,11 @@ export default function SubmitHackathon() {
     return changes
   }
 
+  const isReady = selectedHackathon && fetchSubmissionStatus === 'SUCCESS'
+
   return (
     <div className="h-full flex-1 flex flex-col max-w-[960px] px-8 mx-auto w-full my-6 gap-2">
-      {loadingStatus && (
+      {!isReady && (
         <div className="fixed w-screen h-screen top-0 left-0 bg-black/50 z-50 overflow-hidden">
           <div className="w-full h-full flex items-center justify-center">
             <FadeLoader color="#56ADD9" />
