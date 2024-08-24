@@ -14,11 +14,12 @@ import { getHackathonStatus } from './utils/getHackathonStatus'
 
 export default function HackathonDetails() {
   const { tabName, id } = useParams()
-  const [address, selectedHackathon, loadingStatus, fetchHackathonById] = useGlobalStore((state) => [
+  const [address, selectedHackathon, loadingStatus, fetchHackathonById, isTeamOwner] = useGlobalStore((state) => [
     state.authState.address,
     state.hackathonState.selectedHackathon,
     state.hackathonState.status,
-    state.hackathonActions.fetchHackathonById
+    state.hackathonActions.fetchHackathonById,
+    state.hackathonActions.isTeamOwner
   ])
   const [status, setStatus] = React.useState('NOT_STARTED')
   const navigate = useNavigate()
@@ -135,7 +136,13 @@ export default function HackathonDetails() {
           </div>
           {address && status === 'RUNNING' && (
             <div className="flex flex-col">
-              {isAlreadyParticipant && <Button variant="primary-solid" onClick={handleSubmitButton}>Submit</Button>}
+              {isAlreadyParticipant ? (
+                isTeamOwner() || !isAlreadyParticipant.teamId ? (
+                  <Button variant="primary-solid" onClick={handleSubmitButton}>
+                    Submit
+                  </Button>
+                ) : null
+              ) : null}
               {!isAlreadyParticipant && (
                 <Button onClick={handleParticipate} variant="primary-solid">
                   Participate

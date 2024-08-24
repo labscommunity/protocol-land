@@ -306,6 +306,23 @@ const createHackathonSlice: StateCreator<CombinedSlices, [['zustand/immer', neve
 
       return participant.address === address
     },
+    isTeamOwner: () => {
+      const address = get().authState.address
+      const selectedHackathon = get().hackathonState.selectedHackathon
+      const participant = get().hackathonState.participant
+
+      if (!address || !selectedHackathon || !participant || !participant.teamId) {
+        return false
+      }
+
+      const team = selectedHackathon.teams[participant.teamId]
+
+      if (!team) {
+        return false
+      }
+
+      return team.owner === address
+    },
     setParticipant: () => {
       const selectedHackathon = get().hackathonState.selectedHackathon
       const address = get().authState.address
