@@ -8,16 +8,21 @@ import {
   createHackathonTeam,
   getAllHackathons,
   getHackathonById,
+  getHackathonSubmission,
   participate,
   postNewHackathon,
   postUpdatedHackathon,
+  publishHackathonSubmission,
+  saveHackathonSubmission,
   selectPrizeWinner
 } from './actions'
 import { HackathonSlice, HackathonState } from './types'
 const initialHackathonState: HackathonState = {
   hackathons: [],
   selectedHackathon: null,
-  status: 'IDLE',
+  selectedSubmission: null,
+  participant: null,
+  status: 'PENDING',
   error: null
 }
 
@@ -27,6 +32,11 @@ const createHackathonSlice: StateCreator<CombinedSlices, [['zustand/immer', neve
 ) => ({
   hackathonState: initialHackathonState,
   hackathonActions: {
+    resetSelectedSubmission: () => {
+      set((state) => {
+        state.hackathonState.selectedSubmission = null
+      })
+    },
     fetchAllHackathons: async () => {
       set((state) => {
         state.hackathonState.status = 'PENDING'
@@ -64,11 +74,16 @@ const createHackathonSlice: StateCreator<CombinedSlices, [['zustand/immer', neve
         return
       }
 
+      const userAddress = get().authState.address
+
       if (response) {
         set((state) => {
+          state.hackathonState.participant = userAddress ? response.participants[userAddress] : null
           state.hackathonState.selectedHackathon = response
           state.hackathonState.status = 'SUCCESS'
         })
+
+        await get().hackathonActions.fetchHackathonSubmission(id)
       }
     },
     createNewHackathon: async (newHackathonItem) => {
@@ -205,6 +220,122 @@ const createHackathonSlice: StateCreator<CombinedSlices, [['zustand/immer', neve
 
         return response
       }
+    },
+    fetchHackathonSubmission: async (hackathonId) => {
+      if (get().hackathonState.status !== 'PENDING') {
+        set((state) => {
+          state.hackathonState.status = 'PENDING'
+        })
+      }
+
+      const selectedHackathon = get().hackathonState.selectedHackathon
+      const address = get().authState.address
+
+      if (!selectedHackathon || !address) {
+        return
+      }
+
+      const { response } = await withAsync(() => getHackathonSubmission(hackathonId, address))
+
+      if (!response) {
+        set((state) => {
+          state.hackathonState.status = 'SUCCESS'
+          state.hackathonState.selectedSubmission = null  
+        })
+        return
+      }
+
+      set((state) => {
+        state.hackathonState.selectedSubmission = response
+        state.hackathonState.status = 'SUCCESS'
+      })
+    },
+    saveSubmission: async (hackathonId, submission, publish = false) => {
+      if (Object.keys(submission).length > 0) {
+        const { error } = await withAsync(() => saveHackathonSubmission(hackathonId, submission))
+
+        if (error) {
+          toast.error('Failed to save submission.')
+          return
+        }
+      }
+
+      if (publish) {
+        await get().hackathonActions.publishSubmission(hackathonId)
+      } else {
+        toast.success('Submission saved successfully.')
+      }
+
+      await get().hackathonActions.fetchHackathonSubmission(hackathonId)
+    },
+    publishSubmission: async (hackathonId) => {
+      const selectedSubmission = get().hackathonState.selectedSubmission
+
+      if (!selectedSubmission) {
+        toast.error('Please save the project details first.')
+        return
+      }
+
+      const { error } = await withAsync(() => publishHackathonSubmission(hackathonId))
+
+      if (error) {
+        toast.error('Failed to publish submission.')
+        return
+      }
+
+      set((state) => {
+        if (state.hackathonState.selectedSubmission) {
+          state.hackathonState.selectedSubmission.status = 'PUBLISHED'
+        }
+      })
+
+      toast.success('Submission published successfully.')
+    },
+    isParticipant: () => {
+      const address = get().authState.address
+      const selectedHackathon = get().hackathonState.selectedHackathon
+      const participant = get().hackathonState.participant
+
+      if (!address || !selectedHackathon || !participant) {
+        return false
+      }
+
+      return participant.address === address
+    },
+    isTeamOwner: () => {
+      const address = get().authState.address
+      const selectedHackathon = get().hackathonState.selectedHackathon
+      const participant = get().hackathonState.participant
+
+      if (!address || !selectedHackathon || !participant || !participant.teamId) {
+        return false
+      }
+
+      const team = selectedHackathon.teams[participant.teamId]
+
+      if (!team) {
+        return false
+      }
+
+      return team.owner === address
+    },
+    setParticipant: () => {
+      const selectedHackathon = get().hackathonState.selectedHackathon
+      const address = get().authState.address
+
+      if (!selectedHackathon || !address) {
+        return
+      }
+
+      const participant = selectedHackathon.participants[address]
+      set((state) => {
+        state.hackathonState.participant = participant
+      })
+    },
+    reset: () => {
+      set((state) => {
+        state.hackathonState = initialHackathonState
+      })
     }
   }
 })

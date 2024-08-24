@@ -4,7 +4,7 @@ import { v4 } from 'uuid'
 import { AOS_PROCESS_ID } from '@/helpers/constants'
 import { getTags } from '@/helpers/getTags'
 import { sendMessage } from '@/lib/contract'
-import { Hackathon, NewHackatonItem, Team } from '@/types/hackathon'
+import { Hackathon, NewHackatonItem, Submission, Team } from '@/types/hackathon'
 
 export async function getAllHackathons(): Promise<Hackathon[]> {
   const args = {
@@ -123,6 +123,54 @@ export async function createHackathonTeam(payload: CreateHackathonTeam): Promise
   }
 
   return hackathon.teams[id]
+}
+
+export async function getHackathonSubmission(
+  hackathonId: string,
+  participantAddress: string
+): Promise<Submission | null> {
+  const args = {
+    tags: getTags({
+      Action: 'Get-Hackathon-Submission',
+      Id: hackathonId,
+      'Participant-Address': participantAddress
+    })
+  }
+
+  const { Messages } = await dryrun({
+    process: AOS_PROCESS_ID,
+    ...args
+  })
+
+  const submission = JSON.parse(Messages[0].Data) as Submission
+
+  if (!submission) {
+    return null
+  }
+
+  return submission
+}
+
+export async function saveHackathonSubmission(hackathonId: string, submission: Partial<Submission>): Promise<void> {
+  const args = {
+    tags: getTags({
+      Action: 'Save-Hackathon-Submission'
+    }),
+    data: JSON.stringify({ ...submission, id: hackathonId })
+  }
+
+  await sendMessage(args)
+}
+
+export async function publishHackathonSubmission(hackathonId: string): Promise<void> {
+  const args = {
+    tags: getTags({
+      Action: 'Publish-Hackathon-Submission',
+      Id: hackathonId
+    })
+  }
+
+  await sendMessage(args)
 }
 
 type CreateHackathonTeam = {
