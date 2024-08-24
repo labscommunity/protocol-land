@@ -198,6 +198,7 @@ export default function TeamSelectCreateStep(_: Props) {
                   value={selectedTeam}
                   onChange={(e) => setSelectedTeam(e.target.value)}
                 >
+                  <option>Select a team</option>
                   {selectedHackathon &&
                     Object.values(selectedHackathon.teams).map((team) => (
                       <option key={team.id} value={team.id}>

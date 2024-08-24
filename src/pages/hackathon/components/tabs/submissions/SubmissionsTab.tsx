@@ -5,6 +5,8 @@ import { Link, useNavigate } from 'react-router-dom'
 
 import { Button } from '@/components/common/buttons'
 import { resolveUsernameOrShorten } from '@/helpers/resolveUsername'
+import { getHackathonStatus } from '@/pages/hackathon/utils/getHackathonStatus'
+import { useGlobalStore } from '@/stores/globalStore'
 import { Hackathon, Submission } from '@/types/hackathon'
 
 type Props = {
@@ -13,8 +15,14 @@ type Props = {
 
 export default function SubmissionsTab({ selectedHackathon }: Props) {
   const navigate = useNavigate()
+  const address = useGlobalStore((state) => state.authState.address)
   const submissions = selectedHackathon?.submissions ? Object.values(selectedHackathon.submissions) : []
-
+  const participant = selectedHackathon?.participants ? selectedHackathon.participants[address!] : null
+  const publishedSubmissions = submissions.filter((submission) => submission.status === 'PUBLISHED')
+  const draftSubmissions = submissions.filter(
+    (submission) => submission.status === 'DRAFT' && participant?.address === submission.submittedBy
+  )
+  const status = selectedHackathon && getHackathonStatus(selectedHackathon.startsAt, selectedHackathon.endsAt, () => {})
   function getSubmissionBy(submission: Submission) {
     //
     if (!submission || !selectedHackathon) return null
@@ -30,10 +38,13 @@ export default function SubmissionsTab({ selectedHackathon }: Props) {
     }
 
     const { submittedBy } = submission
+    const participant = Object.values(selectedHackathon.participants).find(
+      (participant) => participant.address === submittedBy || participant?.teamId === submittedBy
+    )
 
-    const participant = selectedHackathon.participants[submittedBy]
+    if (!participant) return null
 
-    if (participant.teamId) {
+    if (participant?.teamId) {
       const team = selectedHackathon.teams[participant.teamId]
 
       result.isTeam = true
@@ -55,6 +66,10 @@ export default function SubmissionsTab({ selectedHackathon }: Props) {
     navigate(`/hackathon/${selectedHackathon.id}/submission/${submission.submittedBy}`)
   }
 
+  function handleSubmissionEditClick() {
+    navigate(`/hackathon/${selectedHackathon.id}/submit`)
+  }
+
   function getPrizeById(id: string) {
     return selectedHackathon.prizes[id]
   }
@@ -65,13 +80,66 @@ export default function SubmissionsTab({ selectedHackathon }: Props) {
 
   return (
     <div className="flex flex-col w-full">
-      {submissions.length === 0 && (
+      {draftSubmissions.length > 0 && (
+        <div className="w-full flex flex-col gap-3 border-b-[1px] mb-6 border-b-gray-200 pb-6">
+          <h1 className="text-xl font-medium text-gray-600">My Submission Draft</h1>
+          {draftSubmissions.map((submission, idx) => (
+            <div
+              key={idx + 1}
+              className={clsx('flex w-full p-6 bg-white rounded-lg gap-1 border-[1px] border-gray-300')}
+            >
+              <div className="w-[70%]">
+                <div className="relative flex flex-col gap-1">
+                  <img
+                    onError={({ currentTarget }) => {
+                      currentTarget.onerror = null // prevents looping
+                      currentTarget.src = 'https://placehold.co/500x500?text=LOGO'
+                    }}
+                    src={`${submission?.logo}`}
+                    className="w-12 h-12 rounded-full"
+                  />
+                  <h1 className={clsx('text-lg font-medium text-gray-600')}>
+                    {submission?.projectName || 'No project name'}
+                  </h1>
+                </div>
+                <div className="w-full flex flex-col">
+                  <div className="w-full flex flex-col gap-2">
+                    <div className="relative flex justify-center flex-col">
+                      <p
+                        className={clsx('text-sm whitespace-pre-line text-gray-600')}
+                        style={{
+                          display: '-webkit-box',
+                          WebkitBoxOrient: 'vertical',
+                          WebkitLineClamp: 3,
+                          overflow: 'hidden',
+                          textOverflow: 'ellipsis'
+                        }}
+                      >
+                        {submission?.shortDescription || 'No short description'}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-sm">By {getSubmissionBy(submission)}</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div className="w-[30%] flex flex-col items-end gap-1">
+                <div onClick={() => handleSubmissionEditClick()} className="flex flex-1 items-center">
+                  <Button variant={'primary-solid'}>Edit</Button>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+      {publishedSubmissions.length === 0 && (
         <div className="w-full py-16 flex justify-center items-center">
           <h1 className="text-gray-600 text-2xl font-thin tracking-wider">No submissions at the moment</h1>
         </div>
       )}
       <div className="w-full flex flex-col gap-4">
-        {submissions.map((submission, idx) => (
+        {publishedSubmissions.map((submission, idx) => (
           <div
             key={idx + 1}
             className={clsx('flex w-full p-6 bg-white rounded-lg gap-1 border-[1px] border-gray-300', {
@@ -93,7 +161,7 @@ export default function SubmissionsTab({ selectedHackathon }: Props) {
                     'text-gray-600': !submission.isWinner
                   })}
                 >
-                  {submission.projectName}
+                  {submission.projectName || 'No project name'}
                 </h1>
               </div>
               <div className="w-full flex flex-col">
@@ -111,10 +179,13 @@ export default function SubmissionsTab({ selectedHackathon }: Props) {
                         textOverflow: 'ellipsis'
                       }}
                     >
-                      {submission.shortDescription}
+                      {submission?.shortDescription || 'No short description'}
                     </p>
-                    {submission.shortDescription.length > 100 && ( // Adjust the length check as needed
-                      <Link to={`/hackathon/${selectedHackathon.id}/submission/${submission.submittedBy}`} className="text-primary-700 font-medium hover:underline text-sm">
+                    {submission?.shortDescription?.length > 100 && ( // Adjust the length check as needed
+                      <Link
+                        to={`/hackathon/${selectedHackathon.id}/submission/${submission.submittedBy}`}
+                        className="text-primary-700 font-medium hover:underline text-sm"
+                      >
                         Read more
                       </Link>
                     )}
@@ -127,7 +198,7 @@ export default function SubmissionsTab({ selectedHackathon }: Props) {
             </div>
             <div className="w-[30%] flex flex-col items-end gap-1">
               <div className="flex flex-col gap-1">
-                {submission.prizeIds.map((prizeId) => {
+                {submission?.prizeIds.map((prizeId) => {
                   const prize = getPrizeById(prizeId)
                   if (!prize) return null
                   return (
@@ -150,8 +221,27 @@ export default function SubmissionsTab({ selectedHackathon }: Props) {
               <div className="flex flex-col">
                 <span>Submitted on {format(+submission.timestamp, 'MMM dd, yyyy')}</span>
               </div>
-              <div onClick={() => handleSubmissionViewClick(submission)} className="flex flex-1 items-center">
+              <div className="flex flex-1 items-center gap-4">
+                {submission.submittedBy && submission.submittedBy === participant?.address && status !== 'ENDED' && (
+                  <Button
+                    onClick={() => handleSubmissionEditClick()}
+                    style={{
+                      boxShadow: submission.isWinner
+                        ? '2px 2px 0.5em rgba(155, 122, 89, 0.55),inset 1px 1px 0 rgba(255, 255, 255, 0.9),inset -1px -1px 0 rgba(0, 0, 0, 0.5)'
+                        : undefined
+                    }}
+                    className={
+                      submission.isWinner
+                        ? 'h-[35px] text-white bg-transparent font-medium hover:bg-transparent'
+                        : undefined
+                    }
+                    variant={'primary-solid'}
+                  >
+                    Edit
+                  </Button>
+                )}
                 <Button
+                  onClick={() => handleSubmissionViewClick(submission)}
                   style={{
                     boxShadow: submission.isWinner
                       ? '2px 2px 0.5em rgba(155, 122, 89, 0.55),inset 1px 1px 0 rgba(255, 255, 255, 0.9),inset -1px -1px 0 rgba(0, 0, 0, 0.5)'

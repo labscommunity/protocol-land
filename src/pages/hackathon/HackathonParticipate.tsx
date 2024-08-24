@@ -1,5 +1,7 @@
+import React from 'react'
 import { FaArrowLeft } from 'react-icons/fa'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useParams } from 'react-router-dom'
+import { FadeLoader } from 'react-spinners'
 
 import { Button } from '@/components/common/buttons'
 import useStepper from '@/components/Stepper/hooks/useStepper'
@@ -9,15 +11,41 @@ import { useGlobalStore } from '@/stores/globalStore'
 import { participateHackathonSteps } from './config/hackathonParticipateStepsConfig'
 
 const HackathonParticipate = () => {
-  const [selectedHackathon] = useGlobalStore((state) => [state.hackathonState.selectedHackathon])
+  const { id } = useParams()
+  const [selectedHackathon, loadingStatus, fetchHackathonById] = useGlobalStore((state) => [
+    state.hackathonState.selectedHackathon,
+    state.hackathonState.status,
+    state.hackathonActions.fetchHackathonById
+  ])
   const { stepsComplete, handleSetStep, numSteps } = useStepper(2)
   const navigate = useNavigate()
+
+  React.useEffect(() => {
+    if (id) {
+      fetchHackathonById(id)
+    }
+  }, [id])
 
   const Component = participateHackathonSteps[stepsComplete as keyof typeof participateHackathonSteps]
 
   function goBack() {
-    if (!selectedHackathon) return
-    navigate(`/hackathon/${selectedHackathon.id}`)
+    navigate(-1)
+  }
+
+  if (loadingStatus === 'PENDING') {
+    return (
+      <div className="h-full flex-1 flex flex-col max-w-[960px] px-8 mx-auto w-full my-6 gap-2">
+        {/* HACKATHON HEADER */}
+        <div className="flex justify-between">
+          <Button onClick={goBack} variant="primary-solid">
+            <FaArrowLeft className="h-4 w-4 text-white" />
+          </Button>
+        </div>
+        <div className="w-full flex-1 flex h-full items-center justify-center">
+          <FadeLoader color="#56ADD9" />
+        </div>
+      </div>
+    )
   }
 
   return (

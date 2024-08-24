@@ -1,6 +1,7 @@
 import { Tab } from '@headlessui/react'
 import clsx from 'clsx'
 import React from 'react'
+import toast from 'react-hot-toast'
 import { FaArrowLeft, FaDotCircle } from 'react-icons/fa'
 import { useNavigate, useParams } from 'react-router-dom'
 import { FadeLoader } from 'react-spinners'
@@ -14,12 +15,16 @@ import { getHackathonStatus } from './utils/getHackathonStatus'
 
 export default function HackathonDetails() {
   const { tabName, id } = useParams()
-  const [address, selectedHackathon, loadingStatus, fetchHackathonById] = useGlobalStore((state) => [
-    state.authState.address,
-    state.hackathonState.selectedHackathon,
-    state.hackathonState.status,
-    state.hackathonActions.fetchHackathonById
-  ])
+  const [address, participant, selectedHackathon, loadingStatus, fetchHackathonById, isTeamOwner, isParticipant] =
+    useGlobalStore((state) => [
+      state.authState.address,
+      state.hackathonState.participant,
+      state.hackathonState.selectedHackathon,
+      state.hackathonState.status,
+      state.hackathonActions.fetchHackathonById,
+      state.hackathonActions.isTeamOwner,
+      state.hackathonActions.isParticipant
+    ])
   const [status, setStatus] = React.useState('NOT_STARTED')
   const navigate = useNavigate()
 
@@ -44,7 +49,7 @@ export default function HackathonDetails() {
     return tabNames.indexOf(tabName)
   }, [tabName])
   function goBack() {
-    navigate(`/hackathon`)
+    navigate('/hackathon')
   }
 
   function handleTabChangeEventTracking(idx: number) {
@@ -71,6 +76,27 @@ export default function HackathonDetails() {
     navigate(`/hackathon/${selectedHackathon.id}/participate`)
   }
 
+  async function handleSubmitButton() {
+    if (!selectedHackathon) {
+      window.location.reload()
+      return
+    }
+
+    if (!participant) {
+      toast.error('You are not a participant of this hackathon')
+      return
+    }
+
+    const canSubmit = isTeamOwner() || !participant.teamId
+
+    if (!canSubmit) {
+      toast.error('Only individual participants and team owners can submit')
+      return
+    }
+
+    navigate(`/hackathon/${selectedHackathon.id}/submit`)
+  }
+
   const activeClasses = 'border-b-[2px] border-primary-600 text-gray-900 font-medium'
 
   if (loadingStatus === 'PENDING') {
@@ -89,7 +115,7 @@ export default function HackathonDetails() {
     )
   }
 
-  const isAlreadyParticipant = address && selectedHackathon ? selectedHackathon.participants[address] : null
+  const isAlreadyParticipant = selectedHackathon ? isParticipant() : null
   return (
     <div className="h-full flex-1 flex flex-col max-w-[960px] px-8 mx-auto w-full my-6 gap-2">
       {/* HACKATHON HEADER */}
@@ -129,7 +155,11 @@ export default function HackathonDetails() {
           </div>
           {address && status === 'RUNNING' && (
             <div className="flex flex-col">
-              {isAlreadyParticipant && <Button variant="primary-solid">Submit</Button>}
+              {isAlreadyParticipant && (
+                <Button variant="primary-solid" onClick={handleSubmitButton}>
+                  Submit
+                </Button>
+              )}
               {!isAlreadyParticipant && (
                 <Button onClick={handleParticipate} variant="primary-solid">
                   Participate
