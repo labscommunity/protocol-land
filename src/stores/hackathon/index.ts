@@ -22,7 +22,7 @@ const initialHackathonState: HackathonState = {
   selectedHackathon: null,
   selectedSubmission: null,
   participant: null,
-  status: 'IDLE',
+  status: 'PENDING',
   error: null
 }
 
@@ -334,6 +334,11 @@ const createHackathonSlice: StateCreator<CombinedSlices, [['zustand/immer', neve
       const participant = selectedHackathon.participants[address]
       set((state) => {
         state.hackathonState.participant = participant
+      })
+    },
+    reset: () => {
+      set((state) => {
+        state.hackathonState = initialHackathonState
       })
     }
   }

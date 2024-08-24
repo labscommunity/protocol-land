@@ -30,4 +30,5 @@ export type HackathonActions = {
   isParticipant: () => Promise<boolean>
   setParticipant: () => void
   isTeamOwner: () => boolean
+  reset: () => void
 }

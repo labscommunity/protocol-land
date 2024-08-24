@@ -14,13 +14,16 @@ import { getHackathonStatus } from './utils/getHackathonStatus'
 
 export default function HackathonDetails() {
   const { tabName, id } = useParams()
-  const [address, selectedHackathon, loadingStatus, fetchHackathonById, isTeamOwner] = useGlobalStore((state) => [
-    state.authState.address,
-    state.hackathonState.selectedHackathon,
-    state.hackathonState.status,
-    state.hackathonActions.fetchHackathonById,
-    state.hackathonActions.isTeamOwner
-  ])
+  const [address, selectedHackathon, loadingStatus, fetchHackathonById, isTeamOwner, reset] = useGlobalStore(
+    (state) => [
+      state.authState.address,
+      state.hackathonState.selectedHackathon,
+      state.hackathonState.status,
+      state.hackathonActions.fetchHackathonById,
+      state.hackathonActions.isTeamOwner,
+      state.hackathonActions.reset
+    ]
+  )
   const [status, setStatus] = React.useState('NOT_STARTED')
   const navigate = useNavigate()
 
@@ -28,6 +31,8 @@ export default function HackathonDetails() {
     if (id) {
       fetchHackathonById(id)
     }
+
+    return () => reset()
   }, [id])
 
   const statusText = React.useMemo<string>(() => {
