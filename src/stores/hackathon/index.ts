@@ -231,7 +231,19 @@ const createHackathonSlice: StateCreator<CombinedSlices, [['zustand/immer', neve
       const selectedHackathon = get().hackathonState.selectedHackathon
       const address = get().authState.address
 
-      if (!selectedHackathon || !address) {
+      if (!selectedHackathon) {
+        set((state) => {
+          state.hackathonState.status = 'ERROR'
+          state.hackathonState.selectedSubmission = null
+        })
+        return
+      }
+
+      if (!address) {
+        set((state) => {
+          state.hackathonState.status = 'SUCCESS'
+          state.hackathonState.selectedSubmission = null
+        })
         return
       }
 
@@ -240,7 +252,7 @@ const createHackathonSlice: StateCreator<CombinedSlices, [['zustand/immer', neve
       if (!response) {
         set((state) => {
           state.hackathonState.status = 'SUCCESS'
-          state.hackathonState.selectedSubmission = null  
+          state.hackathonState.selectedSubmission = null
         })
         return
       }
