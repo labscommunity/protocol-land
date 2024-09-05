@@ -1,7 +1,7 @@
+import MDEditor from '@uiw/react-md-editor'
 import React from 'react'
 import toast from 'react-hot-toast'
-import { FaArrowLeft } from 'react-icons/fa'
-import { FaClipboard } from 'react-icons/fa'
+import { FaArrowLeft, FaClipboard, FaExternalLinkAlt } from 'react-icons/fa'
 import { Navigate, useNavigate, useParams } from 'react-router-dom'
 import { FadeLoader } from 'react-spinners'
 
@@ -9,10 +9,12 @@ import { Button } from '@/components/common/buttons'
 import { useGlobalStore } from '@/stores/globalStore'
 
 import WinnerModal from './components/WinnerModal'
+import { getLogoUrl } from './utils/getLogoUrl'
 
 export default function SubmissionDetails() {
   const { id } = useParams()
-
+  const [detailedDescription, setDetailedDescription] = React.useState('')
+  const [isDetailedDescriptionLoading, setIsDetailedDescriptionLoading] = React.useState(false)
   const { address } = useParams()
   const [isModalOpen, setIsModalOpen] = React.useState(false)
 
@@ -38,8 +40,29 @@ export default function SubmissionDetails() {
 
   const submission = selectedHackathon?.submissions[address!]
 
+  React.useEffect(() => {
+    if (submission && submission?.descriptionTxId) {
+      fetchDetails(submission.descriptionTxId)
+    }
+  }, [submission])
+
   function strToArray(str: string) {
     return str.split(',').map((s) => s.trim())
+  }
+
+  async function fetchDetails(descriptionTxId: string) {
+    if (!descriptionTxId) return
+
+    setIsDetailedDescriptionLoading(true)
+    try {
+      const res = await fetch(`https://arweave.net/${descriptionTxId}`)
+      const data = await res.text()
+      setDetailedDescription(data)
+    } catch (error) {
+      console.error(error)
+    }
+
+    setIsDetailedDescriptionLoading(false)
   }
 
   function handleCopyLinkToClipBoard(link: string) {
@@ -65,6 +88,10 @@ export default function SubmissionDetails() {
 
   const isHackathonOwner = address && selectedHackathon ? selectedHackathon.createdBy === loggedInUserAddress : false
   const hasHackathonEnded = selectedHackathon ? selectedHackathon.endsAt * 1000 < Date.now() : false
+
+  function handleOpenUrlInNewTab(url: string) {
+    window.open(url, '_blank')
+  }
 
   return (
     <div className="h-full flex-1 flex flex-col max-w-[960px] px-8 mx-auto w-full my-6 gap-8">
@@ -98,7 +125,7 @@ export default function SubmissionDetails() {
               currentTarget.onerror = null // prevents looping
               currentTarget.src = 'https://placehold.co/500x500?text=LOGO'
             }}
-            src={`${submission.logo}`}
+            src={getLogoUrl(submission?.logo)}
             className="w-24 h-24 rounded-full"
           />
         </div>
@@ -116,7 +143,7 @@ export default function SubmissionDetails() {
         )}
         {submission.links.length > 0 && (
           <div className="flex flex-col gap-1">
-            <h2 className="text-lg font-medium text-gray-9000">Links</h2>
+            <h2 className="text-lg font-medium text-gray-900">Links</h2>
             <div className="gap-2  flex flex-col">
               {submission.links.map((link) => (
                 <div className="relative justify-center flex flex-col ">
@@ -129,10 +156,46 @@ export default function SubmissionDetails() {
                     disabled
                     readOnly
                   />
-                  <FaClipboard
-                    onClick={() => handleCopyLinkToClipBoard(link)}
-                    className="w-5 h-5 cursor-pointer text-primary-600 absolute right-3"
+                  <div className="flex gap-2 absolute right-3 items-center">
+                    <FaClipboard
+                      onClick={() => handleCopyLinkToClipBoard(link)}
+                      className="w-5 h-5 cursor-pointer text-primary-600"
+                    />
+                    <FaExternalLinkAlt
+                      onClick={() => handleOpenUrlInNewTab(link)}
+                      className="w-4 h-4 cursor-pointer text-primary-600"
+                    />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+        {submission.images.length > 0 && (
+          <div className="flex flex-col gap-1">
+            <h2 className="text-lg font-medium text-gray-900">Images</h2>
+            <div className="gap-2  flex flex-col">
+              {submission.images.map((image) => (
+                <div className="relative justify-center flex flex-col ">
+                  <input
+                    type="text"
+                    className={
+                      'bg-white border-[1px] text-gray-900 border-gray-300 text-base rounded-lg hover:shadow-[0px_2px_4px_0px_rgba(0,0,0,0.10)] focus:border-primary-500 focus:border-[1.5px] block w-full px-3 py-[10px] outline-none'
+                    }
+                    value={image}
+                    disabled
+                    readOnly
                   />
+                  <div className="flex gap-2 absolute right-3 items-center">
+                    <FaClipboard
+                      onClick={() => handleCopyLinkToClipBoard(image)}
+                      className="w-5 h-5 cursor-pointer text-primary-600"
+                    />
+                    <FaExternalLinkAlt
+                      onClick={() => handleOpenUrlInNewTab(image)}
+                      className="w-4 h-4 cursor-pointer text-primary-600"
+                    />
+                  </div>
                 </div>
               ))}
             </div>
@@ -157,6 +220,19 @@ export default function SubmissionDetails() {
                   className="w-5 h-5 cursor-pointer text-primary-600 absolute right-3"
                 />
               </div>
+            </div>
+          </div>
+        )}
+
+        {detailedDescription && !isDetailedDescriptionLoading && (
+          <div>
+            <h2 className="text-lg font-medium text-gray-900">Detailed Description</h2>
+            <div className="py-1">
+              <MDEditor.Markdown
+                className="!min-h-[200px] rounded-b-lg !bg-transparent"
+                source={detailedDescription}
+                // rehypePlugins={[[rehypeAnchorOnClickPlugin]]}
+              />
             </div>
           </div>
         )}

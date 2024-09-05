@@ -230,7 +230,7 @@ export default function SubmitHackathon() {
             <div className="w-32 h-32 bg-slate-500 rounded-full flex items-center justify-center">
               {projectLogoUrl && <img src={projectLogoUrl} className="rounded-full w-32 h-32" />}
               {!projectLogoUrl && <AiFillCamera className="w-8 h-8 text-white" />}
-              <input onChange={handleProjectLogoChange} ref={projectLogoInputRef} type="file" hidden />
+              <input onChange={handleProjectLogoChange} ref={projectLogoInputRef} type="file" accept="image/*" hidden />
             </div>
             <div className="flex items-center gap-8 flex-1">
               {!projectLogoFile && (
