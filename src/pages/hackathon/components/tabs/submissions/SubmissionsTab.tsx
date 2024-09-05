@@ -6,6 +6,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import { Button } from '@/components/common/buttons'
 import { resolveUsernameOrShorten } from '@/helpers/resolveUsername'
 import { getHackathonStatus } from '@/pages/hackathon/utils/getHackathonStatus'
+import { getLogoUrl } from '@/pages/hackathon/utils/getLogoUrl'
 import { useGlobalStore } from '@/stores/globalStore'
 import { Hackathon, Submission } from '@/types/hackathon'
 
@@ -153,7 +154,7 @@ export default function SubmissionsTab({ selectedHackathon }: Props) {
                     currentTarget.onerror = null // prevents looping
                     currentTarget.src = 'https://placehold.co/500x500?text=LOGO'
                   }}
-                  src={`${submission?.logo}`}
+                  src={getLogoUrl(submission?.logo)}
                   className="w-12 h-12 rounded-full"
                 />
                 <h1
