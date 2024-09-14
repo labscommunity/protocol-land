@@ -1,6 +1,6 @@
-import { dryrun } from '@permaweb/aoconnect'
 import { useState } from 'react'
 
+import { dryrun } from '@/helpers/aoconnect'
 import { AOS_PROCESS_ID, PL_REPO_ID } from '@/helpers/constants'
 import { getTags } from '@/helpers/getTags'
 import { withAsync } from '@/helpers/withAsync'

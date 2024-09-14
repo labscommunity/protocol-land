@@ -1,8 +1,8 @@
-import { dryrun } from '@permaweb/aoconnect'
 import ArdbTransaction from 'ardb/lib/models/transaction'
 import { useEffect, useRef, useState } from 'react'
 
 import { Button } from '@/components/common/buttons'
+import { dryrun } from '@/helpers/aoconnect'
 import { AOS_PROCESS_ID } from '@/helpers/constants'
 import { getTags } from '@/helpers/getTags'
 import ForkModal from '@/pages/repository/components/ForkModal'

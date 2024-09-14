@@ -1,6 +1,6 @@
-import { dryrun } from '@permaweb/aoconnect'
 import { v4 } from 'uuid'
 
+import { dryrun } from '@/helpers/aoconnect'
 import { AOS_PROCESS_ID } from '@/helpers/constants'
 import { getTags } from '@/helpers/getTags'
 import { sendMessage } from '@/lib/contract'
