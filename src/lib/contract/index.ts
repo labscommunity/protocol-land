@@ -1,5 +1,4 @@
-import { createDataItemSigner, dryrun, message, result } from '@permaweb/aoconnect'
-
+import { createDataItemSigner, dryrun, message, result } from '@/helpers/aoconnect'
 import { AOS_PROCESS_ID } from '@/helpers/constants'
 import { extractMessage } from '@/helpers/extractMessage'
 import { getTags } from '@/helpers/getTags'
