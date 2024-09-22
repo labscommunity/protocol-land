@@ -1,4 +1,4 @@
-import git from 'isomorphic-git'
+import git from '@protocol.land/isomorphic-git'
 import { FileWithPath } from 'react-dropzone'
 
 import { toArrayBuffer } from '@/helpers/toArrayBuffer'

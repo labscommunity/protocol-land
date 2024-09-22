@@ -95,6 +95,7 @@ export type FileObject = {
 }
 
 export type ForkRepositoryOptions = {
+  id: string
   name: string
   description: string
   parent: string

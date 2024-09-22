@@ -1,4 +1,4 @@
-import git, { Errors } from 'isomorphic-git'
+import git, { Errors } from '@protocol.land/isomorphic-git'
 
 import { getTags } from '@/helpers/getTags'
 import { trackGoogleAnalyticsEvent } from '@/helpers/google-analytics'
