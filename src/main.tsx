@@ -22,7 +22,8 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
           'SIGNATURE',
           'DISPATCH',
           'DECRYPT',
-          'ENCRYPT'
+          'ENCRYPT',
+          'ACCESS_TOKENS'
         ],
         ensurePermissions: true
       }}

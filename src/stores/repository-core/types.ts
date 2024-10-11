@@ -2,7 +2,7 @@ import { Edge, Node } from '@xyflow/react'
 
 import { UserCommit, UserContributionData, UserPROrIssue } from '@/lib/user'
 import { CommitResult } from '@/types/commit'
-import { Deployment, Domain, GithubSync, Repo, RepoToken } from '@/types/repository'
+import { Deployment, Domain, GithubSync, Repo, RepoLiquidityPool, RepoToken } from '@/types/repository'
 
 export interface RepoCoreSlice {
   repoCoreState: RepoCoreState
@@ -80,6 +80,9 @@ export type RepoCoreActions = {
   setRepoDecentralized: () => void
   setRepoTokenProcessId: (processId: string) => void
   saveRepoTokenDetails: (token: Partial<RepoToken>) => Promise<void>
+  saveRepoLiquidityPoolDetails: (liquidityPool: RepoLiquidityPool) => Promise<void>
+  disableRepoLiquidityPool: () => Promise<void>
+  saveLiquidityPoolId: (liquidityPoolId: string) => Promise<void>
   isRepoOwner: () => boolean
   isContributor: () => boolean
   reset: () => void
