@@ -32,7 +32,10 @@ import {
   getRepositoryMetaFromContract,
   handleAcceptContributor,
   handleCancelContributorInvite,
+  handleDisableRepoLiquidityPool,
   handleRejectContributor,
+  handleSaveLiquidityPoolId,
+  handleSaveRepoLiquidityPool,
   handleSaveRepoToken,
   loadRepository,
   saveRepository
@@ -149,6 +152,70 @@ const createRepoCoreSlice: StateCreator<CombinedSlices, [['zustand/immer', never
           state.repoCoreState.selectedRepo.repo!.token = response
         })
         toast.success('Token saved.')
+      }
+    },
+    saveRepoLiquidityPoolDetails: async (liquidityPool) => {
+      const repo = get().repoCoreState.selectedRepo.repo
+      const userAddress = get().authState.address
+
+      if (!repo || !userAddress) {
+        toast.error('Not authorized to update token.')
+        return
+      }
+
+      const { error, response } = await withAsync(() =>
+        handleSaveRepoLiquidityPool(repo.id, liquidityPool, userAddress)
+      )
+
+      if (error) {
+        toast.error('Failed to save liquidity pool.')
+        return
+      }
+
+      if (response) {
+        set((state) => {
+          state.repoCoreState.selectedRepo.repo!.liquidityPool = response
+        })
+        toast.success('Liquidity pool saved.')
+      }
+    },
+    disableRepoLiquidityPool: async () => {
+      const repo = get().repoCoreState.selectedRepo.repo
+      const userAddress = get().authState.address
+
+      if (!repo || !userAddress) {
+        toast.error('Not authorized to disable liquidity pool.')
+        return
+      }
+
+      const { error, response } = await withAsync(() => handleDisableRepoLiquidityPool(repo.id))
+
+      if (error || !response) {
+        toast.error('Failed to disable liquidity pool.')
+        return
+      }
+
+      if (response) {
+        set((state) => {
+          state.repoCoreState.selectedRepo.repo!.liquidityPool = null
+        })
+        toast.success('Liquidity pool disabled.')
+      }
+    },
+    saveLiquidityPoolId: async (liquidityPoolId) => {
+      const repo = get().repoCoreState.selectedRepo.repo
+      const userAddress = get().authState.address
+
+      if (!repo || !userAddress) {
+        toast.error('Not authorized to save liquidity pool id.')
+        return
+      }
+
+      const { error } = await withAsync(() => handleSaveLiquidityPoolId(repo.id, liquidityPoolId))
+
+      if (error) {
+        toast.error('Failed to save liquidity pool id.')
+        return
       }
     },
     setRepoTokenProcessId: (processId) => {

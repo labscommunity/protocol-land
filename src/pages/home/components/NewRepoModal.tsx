@@ -15,6 +15,7 @@ import { trackGoogleAnalyticsEvent } from '@/helpers/google-analytics'
 import { withAsync } from '@/helpers/withAsync'
 import { getArFS } from '@/lib/arfs/getArFS'
 import { getBifrost } from '@/lib/arfs/getBifrost'
+import { spawnTokenProcess } from '@/lib/decentralize'
 import { createNewRepo, postNewRepo } from '@/lib/git'
 import taskQueueSingleton from '@/lib/queue/TaskQueue'
 import { useGlobalStore } from '@/stores/globalStore'
@@ -73,6 +74,7 @@ export default function NewRepoModal({ setIsOpen, isOpen }: NewRepoModalProps) {
     try {
       const drive = await arfs.drive.create(title)
       const bifrost = getBifrost(drive, arfs)
+      const tokenProcessId = await spawnTokenProcess(title)
       const createdRepo = await createNewRepo(title, bifrost.fs, owner, drive.driveId!)
 
       const taskQueueItemsLength = taskQueueSingleton.getPending().length
@@ -88,7 +90,8 @@ export default function NewRepoModal({ setIsOpen, isOpen }: NewRepoModalProps) {
           title,
           description,
           visibility,
-          dataTxId: drive.id!
+          dataTxId: drive.id!,
+          tokenProcessId
         })
 
         if (result.txResponse) {

@@ -15,18 +15,16 @@ import IconForkOutline from '@/assets/icons/fork-outline.svg'
 import IconStarOutline from '@/assets/icons/star-outline.svg'
 import { Button } from '@/components/common/buttons'
 import { trackGoogleAnalyticsPageView } from '@/helpers/google-analytics'
+import { imgUrlFormatter } from '@/helpers/imgUrlFormatter'
 import { resolveUsernameOrShorten } from '@/helpers/resolveUsername'
-import { createRepoToken, decentralizeRepo, fetchTokenBalance } from '@/lib/decentralize'
+import { fetchTokenBalance } from '@/lib/decentralize'
 import { useGlobalStore } from '@/stores/globalStore'
-import { Repo, RepoToken } from '@/types/repository'
+import { Repo } from '@/types/repository'
 
-import { createConfetti } from '../helpers/createConfetti'
 import useRepository from '../hooks/useRepository'
 import { useRepoHeaderStore } from '../store/repoHeader'
 import ActivityGraph from './ActivityGraph'
-import { ErrorMessageTypes } from './decentralize-modals/config'
-import DecentralizeError from './decentralize-modals/Decentralize-Error'
-import DecentralizeSuccess from './decentralize-modals/Decentralize-Success'
+import TokenizeModal from './decentralize-modals/Tokenize-Modal'
 import ForkModal from './ForkModal'
 import RepoHeaderLoading from './RepoHeaderLoading'
 
@@ -38,22 +36,17 @@ type Props = {
 }
 
 export default function RepoHeader({ repo, isLoading, owner, parentRepo }: Props) {
+  const [isDecentralizationModalOpen, setIsDecentralizationModalOpen] = React.useState(false)
   const [tokenBalLoading, setTokenBalLoading] = React.useState(false)
   const [tokenBal, setTokenBal] = React.useState<string>('0')
-  const [decentralizeError, setDecentralizeError] = React.useState<ErrorMessageTypes | null>(null)
   const [isDecentralized, setIsDecentralized] = React.useState(false)
-  const [decentralizeStatus, setDecentralizeStatus] = React.useState<ApiStatus>('IDLE')
   const [isForkModalOpen, setIsForkModalOpen] = React.useState(false)
   const [showCloneDropdown, setShowCloneDropdown] = React.useState(false)
   const cloneRef = React.useRef<HTMLDivElement | null>(null)
   const location = useLocation()
   const navigate = useNavigate()
   const { downloadRepository } = useRepository(repo?.id, repo?.name)
-  const [setRepoDecentralized, isRepoOwner, setRepoTokenProcessId] = useGlobalStore((state) => [
-    state.repoCoreActions.setRepoDecentralized,
-    state.repoCoreActions.isRepoOwner,
-    state.repoCoreActions.setRepoTokenProcessId
-  ])
+  const [address, isRepoOwner] = useGlobalStore((state) => [state.authState.address, state.repoCoreActions.isRepoOwner])
   const [repoHeaderState] = useRepoHeaderStore((state) => [state.repoHeaderState])
 
   React.useEffect(() => {
@@ -78,7 +71,7 @@ export default function RepoHeader({ repo, isLoading, owner, parentRepo }: Props
   }, [repo, isLoading])
 
   React.useEffect(() => {
-    if (repo && repo?.token?.processId) {
+    if (repo && repo?.decentralized && repo?.token?.processId) {
       fetchAndSetTokenBal()
     }
   }, [repo])
@@ -126,46 +119,12 @@ export default function RepoHeader({ repo, isLoading, owner, parentRepo }: Props
     navigate(`/repository/${parentRepo.id}`)
   }
 
-  async function handleRepoDecentralize(evt: React.ChangeEvent<HTMLInputElement>) {
-    if (!repo) return
-
-    if (repo.decentralized && repo.decentralized === true) {
-      toast.error('Repository is already decentralized.')
-      return
-    }
-
-    setDecentralizeStatus('PENDING')
-    try {
-      if (!isTokenSettingsValid()) {
-        setDecentralizeError('error-no-token')
-        setDecentralizeStatus('ERROR')
-
-        return
-      }
-      const tokenId = await createRepoToken(repo.token!)
-      if (!tokenId) {
-        throw new Error('Failed to create token')
-      }
-
-      await decentralizeRepo(repo.id, tokenId)
-      setRepoTokenProcessId(tokenId)
-      createConfetti()
-      setIsDecentralized(evt.target.checked)
-      setDecentralizeStatus('SUCCESS')
-      setRepoDecentralized()
-    } catch (error) {
-      toast.error('Failed to decentralize repository.')
-      setDecentralizeStatus('ERROR')
-      setDecentralizeError('error-generic')
-    }
-  }
-
   async function fetchAndSetTokenBal() {
     if (!repo || !repo.token || !repo.token.processId) return
 
     setTokenBalLoading(true)
     try {
-      const bal = await fetchTokenBalance(repo.token.processId)
+      const bal = await fetchTokenBalance(repo.token.processId, address!)
       setTokenBal(bal)
     } catch (error) {
       toast.error('Failed to fetch token balance.')
@@ -173,40 +132,12 @@ export default function RepoHeader({ repo, isLoading, owner, parentRepo }: Props
     setTokenBalLoading(false)
   }
 
-  function handleTokenSettingsRedirect() {
-    if (!repo) return
-
-    navigate(`/repository/${repo.id}/settings/token`)
-    setDecentralizeError(null)
-  }
-
-  function isTokenSettingsValid() {
-    if (!repo) return false
-
-    if (!repo.token) {
-      return false
-    }
-
-    const requiredFields = ['tokenName', 'tokenTicker', 'denomination', 'totalSupply', 'tokenImage', 'allocations']
-    for (const field of requiredFields) {
-      const typedField = field as keyof RepoToken
-      if (typedField === 'allocations' && repo.token[typedField].length === 0) {
-        return false
-      }
-      if (!repo.token[typedField]) {
-        return false
-      }
-    }
-
-    return true
-  }
-
   function handleTokenBalClick() {
     if (!repo || !repo.token || !repo.token.processId) return
 
     window.open(`https://www.ao.link/#/token/${repo.token.processId}`, '_blank')
   }
-  console.log({ isDecentralized })
+
   return (
     <div className="flex flex-col">
       <div className="flex justify-between">
@@ -231,9 +162,9 @@ export default function RepoHeader({ repo, isLoading, owner, parentRepo }: Props
                     Decentralized
                   </span>
                 )}
-                {repo.token && repo.token.processId && (
+                {isDecentralized && repo.token && repo.token.processId && (
                   <div className="flex items-center gap-2">
-                    <img src={repo.token.tokenImage} className="w-6 h-6" />
+                    <img src={imgUrlFormatter(repo.token.tokenImage)} className="w-6 h-6" />
                     <div className="flex items-center gap-1">
                       {tokenBalLoading && <BeatLoader size={8} color="#56ADD9" />}
                       {!tokenBalLoading && (
@@ -299,25 +230,19 @@ export default function RepoHeader({ repo, isLoading, owner, parentRepo }: Props
             {!isDecentralized && (
               <div className="flex items-center">
                 <span className="mr-2 text-primary-800 font-medium">Decentralize</span>
-                {decentralizeStatus === 'PENDING' && <BeatLoader size={8} color="#56ADD9" />}
-                {decentralizeStatus !== 'PENDING' && (
-                  <label className="inline-flex relative items-center cursor-pointer">
-                    <input
-                      type="checkbox"
-                      className="sr-only peer cursor-pointer"
-                      checked={isDecentralized}
-                      disabled={repo.decentralized === true || !isRepoOwner()}
-                      onChange={handleRepoDecentralize}
-                    />
-                    <div className="w-10 h-[22px] bg-gray-200 rounded-full peer peer-focus:none cursor-pointer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-[18px] after:w-[18px] after:transition-all peer-checked:bg-primary-600"></div>
-                  </label>
-                )}
+                <label className="inline-flex relative items-center cursor-pointer">
+                  <input
+                    type="checkbox"
+                    className="sr-only peer cursor-pointer"
+                    checked={isDecentralized}
+                    disabled={repo.decentralized === true || !isRepoOwner()}
+                    onChange={() => setIsDecentralizationModalOpen(true)}
+                  />
+                  <div className="w-10 h-[22px] bg-gray-200 rounded-full peer peer-focus:none cursor-pointer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-[18px] after:w-[18px] after:transition-all peer-checked:bg-primary-600"></div>
+                </label>
               </div>
             )}
-            {/* <Button className="rounded-[20px] flex gap-2 items-center" variant="secondary" onClick={handleComingSoon}>
-              <SVG className="w-5 h-5" src={IconStarOutline} />
-              <span className="text-gray-900 font-medium">0</span>
-            </Button> */}
+
             <Button
               className="rounded-[20px] flex px-0 items-center"
               variant="secondary"
@@ -376,25 +301,8 @@ export default function RepoHeader({ repo, isLoading, owner, parentRepo }: Props
       </div>
       <ForkModal isOpen={isForkModalOpen} setIsOpen={setIsForkModalOpen} repo={repo} />
 
-      {decentralizeStatus === 'SUCCESS' && repo.token && (
-        <DecentralizeSuccess
-          onClose={() => setDecentralizeStatus('IDLE')}
-          isOpen={decentralizeStatus === 'SUCCESS'}
-          token={repo.token}
-        />
-      )}
-
-      {decentralizeError && (
-        <DecentralizeError
-          isOpen={decentralizeError !== null}
-          onClose={() => setDecentralizeError(null)}
-          errorType={decentralizeError}
-          onActionClick={
-            decentralizeError === 'error-generic'
-              ? (handleRepoDecentralize as () => Promise<void>)
-              : (handleTokenSettingsRedirect as () => void)
-          }
-        />
+      {isDecentralizationModalOpen && (
+        <TokenizeModal onClose={() => setIsDecentralizationModalOpen(false)} isOpen={isDecentralizationModalOpen} />
       )}
     </div>
   )

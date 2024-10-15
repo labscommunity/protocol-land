@@ -14,6 +14,8 @@ export type Repo = {
   defaultBranch: string
   dataTxId: string
   token: RepoToken | null | undefined
+  liquidityPool: RepoLiquidityPool | null | undefined
+  liquidityPoolId: string | null
   uploadStrategy: 'DEFAULT' | 'ARSEEDING'
   owner: string
   pullRequests: PullRequest[]
@@ -43,6 +45,27 @@ export type RepoToken = {
   tokenImage: string
   allocations: Allocation[]
   processId?: string
+}
+
+export type RepoLiquidityPool = {
+  quoteToken: RepoLiquidityPoolToken
+  baseToken: RepoLiquidityPoolToken
+}
+
+export type RepoLiquidityPoolToken = {
+  tokenName: string
+  tokenTicker: string
+  denomination: string
+  tokenImage: string
+  processId: string
+}
+
+export type Token = {
+  name?: string
+  ticker?: string
+  processId: string
+  denomination: number
+  logo?: string
 }
 
 export type Allocation = {

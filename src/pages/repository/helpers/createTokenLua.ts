@@ -61,12 +61,12 @@ Logo = Logo or '${token.tokenImage}'
   ]]
 --
 Handlers.add('info', Handlers.utils.hasMatchingTag('Action', 'Info'), function(msg)
- ao.send({
-   Target = msg.From,
+ return msg.reply({
    Name = Name,
    Ticker = Ticker,
    Logo = Logo,
-   Denomination = tostring(Denomination)
+   Denomination = tostring(Denomination),
+   TotalSupply = tostring(TotalSupply)
  })
 end)
 
@@ -88,8 +88,7 @@ Handlers.add('balance', Handlers.utils.hasMatchingTag('Action', 'Balance'), func
    bal = Balances[msg.From]
  end
 
- ao.send({
-   Target = msg.From,
+ return msg.reply({
    Balance = bal,
    Ticker = Ticker,
    Account = msg.Tags.Recipient or msg.From,
@@ -103,7 +102,7 @@ end)
   ]]
 --
 Handlers.add('balances', Handlers.utils.hasMatchingTag('Action', 'Balances'),
- function(msg) ao.send({ Target = msg.From, Data = json.encode(Balances) }) end)
+ function(msg) return msg.reply({ Target = msg.From, Data = json.encode(Balances) }) end)
 
  --[[
     Transfer
@@ -158,12 +157,11 @@ Handlers.add('transfer', Handlers.utils.hasMatchingTag('Action', 'Transfer'), fu
      end
 
      -- Send Debit-Notice and Credit-Notice
-     ao.send(debitNotice)
-     ao.send(creditNotice)
+      ao.send(debitNotice)
+      ao.send(creditNotice)
    end
  else
-   ao.send({
-     Target = msg.From,
+   return msg.reply({
      Action = 'Transfer-Error',
      ['Message-Id'] = msg.Id,
      Error = 'Insufficient Balance!'
@@ -178,8 +176,7 @@ end)
 Handlers.add('totalSupply', Handlers.utils.hasMatchingTag('Action', 'Total-Supply'), function(msg)
  assert(msg.From ~= ao.id, 'Cannot call Total-Supply from the same process!')
 
- ao.send({
-   Target = msg.From,
+ return msg.reply({
    Action = 'Total-Supply',
    Data = TotalSupply,
    Ticker = Ticker
@@ -196,8 +193,7 @@ Handlers.add('burn', Handlers.utils.hasMatchingTag('Action', 'Burn'), function(m
  Balances[msg.From] = utils.subtract(Balances[msg.From], msg.Quantity)
  TotalSupply = utils.subtract(TotalSupply, msg.Quantity)
 
- ao.send({
-   Target = msg.From,
+ return msg.reply({
    Data = Colors.gray .. "Successfully burned " .. Colors.blue .. msg.Quantity .. Colors.reset
  })
 end)
