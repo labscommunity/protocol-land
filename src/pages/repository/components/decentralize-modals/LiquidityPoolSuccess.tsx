@@ -45,7 +45,7 @@ export default function LiquidityPoolSuccess({ onClose, liquidityPoolPayload, po
                 repeatType: 'mirror', // Moves back and forth
                 ease: 'easeInOut'
               }}
-              src={imgUrlFormatter(tokenA.tokenImage)}
+              src={imgUrlFormatter(tokenB.tokenImage)}
               alt="Token 1"
               className="w-20 h-20 rounded-full"
             />

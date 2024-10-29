@@ -159,7 +159,7 @@ export default function RepoHeader({ repo, isLoading, owner, parentRepo }: Props
                   <span
                     className={`border-[1px] border-primary-600 bg-primary-600 text-white rounded-full px-2 text-sm`}
                   >
-                    Decentralized
+                    Tokenized
                   </span>
                 )}
                 {isDecentralized && repo.token && repo.token.processId && (
@@ -229,7 +229,7 @@ export default function RepoHeader({ repo, isLoading, owner, parentRepo }: Props
           <div className="flex mb-4 items-center justify-end gap-4">
             {!isDecentralized && (
               <div className="flex items-center">
-                <span className="mr-2 text-primary-800 font-medium">Decentralize</span>
+                <span className="mr-2 text-primary-800 font-medium">Tokenize</span>
                 <label className="inline-flex relative items-center cursor-pointer">
                   <input
                     type="checkbox"
