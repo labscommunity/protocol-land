@@ -165,8 +165,14 @@ export default function RepoHeader({ repo, isLoading, owner, parentRepo }: Props
                 {isDecentralized && repo.token && repo.token.processId && (
                   <div className="flex items-center gap-2">
                     <img src={imgUrlFormatter(repo.token.tokenImage)} className="w-6 h-6" />
-                    <div className="flex items-center gap-1">
-                      {tokenBalLoading && <BeatLoader size={8} color="#56ADD9" />}
+                    <div className="flex items-center">
+                      <Button
+                        className="bg-[#26d9af] text-gray-200 px-2 text-sm font-bold rounded-md h-full py-[1px]"
+                        variant="solid"
+                      >
+                        Trade
+                      </Button>
+                      {/* {tokenBalLoading && <BeatLoader size={8} color="#56ADD9" />}
                       {!tokenBalLoading && (
                         <span
                           onClick={handleTokenBalClick}
@@ -181,7 +187,7 @@ export default function RepoHeader({ repo, isLoading, owner, parentRepo }: Props
                       <RiRefreshFill
                         onClick={fetchAndSetTokenBal}
                         className="w-5 h-5 cursor-pointer text-primary-600"
-                      />
+                      /> */}
                     </div>
                   </div>
                 )}
