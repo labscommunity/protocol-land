@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import { useState } from 'react'
 import { FaAngleRight } from 'react-icons/fa'
 import { MdOutlineClose } from 'react-icons/md'
 
