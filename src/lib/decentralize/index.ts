@@ -1,12 +1,12 @@
-import { createDataItemSigner, dryrun, spawn } from '@permaweb/aoconnect'
+import { createDataItemSigner, dryrun, result, spawn } from '@permaweb/aoconnect'
 import Arweave from 'arweave'
 import { Tag } from 'arweave/web/lib/transaction'
 
 import { getTags } from '@/helpers/getTags'
 import { waitFor } from '@/helpers/waitFor'
 import { getSigner } from '@/helpers/wallet/getSigner'
-import { createTokenLua } from '@/pages/repository/helpers/createTokenLua'
-import { RepoToken } from '@/types/repository'
+import { createCurveBondedTokenLua } from '@/pages/repository/helpers/createTokenLua'
+import { BondingCurve, RepoToken } from '@/types/repository'
 
 import { sendMessage } from '../contract'
 
@@ -37,13 +37,13 @@ export async function createRepoToken(token: RepoToken) {
   }
 }
 
-export async function spawnTokenProcess(tokenName: string) {
+export async function spawnTokenProcess(tokenName: string, processType?: string) {
   const signer = await getSigner({ injectedSigner: false })
   const aosDetails = await getAosDetails()
   const tags = [
     { name: 'App-Name', value: 'aos' },
     { name: 'Name', value: tokenName || 'Protocol.Land Repo Token' },
-    { name: 'Process-Type', value: 'token' },
+    { name: 'Process-Type', value: processType || 'token' },
     { name: 'aos-Version', value: aosDetails.version },
     { name: 'Authority', value: 'fcoN_xJeisVsPXA-trzVAuIiqO3ydLQxM-L4XbrQKzY' }
   ] as Tag[]
@@ -61,22 +61,50 @@ export async function spawnTokenProcess(tokenName: string) {
   return pid
 }
 
+export async function spawnBondingCurveProcess(tokenName: string, processType?: string) {
+  const signer = await getSigner({ injectedSigner: false })
+  const aosDetails = await getAosDetails()
+  const tags = [
+    { name: 'App-Name', value: 'aos' },
+    { name: 'Name', value: tokenName ? tokenName + ' Bonding Curve' : 'Protocol.Land Repo Bonding Curve' },
+    { name: 'Process-Type', value: processType || 'bonding-curve' },
+    { name: 'aos-Version', value: aosDetails.version },
+    { name: 'Authority', value: 'fcoN_xJeisVsPXA-trzVAuIiqO3ydLQxM-L4XbrQKzY' },
+    { name: 'On-Boot', value: 'Data' }
+  ] as Tag[]
+
+  const sourceCodeFetchRes = await fetch('/curve_bonded_token_manager.lua')
+  const sourceCode = await sourceCodeFetchRes.text()
+
+  const pid = await spawn({
+    module: aosDetails.module,
+    tags,
+    scheduler: aosDetails.scheduler,
+    data: sourceCode,
+    signer: createDataItemSigner(signer)
+  })
+
+  await pollForTxBeingAvailable({ txId: pid })
+
+  return pid
+}
+
 export async function loadTokenProcess(token: RepoToken, pid: string) {
-  const contractSrc = createTokenLua(token)
+  const contractSrc = createCurveBondedTokenLua(token, pid)
 
   const args = {
     tags: getTags({
       Action: 'Eval'
     }),
     data: contractSrc,
-    pid
+    pid: token.processId!
   }
 
   const msgId = await sendMessage(args)
   await pollForTxBeingAvailable({ txId: msgId })
 
   const { Messages } = await dryrun({
-    process: pid,
+    process: token.processId!,
     tags: getTags({
       Action: 'Info'
     })
@@ -91,6 +119,41 @@ export async function loadTokenProcess(token: RepoToken, pid: string) {
 
   if (!ticker) {
     throw new Error('Token Loading Failed')
+  }
+
+  return true
+}
+
+export async function initializeBondingCurve(token: RepoToken, bondingCurve: BondingCurve) {
+  const args = {
+    tags: getTags({
+      Action: 'Initialize-Bonding-Curve'
+    }),
+    data: JSON.stringify({
+      repoToken: token,
+      reserveToken: bondingCurve.reserveToken,
+      fundingGoal: bondingCurve.fundingGoal,
+      allocationForLP: '0',
+      allocationForCreator: '0',
+      maxSupply: token.totalSupply
+    }),
+    pid: bondingCurve.processId
+  }
+
+  const msgId = await sendMessage(args)
+  await pollForTxBeingAvailable({ txId: msgId })
+
+  const { Messages } = await result({ message: msgId, process: bondingCurve.processId! })
+
+  if (!Messages[0]) {
+    throw new Error('Bonding Curve Initialization Failed')
+  }
+
+  const msg = Messages[0]
+  const error = msg.Tags.find((tag: any) => tag.name === 'Error')?.value
+
+  if (error) {
+    throw new Error('Bonding Curve Initialization Failed')
   }
 
   return true
@@ -338,6 +401,22 @@ export async function fetchTokenBalance(tokenId: string, address: string) {
   const balance = Messages[0].Data ? Messages[0].Data : balanceTagValue || '0'
 
   return balance
+}
+
+export async function fetchTokenBalances(tokenId: string) {
+  const { Messages } = await dryrun({
+    process: tokenId,
+    tags: [{ name: 'Action', value: 'Balances' }]
+  })
+
+  if (!Messages || !Messages.length) {
+    console.log('No message found', { tokenId })
+
+    return '0'
+  }
+  const balances = JSON.parse(Messages[0].Data)
+
+  return balances
 }
 
 export async function fetchTokenInfo(tokenId: string) {

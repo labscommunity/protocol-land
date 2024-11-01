@@ -5,21 +5,21 @@ import { RepoLiquidityPoolToken } from '@/types/repository'
 export const ERROR_MESSAGE_TYPES = {
   'error-generic': {
     title: 'Error',
-    description: 'An error occurred while trying to decentralize the repository.',
+    description: 'An error occurred while trying to tokenize the repository.',
     icon: MdError,
     actionText: 'Try Again'
   },
   'error-no-token': {
     title: 'Incomplete Token Settings',
-    description: 'You need to complete the token settings to decentralize the repository.',
+    description: 'You need to complete the token settings to tokenize the repository.',
     icon: MdError,
     actionText: 'Complete Token Settings'
   },
-  'error-liquidity-pool': {
-    title: 'Liquidity Pool Error',
-    description: 'An error occurred while trying to create the liquidity pool.',
+  'error-no-bonding-curve': {
+    title: 'Incomplete Bonding Curve Settings',
+    description: 'You need to complete the bonding curve settings to tokenize the repository.',
     icon: MdError,
-    actionText: 'Retry'
+    actionText: 'Complete Bonding Curve Settings'
   }
 }
 

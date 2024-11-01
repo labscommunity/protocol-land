@@ -2,7 +2,7 @@ import { Edge, Node } from '@xyflow/react'
 
 import { UserCommit, UserContributionData, UserPROrIssue } from '@/lib/user'
 import { CommitResult } from '@/types/commit'
-import { Deployment, Domain, GithubSync, Repo, RepoLiquidityPool, RepoToken } from '@/types/repository'
+import { BondingCurve, Deployment, Domain, GithubSync, Repo, RepoToken } from '@/types/repository'
 
 export interface RepoCoreSlice {
   repoCoreState: RepoCoreState
@@ -80,9 +80,9 @@ export type RepoCoreActions = {
   setRepoDecentralized: () => void
   setRepoTokenProcessId: (processId: string) => void
   saveRepoTokenDetails: (token: Partial<RepoToken>) => Promise<void>
-  saveRepoLiquidityPoolDetails: (liquidityPool: RepoLiquidityPool) => Promise<void>
-  disableRepoLiquidityPool: () => Promise<void>
+  saveRepoBondingCurveDetails: (bondingCurve: BondingCurve) => Promise<void>
   saveLiquidityPoolId: (liquidityPoolId: string) => Promise<void>
+  saveBondingCurveId: (bondingCurveId: string) => Promise<void>
   isRepoOwner: () => boolean
   isContributor: () => boolean
   reset: () => void
@@ -114,4 +114,17 @@ export type ForkRepositoryOptions = {
   description: string
   parent: string
   dataTxId: string
+}
+
+export type CurveState = {
+  reserveBalance: string
+  initialized: boolean
+  repoToken: RepoToken
+  reserveToken: RepoToken
+  fundingGoal: string
+  allocationForLP: string
+  allocationForCreator: string
+  maxSupply: string
+  supplyToSell: string
+  reachedFundingGoal: boolean
 }

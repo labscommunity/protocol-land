@@ -6,7 +6,7 @@ import { getTags } from '@/helpers/getTags'
 import { getRepo, sendMessage } from '@/lib/contract'
 import { pollForTxBeingAvailable } from '@/lib/decentralize'
 import { useGlobalStore } from '@/stores/globalStore'
-import { Repo, RepoLiquidityPool, RepoToken } from '@/types/repository'
+import { BondingCurve, Repo, RepoToken } from '@/types/repository'
 // Repo Meta
 
 export const getRepositoryMetaFromContract = async (id: string): Promise<{ result: Repo }> => {
@@ -113,28 +113,54 @@ export const handleSaveRepoToken = async (id: string, repoToken: Partial<RepoTok
   return repoTokenDetails
 }
 
-export const handleSaveRepoLiquidityPool = async (
-  id: string,
-  repoLiquidityPool: RepoLiquidityPool,
-  address: string
-) => {
+export const handleSaveRepoBondingCurve = async (id: string, bondingCurve: BondingCurve, address: string) => {
   await sendMessage({
     tags: getTags({
-      Action: 'Save-Token-Liquidity-Pool-Settings',
+      Action: 'Save-Bonding-Curve-Settings',
       Id: id
     }),
-    data: JSON.stringify(repoLiquidityPool)
+    data: JSON.stringify(bondingCurve)
   })
 
   const { Messages } = await dryrun({
     process: AOS_PROCESS_ID,
-    tags: getTags({ Action: 'Get-Repo-Token-Liquidity-Pool-Details', Id: id }),
+    tags: getTags({ Action: 'Get-Repo-Bonding-Curve-Details', Id: id }),
     Owner: address
   })
 
-  const repoLiquidityPoolDetails = JSON.parse(Messages[0].Data)?.result as RepoLiquidityPool
+  const repoBondingCurveDetails = JSON.parse(Messages[0].Data)?.result as BondingCurve
 
-  return repoLiquidityPoolDetails
+  return repoBondingCurveDetails
+}
+
+export const handleSaveBondingCurveId = async (id: string, bondingCurveId: string) => {
+  const msgId = await sendMessage({
+    tags: getTags({
+      Action: 'Save-Repo-Bonding-Curve-Id',
+      Id: id,
+      'Bonding-Curve-Id': bondingCurveId
+    }),
+    pid: AOS_PROCESS_ID
+  })
+
+  await pollForTxBeingAvailable({ txId: msgId })
+
+  const { Messages } = await result({
+    message: msgId,
+    process: AOS_PROCESS_ID
+  })
+
+  if (!Messages[0]) {
+    throw new Error('Failed to save bonding curve id')
+  }
+
+  const action = Messages[0].Tags.find(
+    (tag: Tag) => tag.name === 'Action' && tag.value === 'Repo-Bonding-Curve-Id-Updated'
+  )
+
+  if (!action) {
+    throw new Error('Failed to save bonding curve id')
+  }
 }
 
 export const handleSaveLiquidityPoolId = async (id: string, liquidityPoolId: string) => {
@@ -165,30 +191,6 @@ export const handleSaveLiquidityPoolId = async (id: string, liquidityPoolId: str
   if (!action) {
     throw new Error('Failed to save liquidity pool id')
   }
-}
-
-export const handleDisableRepoLiquidityPool = async (id: string) => {
-  const msgId = await sendMessage({
-    tags: getTags({
-      Action: 'Disable-Token-Liquidity-Pool',
-      Id: id
-    })
-  })
-
-  const { Messages } = await result({
-    message: msgId,
-    process: AOS_PROCESS_ID
-  })
-
-  const { Tags } = Messages[0]
-
-  const action = Tags.find((tag: Tag) => tag.name === 'Action' && tag.value === 'Repo-Token-Liquidity-Pool-Disabled')
-
-  if (action) {
-    return true
-  }
-
-  return false
 }
 
 export const fetchRepoHierarchy = async (id: string) => {

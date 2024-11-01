@@ -1,12 +1,9 @@
-import BigNumber from 'bignumber.js'
 import React from 'react'
 import toast from 'react-hot-toast'
 import { FaRegFileZipper } from 'react-icons/fa6'
 import { PiCaretDownBold } from 'react-icons/pi'
-import { RiRefreshFill } from 'react-icons/ri'
 import SVG from 'react-inlinesvg'
 import { useLocation, useNavigate } from 'react-router-dom'
-import { BeatLoader } from 'react-spinners'
 
 import IconCloneOutline from '@/assets/icons/clone-outline.svg'
 import IconCommitOutline from '@/assets/icons/commit-outline.svg'
@@ -17,7 +14,7 @@ import { Button } from '@/components/common/buttons'
 import { trackGoogleAnalyticsPageView } from '@/helpers/google-analytics'
 import { imgUrlFormatter } from '@/helpers/imgUrlFormatter'
 import { resolveUsernameOrShorten } from '@/helpers/resolveUsername'
-import { fetchTokenBalance } from '@/lib/decentralize'
+// import { fetchTokenBalance } from '@/lib/decentralize'
 import { useGlobalStore } from '@/stores/globalStore'
 import { Repo } from '@/types/repository'
 
@@ -25,6 +22,7 @@ import useRepository from '../hooks/useRepository'
 import { useRepoHeaderStore } from '../store/repoHeader'
 import ActivityGraph from './ActivityGraph'
 import TokenizeModal from './decentralize-modals/Tokenize-Modal'
+import TradeModal from './decentralize-modals/Trade-Modal'
 import ForkModal from './ForkModal'
 import RepoHeaderLoading from './RepoHeaderLoading'
 
@@ -37,16 +35,15 @@ type Props = {
 
 export default function RepoHeader({ repo, isLoading, owner, parentRepo }: Props) {
   const [isDecentralizationModalOpen, setIsDecentralizationModalOpen] = React.useState(false)
-  const [tokenBalLoading, setTokenBalLoading] = React.useState(false)
-  const [tokenBal, setTokenBal] = React.useState<string>('0')
   const [isDecentralized, setIsDecentralized] = React.useState(false)
   const [isForkModalOpen, setIsForkModalOpen] = React.useState(false)
+  const [isTradeModalOpen, setIsTradeModalOpen] = React.useState(false)
   const [showCloneDropdown, setShowCloneDropdown] = React.useState(false)
   const cloneRef = React.useRef<HTMLDivElement | null>(null)
   const location = useLocation()
   const navigate = useNavigate()
   const { downloadRepository } = useRepository(repo?.id, repo?.name)
-  const [address, isRepoOwner] = useGlobalStore((state) => [state.authState.address, state.repoCoreActions.isRepoOwner])
+  const [isRepoOwner] = useGlobalStore((state) => [state.repoCoreActions.isRepoOwner])
   const [repoHeaderState] = useRepoHeaderStore((state) => [state.repoHeaderState])
 
   React.useEffect(() => {
@@ -122,20 +119,20 @@ export default function RepoHeader({ repo, isLoading, owner, parentRepo }: Props
   async function fetchAndSetTokenBal() {
     if (!repo || !repo.token || !repo.token.processId) return
 
-    setTokenBalLoading(true)
-    try {
-      const bal = await fetchTokenBalance(repo.token.processId, address!)
-      setTokenBal(bal)
-    } catch (error) {
-      toast.error('Failed to fetch token balance.')
-    }
-    setTokenBalLoading(false)
+    // setTokenBalLoading(true)
+    // try {
+    //   const bal = await fetchTokenBalance(repo.token.processId, address!)
+    //   setTokenBal(bal)
+    // } catch (error) {
+    //   toast.error('Failed to fetch token balance.')
+    // }
+    // setTokenBalLoading(false)
   }
 
-  function handleTokenBalClick() {
+  function handleTradeClick() {
     if (!repo || !repo.token || !repo.token.processId) return
 
-    window.open(`https://www.ao.link/#/token/${repo.token.processId}`, '_blank')
+    setIsTradeModalOpen(true)
   }
 
   return (
@@ -169,6 +166,7 @@ export default function RepoHeader({ repo, isLoading, owner, parentRepo }: Props
                       <Button
                         className="bg-[#26d9af] text-gray-200 px-2 text-sm font-bold rounded-md h-full py-[1px]"
                         variant="solid"
+                        onClick={handleTradeClick}
                       >
                         Trade
                       </Button>
@@ -308,7 +306,14 @@ export default function RepoHeader({ repo, isLoading, owner, parentRepo }: Props
       <ForkModal isOpen={isForkModalOpen} setIsOpen={setIsForkModalOpen} repo={repo} />
 
       {isDecentralizationModalOpen && (
-        <TokenizeModal onClose={() => setIsDecentralizationModalOpen(false)} isOpen={isDecentralizationModalOpen} />
+        <TokenizeModal
+          setIsTradeModalOpen={setIsTradeModalOpen}
+          onClose={() => setIsDecentralizationModalOpen(false)}
+          isOpen={isDecentralizationModalOpen}
+        />
+      )}
+      {isDecentralized && isTradeModalOpen && repo.token && repo.token.processId && (
+        <TradeModal onClose={() => setIsTradeModalOpen(false)} isOpen={isTradeModalOpen} />
       )}
     </div>
   )
