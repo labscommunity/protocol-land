@@ -7,48 +7,35 @@ import { FadeLoader } from 'react-spinners'
 
 import CloseCrossIcon from '@/assets/icons/close-cross.svg'
 import { waitFor } from '@/helpers/waitFor'
-import { checkLiquidityPoolReserves, createLiquidityPool, depositToLiquidityPool } from '@/lib/bark'
-import { decentralizeRepo, loadTokenProcess, pollLiquidityProvideMessages } from '@/lib/decentralize'
+import { decentralizeRepo, initializeBondingCurve, loadTokenProcess } from '@/lib/decentralize'
 import { useGlobalStore } from '@/stores/globalStore'
-import { RepoToken } from '@/types/repository'
+import { BondingCurve, RepoToken } from '@/types/repository'
 
 import { createConfetti } from '../../helpers/createConfetti'
-import { CreateLiquidityPoolProps, ErrorMessageTypes } from './config'
+import { ErrorMessageTypes } from './config'
 import Confirm from './Confirm'
 import DecentralizeError from './Error'
-import LiquidityPoolSuccess from './LiquidityPoolSuccess'
 import Loading from './Loading'
 import DecentralizeSuccess from './Success'
-import TokenizedLiquidityPool from './Tokenized-LiquidityPool'
 
 type TokenizeModalProps = {
+  setIsTradeModalOpen: (open: boolean) => void
   onClose: () => void
   isOpen: boolean
 }
 
-type DecentralizeStatus =
-  | 'IDLE'
-  | 'PENDING'
-  | 'SUCCESS'
-  | 'LIQUIDITY_POOL'
-  | 'ERROR'
-  | 'LIQUIDITY_POOL_SUCCESS'
-  | 'LIQUIDITY_POOL_PENDING'
+type DecentralizeStatus = 'IDLE' | 'PENDING' | 'SUCCESS' | 'ERROR'
 
-export default function TokenizeModal({ onClose, isOpen }: TokenizeModalProps) {
+export default function TokenizeModal({ setIsTradeModalOpen, onClose, isOpen }: TokenizeModalProps) {
   const navigate = useNavigate()
   const [isLoading, setIsLoading] = useState(true)
-  const [repo, setRepoDecentralized, saveLiquidityPoolId] = useGlobalStore((state) => [
+  const [repo, setRepoDecentralized] = useGlobalStore((state) => [
     state.repoCoreState.selectedRepo.repo,
-    state.repoCoreActions.setRepoDecentralized,
-    state.repoCoreActions.saveLiquidityPoolId
+    state.repoCoreActions.setRepoDecentralized
   ])
-  const [liquidityPoolId, setLiquidityPoolId] = useState<string | null>(null)
-  const [liquidityPoolPayload, setLiquidityPoolPayload] = useState<CreateLiquidityPoolProps | null>(null)
+
   const [tokenizeProgress, setTokenizeProgress] = useState(0)
-  const [liquidityPoolProgress, setLiquidityPoolProgress] = useState(0)
   const [tokenizeProgressText, setTokenizeProgressText] = useState('Tokenizing...')
-  const [liquidityPoolProgressText, setLiquidityPoolProgressText] = useState('Creating Liquidity Pool...')
 
   const [decentralizeStatus, setDecentralizeStatus] = useState<DecentralizeStatus>('IDLE')
   const [decentralizeError, setDecentralizeError] = useState<ErrorMessageTypes | null>(null)
@@ -56,9 +43,10 @@ export default function TokenizeModal({ onClose, isOpen }: TokenizeModalProps) {
   useEffect(() => {
     // pollLiquidityProvideMessages('QM8Tc-7yJBGyifsx-DbcDgA3_aGm-p_NOVSYfeGqLwg')
     if (repo) {
-      const valid = isTokenSettingsValid()
+      const validToken = isTokenSettingsValid()
+      const validBondingCurve = isBondingCurveSettingsValid()
 
-      if (!valid) {
+      if (!validToken || !validBondingCurve) {
         setDecentralizeError('error-no-token')
       }
 
@@ -77,21 +65,28 @@ export default function TokenizeModal({ onClose, isOpen }: TokenizeModalProps) {
       return false
     }
 
-    const requiredFields = [
-      'tokenName',
-      'tokenTicker',
-      'denomination',
-      'totalSupply',
-      'tokenImage',
-      'allocations',
-      'processId'
-    ]
+    const requiredFields = ['tokenName', 'tokenTicker', 'denomination', 'totalSupply', 'tokenImage', 'processId']
     for (const field of requiredFields) {
       const typedField = field as keyof RepoToken
-      if (typedField === 'allocations' && repo.token[typedField].length === 0) {
+      if (!repo.token[typedField]) {
         return false
       }
-      if (!repo.token[typedField]) {
+    }
+
+    return true
+  }
+
+  function isBondingCurveSettingsValid() {
+    if (!repo) return false
+
+    if (!repo.bondingCurve) {
+      return false
+    }
+
+    const requiredFields = ['fundingGoal', 'reserveToken', 'processId']
+    for (const field of requiredFields) {
+      const typedField = field as keyof BondingCurve
+      if (!repo.bondingCurve[typedField]) {
         return false
       }
     }
@@ -117,15 +112,33 @@ export default function TokenizeModal({ onClose, isOpen }: TokenizeModalProps) {
 
         return
       }
-      await waitFor(2000)
+      setTokenizeProgressText('Validating bonding curve settings...')
+      if (!isBondingCurveSettingsValid()) {
+        setDecentralizeError('error-no-bonding-curve')
+        setDecentralizeStatus('ERROR')
+
+        return
+      }
+
+      await waitFor(1000)
       setTokenizeProgress(40)
+
       setTokenizeProgressText('Creating project token...')
-      await loadTokenProcess(repo.token!, repo.token!.processId!)
-      await waitFor(4000)
+      await loadTokenProcess(repo.token!, repo.bondingCurve!.processId!) //loading bonding curve id too
+      await waitFor(1000)
+      setTokenizeProgress(60)
+      setTokenizeProgressText('Creating bonding curve...')
+      const bondingCurveInitialized = await initializeBondingCurve(repo.token!, repo.bondingCurve!)
+      if (!bondingCurveInitialized) {
+        setDecentralizeError('error-generic')
+        setDecentralizeStatus('ERROR')
+        return
+      }
+      await waitFor(1000)
       setTokenizeProgress(80)
-      setTokenizeProgressText('Tokenizing project...')
+      setTokenizeProgressText('Tokenizing repository...')
       await decentralizeRepo(repo.id)
-      await waitFor(6000)
+      await waitFor(4000)
       createConfetti()
       setTimeout(() => {
         setDecentralizeStatus('SUCCESS')
@@ -134,99 +147,9 @@ export default function TokenizeModal({ onClose, isOpen }: TokenizeModalProps) {
       setTokenizeProgress(100)
       setTokenizeProgressText('Tokenization complete!')
     } catch (error) {
-      toast.error('Failed to decentralize repository.')
+      toast.error('Failed to tokenize repository.')
       setDecentralizeStatus('ERROR')
       setDecentralizeError('error-generic')
-    }
-  }
-  async function handleLiquidityPool(payload: CreateLiquidityPoolProps) {
-    if (!repo) return
-    setLiquidityPoolPayload(payload)
-    setDecentralizeStatus('LIQUIDITY_POOL_PENDING')
-    try {
-      //check before creating pool
-      setLiquidityPoolProgress(30)
-      setLiquidityPoolProgressText('Creating liquidity pool...')
-      const data = await createLiquidityPool(payload)
-
-      if (data.poolStatus === 'ERROR' && data.message) {
-        setDecentralizeError('error-liquidity-pool')
-        setDecentralizeStatus('ERROR')
-
-        toast.error(data.message)
-        return
-      }
-
-      setLiquidityPoolProgress(50)
-      setLiquidityPoolProgressText('Depositing token A...')
-      await depositToLiquidityPool(data.poolId, payload.tokenA, payload.amountA)
-      await waitFor(1000)
-      setLiquidityPoolProgress(70)
-      setLiquidityPoolProgressText('Depositing token B...')
-      const depositMsgIdB = await depositToLiquidityPool(data.poolId, payload.tokenB, payload.amountB)
-
-      const statusB = await pollLiquidityProvideMessages(depositMsgIdB)
-
-      if (statusB.status === 'ERROR') {
-        setDecentralizeError('error-liquidity-pool')
-        setDecentralizeStatus('ERROR')
-
-        toast.error(statusB.message)
-        return
-      }
-
-      setLiquidityPoolProgress(90)
-      setLiquidityPoolProgressText('Checking liquidity pool reserves...')
-      const reserves = await checkLiquidityPoolReserves(data.poolId)
-
-      if (!reserves) {
-        setDecentralizeError('error-liquidity-pool')
-        setDecentralizeStatus('ERROR')
-        toast.error('Failed to check liquidity pool reserves.')
-        return
-      }
-
-      let reservesHasError = false
-      const expectedReserves = {
-        [payload.tokenA.processId]: +payload.amountA * 10 ** +payload.tokenA.denomination,
-        [payload.tokenB.processId]: +payload.amountB * 10 ** +payload.tokenB.denomination
-      }
-
-      if (Object.keys(reserves).length !== 2) {
-        reservesHasError = true
-      } else {
-        for (const [processId, expectedAmount] of Object.entries(expectedReserves)) {
-          if (!(processId in reserves) || +reserves[processId] !== expectedAmount) {
-            reservesHasError = true
-            break
-          }
-        }
-      }
-
-      if (reservesHasError) {
-        setDecentralizeError('error-liquidity-pool')
-        setDecentralizeStatus('ERROR')
-        toast.error('Reserves do not match expected values.')
-        return
-      }
-
-      await saveLiquidityPoolId(data.poolId)
-
-      setLiquidityPoolProgress(100)
-      setLiquidityPoolProgressText('Liquidity pool created!')
-
-      setLiquidityPoolId(data.poolId)
-      createConfetti()
-
-      setTimeout(() => {
-        setDecentralizeStatus('LIQUIDITY_POOL_SUCCESS')
-      }, 2000)
-    } catch (error) {
-      console.log({ error })
-      setDecentralizeError('error-liquidity-pool')
-      setDecentralizeStatus('ERROR')
-
-      toast.error('Failed to create liquidity pool.')
     }
   }
 
@@ -246,10 +169,9 @@ export default function TokenizeModal({ onClose, isOpen }: TokenizeModalProps) {
       await handleRepoDecentralize()
     }
 
-    if (type === 'error-liquidity-pool' && liquidityPoolPayload) {
-      setDecentralizeStatus('LIQUIDITY_POOL')
+    if (type === 'error-no-bonding-curve' && repo.bondingCurve) {
+      setDecentralizeStatus('IDLE')
       setDecentralizeError(null)
-      await handleLiquidityPool(liquidityPoolPayload)
     }
   }
 
@@ -334,47 +256,38 @@ export default function TokenizeModal({ onClose, isOpen }: TokenizeModalProps) {
                 {!decentralizeError && decentralizeStatus === 'PENDING' && (
                   <Loading text={tokenizeProgressText} progress={tokenizeProgress} />
                 )}
-                {!decentralizeError && decentralizeStatus === 'LIQUIDITY_POOL_PENDING' && (
-                  <Loading text={liquidityPoolProgressText} progress={liquidityPoolProgress} />
-                )}
+
                 {decentralizeError && (
                   <DecentralizeError
                     errorType={decentralizeError}
                     onActionClick={() => handleErrorActions(decentralizeError)}
                   />
                 )}
-                {decentralizeStatus === 'LIQUIDITY_POOL_SUCCESS' && (
-                  <LiquidityPoolSuccess
-                    poolId={liquidityPoolId || ''}
-                    onClose={closeModal}
-                    liquidityPoolPayload={liquidityPoolPayload}
-                  />
-                )}
+
                 {decentralizeStatus === 'SUCCESS' && (
                   <DecentralizeSuccess
                     onClose={closeModal}
                     onAction={() => {
-                      setDecentralizeStatus('LIQUIDITY_POOL')
+                      setIsTradeModalOpen(true)
                     }}
-                    withLiquidityPool={!!repo?.liquidityPool}
                     token={repo.token!}
                   />
                 )}
                 {!decentralizeError && decentralizeStatus === 'IDLE' && (
                   <Confirm
+                    bondingCurve={repo.bondingCurve!}
                     onAction={handleRepoDecentralize}
                     onClose={closeModal}
                     token={repo.token!}
-                    withLiquidityPool={!!repo?.liquidityPool}
                   />
                 )}
-                {decentralizeStatus === 'LIQUIDITY_POOL' && repo?.liquidityPool && (
+                {/* {decentralizeStatus === 'LIQUIDITY_POOL' && repo?.liquidityPool && (
                   <TokenizedLiquidityPool
                     onAction={handleLiquidityPool}
                     onClose={closeModal}
                     liquidityPool={repo.liquidityPool}
                   />
-                )}
+                )} */}
               </DialogPanel>
             </TransitionChild>
           </div>

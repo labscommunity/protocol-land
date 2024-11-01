@@ -14,7 +14,7 @@ export type Repo = {
   defaultBranch: string
   dataTxId: string
   token: RepoToken | null | undefined
-  liquidityPool: RepoLiquidityPool | null | undefined
+  bondingCurve: BondingCurve | null | undefined
   liquidityPoolId: string | null
   uploadStrategy: 'DEFAULT' | 'ARSEEDING'
   owner: string
@@ -45,6 +45,12 @@ export type RepoToken = {
   tokenImage: string
   allocations: Allocation[]
   processId?: string
+}
+
+export type BondingCurve = {
+  fundingGoal: string
+  processId?: string
+  reserveToken: RepoLiquidityPoolToken
 }
 
 export type RepoLiquidityPool = {

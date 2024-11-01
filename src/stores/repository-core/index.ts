@@ -32,10 +32,10 @@ import {
   getRepositoryMetaFromContract,
   handleAcceptContributor,
   handleCancelContributorInvite,
-  handleDisableRepoLiquidityPool,
   handleRejectContributor,
+  handleSaveBondingCurveId,
   handleSaveLiquidityPoolId,
-  handleSaveRepoLiquidityPool,
+  handleSaveRepoBondingCurve,
   handleSaveRepoToken,
   loadRepository,
   saveRepository
@@ -154,7 +154,7 @@ const createRepoCoreSlice: StateCreator<CombinedSlices, [['zustand/immer', never
         toast.success('Token saved.')
       }
     },
-    saveRepoLiquidityPoolDetails: async (liquidityPool) => {
+    saveRepoBondingCurveDetails: async (bondingCurve) => {
       const repo = get().repoCoreState.selectedRepo.repo
       const userAddress = get().authState.address
 
@@ -163,43 +163,34 @@ const createRepoCoreSlice: StateCreator<CombinedSlices, [['zustand/immer', never
         return
       }
 
-      const { error, response } = await withAsync(() =>
-        handleSaveRepoLiquidityPool(repo.id, liquidityPool, userAddress)
-      )
+      const { error, response } = await withAsync(() => handleSaveRepoBondingCurve(repo.id, bondingCurve, userAddress))
 
       if (error) {
-        toast.error('Failed to save liquidity pool.')
+        toast.error('Failed to save bonding curve.')
         return
       }
 
       if (response) {
         set((state) => {
-          state.repoCoreState.selectedRepo.repo!.liquidityPool = response
+          state.repoCoreState.selectedRepo.repo!.bondingCurve = response
         })
-        toast.success('Liquidity pool saved.')
+        toast.success('Bonding curve saved.')
       }
     },
-    disableRepoLiquidityPool: async () => {
+    saveBondingCurveId: async (bondingCurveId) => {
       const repo = get().repoCoreState.selectedRepo.repo
       const userAddress = get().authState.address
 
       if (!repo || !userAddress) {
-        toast.error('Not authorized to disable liquidity pool.')
+        toast.error('Not authorized to save bonding curve id.')
         return
       }
 
-      const { error, response } = await withAsync(() => handleDisableRepoLiquidityPool(repo.id))
+      const { error } = await withAsync(() => handleSaveBondingCurveId(repo.id, bondingCurveId))
 
-      if (error || !response) {
-        toast.error('Failed to disable liquidity pool.')
+      if (error) {
+        toast.error('Failed to save bonding curve id.')
         return
-      }
-
-      if (response) {
-        set((state) => {
-          state.repoCoreState.selectedRepo.repo!.liquidityPool = null
-        })
-        toast.success('Liquidity pool disabled.')
       }
     },
     saveLiquidityPoolId: async (liquidityPoolId) => {

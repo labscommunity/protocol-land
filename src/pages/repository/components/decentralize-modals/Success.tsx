@@ -5,11 +5,10 @@ import { RepoToken } from '@/types/repository'
 type Props = {
   onClose: () => void
   token: RepoToken
-  withLiquidityPool: boolean
   onAction: () => void
 }
 
-export default function DecentralizeSuccess({ onClose, token, withLiquidityPool, onAction }: Props) {
+export default function DecentralizeSuccess({ onClose, token, onAction }: Props) {
   return (
     <>
       <div className="mt-6 flex flex-col gap-2.5">
@@ -20,18 +19,16 @@ export default function DecentralizeSuccess({ onClose, token, withLiquidityPool,
               {token.tokenName} - {token.tokenTicker}
             </h1>
             <p className="text-gray-500 text-center">
-              The repository has been successfully Tokenized. You can now create a liquidity pool to enable trading.
+              The repository has been successfully Tokenized. Now you can trade on the bonding curve.
             </p>
           </div>
         </div>
       </div>
 
       <div className="mt-6 flex flex-col gap-2">
-        {withLiquidityPool && (
-          <Button className="w-full justify-center font-medium" onClick={onAction} variant="primary-solid">
-            Create Liquidity Pool
-          </Button>
-        )}
+        <Button className="w-full justify-center font-medium" onClick={onAction} variant="primary-solid">
+          Trade Now
+        </Button>
         <Button className="w-full justify-center font-medium" onClick={onClose} variant="primary-outline">
           Close
         </Button>

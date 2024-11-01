@@ -2,16 +2,16 @@ import { useNavigate, useParams } from 'react-router-dom'
 
 import { Button } from '@/components/common/buttons'
 import { imgUrlFormatter } from '@/helpers/imgUrlFormatter'
-import { RepoToken } from '@/types/repository'
+import { BondingCurve, RepoToken } from '@/types/repository'
 
 export default function Confirm({
+  bondingCurve,
   token,
-  withLiquidityPool,
   onClose,
   onAction
 }: {
+  bondingCurve: BondingCurve
   token: RepoToken
-  withLiquidityPool: boolean
   onClose: () => void
   onAction: () => void
 }) {
@@ -48,8 +48,14 @@ export default function Confirm({
             <p>{token.totalSupply}</p>
           </div>
           <div className="flex flex-col">
-            <label className="text-sm font-medium text-gray-500">Create Liquidity Pool</label>
-            <p>{withLiquidityPool ? 'Yes' : 'No'}</p>
+            <label className="text-sm font-medium text-gray-500">Funding Goal</label>
+            <p>{bondingCurve.fundingGoal}</p>
+          </div>
+          <div className="flex flex-col">
+            <label className="text-sm font-medium text-gray-500">Reserve Token</label>
+            <p>
+              {bondingCurve.reserveToken.tokenName} - ({bondingCurve.reserveToken.tokenTicker})
+            </p>
           </div>
         </div>
       </div>
