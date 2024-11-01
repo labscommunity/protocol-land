@@ -3,6 +3,7 @@ import SVG from 'react-inlinesvg'
 import SpiralArrowIcon from '@/assets/icons/spiral-arrow.svg'
 import { trackGoogleAnalyticsEvent } from '@/helpers/google-analytics'
 import useAuth from '@/helpers/hooks/useAuth'
+import Banner from '@/pages/home/components/Banner'
 
 import { Button } from '../common/buttons'
 import { InteractiveRepo } from './InteractiveRepo'
@@ -17,6 +18,7 @@ export default function Header() {
 
   return (
     <div className="w-full py-16 md:pt-28 md:pb-10 flex-col justify-start items-center gap-14 inline-flex">
+      <Banner />
       <div className="flex-col justify-start items-center gap-6 inline-flex">
         <div className="text-center text-primary-400 text-4xl md:text-6xl font-bold font-lekton leading-10">
           Code collaboration, <div className="inline-block underlined after:mb-[-1px] md:after:mb-0">reimagined</div>
