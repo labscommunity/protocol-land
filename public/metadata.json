@@ -90,10 +90,22 @@
       "status": "published",
       "href": "/blog/liteseed-secures-access-to-its-services",
       "file": "/blog/liteseed-secures-access-to-its-services.md",
-      "featured": true,
+      "featured": false,
       "category": "ANNOUNCEMENT",
       "description": "Explore what LiteSeed has to offer and how they are preserving access to their services with Protocol.Land.",
       "coverImage": "/blog/images/liteseed-secures-access-to-its-services.png",
+      "publishedAt": "2024-04-17"
+    },
+    {
+      "id": 9,
+      "title": "Guide to tokenization of open source code on Protocol.Land",
+      "status": "published",
+      "href": "/blog/guide-to-tokenization-of-open-source-code-on-protocol-land",
+      "file": "/blog/guide-to-tokenization-of-open-source-code-on-protocol-land.md",
+      "featured": true,
+      "category": "EDUCATION",
+      "description": "Learn how to tokenize your open source code on Protocol.Land.",
+      "coverImage": "/blog/images/guide-to-tokenization-of-open-source-code-on-protocol-land.jpg",
       "publishedAt": "2024-04-17"
     }
   ]
