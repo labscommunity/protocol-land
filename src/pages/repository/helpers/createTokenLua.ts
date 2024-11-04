@@ -759,7 +759,7 @@ local function _loaded_mod_src_handlers_mint()
   function mod.mint(msg)
       assert(msg.From == BondingCurveProcess, 'Only the bonding curve process can mint!')
       assert(type(msg.Quantity) == 'string', 'Quantity is required!')
-      assert(bint.__lt(0, msg.Quantity), 'Quantity must be greater than zero!')
+      assert(bint.__lt(bint(0), bint(msg.Quantity)), 'Quantity must be greater than zero!')
       
       -- Check if minting would exceed max supply
       local newTotalSupply = utils.add(TotalSupply, msg.Quantity)
@@ -818,7 +818,7 @@ local function _loaded_mod_src_handlers_burn()
       local user = msg.Tags.Recipient
       assertions.isAddress("Recipient", user)
   
-      if bint.__le(bint(Balances[user]), bint(msg.Quantity)) then
+      if bint.__lt(bint(Balances[user]), bint(msg.Quantity)) then
           msg.reply({
               Action = 'Burn-Error',
               Error = 'Quantity must be less than or equal to the current balance'

@@ -1,41 +1,38 @@
-// import { dryrun } from '@permaweb/aoconnect'
-// import { sendMessage } from '@/lib/contract'
+import { dryrun } from '@permaweb/aoconnect'
+import { arGql, GQLUrls } from 'ar-gql'
 import Arweave from 'arweave'
 
 import { getTags } from '@/helpers/getTags'
 import { waitFor } from '@/helpers/waitFor'
-
-import { sendMessage } from '../contract'
-import { pollForTxBeingAvailable } from '../decentralize'
 
 const arweave = new Arweave({
   host: 'arweave-search.goldsky.com',
   port: 443,
   protocol: 'https'
 })
-
-export async function getTokenBuyPrice(amount: string, cruveId: string) {
+const goldsky = arGql({ endpointUrl: GQLUrls.goldsky })
+export async function getTokenBuyPrice(amount: string, currentSupply: string, cruveId: string) {
   const args = {
     tags: getTags({
       Action: 'Get-Buy-Price',
-      'Token-Quantity': amount
+      'Token-Quantity': amount,
+      'Current-Supply': currentSupply
     }),
-    pid: cruveId
+    process: cruveId
   }
-  const msgId = await sendMessage(args)
-  await pollForTxBeingAvailable({ txId: msgId })
+  const { Messages } = await dryrun(args)
 
-  if (!msgId) {
+  if (!Messages || !Messages[0]) {
     throw new Error('Failed to get token buy price')
   }
 
-  const costObj = await pollGetBuyPriceMessages(msgId)
+  const cost = Messages[0].Data
 
-  if (!costObj.cost) {
+  if (!cost) {
     throw new Error('Failed to get token buy price')
   }
 
-  return costObj.cost
+  return parseInt(cost)
 }
 
 const GET_BUY_PRICE_RESPONSE_ACTION = 'Get-Buy-Price-Response'
@@ -259,4 +256,55 @@ export async function pollSellTokensMessages(msgId: string) {
   }
 
   throw new Error('Transaction not found after polling, transaction id: ' + msgId)
+}
+
+export async function getBuySellTransactionsOfCurve(curveId: string) {
+  const queryObject = prepareBuySellTransactionsQueryObject()
+  const edges = await goldsky.all(queryObject.query, {
+    sortOrder: 'INGESTED_AT_DESC',
+    action: [BUY_TOKENS_RESPONSE_ACTION, SELL_TOKENS_RESPONSE_ACTION],
+    curveId
+  })
+
+  return edges
+}
+
+const prepareBuySellTransactionsQueryObject = () => {
+  return {
+    query: `
+     query($cursor: String, $sortOrder: SortOrder!, $action: [String!], $curveId: [String!]) {
+      transactions(
+        first: 100
+        after: $cursor
+        sort: $sortOrder
+        tags: [
+          { name: "Action", values: $action }
+          { name: "From-Process", values: $curveId }
+        ]
+      ) {
+        pageInfo {
+          hasNextPage
+        }
+        edges {
+          node {
+            ...TransactionCommon
+          }
+        }
+      }
+    }
+    fragment TransactionCommon on Transaction {
+      id
+      ingested_at
+      recipient
+      block {
+        height
+        timestamp
+      }
+      tags {
+        name
+        value
+      }
+    }
+    `
+  }
 }
