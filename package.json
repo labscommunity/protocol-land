@@ -32,6 +32,7 @@
     "@uiw/react-codemirror": "^4.21.11",
     "@uiw/react-md-editor": "^3.23.5",
     "@xyflow/react": "^12.0.4",
+    "ar-gql": "^2.0.2",
     "ardb": "^1.1.10",
     "arfs-js": "^1.4.2",
     "arweave": "^1.14.4",

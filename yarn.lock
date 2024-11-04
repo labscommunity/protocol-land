@@ -3377,6 +3377,11 @@ ar-gql@^1.2.9:
   resolved "https://registry.yarnpkg.com/ar-gql/-/ar-gql-1.2.9.tgz#423583dbebef7e8c838b7634d9d3ffb6d972aa3c"
   integrity sha512-LZu4Mt92oFTA+JJ0PdiowJEFS2t6FhKWeYRBo9LTqx9shrIMGRb3iP5SvPbqLREXSSBriJOyyM3tgQ4wDYKr/w==
 
+ar-gql@^2.0.2:
+  version "2.0.2"
+  resolved "https://registry.yarnpkg.com/ar-gql/-/ar-gql-2.0.2.tgz#b2c81330628bd9e81396f350c08b749a350e2cab"
+  integrity sha512-x803rnC20iN9gj1WlnwO+Cqvahu1QmnuwM529OdVzwl2krj/tdNoG4OZ1c1n6ougPVDWv+PNbkBaXggeiI6wDw==
+
 arbundles@^0.10.0:
   version "0.10.1"
   resolved "https://registry.npmjs.org/arbundles/-/arbundles-0.10.1.tgz#1f542d9edf185a8a272994aef501a8ee12aaaa46"

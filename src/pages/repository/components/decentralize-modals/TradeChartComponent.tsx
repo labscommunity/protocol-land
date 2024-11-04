@@ -16,8 +16,7 @@ type ChartData = {
   value: number
 }
 
-export default function TradeChartComponent() {
-  const [data] = React.useState<ChartData[]>([])
+export default function TradeChartComponent({ data }: { data: ChartData[] }) {
   const chartContainerRef = React.useRef<HTMLDivElement>(null)
 
   React.useEffect(() => {
@@ -42,12 +41,24 @@ export default function TradeChartComponent() {
     })
     chart.timeScale().fitContent()
 
-    const newSeries = chart.addAreaSeries({
-      lineColor: styles.lineColor,
-      topColor: styles.areaTopColor,
-      bottomColor: styles.areaBottomColor
+    // const newSeries = chart.addAreaSeries({
+    //   lineColor: styles.lineColor,
+    //   topColor: styles.areaTopColor,
+    //   bottomColor: styles.areaBottomColor,
+    //   priceFormat: {
+    //     type: 'price',
+    //     precision: 16,
+    //     minMove: 0.00000001
+    //   }
+    // })
+    const lineSeries = chart.addLineSeries({
+      priceFormat: {
+        type: 'price',
+        precision: 12, // Number of decimal places to display
+        minMove: 0.000001 // Minimum price movement
+      }
     })
-    newSeries.setData([] as any)
+    lineSeries.setData(data as any)
 
     window.addEventListener('resize', handleResize)
 

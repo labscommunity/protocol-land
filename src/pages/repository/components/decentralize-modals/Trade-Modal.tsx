@@ -12,8 +12,9 @@ import { imgUrlFormatter } from '@/helpers/imgUrlFormatter'
 import { parseScientific } from '@/helpers/parseScientific'
 import { shortenAddress } from '@/helpers/shortenAddress'
 import { debounce } from '@/helpers/withDebounce'
-import { buyTokens, calculateTokensBuyCost } from '@/lib/bonding-curve/buy'
-import { getCurveState } from '@/lib/bonding-curve/helpers'
+import { getBuySellTransactionsOfCurve, getTokenBuyPrice } from '@/lib/bonding-curve'
+import { buyTokens } from '@/lib/bonding-curve/buy'
+import { getCurveState, getTokenCurrentSupply } from '@/lib/bonding-curve/helpers'
 import { calculateTokensSellCost, sellTokens } from '@/lib/bonding-curve/sell'
 import { fetchTokenBalance, fetchTokenBalances } from '@/lib/decentralize'
 import { useGlobalStore } from '@/stores/globalStore'
@@ -27,11 +28,18 @@ type TradeModalProps = {
   isOpen: boolean
 }
 
+type ChartData = {
+  time: string | number
+  value: number
+}
+
 export default function TradeModal({ onClose, isOpen }: TradeModalProps) {
+  const [chartData, setChartData] = React.useState<ChartData[]>([])
   const [balances, setBalances] = React.useState<Record<string, string>>({})
   const [transactionPending, setTransactionPending] = React.useState<boolean>(false)
   const [curveState, setCurveState] = React.useState<CurveState>({} as CurveState)
   const [price, setPrice] = React.useState<string>('0')
+  const [priceUnscaled, setPriceUnscaled] = React.useState<string>('0')
   const [reserveTokenBalance, setReserveTokenBalance] = React.useState<string>('0')
   const [repoTokenBalance, setRepoTokenBalance] = React.useState<string>('0')
   const [amount, setAmount] = React.useState<string>('')
@@ -46,6 +54,7 @@ export default function TradeModal({ onClose, isOpen }: TradeModalProps) {
       setSelectedTokenToTransact(0)
       handleGetCurveState()
       handleGetTokenBalances()
+      handleGetTransactions()
     }
   }, [repo])
   console.log({ reserveTokenBalance })
@@ -91,6 +100,46 @@ export default function TradeModal({ onClose, isOpen }: TradeModalProps) {
     setBalances(balancesAsPercentages)
   }
 
+  async function handleGetTransactions() {
+    if (!repo || !repo.bondingCurve || !repo.token) return
+
+    const chart: ChartData[] = []
+
+    const transactions = await getBuySellTransactionsOfCurve(repo.bondingCurve.processId!)
+
+    transactions.forEach((transaction: any) => {
+      const costTag = transaction.node.tags.find((tag: any) => tag.name === 'Cost')
+      const tokensSoldTag = transaction.node.tags.find((tag: any) => tag.name === 'TokensSold')
+      const tokensBoughtTag = transaction.node.tags.find((tag: any) => tag.name === 'TokensBought')
+
+      const cost = costTag ? parseInt(costTag.value) : 0
+      const tokensSold = tokensSoldTag ? parseInt(tokensSoldTag.value) : 0
+      const tokensBought = tokensBoughtTag ? parseInt(tokensBoughtTag.value) : 0
+      let price = 0
+      // Calculate price based on transaction type
+      if (tokensBought > 0) {
+        // Buy transaction: Price = Cost / TokensBought
+        price = cost / (tokensBought * 10 ** +repo.token!.denomination)
+      } else if (tokensSold > 0) {
+        // Sell transaction: Price = Proceeds / TokensSold
+        price = cost / (tokensSold * 10 ** +repo.token!.denomination)
+      } else {
+        // If no tokens were bought or sold, skip this transaction as it doesn't affect the price
+        return
+      }
+
+      price = parseFloat(
+        parseScientific(roundToSignificantFigures(price, +repo.bondingCurve!.reserveToken.denomination).toString())
+      )
+      const timestamp = transaction.node.ingested_at * 1000 || 0
+      chart.push({
+        time: timestamp,
+        value: price
+      })
+    })
+    setChartData(chart)
+  }
+
   async function handleGetCurveState() {
     if (!repo?.bondingCurve) return
 
@@ -126,17 +175,18 @@ export default function TradeModal({ onClose, isOpen }: TradeModalProps) {
     if (!amount || !repo?.bondingCurve || !curveState.maxSupply || !curveState.fundingGoal) return
 
     let price = 0
-
+    const currentSupply = await getTokenCurrentSupply(repo.token!.processId!)
     if (selectedSide === 'buy') {
-      const tokensToBuy = +amount * 10 ** +repo.token!.denomination
-      price = await calculateTokensBuyCost(
-        repo.token!.processId!,
-        tokensToBuy,
-        +curveState.maxSupply,
-        +curveState.fundingGoal
-      )
-    }
+      const tokensToBuy = +amount
+      // price = await calculateTokensBuyCost(
+      //   repo.token!.processId!,
+      //   tokensToBuy,
+      //   +curveState.maxSupply,
+      //   +curveState.fundingGoal
+      // )
 
+      price = await getTokenBuyPrice(tokensToBuy.toString(), currentSupply, repo.bondingCurve.processId!)
+    }
     if (selectedSide === 'sell') {
       const tokensToSell = +amount * 10 ** +repo.token!.denomination
       price = await calculateTokensSellCost(
@@ -146,12 +196,23 @@ export default function TradeModal({ onClose, isOpen }: TradeModalProps) {
         +curveState.fundingGoal
       )
     }
-
+    setPriceUnscaled(price.toString())
     const priceUnscaled = price / 10 ** +repo.bondingCurve.reserveToken.denomination
-    console.log({ priceUnscaled })
-    const formattedPrice = parseScientific(Math.round(priceUnscaled).toString())
+    const formattedPrice = parseScientific(
+      roundToSignificantFigures(priceUnscaled, +repo.bondingCurve.reserveToken.denomination).toString()
+    )
 
     setPrice(formattedPrice || '')
+  }
+
+  function roundToSignificantFigures(num: number, sig: number) {
+    if (num === 0) {
+      return 0
+    }
+    const d = Math.ceil(Math.log10(Math.abs(num)))
+    const power = sig - d
+    const mult = Math.pow(10, power)
+    return Math.floor(num * mult + 0.5) / mult
   }
 
   async function handleSideAction() {
@@ -172,11 +233,13 @@ export default function TradeModal({ onClose, isOpen }: TradeModalProps) {
     if (+price <= 0) return
     try {
       setTransactionPending(true)
+      // const currentSupply = await getTokenCurrentSupply(repo.token!.processId!)
+
       const { success } = await buyTokens(
         repo.bondingCurve.processId!,
         repo.bondingCurve.reserveToken.processId!,
         amount,
-        (+price * 10 ** +repo.bondingCurve.reserveToken.denomination).toString()
+        priceUnscaled
       )
       if (success) {
         toast.success('Tokens bought successfully.')
@@ -253,7 +316,7 @@ export default function TradeModal({ onClose, isOpen }: TradeModalProps) {
                 <div className="mt-6 flex h-[700px] gap-8">
                   {/* TradingView Chart Section - 70% */}
                   <div className="w-[70%]">
-                    <TradeChartComponent />
+                    <TradeChartComponent data={chartData} />
                   </div>
 
                   {/* Buy/Sell Widget Section - 30% */}

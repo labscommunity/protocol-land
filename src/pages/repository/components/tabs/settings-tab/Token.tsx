@@ -48,11 +48,11 @@ const tokenSchema = yup
   .required()
 
 const USDA_TST = {
-  tokenName: 'Astro USD (Mock)',
-  tokenTicker: 'MOCKUSDA',
-  processId: '6WWpaQKdDk1BLah_6VzIuokI-cFvNqykrERHJqAMQwo',
+  tokenName: 'USDA Mock',
+  tokenTicker: 'TUSDA',
+  processId: 'b87Jd4usKGyMjovbNeX4P3dcvkC4mrtBZ5HxW_ENtn4',
   denomination: '12',
-  tokenImage: 'K8nurc9H0_ZQm17jbs3ryEs6MrlX-oIK_krpprWlQ-Q'
+  tokenImage: 'TPkPIvnvWuyd-hv8J1IAdUlb8aii00Z7vjwMBk_kp0M'
 }
 const RESERVE_TOKENS = [USDA_TST]
 
