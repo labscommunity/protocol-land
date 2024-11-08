@@ -161,14 +161,14 @@ export default function RepoHeader({ repo, isLoading, owner, parentRepo }: Props
                 )}
                 {isDecentralized && repo.token && repo.token.processId && (
                   <div className="flex items-center gap-2">
-                    <img src={imgUrlFormatter(repo.token.tokenImage)} className="w-6 h-6" />
                     <div className="flex items-center">
                       <Button
-                        className="bg-[#26d9af] text-gray-200 px-2 text-sm font-bold rounded-md h-full py-[1px]"
+                        className="!bg-[#26d9af] text-gray-200 !px-2 text-sm font-medium rounded-md h-full !py-[1px] justify-between gap-1"
                         variant="solid"
                         onClick={handleTradeClick}
                       >
-                        Trade
+                        <img src={imgUrlFormatter(repo.token.tokenImage)} className="w-4 h-4" />
+                        Buy
                       </Button>
                       {/* {tokenBalLoading && <BeatLoader size={8} color="#56ADD9" />}
                       {!tokenBalLoading && (

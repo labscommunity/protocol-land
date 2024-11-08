@@ -27,7 +27,7 @@ export default function DecentralizeSuccess({ onClose, token, onAction }: Props)
 
       <div className="mt-6 flex flex-col gap-2">
         <Button className="w-full justify-center font-medium" onClick={onAction} variant="primary-solid">
-          Trade Now
+          Buy Now
         </Button>
         <Button className="w-full justify-center font-medium" onClick={onClose} variant="primary-outline">
           Close

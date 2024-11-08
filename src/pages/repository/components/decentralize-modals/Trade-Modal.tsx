@@ -21,7 +21,9 @@ import { useGlobalStore } from '@/stores/globalStore'
 import { CurveState } from '@/stores/repository-core/types'
 import { RepoToken } from '@/types/repository'
 
+import { roundToSignificantFigures } from '../../helpers/roundToSigFigures'
 import TradeChartComponent from './TradeChartComponent'
+import TransferToLP from './TransferToLP'
 
 type TradeModalProps = {
   onClose: () => void
@@ -30,10 +32,11 @@ type TradeModalProps = {
 
 type ChartData = {
   time: string | number
-  value: number
+  value: string | number
 }
 
 export default function TradeModal({ onClose, isOpen }: TradeModalProps) {
+  const amountRef = React.useRef<HTMLInputElement>(null)
   const [chartData, setChartData] = React.useState<ChartData[]>([])
   const [balances, setBalances] = React.useState<Record<string, string>>({})
   const [transactionPending, setTransactionPending] = React.useState<boolean>(false)
@@ -106,7 +109,7 @@ export default function TradeModal({ onClose, isOpen }: TradeModalProps) {
     const chart: ChartData[] = []
 
     const transactions = await getBuySellTransactionsOfCurve(repo.bondingCurve.processId!)
-
+    let lastTimestamp = 0
     transactions.forEach((transaction: any) => {
       const costTag = transaction.node.tags.find((tag: any) => tag.name === 'Cost')
       const tokensSoldTag = transaction.node.tags.find((tag: any) => tag.name === 'TokensSold')
@@ -119,19 +122,23 @@ export default function TradeModal({ onClose, isOpen }: TradeModalProps) {
       // Calculate price based on transaction type
       if (tokensBought > 0) {
         // Buy transaction: Price = Cost / TokensBought
-        price = cost / (tokensBought * 10 ** +repo.token!.denomination)
+        price = cost / tokensBought
       } else if (tokensSold > 0) {
         // Sell transaction: Price = Proceeds / TokensSold
-        price = cost / (tokensSold * 10 ** +repo.token!.denomination)
+        price = cost / tokensSold
       } else {
         // If no tokens were bought or sold, skip this transaction as it doesn't affect the price
         return
       }
 
-      price = parseFloat(
-        parseScientific(roundToSignificantFigures(price, +repo.bondingCurve!.reserveToken.denomination).toString())
-      )
-      const timestamp = transaction.node.ingested_at * 1000 || 0
+      let timestamp = transaction.node.ingested_at || 0
+      // Ensure timestamps are incrementing
+      if (timestamp <= lastTimestamp) {
+        timestamp = lastTimestamp + 1
+      }
+      lastTimestamp = timestamp
+
+      // const timestamp = transaction.node.ingested_at || 0
       chart.push({
         time: timestamp,
         value: price
@@ -148,6 +155,8 @@ export default function TradeModal({ onClose, isOpen }: TradeModalProps) {
   }
 
   function handleTokenSwitch() {
+    toast.success('Coming soon')
+    return
     if (!repo) return
     if (selectedTokenToTransact === 0) {
       setSelectedTokenToTransact(1)
@@ -192,8 +201,8 @@ export default function TradeModal({ onClose, isOpen }: TradeModalProps) {
       price = await calculateTokensSellCost(
         repo.token!.processId!,
         tokensToSell,
-        +curveState.maxSupply,
-        +curveState.fundingGoal
+        +curveState.fundingGoal,
+        +curveState.supplyToSell
       )
     }
     setPriceUnscaled(price.toString())
@@ -205,14 +214,11 @@ export default function TradeModal({ onClose, isOpen }: TradeModalProps) {
     setPrice(formattedPrice || '')
   }
 
-  function roundToSignificantFigures(num: number, sig: number) {
-    if (num === 0) {
-      return 0
-    }
-    const d = Math.ceil(Math.log10(Math.abs(num)))
-    const power = sig - d
-    const mult = Math.pow(10, power)
-    return Math.floor(num * mult + 0.5) / mult
+  async function handleSelectedSideChange(side: 'buy' | 'sell') {
+    setSelectedSide(side)
+    setAmount('')
+    amountRef.current!.value = '0'
+    setPrice('0')
   }
 
   async function handleSideAction() {
@@ -225,6 +231,7 @@ export default function TradeModal({ onClose, isOpen }: TradeModalProps) {
 
     await handleGetTokenBalances()
     await handleGetCurveState()
+    await handleGetTransactions()
   }
 
   async function handleBuy() {
@@ -243,6 +250,8 @@ export default function TradeModal({ onClose, isOpen }: TradeModalProps) {
       )
       if (success) {
         toast.success('Tokens bought successfully.')
+        setAmount('')
+        amountRef.current!.value = ''
       }
 
       if (!success) {
@@ -263,17 +272,24 @@ export default function TradeModal({ onClose, isOpen }: TradeModalProps) {
       setTransactionPending(true)
       const { success } = await sellTokens(repo.bondingCurve.processId!, amount)
       if (success) {
-        toast.success('Tokens bought successfully.')
+        toast.success('Tokens sold successfully.')
+        setAmount('')
+        amountRef.current!.value = ''
       }
 
       if (!success) {
-        toast.error('Error buying tokens. Try again later.')
+        toast.error('Error selling tokens. Try again later.')
       }
     } catch (error) {
-      toast.error('Error buying tokens. Try again later.')
+      toast.error('Error selling tokens. Try again later.')
     } finally {
       setTransactionPending(false)
     }
+  }
+
+  function parseReserveBalance() {
+    if (!repo?.bondingCurve?.reserveToken || !curveState.reserveBalance) return 0
+    return parseFloat(curveState.reserveBalance) / 10 ** +(repo?.bondingCurve?.reserveToken?.denomination || 0)
   }
 
   const selectedToken = tokenPair[selectedTokenToTransact]
@@ -308,7 +324,7 @@ export default function TradeModal({ onClose, isOpen }: TradeModalProps) {
               <DialogPanel className="w-full max-w-[1200px] h-[800px] transform rounded-2xl bg-gray-50 p-6 text-left align-middle shadow-xl transition-all">
                 <div className="w-full flex justify-between align-middle">
                   <DialogTitle as="h3" className="text-xl font-medium text-gray-900">
-                    Trade {repo.token?.tokenName} ({repo.token?.tokenTicker})
+                    {repo.token?.tokenTicker}/{repo.bondingCurve?.reserveToken?.tokenTicker}
                   </DialogTitle>
                   <SVG onClick={closeModal} src={CloseCrossIcon} className="w-6 h-6 cursor-pointer" />
                 </div>
@@ -316,84 +332,116 @@ export default function TradeModal({ onClose, isOpen }: TradeModalProps) {
                 <div className="mt-6 flex h-[700px] gap-8">
                   {/* TradingView Chart Section - 70% */}
                   <div className="w-[70%]">
-                    <TradeChartComponent data={chartData} />
+                    <TradeChartComponent
+                      reserveBalance={parseReserveBalance().toString()}
+                      repo={repo}
+                      data={chartData}
+                    />
                   </div>
 
                   {/* Buy/Sell Widget Section - 30% */}
-                  <div className="w-[30%] bg-white rounded-lg shadow-md p-4 flex flex-col gap-8">
-                    <div className="flex flex-col gap-2">
-                      <h1 className="text-base text-gray-600 font-medium">Funding Goal Progress</h1>
-                      <Progress
-                        height="18px"
-                        labelClassName="text-white text-sm pr-2"
-                        bgColor="#56ADD9"
-                        completed={progress}
-                      />
-                    </div>
-                    <div className="flex flex-col gap-3">
-                      <div className="flex gap-2">
-                        <Button
-                          onClick={() => setSelectedSide('buy')}
-                          className="w-1/2 justify-center font-medium !py-2"
-                          variant={selectedSide === 'buy' ? 'primary-solid' : 'primary-outline'}
-                        >
-                          Buy
-                        </Button>
-                        <Button
-                          onClick={() => setSelectedSide('sell')}
-                          className={clsx('w-1/2 justify-center font-medium !py-2', {
-                            'bg-red-500 hover:bg-red-500': selectedSide === 'sell'
-                          })}
-                          variant={selectedSide === 'sell' ? 'primary-solid' : 'primary-outline'}
-                        >
-                          Sell
-                        </Button>
-                      </div>
-
+                  {curveState && curveState.reachedFundingGoal ? (
+                    <TransferToLP getCurveState={handleGetCurveState} curveState={curveState} />
+                  ) : (
+                    <div className="w-[30%] bg-white rounded-lg shadow-md p-4 flex flex-col gap-8">
                       <div className="flex flex-col gap-2">
+                        <h1 className="text-base text-gray-600 font-medium">Funding Goal Progress</h1>
+                        <Progress
+                          height="18px"
+                          labelClassName="text-white text-sm pr-2"
+                          bgColor="#56ADD9"
+                          completed={Math.round(progress)}
+                        />
+                        <div className="flex items-center justify-between">
+                          <h1 className="text-sm text-gray-600 font-medium">Reserve Balance</h1>
+                          <h1 className="text-sm text-gray-600 font-medium">
+                            {parseReserveBalance()} {repo?.bondingCurve?.reserveToken.tokenTicker}
+                          </h1>
+                        </div>
+                      </div>
+                      <div className="flex flex-col gap-3">
+                        <div className="flex gap-2">
+                          <Button
+                            onClick={() => handleSelectedSideChange('buy')}
+                            className="w-1/2 justify-center font-medium !py-2"
+                            variant={selectedSide === 'buy' ? 'primary-solid' : 'primary-outline'}
+                          >
+                            Buy
+                          </Button>
+                          <Button
+                            onClick={() => handleSelectedSideChange('sell')}
+                            className={clsx('w-1/2 justify-center font-medium !py-2', {
+                              'bg-red-500 hover:bg-red-500': selectedSide === 'sell'
+                            })}
+                            variant={selectedSide === 'sell' ? 'primary-solid' : 'primary-outline'}
+                          >
+                            Sell
+                          </Button>
+                        </div>
+
                         <div className="flex flex-col gap-2">
                           <div className="flex flex-col gap-2">
-                            <label className="text-sm text-gray-600">Amount</label>
-                            <div className="flex items-center">
-                              <div
-                                onClick={handleTokenSwitch}
-                                className="text-sm px-2 py-1 cursor-pointer hover:bg-primary-700 rounded-md bg-primary-600 text-white"
-                              >
-                                Switch to $
-                                {selectedTokenToTransact === 0 ? tokenPair[1]?.tokenTicker : tokenPair[0]?.tokenTicker}
+                            <div className="flex flex-col gap-2">
+                              <label className="text-sm text-gray-600">Amount</label>
+                              <div className="flex items-center">
+                                <div
+                                  onClick={handleTokenSwitch}
+                                  className="text-xs px-2 py-1 cursor-pointer hover:bg-primary-700 rounded-sm bg-primary-600 text-white"
+                                >
+                                  Switch to $
+                                  {selectedTokenToTransact === 0
+                                    ? tokenPair[1]?.tokenTicker
+                                    : tokenPair[0]?.tokenTicker}
+                                </div>
+                              </div>
+                            </div>
+                            <div className="flex w-full relative items-center pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500">
+                              <input
+                                onChange={handleAmountChange}
+                                className="w-full focus:outline-none  px-3 flex-1"
+                                type="number"
+                                ref={amountRef}
+                                placeholder="0.00"
+                              />
+                              <div className="flex items-center gap-2">
+                                {selectedToken?.tokenTicker}
+                                <img
+                                  className="w-6 h-6 object-cover"
+                                  src={imgUrlFormatter(selectedToken?.tokenImage || '')}
+                                />
                               </div>
                             </div>
                           </div>
-                          <div className="flex w-full relative items-center pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500">
-                            <input
-                              onChange={handleAmountChange}
-                              className="w-full focus:outline-none  px-3 flex-1"
-                              type="number"
-                              placeholder="0.00"
-                            />
-                            <div className="flex items-center gap-2">
-                              {selectedToken?.tokenTicker}
-                              <img
-                                className="w-6 h-6 object-cover"
-                                src={imgUrlFormatter(selectedToken?.tokenImage || '')}
-                              />
-                            </div>
-                          </div>
-                        </div>
 
-                        {price && (
-                          <div className="flex flex-col gap-1">
-                            <label className="text-sm text-gray-600">Price</label>
-                            <div className="text-base flex items-center gap-1 font-medium text-gray-600">
-                              {price} {repo?.bondingCurve?.reserveToken.tokenTicker}{' '}
-                              <img
-                                className="w-6 h-6"
-                                src={imgUrlFormatter(repo?.bondingCurve?.reserveToken.tokenImage || '')}
-                              />
+                          {price && selectedSide === 'buy' && (
+                            <div className="flex flex-col gap-1">
+                              <label className="text-sm text-gray-600">Price</label>
+                              <div className="text-base flex items-center gap-1 font-medium text-gray-600">
+                                {price}{' '}
+                                {selectedSide === 'buy'
+                                  ? repo?.bondingCurve?.reserveToken.tokenTicker
+                                  : repo?.token?.tokenTicker}
+                                <img
+                                  className="w-6 h-6"
+                                  src={imgUrlFormatter(
+                                    selectedSide === 'buy'
+                                      ? repo?.bondingCurve?.reserveToken?.tokenImage || ''
+                                      : repo?.token?.tokenImage || ''
+                                  )}
+                                />
+                              </div>
                             </div>
-                          </div>
-                        )}
-                        {/* {selectedSide === 'buy' && (
+                          )}
+                          {selectedSide === 'buy' && (
+                            <div className="flex flex-col gap-1">
+                              <label className="text-sm text-gray-600">You will receive</label>
+                              <div className="text-base flex items-center gap-1 font-medium text-gray-600">
+                                {amount} {repo?.token?.tokenTicker}{' '}
+                                <img className="w-6 h-6" src={imgUrlFormatter(repo?.token?.tokenImage || '')} />
+                              </div>
+                            </div>
+                          )}
+                          {/* {selectedSide === 'buy' && (
                           <div className="flex flex-col gap-1">
                             <label className="text-sm text-gray-600">Balance</label>
                             <div className="text-base flex items-center gap-1 font-medium text-gray-600">
@@ -405,42 +453,55 @@ export default function TradeModal({ onClose, isOpen }: TradeModalProps) {
                             </div>
                           </div>
                         )} */}
-                        {selectedSide === 'sell' && (
-                          <div className="flex flex-col gap-1">
-                            <label className="text-sm text-gray-600">Balance</label>
-                            <div className="text-base flex items-center gap-1 font-medium text-gray-600">
-                              {repoTokenBalance} {repo?.token?.tokenTicker}{' '}
-                              <img className="w-6 h-6" src={imgUrlFormatter(repo?.token?.tokenImage || '')} />
+                          {selectedSide === 'sell' && (
+                            <div className="flex flex-col gap-1">
+                              <label className="text-sm text-gray-600">Balance</label>
+                              <div className="text-base flex items-center gap-1 font-medium text-gray-600">
+                                {repoTokenBalance} {repo?.token?.tokenTicker}{' '}
+                                <img className="w-6 h-6" src={imgUrlFormatter(repo?.token?.tokenImage || '')} />
+                              </div>
                             </div>
-                          </div>
-                        )}
-                        <Button
-                          isLoading={transactionPending}
-                          disabled={transactionPending || !+amount || !+price}
-                          onClick={handleSideAction}
-                          className="w-full justify-center font-medium mt-4"
-                          variant="primary-solid"
-                        >
-                          {selectedSide === 'buy' ? 'Buy Now' : 'Sell Now'}
-                        </Button>
+                          )}
+                          {selectedSide === 'sell' && (
+                            <div className="flex flex-col gap-1">
+                              <label className="text-sm text-gray-600">You will receive</label>
+                              <div className="text-base flex items-center gap-1 font-medium text-gray-600">
+                                {price} {repo?.bondingCurve?.reserveToken.tokenTicker}
+                                <img
+                                  className="w-6 h-6"
+                                  src={imgUrlFormatter(repo?.bondingCurve?.reserveToken.tokenImage || '')}
+                                />
+                              </div>
+                            </div>
+                          )}
+                          <Button
+                            isLoading={transactionPending}
+                            disabled={transactionPending || !+amount || !+price}
+                            onClick={handleSideAction}
+                            className="w-full justify-center font-medium mt-4"
+                            variant="primary-solid"
+                          >
+                            {selectedSide === 'buy' ? 'Buy Now' : 'Sell Now'}
+                          </Button>
+                        </div>
+                      </div>
+                      <div className="flex flex-col gap-2 h-full flex-1">
+                        <label className="text-sm text-gray-600 font-medium">Holder distribution (%) </label>
+                        <div className="w-full h-full bg-gray-100 rounded-md p-4">
+                          {Object.entries(balances).map(([balAddress, percentage], index) => (
+                            <div className="flex items-center justify-between">
+                              <span className="text-sm text-gray-600 font-medium">
+                                {index + 1}. {shortenAddress(balAddress, 6)}{' '}
+                                {repo.bondingCurve?.processId === balAddress ? '(Bonding Curve)' : ''}
+                                {address === balAddress ? '(Creator)' : ''}
+                              </span>
+                              <span className="text-sm text-gray-600">{percentage}%</span>
+                            </div>
+                          ))}
+                        </div>
                       </div>
                     </div>
-                    <div className="flex flex-col gap-2 h-full flex-1">
-                      <label className="text-sm text-gray-600 font-medium">Holder distribution (%) </label>
-                      <div className="w-full h-full bg-gray-100 rounded-md p-4">
-                        {Object.entries(balances).map(([balAddress, percentage], index) => (
-                          <div className="flex items-center justify-between">
-                            <span className="text-sm text-gray-600 font-medium">
-                              {index + 1}. {shortenAddress(balAddress, 6)}{' '}
-                              {repo.bondingCurve?.processId === balAddress ? '(Bonding Curve)' : ''}
-                              {address === balAddress ? '(Creator)' : ''}
-                            </span>
-                            <span className="text-sm text-gray-600">{percentage}%</span>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
+                  )}
                 </div>
               </DialogPanel>
             </TransitionChild>

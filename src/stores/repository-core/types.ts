@@ -127,4 +127,6 @@ export type CurveState = {
   maxSupply: string
   supplyToSell: string
   reachedFundingGoal: boolean
+  liquidityPool?: string
+  creator: string
 }
