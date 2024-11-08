@@ -1,4 +1,4 @@
-import git, { TreeEntry } from 'isomorphic-git'
+import git, { TreeEntry } from '@protocol.land/isomorphic-git'
 
 import { FSType } from './fsWithName'
 

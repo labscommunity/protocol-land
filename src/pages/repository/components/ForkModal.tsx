@@ -11,7 +11,12 @@ import * as yup from 'yup'
 import CloseCrossIcon from '@/assets/icons/close-cross.svg'
 import { Button } from '@/components/common/buttons'
 import { withAsync } from '@/helpers/withAsync'
+import arfsSingletonMap from '@/lib/arfs/arfsSingletonMap'
+import { getArFS } from '@/lib/arfs/getArFS'
+import { getBifrost } from '@/lib/arfs/getBifrost'
 import { createNewFork } from '@/lib/git'
+import { copyFilesToTargetRepo } from '@/lib/git/helpers/zipUtils'
+import taskQueueSingleton from '@/lib/queue/TaskQueue'
 import { useGlobalStore } from '@/stores/globalStore'
 import { getRepositoryMetaFromContract, isRepositoryNameAvailable } from '@/stores/repository-core/actions/repoMeta'
 import { Repo } from '@/types/repository'
@@ -61,11 +66,13 @@ export default function ForkModal({ setIsOpen, isOpen, repo }: NewRepoModalProps
     const { response: fetchedRepo } = await withAsync(() => getRepositoryMetaFromContract(repoId))
     return fetchedRepo && fetchedRepo.result && fetchedRepo.result.forks[connectedAddress!]
   }
-
+  console.log(arfsSingletonMap.getAllArFSSingletons())
   async function handleCreateFork(data: yup.InferType<typeof schema>) {
+    const arfs = getArFS()
     setIsSubmitting(true)
 
     const payload = {
+      id: '',
       name: data.title,
       description: data.description ?? '',
       parent: repo.id,
@@ -88,15 +95,36 @@ export default function ForkModal({ setIsOpen, isOpen, repo }: NewRepoModalProps
         return
       }
 
-      const { response, error } = await withAsync(() => createNewFork(payload))
+      try {
+        const drive = await arfs.drive.create(payload.name)
+        const bifrost = getBifrost(drive, arfs)
 
-      if (error) {
+        payload.id = drive.driveId
+
+        const currentRepoArFS = arfsSingletonMap.getArFSSingleton(repo.id)
+
+        if (!currentRepoArFS || !currentRepoArFS.bifrostInstance) {
+          throw new Error('Current repo ArFS not found')
+        }
+
+        const currentRepoFS = currentRepoArFS.bifrostInstance.fs
+
+        const forkRepoFS = bifrost.fs
+        await copyFilesToTargetRepo(`/${repo.id}`, currentRepoFS, forkRepoFS, `/${drive.driveId}`)
+        const taskQueueItemsLength = taskQueueSingleton.getPending().length
+
+        const uploadedToArFS = await taskQueueSingleton.execute(drive.driveId)
+        if (uploadedToArFS.length !== taskQueueItemsLength) {
+          throw new Error('Failed to upload.')
+        }
+        const response = await createNewFork(payload)
+
+        if (response) {
+          setIsOpen(false)
+          navigate(`/repository/${response}`)
+        }
+      } catch (error) {
         toast.error('Failed to fork this repo.')
-      }
-
-      if (response) {
-        setIsOpen(false)
-        navigate(`/repository/${response}`)
       }
     }
 

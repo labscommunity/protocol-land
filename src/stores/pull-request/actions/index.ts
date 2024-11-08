@@ -1,4 +1,4 @@
-import git from 'isomorphic-git'
+import git from '@protocol.land/isomorphic-git'
 
 import { withAsync } from '@/helpers/withAsync'
 import { checkoutBranch, createNewBranch, getCurrentBranch } from '@/lib/git/branch'
