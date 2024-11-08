@@ -69,22 +69,32 @@ export async function spawnBondingCurveProcess(tokenName: string, processType?: 
     { name: 'Name', value: tokenName ? tokenName + ' Bonding Curve' : 'Protocol.Land Repo Bonding Curve' },
     { name: 'Process-Type', value: processType || 'bonding-curve' },
     { name: 'aos-Version', value: aosDetails.version },
-    { name: 'Authority', value: 'fcoN_xJeisVsPXA-trzVAuIiqO3ydLQxM-L4XbrQKzY' },
-    { name: 'On-Boot', value: 'Data' }
+    { name: 'Authority', value: 'fcoN_xJeisVsPXA-trzVAuIiqO3ydLQxM-L4XbrQKzY' }
   ] as Tag[]
-
-  const sourceCodeFetchRes = await fetch('/curve_bonded_token_manager.lua')
-  const sourceCode = await sourceCodeFetchRes.text()
 
   const pid = await spawn({
     module: aosDetails.module,
     tags,
     scheduler: aosDetails.scheduler,
-    data: sourceCode,
+    data: '1984',
     signer: createDataItemSigner(signer)
   })
 
   await pollForTxBeingAvailable({ txId: pid })
+
+  const sourceCodeFetchRes = await fetch('/curve_bonded_token_manager.lua')
+  const sourceCode = await sourceCodeFetchRes.text()
+
+  const args = {
+    tags: getTags({
+      Action: 'Eval'
+    }),
+    data: sourceCode,
+    pid: pid
+  }
+
+  const msgId = await sendMessage(args)
+  await pollForTxBeingAvailable({ txId: msgId })
 
   return pid
 }

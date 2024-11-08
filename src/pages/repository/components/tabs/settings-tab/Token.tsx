@@ -48,7 +48,7 @@ const tokenSchema = yup
   .required()
 
 const USDA_TST = {
-  tokenName: 'USDA Mock',
+  tokenName: ' MUSDAock',
   tokenTicker: 'TUSDA',
   processId: 'b87Jd4usKGyMjovbNeX4P3dcvkC4mrtBZ5HxW_ENtn4',
   denomination: '12',
@@ -148,6 +148,7 @@ export default function Token() {
       }
       if (!selectedRepo?.bondingCurve?.processId) {
         const pid = await spawnBondingCurveProcess(data.tokenName)
+
         bondingCurve.processId = pid
       }
 
@@ -296,6 +297,9 @@ export default function Token() {
             )}
           </div>
         </div>
+        <p className="text-gray-600 text-sm">
+        <span className="text-red-500">*</span>20% of the maximum supply will be reserved for the bonding curve to create liquidity pool.
+        </p>
         <div className="flex flex-col w-full">
           <label htmlFor="token-name" className="block mb-1 text-sm font-medium text-gray-600">
             Token Image

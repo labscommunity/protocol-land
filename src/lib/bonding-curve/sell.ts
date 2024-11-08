@@ -9,8 +9,8 @@ import { getTokenCurrentSupply } from './helpers'
 export async function calculateTokensSellCost(
   repoTokenPID: string,
   tokensToSell: number,
-  maxSupply: number,
-  fundingGoal: number
+  fundingGoal: number,
+  supplyToSell: number
 ): Promise<number> {
   // Fetch the current supply
   const currentSupply = await getTokenCurrentSupply(repoTokenPID)
@@ -23,7 +23,7 @@ export async function calculateTokensSellCost(
     throw new Error('Supply cannot go below zero')
   }
 
-  const S_exp = Math.pow(maxSupply, N_PLUS_1)
+  const S_exp = Math.pow(supplyToSell, N_PLUS_1)
 
   // Calculate s1_exp and s2_exp, scaling if necessary
   const s1_exp = Math.pow(s1, N_PLUS_1)

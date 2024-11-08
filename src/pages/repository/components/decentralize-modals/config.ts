@@ -28,8 +28,8 @@ export type ErrorMessageTypes = keyof typeof ERROR_MESSAGE_TYPES
 export type CreateLiquidityPoolProps = {
   tokenA: RepoLiquidityPoolToken
   tokenB: RepoLiquidityPoolToken
-  amountA: string
-  amountB: string
-  balanceA: string
-  balanceB: string
+  amountA?: string
+  amountB?: string
+  balanceA?: string
+  balanceB?: string
 }

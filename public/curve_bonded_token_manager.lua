@@ -140,8 +140,8 @@ local function _loaded_mod_src_utils_mod()
         end
     
         -- current supply is returned in sub units
-        local preAllocation = utils.add(AllocationForLP, AllocationForCreator)
-        local s1 = utils.subtract(currentSupply, preAllocation)
+        -- local preAllocation = utils.add(AllocationForLP, AllocationForCreator)
+        local s1 = currentSupply
         local s2 = utils.add(currentSupply, tokensToBuyInSubUnits);
     
         if bint.__lt(bint(SupplyToSell), bint(s2)) then
@@ -311,8 +311,8 @@ local function _loaded_mod_src_utils_mod()
         end
     
         -- current supply is returned in sub units
-        local preAllocation = utils.add(AllocationForLP, AllocationForCreator)
-        local s1 = utils.subtract(currentSupplyResp.Data, preAllocation)
+        -- local preAllocation = utils.add(AllocationForLP, AllocationForCreator)
+        local s1 = currentSupplyResp.Data
         local s2 = utils.add(currentSupplyResp.Data, tokensToBuyInSubUnits);
         -- Calculate remaining tokens
         local remainingTokens = utils.subtract(SupplyToSell, currentSupplyResp.Data)
@@ -485,8 +485,8 @@ local function _loaded_mod_src_utils_mod()
         end
     
         -- current supply is returned in sub units
-        local preAllocation = utils.add(AllocationForLP, AllocationForCreator)
-        local s1 = utils.subtract(currentSupplyResp.Data, preAllocation)
+        -- local preAllocation = utils.add(AllocationForLP, AllocationForCreator)
+        local s1 = currentSupplyResp.Data
         local s2 = utils.subtract(currentSupplyResp.Data, tokensToSellInSubUnits);
     
         local S_exp = bint.ipow(bint(SupplyToSell), bint(EXP_N_PLUS1))
@@ -639,7 +639,7 @@ local function _loaded_mod_src_utils_mod()
             "Successfully sold tokens")
         msg.reply({
             Action = 'Sell-Tokens-Response',
-            TokensSold = tokensToSell,
+            TokensSold = utils.toBalanceValue(tokensToSellInSubUnits),
             Cost = tostring(cost),
             Data = 'Successfully sold ' .. tokensToSell .. ' tokens'
         })
@@ -776,6 +776,10 @@ local function _loaded_mod_src_utils_mod()
     Initialized          = Initialized or false
     --- @type ReachedFundingGoal
     ReachedFundingGoal   = ReachedFundingGoal or false
+    --- @type LiquidityPool
+    LiquidityPool        = LiquidityPool or nil
+    --- @type Creator
+    Creator              = Creator or nil
     
     ---@type HandlerFunction
     function mod.initialize(msg)
@@ -819,8 +823,10 @@ local function _loaded_mod_src_utils_mod()
             end
         end
     
+        local lpAllocation = utils.divide(utils.multiply(initPayload.maxSupply, "20"), "100")
+    
         local supplyToSell = utils.subtract(initPayload.maxSupply,
-            utils.add(initPayload.allocationForLP, initPayload.allocationForCreator))
+            utils.add(lpAllocation, initPayload.allocationForCreator))
     
         if (bint(supplyToSell) <= 0) then
             if msg.reply then
@@ -842,11 +848,12 @@ local function _loaded_mod_src_utils_mod()
         RepoToken = initPayload.repoToken
         ReserveToken = initPayload.reserveToken
         FundingGoal = utils.toBalanceValue(utils.toSubUnits(initPayload.fundingGoal, ReserveToken.denomination))
-        AllocationForLP = utils.toBalanceValue(utils.toSubUnits(initPayload.allocationForLP, RepoToken.denomination))
+        AllocationForLP = utils.toBalanceValue(utils.toSubUnits(lpAllocation, RepoToken.denomination))
         AllocationForCreator = utils.toBalanceValue(utils.toSubUnits(initPayload.allocationForCreator, RepoToken
-        .denomination))
+            .denomination))
         MaxSupply = utils.toBalanceValue(utils.toSubUnits(initPayload.maxSupply, RepoToken.denomination))
         SupplyToSell = utils.toBalanceValue(utils.toSubUnits(supplyToSell, RepoToken.denomination))
+        Creator = msg.From
     
         Initialized = true
     
@@ -870,7 +877,9 @@ local function _loaded_mod_src_utils_mod()
                 allocationForCreator = AllocationForCreator,
                 maxSupply = MaxSupply,
                 supplyToSell = SupplyToSell,
-                reachedFundingGoal = ReachedFundingGoal
+                reachedFundingGoal = ReachedFundingGoal,
+                liquidityPool = LiquidityPool,
+                creator = Creator
             })
         })
     end
@@ -881,200 +890,117 @@ local function _loaded_mod_src_utils_mod()
   
   _G.package.loaded["src.handlers.token_manager"] = _loaded_mod_src_handlers_token_manager()
   
-  -- module: "src.utils.patterns"
-  local function _loaded_mod_src_utils_patterns()
-    local aolibs = require "src.libs.aolibs"    
-    local json   = aolibs.json
-    
+  -- module: "src.handlers.liquidity_pool"
+  local function _loaded_mod_src_handlers_liquidity_pool()
+    local utils = require('src.utils.mod')
     local mod = {}
     
-    function mod.continue(fn)
-        return function(msg)
-           local patternResult = fn(msg)
-           if not patternResult or patternResult == 0 or patternResult == "skip" then
-              return 0
-           end
-           return 1
+    function mod.depositToLiquidityPool(msg)
+        assert(msg.From == Creator, "Only the creator can make liquidity pool requests")
+        assert(LiquidityPool == nil, "Liquidity pool already initialized")
+        assert(ReachedFundingGoal == true, "Funding goal not reached")
+    
+        local poolId = msg.Tags['Pool-Id']
+        assert(type(poolId) == 'string', "Pool ID is required")
+    
+        -- local mintQty = utils.divide(utils.multiply(MaxSupply, "20"), "100")
+        local mintResponse = ao.send({
+            Target = RepoToken.processId, Action = "Mint", Quantity = AllocationForLP
+        }).receive()
+    
+        if mintResponse.Tags['Action'] ~= 'Mint-Response' then
+            msg.reply({
+                Action = 'Deposit-To-Liquidity-Pool-Error',
+                Error = 'Failed to mint tokens.'
+            })
+    
+            return
         end
-     end
-     
-     
-     
-     
-     
-     
-     function mod.hasMatchingTagOf(name, values)
-        return function(msg)
-           for _, value in ipairs(values) do
-              local patternResult = Handlers.utils.hasMatchingTag(name, value)(msg)
-     
-     
-              if patternResult ~= 0 and patternResult ~= false and patternResult ~= "skip" then
-                 return 1
-              end
-           end
-     
-           return 0
+    
+        local balanceResponseRepoToken = ao.send({
+            Target = RepoToken.processId, Action = "Balance"
+        }).receive()
+    
+        local tokenAQty = balanceResponseRepoToken.Data
+    
+        if tokenAQty == nil or tokenAQty == "0" then
+            msg.reply({
+                Action = 'Deposit-To-Liquidity-Pool-Error',
+                Error = "No repo tokens to deposit",
+            })
+            return
         end
-     end
-     
-     
-     
-     
-     
-     function mod._and(patterns)
-        return function(msg)
-           for _, pattern in ipairs(patterns) do
-              local patternResult = pattern(msg)
-     
-              if not patternResult or patternResult == 0 or patternResult == "skip" then
-                 return 0
-              end
-           end
-     
-           return -1
+    
+        local balanceResponseReserveToken = ao.send({
+            Target = ReserveToken.processId, Action = "Balance"
+        }).receive()
+    
+        local tokenBQty = balanceResponseReserveToken.Data
+    
+        if tokenBQty == nil or tokenBQty == "0" then
+            msg.reply({
+                Action = 'Deposit-To-Liquidity-Pool-Error',
+                Error = "No reserve tokens to deposit",
+            })
+            return
         end
-     end
     
-     function mod.catchWrapper(handler, handlerName)
+        local tokenADepositResponse = ao.send({
+            Target = RepoToken.processId,
+            Action = "Transfer",
+            Quantity = tokenAQty,
+            Recipient = poolId,
+            ["X-Action"] = "Provide",
+            ["X-Slippage-Tolerance"] = "0.5"
+        }).receive()
     
-        local nameString = handlerName and handlerName .. " - " or ""
-     
-        return function(msg, env)
-     
-           local status
-           local result
-     
-           status, result = pcall(handler, msg, env)
-     
-     
-           if not status then
-              local traceback = debug.traceback()
-     
-              print("!!! Error: " .. nameString .. json.encode(traceback))
-              local err = string.gsub(result, "%[[%w_.\" ]*%]:%d*: ", "")
-     
-     
-     
-              RefundError = err
-     
-              return nil
-           end
-     
-           return result
+        if tokenADepositResponse.Tags['Action'] ~= 'Debit-Notice' then
+            msg.reply({
+                Action = 'Deposit-To-Liquidity-Pool-Error',
+                Error = 'Failed to transfer Repo tokens to LP. try again.'
+            })
+    
+            return
         end
-     end
-     
-     return mod
-  end
-  
-  _G.package.loaded["src.utils.patterns"] = _loaded_mod_src_utils_patterns()
-  
-  -- module: "src.utils.helpers"
-  local function _loaded_mod_src_utils_helpers()
-    local bint = require('.bint')(256)
-    local utils = require "src.utils.mod"
     
-    local mod = {}
+        local tokenBDepositResponse = ao.send({
+            Target = ReserveToken.processId,
+            Action = "Transfer",
+            Quantity = tokenBQty,
+            Recipient = poolId,
+            ["X-Action"] = "Provide",
+            ["X-Slippage-Tolerance"] = "0.5"
+        }).receive()
     
-    function mod.find(predicate, arr)
-        for _, value in ipairs(arr) do
-            if predicate(value) then
-                return value
-            end
+        if tokenBDepositResponse.Tags['Action'] ~= 'Debit-Notice' then
+            msg.reply({
+                Action = 'Deposit-To-Liquidity-Pool-Error',
+                Error = 'Failed to transfer Repo tokens to LP. try again.'
+            })
+    
+            return
         end
-        return nil
-    end
     
-    function mod.filter(predicate, arr)
-        local result = {}
-        for _, value in ipairs(arr) do
-            if predicate(value) then
-                table.insert(result, value)
-            end
-        end
-        return result
-    end
+        LiquidityPool = poolId
     
-    function mod.reduce(reducer, initialValue, arr)
-        local result = initialValue
-        for i, value in ipairs(arr) do
-            result = reducer(result, value, i, arr)
-        end
-        return result
-    end
+        --Check reserves of the pool
     
-    
-    function mod.map(mapper, arr)
-        local result = {}
-        for i, value in ipairs(arr) do
-            result[i] = mapper(value, i, arr)
-        end
-        return result
-    end
-    
-    function mod.reverse(arr)
-        local result = {}
-        for i = #arr, 1, -1 do
-            table.insert(result, arr[i])
-        end
-        return result
-    end
-    
-    function mod.compose(...)
-        local funcs = { ... }
-        return function(x)
-            for i = #funcs, 1, -1 do
-                x = funcs[i](x)
-            end
-            return x
-        end
-    end
-    
-    function mod.keys(xs)
-        local ks = {}
-        for k, _ in pairs(xs) do
-            table.insert(ks, k)
-        end
-        return ks
-    end
-    
-    function mod.values(xs)
-        local vs = {}
-        for _, v in pairs(xs) do
-            table.insert(vs, v)
-        end
-        return vs
-    end
-    
-    function mod.includes(value, arr)
-        for _, v in ipairs(arr) do
-            if v == value then
-                return true
-            end
-        end
-        return false
-    end
-    
-    function mod.computeTotalSupply()
-        local r = mod.reduce(
-            function(acc, val) return acc + val end,
-            bint.zero(),
-            mod.values(Balances))
-    
-        return r
+        msg.reply({
+            Action = 'Deposit-To-Liquidity-Pool-Response',
+            ["Pool-Id"] = poolId,
+            ["Status"] = "Success"
+        })
     end
     
     return mod
     
   end
   
-  _G.package.loaded["src.utils.helpers"] = _loaded_mod_src_utils_helpers()
+  _G.package.loaded["src.handlers.liquidity_pool"] = _loaded_mod_src_handlers_liquidity_pool()
   
   local bondingCurve = require "src.handlers.bonding_curve"
   local tokenManager = require "src.handlers.token_manager"
-  local patterns = require "src.utils.patterns"
-  local helpers = require "src.utils.helpers"
+  local liquidityPool = require "src.handlers.liquidity_pool"
   
   Handlers.add('Initialize-Bonding-Curve', Handlers.utils.hasMatchingTag('Action', 'Initialize-Bonding-Curve'),
       tokenManager.initialize)
@@ -1091,7 +1017,11 @@ local function _loaded_mod_src_utils_mod()
   Handlers.add('Sell-Tokens', Handlers.utils.hasMatchingTag('Action', 'Sell-Tokens'),
       bondingCurve.sellTokens)
   
+  
+  Handlers.add('Deposit-To-Liquidity-Pool', Handlers.utils.hasMatchingTag('Action', 'Deposit-To-Liquidity-Pool'),
+      liquidityPool.depositToLiquidityPool)
+  
   Handlers.add(
-          "Buy-Tokens",
+      "Buy-Tokens",
       { Action = "Credit-Notice", ["X-Action"] = "Buy-Tokens" },
       bondingCurve.buyTokens)
