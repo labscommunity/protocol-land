@@ -2526,23 +2526,6 @@
     warp-arbundles "^1.0.4"
     zod "^3.23.8"
 
-"@protocol.land/isomorphic-git@^1.1.0":
-  version "1.1.0"
-  resolved "https://registry.yarnpkg.com/@protocol.land/isomorphic-git/-/isomorphic-git-1.1.0.tgz#f6cfa1f3790ee611cfc2a2dd72e4b400a8615665"
-  integrity sha512-RjbjUgeJSyUqXCr8eHPCF5kxQqysxsavzhjoa4yFobUDiLu8/GmWROj3fik506nHa0Ui3MFZ1pVa0DWQESK5Lg==
-  dependencies:
-    async-lock "^1.1.0"
-    clean-git-ref "^2.0.1"
-    crc-32 "^1.2.0"
-    diff3 "0.0.3"
-    ignore "^5.1.4"
-    minimisted "^2.0.0"
-    pako "^1.0.10"
-    pify "^4.0.1"
-    readable-stream "^3.4.0"
-    sha.js "^2.4.9"
-    simple-get "^4.0.1"
-
 "@ramonak/react-progress-bar@^5.3.0":
   version "5.3.0"
   resolved "https://registry.yarnpkg.com/@ramonak/react-progress-bar/-/react-progress-bar-5.3.0.tgz#b066faf1b332b6a5f51d83b5935da5f8cf1deecf"
