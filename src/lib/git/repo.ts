@@ -32,7 +32,7 @@ const arweave = new Arweave({
   protocol: 'https'
 })
 
-export async function postNewRepo({ id, dataTxId, title, description }: any) {
+export async function postNewRepo({ id, dataTxId, title, description, tokenProcessId }: any) {
   await sendMessage({
     tags: getTags({
       Action: 'Initialize-Repo',
@@ -41,7 +41,8 @@ export async function postNewRepo({ id, dataTxId, title, description }: any) {
       Description: description,
       'Data-TxId': dataTxId,
       Visibility: 'public',
-      'Private-State-TxId': ''
+      'Private-State-TxId': '',
+      'Token-Process-Id': tokenProcessId
     })
   })
 

@@ -14,6 +14,8 @@ export type Repo = {
   defaultBranch: string
   dataTxId: string
   token: RepoToken | null | undefined
+  bondingCurve: BondingCurve | null | undefined
+  liquidityPoolId: string | null
   uploadStrategy: 'DEFAULT' | 'ARSEEDING'
   owner: string
   pullRequests: PullRequest[]
@@ -32,6 +34,7 @@ export type Repo = {
   contributorInvites: ContributorInvite[]
   githubSync: GithubSync | null
   decentralized?: boolean
+  primary?: boolean
 }
 
 export type RepoToken = {
@@ -42,6 +45,33 @@ export type RepoToken = {
   tokenImage: string
   allocations: Allocation[]
   processId?: string
+}
+
+export type BondingCurve = {
+  fundingGoal: string
+  processId?: string
+  reserveToken: RepoLiquidityPoolToken
+}
+
+export type RepoLiquidityPool = {
+  quoteToken: RepoLiquidityPoolToken
+  baseToken: RepoLiquidityPoolToken
+}
+
+export type RepoLiquidityPoolToken = {
+  tokenName: string
+  tokenTicker: string
+  denomination: string
+  tokenImage: string
+  processId: string
+}
+
+export type Token = {
+  name?: string
+  ticker?: string
+  processId: string
+  denomination: number
+  logo?: string
 }
 
 export type Allocation = {

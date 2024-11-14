@@ -16,6 +16,7 @@ import {
   updateRepoDescription,
   updateRepoName
 } from '@/lib/git'
+import { prepareNodesAndEdgesFromRepo } from '@/pages/repository/components/tabs/forks-tab/utils/prepareNodesAndEdgesFromRepo'
 import { useRepoHeaderStore } from '@/pages/repository/store/repoHeader'
 import { Deployment, Domain, GithubSync } from '@/types/repository'
 
@@ -24,6 +25,7 @@ import { CombinedSlices } from '../types'
 import {
   countCommits,
   decryptPAT,
+  fetchRepoHierarchy,
   getFileContentFromOid,
   getFilesFromOid,
   getOidOfHeadRef,
@@ -31,6 +33,9 @@ import {
   handleAcceptContributor,
   handleCancelContributorInvite,
   handleRejectContributor,
+  handleSaveBondingCurveId,
+  handleSaveLiquidityPoolId,
+  handleSaveRepoBondingCurve,
   handleSaveRepoToken,
   loadRepository,
   saveRepository
@@ -42,6 +47,10 @@ const initialRepoCoreState: RepoCoreState = {
     status: 'IDLE',
     error: null,
     repo: null,
+    repoHierarchy: {
+      edges: [],
+      nodes: []
+    },
     statistics: {
       commits: [],
       pullRequests: [],
@@ -84,6 +93,27 @@ const createRepoCoreSlice: StateCreator<CombinedSlices, [['zustand/immer', never
         state.repoCoreState = initialRepoCoreState
       })
     },
+    fetchRepoHierarchy: async () => {
+      const repo = get().repoCoreState.selectedRepo.repo
+      const userAddress = get().authState.address
+
+      if (!repo || !userAddress) {
+        toast.error('Not authorized to toggle decentralization.')
+        return
+      }
+
+      const { error, response } = await withAsync(() => fetchRepoHierarchy(repo.id))
+      if (error || !response.result) {
+        toast.error('Failed to fetch repo hierarchy.')
+        return
+      }
+
+      const hierarchy = prepareNodesAndEdgesFromRepo(response.result, repo.id)
+
+      set((state) => {
+        state.repoCoreState.selectedRepo.repoHierarchy = hierarchy
+      })
+    },
     setRepoDecentralized: () => {
       const repo = get().repoCoreState.selectedRepo.repo
       const userAddress = get().authState.address
@@ -122,6 +152,61 @@ const createRepoCoreSlice: StateCreator<CombinedSlices, [['zustand/immer', never
           state.repoCoreState.selectedRepo.repo!.token = response
         })
         toast.success('Token saved.')
+      }
+    },
+    saveRepoBondingCurveDetails: async (bondingCurve) => {
+      const repo = get().repoCoreState.selectedRepo.repo
+      const userAddress = get().authState.address
+
+      if (!repo || !userAddress) {
+        toast.error('Not authorized to update token.')
+        return
+      }
+
+      const { error, response } = await withAsync(() => handleSaveRepoBondingCurve(repo.id, bondingCurve, userAddress))
+
+      if (error) {
+        toast.error('Failed to save bonding curve.')
+        return
+      }
+
+      if (response) {
+        set((state) => {
+          state.repoCoreState.selectedRepo.repo!.bondingCurve = response
+        })
+        toast.success('Bonding curve saved.')
+      }
+    },
+    saveBondingCurveId: async (bondingCurveId) => {
+      const repo = get().repoCoreState.selectedRepo.repo
+      const userAddress = get().authState.address
+
+      if (!repo || !userAddress) {
+        toast.error('Not authorized to save bonding curve id.')
+        return
+      }
+
+      const { error } = await withAsync(() => handleSaveBondingCurveId(repo.id, bondingCurveId))
+
+      if (error) {
+        toast.error('Failed to save bonding curve id.')
+        return
+      }
+    },
+    saveLiquidityPoolId: async (liquidityPoolId) => {
+      const repo = get().repoCoreState.selectedRepo.repo
+      const userAddress = get().authState.address
+
+      if (!repo || !userAddress) {
+        toast.error('Not authorized to save liquidity pool id.')
+        return
+      }
+
+      const { error } = await withAsync(() => handleSaveLiquidityPoolId(repo.id, liquidityPoolId))
+
+      if (error) {
+        toast.error('Failed to save liquidity pool id.')
+        return
       }
     },
     setRepoTokenProcessId: (processId) => {
@@ -742,6 +827,8 @@ const createRepoCoreSlice: StateCreator<CombinedSlices, [['zustand/immer', never
         }
 
         useRepoHeaderStore.getState().setRepoSize(repoFetchResponse.repoSize)
+
+        await get().repoCoreActions.fetchRepoHierarchy()
 
         set((state) => {
           state.repoCoreState.selectedRepo.status = 'SUCCESS'
