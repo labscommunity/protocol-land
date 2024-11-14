@@ -31,7 +31,7 @@ const tokenSchema = yup
     denomination: yup.string().required('Denomination is required').matches(/^\d+$/, 'Must be a number'),
     totalSupply: yup.string().required('Total supply is required').matches(/^\d+$/, 'Must be a number'),
     tokenImage: yup.string().required('Image is required'),
-    fundingGoal: yup.string().default('50000').matches(/^\d+$/, 'Must be a number')
+    fundingGoal: yup.string().default('1500').matches(/^\d+$/, 'Must be a number')
     // allocations: yup
     //   .array()
     //   .of(
@@ -47,20 +47,28 @@ const tokenSchema = yup
   })
   .required()
 
-const USDA_TST = {
-  tokenName: ' MUSDAock',
-  tokenTicker: 'TUSDA',
+// const USDA_TST = {
+//   tokenName: ' MUSDAock',
+//   tokenTicker: 'TUSDA',
+//   processId: 'b87Jd4usKGyMjovbNeX4P3dcvkC4mrtBZ5HxW_ENtn4',
+//   denomination: '12',
+//   tokenImage: 'TPkPIvnvWuyd-hv8J1IAdUlb8aii00Z7vjwMBk_kp0M'
+// }
+const QAR = {
+  tokenName: 'Q Arweave',
+  tokenTicker: 'qAR',
   processId: 'b87Jd4usKGyMjovbNeX4P3dcvkC4mrtBZ5HxW_ENtn4',
+  // processId: 'NG-0lVX882MG5nhARrSzyprEK6ejonHpdUmaaMPsHE8',
   denomination: '12',
-  tokenImage: 'TPkPIvnvWuyd-hv8J1IAdUlb8aii00Z7vjwMBk_kp0M'
+  tokenImage: '26yDr08SuwvNQ4VnhAfV4IjJcOOlQ4tAQLc1ggrCPu0'
 }
-const RESERVE_TOKENS = [USDA_TST]
+const RESERVE_TOKENS = [QAR]
 
 export default function Token() {
   const [selectedCurveType] = useState(CURVE_TYPES[0])
   // const [isTokenListLoading, setIsTokenListLoading] = useState(true)
   // const [tokenList, setTokenList] = useState<(typeof USDA_TST)[]>([USDA_TST])
-  const [selectedToken, setSelectedToken] = useState<typeof USDA_TST>(USDA_TST)
+  const [selectedToken, setSelectedToken] = useState<typeof QAR>(QAR)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [selectedRepo, isRepoOwner, saveRepoTokenDetails, saveRepoBondingCurveDetails] = useGlobalStore((state) => [
     state.repoCoreState.selectedRepo.repo,
@@ -82,7 +90,7 @@ export default function Token() {
       denomination: selectedRepo?.token?.denomination || '',
       totalSupply: selectedRepo?.token?.totalSupply || '',
       tokenImage: selectedRepo?.token?.tokenImage || '',
-      fundingGoal: selectedRepo?.bondingCurve?.fundingGoal || '50000'
+      fundingGoal: selectedRepo?.bondingCurve?.fundingGoal || '1500'
       // allocations: selectedRepo?.token?.allocations || []
     }
   })
@@ -143,7 +151,7 @@ export default function Token() {
         //
       }
       const bondingCurve: BondingCurve = {
-        fundingGoal: data.fundingGoal || '50000',
+        fundingGoal: data.fundingGoal || '1500',
         reserveToken: selectedToken
       }
       if (!selectedRepo?.bondingCurve?.processId) {
@@ -530,7 +538,7 @@ export default function Token() {
                         'bg-white border-[1px] text-gray-900 text-base rounded-lg hover:shadow-[0px_2px_4px_0px_rgba(0,0,0,0.10)] focus:border-primary-500 focus:border-[1.5px] block w-full px-3 py-[10px] outline-none',
                         tokenErrors.fundingGoal ? 'border-red-500' : 'border-gray-300'
                       )}
-                      placeholder="50000"
+                      placeholder="1500"
                       disabled={!repoOwner || selectedRepo?.decentralized}
                     />
                   </div>

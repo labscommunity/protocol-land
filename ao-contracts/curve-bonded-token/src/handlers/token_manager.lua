@@ -72,7 +72,7 @@ function mod.initialize(msg)
         end
     end
 
-    local lpAllocation = utils.divide(utils.multiply(initPayload.maxSupply, "20"), "100")
+    local lpAllocation = utils.udivide(utils.multiply(initPayload.maxSupply, "20"), "100")
 
     local supplyToSell = utils.subtract(initPayload.maxSupply,
         utils.add(lpAllocation, initPayload.allocationForCreator))
