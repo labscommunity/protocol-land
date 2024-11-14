@@ -206,9 +206,9 @@ export default function TradeModal({ onClose, isOpen }: TradeModalProps) {
       )
     }
     setPriceUnscaled(price.toString())
-    const priceUnscaled = price / 10 ** +repo.bondingCurve.reserveToken.denomination
+    const priceInReserveTokens = price / 10 ** +repo.bondingCurve.reserveToken.denomination
     const formattedPrice = parseScientific(
-      roundToSignificantFigures(priceUnscaled, +repo.bondingCurve.reserveToken.denomination).toString()
+      roundToSignificantFigures(priceInReserveTokens, +repo.bondingCurve.reserveToken.denomination).toString()
     )
 
     setPrice(formattedPrice || '')
