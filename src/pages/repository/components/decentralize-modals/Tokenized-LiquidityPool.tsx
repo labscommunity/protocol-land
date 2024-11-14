@@ -19,12 +19,21 @@ type Props = {
   onAction: (payload: CreateLiquidityPoolProps) => Promise<void>
 }
 
-const USDA_TST = {
-  tokenName: 'Astro USD (Test)',
-  tokenTicker: 'USDA-TST',
-  processId: 'GcFxqTQnKHcr304qnOcq00ZqbaYGDn4Wbb0DHAM-wvU',
+// const USDA_TST = {
+//   tokenName: 'Astro USD (Test)',
+//   tokenTicker: 'USDA-TST',
+//   processId: 'GcFxqTQnKHcr304qnOcq00ZqbaYGDn4Wbb0DHAM-wvU',
+//   denomination: '12',
+//   tokenImage: 'K8nurc9H0_ZQm17jbs3ryEs6MrlX-oIK_krpprWlQ-Q'
+// }
+
+const QAR = {
+  tokenName: 'Q Arweave',
+  tokenTicker: 'qAR',
+  processId: 'b87Jd4usKGyMjovbNeX4P3dcvkC4mrtBZ5HxW_ENtn4',
+  // processId: 'NG-0lVX882MG5nhARrSzyprEK6ejonHpdUmaaMPsHE8',
   denomination: '12',
-  tokenImage: 'K8nurc9H0_ZQm17jbs3ryEs6MrlX-oIK_krpprWlQ-Q'
+  tokenImage: '26yDr08SuwvNQ4VnhAfV4IjJcOOlQ4tAQLc1ggrCPu0'
 }
 
 export default function TokenizedLiquidityPool({ onClose, liquidityPool, onAction }: Props) {
@@ -37,12 +46,12 @@ export default function TokenizedLiquidityPool({ onClose, liquidityPool, onActio
   })
   const [address] = useGlobalStore((state) => [state.authState.address])
   const [isTokenListLoading, setIsTokenListLoading] = useState(true)
-  const [tokenList, setTokenList] = useState<(typeof USDA_TST)[]>([USDA_TST])
+  const [tokenList, setTokenList] = useState<(typeof QAR)[]>([QAR])
   const [selectedQuoteToken, setSelectedQuoteToken] = useState(() => {
     if (liquidityPool) {
       return liquidityPool.quoteToken
     }
-    return USDA_TST
+    return QAR
   })
   const [baseTokenAmount, setBaseTokenAmount] = useState('')
   const [baseTokenBalance, setBaseTokenBalance] = useState(0)

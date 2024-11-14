@@ -82,7 +82,7 @@ export async function spawnBondingCurveProcess(tokenName: string, processType?: 
 
   await pollForTxBeingAvailable({ txId: pid })
 
-  const sourceCodeFetchRes = await fetch('/curve_bonded_token_manager.lua')
+  const sourceCodeFetchRes = await fetch('/contracts/curve-bonded-token-manager.lua')
   const sourceCode = await sourceCodeFetchRes.text()
 
   const args = {

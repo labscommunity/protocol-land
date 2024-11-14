@@ -11,6 +11,9 @@ local utils = {
         return tostring(bint(a) * bint(b))
     end,
     divide = function(a, b)
+        return tostring(bint(a) / bint(b))
+    end,
+    udivide = function(a, b)
         return tostring(bint.udiv(bint(a), bint(b)))
     end,
     toBalanceValue = function(a)

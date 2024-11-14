@@ -109,15 +109,18 @@ function mod.getBuyPrice(msg)
 
     local numerator = utils.multiply(FundingGoal, utils.subtract(s2_exp, s1_exp))
     local cost = utils.divide(numerator, S_exp)
+   
+    local roundedCost = math.ceil(utils.toNumber(cost))
 
     msg.reply({
         Action = 'Get-Buy-Price-Response',
-        Price = cost,
+        Price = utils.toBalanceValue(roundedCost),
         CurrentSupply = currentSupply,
         TokensToBuy = tokensToBuy,
-        Data = cost,
+        Data = utils.toBalanceValue(roundedCost),
         Denomination = ReserveToken.denomination,
-        Ticker = ReserveToken.tokenTicker
+        Ticker = ReserveToken.tokenTicker,
+        RawPrice = cost
     })
 end
 
@@ -237,9 +240,9 @@ function mod.buyTokens(msg, env)
     end
 
     -- double call issue
-    local currentSupplyResp = ao.send({ Target = RepoToken.processId, Action = "Total-Supply" }).receive()
+    local currentSupplyResp = ao.send({ Target = RepoToken.processId, Action = "Total-Supply" }).receive().Data
     -- local currentSupplyResp = msg.Tags['X-Current-Supply']
-    if (currentSupplyResp == nil or currentSupplyResp.Data == nil) then
+    if (currentSupplyResp == nil) then
         msg.reply({
             Action = 'Buy-Tokens-Error',
             Error = 'Failed to get current supply of curve bonded token'
@@ -248,12 +251,14 @@ function mod.buyTokens(msg, env)
         return
     end
 
+    currentSupplyResp = tostring(currentSupplyResp)
+
     -- current supply is returned in sub units
     -- local preAllocation = utils.add(AllocationForLP, AllocationForCreator)
-    local s1 = currentSupplyResp.Data
-    local s2 = utils.add(currentSupplyResp.Data, tokensToBuyInSubUnits);
+    local s1 = currentSupplyResp
+    local s2 = utils.add(currentSupplyResp, tokensToBuyInSubUnits);
     -- Calculate remaining tokens
-    local remainingTokens = utils.subtract(SupplyToSell, currentSupplyResp.Data)
+    local remainingTokens = utils.subtract(SupplyToSell, currentSupplyResp)
 
     -- Check if there are enough tokens to sell
     if bint.__lt(bint(remainingTokens), bint(tokensToBuyInSubUnits)) then
@@ -285,7 +290,7 @@ function mod.buyTokens(msg, env)
     local cost = utils.divide((numerator), S_exp)
     LogActivity(msg.Tags['X-Action'], json.encode({ Cost = tostring(cost), AmountSent = tostring(quantityReservesSent) }),
         "Calculated cost of buying tokens for Reserves sent")
-    if bint.__lt(bint(quantityReservesSent), bint(cost)) then
+    if bint.__lt(bint(quantityReservesSent), bint(math.ceil(utils.toNumber(cost)))) then
         LogActivity(msg.Tags['X-Action'],
             json.encode({ Cost = tostring(cost), AmountSent = tostring(quantityReservesSent) }),
             "Insufficient funds sent to buy")

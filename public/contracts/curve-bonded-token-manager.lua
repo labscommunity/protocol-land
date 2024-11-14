@@ -13,6 +13,9 @@ local function _loaded_mod_src_utils_mod()
           return tostring(bint(a) * bint(b))
       end,
       divide = function(a, b)
+          return tostring(bint(a) / bint(b))
+      end,
+      udivide = function(a, b)
           return tostring(bint.udiv(bint(a), bint(b)))
       end,
       toBalanceValue = function(a)
@@ -171,15 +174,18 @@ local function _loaded_mod_src_handlers_bonding_curve()
   
       local numerator = utils.multiply(FundingGoal, utils.subtract(s2_exp, s1_exp))
       local cost = utils.divide(numerator, S_exp)
+     
+      local roundedCost = math.ceil(utils.toNumber(cost))
   
       msg.reply({
           Action = 'Get-Buy-Price-Response',
-          Price = cost,
+          Price = utils.toBalanceValue(roundedCost),
           CurrentSupply = currentSupply,
           TokensToBuy = tokensToBuy,
-          Data = cost,
+          Data = utils.toBalanceValue(roundedCost),
           Denomination = ReserveToken.denomination,
-          Ticker = ReserveToken.tokenTicker
+          Ticker = ReserveToken.tokenTicker,
+          RawPrice = cost
       })
   end
   
@@ -299,9 +305,9 @@ local function _loaded_mod_src_handlers_bonding_curve()
       end
   
       -- double call issue
-      local currentSupplyResp = ao.send({ Target = RepoToken.processId, Action = "Total-Supply" }).receive()
+      local currentSupplyResp = ao.send({ Target = RepoToken.processId, Action = "Total-Supply" }).receive().Data
       -- local currentSupplyResp = msg.Tags['X-Current-Supply']
-      if (currentSupplyResp == nil or currentSupplyResp.Data == nil) then
+      if (currentSupplyResp == nil) then
           msg.reply({
               Action = 'Buy-Tokens-Error',
               Error = 'Failed to get current supply of curve bonded token'
@@ -310,12 +316,14 @@ local function _loaded_mod_src_handlers_bonding_curve()
           return
       end
   
+      currentSupplyResp = tostring(currentSupplyResp)
+  
       -- current supply is returned in sub units
       -- local preAllocation = utils.add(AllocationForLP, AllocationForCreator)
-      local s1 = currentSupplyResp.Data
-      local s2 = utils.add(currentSupplyResp.Data, tokensToBuyInSubUnits);
+      local s1 = currentSupplyResp
+      local s2 = utils.add(currentSupplyResp, tokensToBuyInSubUnits);
       -- Calculate remaining tokens
-      local remainingTokens = utils.subtract(SupplyToSell, currentSupplyResp.Data)
+      local remainingTokens = utils.subtract(SupplyToSell, currentSupplyResp)
   
       -- Check if there are enough tokens to sell
       if bint.__lt(bint(remainingTokens), bint(tokensToBuyInSubUnits)) then
@@ -347,7 +355,7 @@ local function _loaded_mod_src_handlers_bonding_curve()
       local cost = utils.divide((numerator), S_exp)
       LogActivity(msg.Tags['X-Action'], json.encode({ Cost = tostring(cost), AmountSent = tostring(quantityReservesSent) }),
           "Calculated cost of buying tokens for Reserves sent")
-      if bint.__lt(bint(quantityReservesSent), bint(cost)) then
+      if bint.__lt(bint(quantityReservesSent), bint(math.ceil(utils.toNumber(cost)))) then
           LogActivity(msg.Tags['X-Action'],
               json.encode({ Cost = tostring(cost), AmountSent = tostring(quantityReservesSent) }),
               "Insufficient funds sent to buy")
@@ -823,7 +831,7 @@ local function _loaded_mod_src_handlers_token_manager()
           end
       end
   
-      local lpAllocation = utils.divide(utils.multiply(initPayload.maxSupply, "20"), "100")
+      local lpAllocation = utils.udivide(utils.multiply(initPayload.maxSupply, "20"), "100")
   
       local supplyToSell = utils.subtract(initPayload.maxSupply,
           utils.add(lpAllocation, initPayload.allocationForCreator))
