@@ -87,7 +87,7 @@ export default function Token() {
     defaultValues: {
       tokenName: selectedRepo?.token?.tokenName || '',
       tokenTicker: selectedRepo?.token?.tokenTicker || '',
-      denomination: selectedRepo?.token?.denomination || '',
+      denomination: selectedRepo?.token?.denomination || '12',
       totalSupply: selectedRepo?.token?.totalSupply || '',
       tokenImage: selectedRepo?.token?.tokenImage || '',
       fundingGoal: selectedRepo?.bondingCurve?.fundingGoal || '1500'
@@ -277,7 +277,8 @@ export default function Token() {
                   tokenErrors.denomination ? 'border-red-500' : 'border-gray-300'
                 )}
                 placeholder="6"
-                disabled={!repoOwner || selectedRepo?.decentralized}
+                disabled={true}
+                // disabled={!repoOwner || selectedRepo?.decentralized}
               />
             </div>
             {tokenErrors.denomination && (
@@ -306,7 +307,8 @@ export default function Token() {
           </div>
         </div>
         <p className="text-gray-600 text-sm">
-        <span className="text-red-500">*</span>20% of the maximum supply will be reserved for the bonding curve to create liquidity pool.
+          <span className="text-red-500">*</span>20% of the maximum supply will be reserved for the bonding curve to
+          create liquidity pool.
         </p>
         <div className="flex flex-col w-full">
           <label htmlFor="token-name" className="block mb-1 text-sm font-medium text-gray-600">
@@ -539,7 +541,9 @@ export default function Token() {
                         tokenErrors.fundingGoal ? 'border-red-500' : 'border-gray-300'
                       )}
                       placeholder="1500"
-                      disabled={!repoOwner || selectedRepo?.decentralized}
+                      disabled={true}
+
+                      // disabled={!repoOwner || selectedRepo?.decentralized}
                     />
                   </div>
                   {tokenErrors.fundingGoal && (
