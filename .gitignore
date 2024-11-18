@@ -24,3 +24,5 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+./ao-contracts/curve-bonded-token/process-dist

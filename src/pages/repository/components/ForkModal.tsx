@@ -1,4 +1,4 @@
-import { Dialog, Transition } from '@headlessui/react'
+import { Dialog, DialogPanel, DialogTitle, Transition, TransitionChild } from '@headlessui/react'
 import { yupResolver } from '@hookform/resolvers/yup'
 import clsx from 'clsx'
 import React, { Fragment } from 'react'
@@ -106,7 +106,7 @@ export default function ForkModal({ setIsOpen, isOpen, repo }: NewRepoModalProps
   return (
     <Transition appear show={isOpen} as={Fragment}>
       <Dialog as="div" className="relative z-10" onClose={closeModal}>
-        <Transition.Child
+        <TransitionChild
           as={Fragment}
           enter="ease-out duration-300"
           enterFrom="opacity-0"
@@ -116,11 +116,11 @@ export default function ForkModal({ setIsOpen, isOpen, repo }: NewRepoModalProps
           leaveTo="opacity-0"
         >
           <div className="fixed inset-0 bg-black bg-opacity-25" />
-        </Transition.Child>
+        </TransitionChild>
 
         <div className="fixed inset-0 overflow-y-auto">
           <div className="flex min-h-full items-center justify-center text-center">
-            <Transition.Child
+            <TransitionChild
               as={Fragment}
               enter="ease-out duration-300"
               enterFrom="opacity-0 scale-95"
@@ -129,11 +129,11 @@ export default function ForkModal({ setIsOpen, isOpen, repo }: NewRepoModalProps
               leaveFrom="opacity-100 scale-100"
               leaveTo="opacity-0 scale-95"
             >
-              <Dialog.Panel className="w-full max-w-[368px] transform overflow-hidden rounded-2xl bg-white p-6 text-left align-middle shadow-xl transition-all">
+              <DialogPanel className="w-full max-w-[368px] transform overflow-hidden rounded-2xl bg-white p-6 text-left align-middle shadow-xl transition-all">
                 <div className="w-full flex justify-between align-middle">
-                  <Dialog.Title as="h3" className="text-xl font-medium text-gray-900">
+                  <DialogTitle as="h3" className="text-xl font-medium text-gray-900">
                     Create a new Fork
-                  </Dialog.Title>
+                  </DialogTitle>
                   <SVG onClick={closeModal} src={CloseCrossIcon} className="w-6 h-6 cursor-pointer" />
                 </div>
                 <div className="mt-6 flex flex-col gap-2.5">
@@ -182,8 +182,8 @@ export default function ForkModal({ setIsOpen, isOpen, repo }: NewRepoModalProps
                     Create
                   </Button>
                 </div>
-              </Dialog.Panel>
-            </Transition.Child>
+              </DialogPanel>
+            </TransitionChild>
           </div>
         </div>
       </Dialog>
