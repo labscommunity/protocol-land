@@ -54,21 +54,28 @@ const tokenSchema = yup
 //   denomination: '12',
 //   tokenImage: 'TPkPIvnvWuyd-hv8J1IAdUlb8aii00Z7vjwMBk_kp0M'
 // }
-const QAR = {
-  tokenName: 'Q Arweave',
-  tokenTicker: 'qAR',
-  // processId: 'b87Jd4usKGyMjovbNeX4P3dcvkC4mrtBZ5HxW_ENtn4',
-  processId: 'NG-0lVX882MG5nhARrSzyprEK6ejonHpdUmaaMPsHE8',
+const MOCK_USDA = {
+  tokenName: 'USDA Mock',
+  tokenTicker: 'TUSDA',
+  processId: 'b87Jd4usKGyMjovbNeX4P3dcvkC4mrtBZ5HxW_ENtn4',
   denomination: '12',
-  tokenImage: '26yDr08SuwvNQ4VnhAfV4IjJcOOlQ4tAQLc1ggrCPu0'
+  tokenImage: 'TPkPIvnvWuyd-hv8J1IAdUlb8aii00Z7vjwMBk_kp0M'
 }
-const RESERVE_TOKENS = [QAR]
+// const QAR = {
+//   tokenName: 'Q Arweave',
+//   tokenTicker: 'qAR',
+//   // processId: 'b87Jd4usKGyMjovbNeX4P3dcvkC4mrtBZ5HxW_ENtn4',
+//   processId: 'NG-0lVX882MG5nhARrSzyprEK6ejonHpdUmaaMPsHE8',
+//   denomination: '12',
+//   tokenImage: '26yDr08SuwvNQ4VnhAfV4IjJcOOlQ4tAQLc1ggrCPu0'
+// }
+const RESERVE_TOKENS = [MOCK_USDA]
 
 export default function Token() {
   const [selectedCurveType] = useState(CURVE_TYPES[0])
   // const [isTokenListLoading, setIsTokenListLoading] = useState(true)
   // const [tokenList, setTokenList] = useState<(typeof USDA_TST)[]>([USDA_TST])
-  const [selectedToken, setSelectedToken] = useState<typeof QAR>(QAR)
+  const [selectedToken, setSelectedToken] = useState<typeof MOCK_USDA>(MOCK_USDA)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [selectedRepo, isRepoOwner, saveRepoTokenDetails, saveRepoBondingCurveDetails] = useGlobalStore((state) => [
     state.repoCoreState.selectedRepo.repo,
