@@ -12,12 +12,17 @@ import IconForkOutline from '@/assets/icons/fork-outline.svg'
 import IconStarOutline from '@/assets/icons/star-outline.svg'
 import { Button } from '@/components/common/buttons'
 import { trackGoogleAnalyticsPageView } from '@/helpers/google-analytics'
+import { imgUrlFormatter } from '@/helpers/imgUrlFormatter'
 import { resolveUsernameOrShorten } from '@/helpers/resolveUsername'
+// import { fetchTokenBalance } from '@/lib/decentralize'
+import { useGlobalStore } from '@/stores/globalStore'
 import { Repo } from '@/types/repository'
 
 import useRepository from '../hooks/useRepository'
 import { useRepoHeaderStore } from '../store/repoHeader'
 import ActivityGraph from './ActivityGraph'
+import TokenizeModal from './decentralize-modals/Tokenize-Modal'
+import TradeModal from './decentralize-modals/Trade-Modal'
 import ForkModal from './ForkModal'
 import RepoHeaderLoading from './RepoHeaderLoading'
 
@@ -29,13 +34,16 @@ type Props = {
 }
 
 export default function RepoHeader({ repo, isLoading, owner, parentRepo }: Props) {
+  const [isDecentralizationModalOpen, setIsDecentralizationModalOpen] = React.useState(false)
+  const [isDecentralized, setIsDecentralized] = React.useState(false)
   const [isForkModalOpen, setIsForkModalOpen] = React.useState(false)
+  const [isTradeModalOpen, setIsTradeModalOpen] = React.useState(false)
   const [showCloneDropdown, setShowCloneDropdown] = React.useState(false)
   const cloneRef = React.useRef<HTMLDivElement | null>(null)
   const location = useLocation()
   const navigate = useNavigate()
   const { downloadRepository } = useRepository(repo?.id, repo?.name)
-
+  const [isRepoOwner] = useGlobalStore((state) => [state.repoCoreActions.isRepoOwner])
   const [repoHeaderState] = useRepoHeaderStore((state) => [state.repoHeaderState])
 
   React.useEffect(() => {
@@ -44,6 +52,24 @@ export default function RepoHeader({ repo, isLoading, owner, parentRepo }: Props
         repo_name: repo.name,
         repo_id: repo.id
       })
+    }
+  }, [repo])
+
+  React.useEffect(() => {
+    if (isLoading === true) {
+      setIsDecentralized(false)
+    }
+  }, [isLoading])
+
+  React.useEffect(() => {
+    if (repo && repo?.decentralized === true && !isLoading) {
+      setIsDecentralized(true)
+    }
+  }, [repo, isLoading])
+
+  React.useEffect(() => {
+    if (repo && repo?.decentralized && repo?.token?.processId) {
+      fetchAndSetTokenBal()
     }
   }, [repo])
 
@@ -90,6 +116,25 @@ export default function RepoHeader({ repo, isLoading, owner, parentRepo }: Props
     navigate(`/repository/${parentRepo.id}`)
   }
 
+  async function fetchAndSetTokenBal() {
+    if (!repo || !repo.token || !repo.token.processId) return
+
+    // setTokenBalLoading(true)
+    // try {
+    //   const bal = await fetchTokenBalance(repo.token.processId, address!)
+    //   setTokenBal(bal)
+    // } catch (error) {
+    //   toast.error('Failed to fetch token balance.')
+    // }
+    // setTokenBalLoading(false)
+  }
+
+  function handleTradeClick() {
+    if (!repo || !repo.token || !repo.token.processId) return
+
+    setIsTradeModalOpen(true)
+  }
+
   return (
     <div className="flex flex-col">
       <div className="flex justify-between">
@@ -98,12 +143,52 @@ export default function RepoHeader({ repo, isLoading, owner, parentRepo }: Props
             <div className="bg-white rounded-full w-12 h-12 flex justify-center items-center border-[1px] border-gray-300">
               <h4 className="text-2xl font-bold tracking-wide text-gray-900">SK</h4>
             </div>
-            <div>
+            <div className="gap-1 flex flex-col">
               <div className="flex items-center gap-4">
-                <h1 className="text-xl font-bold text-gray-900">{repo.name}</h1>
+                <div className="flex items-center gap-1">
+                  <h1 className="text-xl font-bold text-gray-900">{repo.name}</h1>
+                  <SVG className="w-5 h-5 cursor-pointer" onClick={handleComingSoon} src={IconStarOutline} />
+                </div>
                 <span className={`border-[1px] border-primary-600 text-primary-600 rounded-full px-2 text-sm`}>
                   {repo.private ? 'Private' : 'Public'}
                 </span>
+                {isDecentralized && (
+                  <span
+                    className={`border-[1px] border-primary-600 bg-primary-600 text-white rounded-full px-2 text-sm`}
+                  >
+                    Tokenized
+                  </span>
+                )}
+                {isDecentralized && repo.token && repo.token.processId && (
+                  <div className="flex items-center gap-2">
+                    <div className="flex items-center">
+                      <Button
+                        className="!bg-[#26d9af] text-gray-200 !px-2 text-sm font-medium rounded-md h-full !py-[1px] justify-between gap-1"
+                        variant="solid"
+                        onClick={handleTradeClick}
+                      >
+                        <img src={imgUrlFormatter(repo.token.tokenImage)} className="w-4 h-4" />
+                        Buy
+                      </Button>
+                      {/* {tokenBalLoading && <BeatLoader size={8} color="#56ADD9" />}
+                      {!tokenBalLoading && (
+                        <span
+                          onClick={handleTokenBalClick}
+                          className="text-primary-800 cursor-pointer text-sm font-bold flex gap-2 items-center underline"
+                        >
+                          {BigNumber(tokenBal)
+                            .dividedBy(BigNumber(10 ** +repo.token.denomination))
+                            .toString()}{' '}
+                          {repo.token.tokenTicker}
+                        </span>
+                      )}
+                      <RiRefreshFill
+                        onClick={fetchAndSetTokenBal}
+                        className="w-5 h-5 cursor-pointer text-primary-600"
+                      /> */}
+                    </div>
+                  </div>
+                )}
               </div>
               <p className="text-gray-900 text-base">
                 <span className="text-gray-600">Transaction ID:</span> {repo.dataTxId}
@@ -135,17 +220,33 @@ export default function RepoHeader({ repo, isLoading, owner, parentRepo }: Props
               <SVG src={IconDriveOutline} />
               <p>{repoHeaderState.repoSize}</p>
             </div>
+            <div className="flex gap-1 items-center px-4 py-1 bg-gray-200 rounded-[4px] cursor-default">
+              <SVG src={IconStarOutline} />
+              <p>0</p>
+            </div>
           </div>
           <div>
             <p className="text-gray-600">{repo.description}</p>
           </div>
         </div>
         <div className="flex flex-col">
-          <div className="flex mb-4 items-center justify-start gap-4">
-            <Button className="rounded-[20px] flex gap-2 items-center" variant="secondary" onClick={handleComingSoon}>
-              <SVG className="w-5 h-5" src={IconStarOutline} />
-              <span className="text-gray-900 font-medium">0</span>
-            </Button>
+          <div className="flex mb-4 items-center justify-end gap-4">
+            {!isDecentralized && (
+              <div className="flex items-center">
+                <span className="mr-2 text-primary-800 font-medium">Tokenize</span>
+                <label className="inline-flex relative items-center cursor-pointer">
+                  <input
+                    type="checkbox"
+                    className="sr-only peer cursor-pointer"
+                    checked={isDecentralized}
+                    disabled={repo.decentralized === true || !isRepoOwner()}
+                    onChange={() => setIsDecentralizationModalOpen(true)}
+                  />
+                  <div className="w-10 h-[22px] bg-gray-200 rounded-full peer peer-focus:none cursor-pointer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-[18px] after:w-[18px] after:transition-all peer-checked:bg-primary-600"></div>
+                </label>
+              </div>
+            )}
+
             <Button
               className="rounded-[20px] flex px-0 items-center"
               variant="secondary"
@@ -203,6 +304,17 @@ export default function RepoHeader({ repo, isLoading, owner, parentRepo }: Props
         </div>
       </div>
       <ForkModal isOpen={isForkModalOpen} setIsOpen={setIsForkModalOpen} repo={repo} />
+
+      {isDecentralizationModalOpen && (
+        <TokenizeModal
+          setIsTradeModalOpen={setIsTradeModalOpen}
+          onClose={() => setIsDecentralizationModalOpen(false)}
+          isOpen={isDecentralizationModalOpen}
+        />
+      )}
+      {isDecentralized && isTradeModalOpen && repo.token && repo.token.processId && (
+        <TradeModal onClose={() => setIsTradeModalOpen(false)} isOpen={isTradeModalOpen} />
+      )}
     </div>
   )
 }

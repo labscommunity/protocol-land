@@ -14,6 +14,7 @@ import { Button } from '@/components/common/buttons'
 import CostEstimatesToolTip from '@/components/CostEstimatesToolTip'
 import { trackGoogleAnalyticsEvent } from '@/helpers/google-analytics'
 import { withAsync } from '@/helpers/withAsync'
+import { spawnTokenProcess } from '@/lib/decentralize'
 import { createNewRepo, postNewRepo } from '@/lib/git'
 import { fsWithName } from '@/lib/git/helpers/fsWithName'
 import { useGlobalStore } from '@/stores/globalStore'
@@ -72,6 +73,7 @@ export default function NewRepoModal({ setIsOpen, isOpen }: NewRepoModalProps) {
     try {
       const fs = fsWithName(id)
       const createdRepo = await createNewRepo(title, fs, owner, id)
+      const tokenProcessId = await spawnTokenProcess(title)
 
       if (createdRepo && createdRepo.commit && createdRepo.repoBlob) {
         const { repoBlob } = createdRepo
@@ -82,7 +84,8 @@ export default function NewRepoModal({ setIsOpen, isOpen }: NewRepoModalProps) {
           description,
           file: repoBlob,
           owner: authState.address,
-          visibility
+          visibility,
+          tokenProcessId
         })
 
         if (result.txResponse) {

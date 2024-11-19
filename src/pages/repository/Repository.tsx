@@ -115,7 +115,11 @@ export default function Repository() {
         )}
         {isReady && (
           <div className="flex flex-col flex-1">
-            <Tab.Group onChange={handleTabChangeEventTracking} selectedIndex={selectedIndex}>
+            <Tab.Group
+              className={'flex flex-col flex-1'}
+              onChange={handleTabChangeEventTracking}
+              selectedIndex={selectedIndex}
+            >
               <Tab.List className="flex text-gray-500 text-lg gap-10 border-b-[1px] border-gray-200">
                 {rootTabConfig
                   .filter((tab) => {

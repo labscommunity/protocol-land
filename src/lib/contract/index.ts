@@ -11,6 +11,7 @@ export type SendMessageArgs = {
     name: string
     value: string
   }[]
+  pid?: string
   anchor?: string
 }
 
@@ -27,10 +28,10 @@ export async function getRepo(id: string) {
   return repo
 }
 
-export async function sendMessage({ tags, data }: SendMessageArgs) {
+export async function sendMessage({ tags, data, pid }: SendMessageArgs) {
   const signer = await getSigner({ injectedSigner: false })
   const args = {
-    process: AOS_PROCESS_ID,
+    process: pid || AOS_PROCESS_ID,
     tags,
     signer: createDataItemSigner(signer)
   } as any
@@ -41,7 +42,7 @@ export async function sendMessage({ tags, data }: SendMessageArgs) {
 
   const { Output } = await result({
     message: messageId,
-    process: AOS_PROCESS_ID
+    process: pid || AOS_PROCESS_ID
   })
 
   if (Output?.data?.output) {

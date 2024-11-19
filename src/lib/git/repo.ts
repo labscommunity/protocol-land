@@ -33,7 +33,7 @@ const arweave = new Arweave({
   protocol: 'https'
 })
 
-export async function postNewRepo({ id, title, description, file, owner, visibility }: any) {
+export async function postNewRepo({ id, title, description, file, owner, visibility,tokenProcessId }: any) {
   const userSigner = await getSigner()
 
   const data = (await toArrayBuffer(file)) as ArrayBuffer
@@ -64,8 +64,9 @@ export async function postNewRepo({ id, title, description, file, owner, visibil
       Name: title,
       Description: description,
       'Data-TxId': dataTxResponse,
-      Visibility: visibility,
-      'Private-State-TxId': ''
+      Visibility: 'public',
+      'Private-State-TxId': '',
+      'Token-Process-Id': tokenProcessId
     })
   })
 
