@@ -5,6 +5,7 @@ import { Fragment, useState } from 'react'
 import React from 'react'
 import { useForm } from 'react-hook-form'
 import toast from 'react-hot-toast'
+import { FaCopy } from 'react-icons/fa'
 // import { FaPlus } from 'react-icons/fa'
 import { HiChevronUpDown } from 'react-icons/hi2'
 import { IoCheckmark } from 'react-icons/io5'
@@ -54,21 +55,28 @@ const tokenSchema = yup
 //   denomination: '12',
 //   tokenImage: 'TPkPIvnvWuyd-hv8J1IAdUlb8aii00Z7vjwMBk_kp0M'
 // }
-const QAR = {
-  tokenName: 'Q Arweave',
-  tokenTicker: 'qAR',
-  // processId: 'b87Jd4usKGyMjovbNeX4P3dcvkC4mrtBZ5HxW_ENtn4',
-  processId: 'NG-0lVX882MG5nhARrSzyprEK6ejonHpdUmaaMPsHE8',
+const MOCK_USDA = {
+  tokenName: 'USDA Mock',
+  tokenTicker: 'TUSDA',
+  processId: 'b87Jd4usKGyMjovbNeX4P3dcvkC4mrtBZ5HxW_ENtn4',
   denomination: '12',
-  tokenImage: '26yDr08SuwvNQ4VnhAfV4IjJcOOlQ4tAQLc1ggrCPu0'
+  tokenImage: 'TPkPIvnvWuyd-hv8J1IAdUlb8aii00Z7vjwMBk_kp0M'
 }
-const RESERVE_TOKENS = [QAR]
+// const QAR = {
+//   tokenName: 'Q Arweave',
+//   tokenTicker: 'qAR',
+//   // processId: 'b87Jd4usKGyMjovbNeX4P3dcvkC4mrtBZ5HxW_ENtn4',
+//   processId: 'NG-0lVX882MG5nhARrSzyprEK6ejonHpdUmaaMPsHE8',
+//   denomination: '12',
+//   tokenImage: '26yDr08SuwvNQ4VnhAfV4IjJcOOlQ4tAQLc1ggrCPu0'
+// }
+const RESERVE_TOKENS = [MOCK_USDA]
 
 export default function Token() {
   const [selectedCurveType] = useState(CURVE_TYPES[0])
   // const [isTokenListLoading, setIsTokenListLoading] = useState(true)
   // const [tokenList, setTokenList] = useState<(typeof USDA_TST)[]>([USDA_TST])
-  const [selectedToken, setSelectedToken] = useState<typeof QAR>(QAR)
+  const [selectedToken, setSelectedToken] = useState<typeof MOCK_USDA>(MOCK_USDA)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [selectedRepo, isRepoOwner, saveRepoTokenDetails, saveRepoBondingCurveDetails] = useGlobalStore((state) => [
     state.repoCoreState.selectedRepo.repo,
@@ -215,6 +223,26 @@ export default function Token() {
     <div className="flex flex-col gap-4 pb-40">
       <div className="w-full border-b-[1px] border-gray-200 py-1">
         <h1 className="text-2xl text-gray-900">Token Settings</h1>
+      </div>
+      <div className="w-fit">
+        <label htmlFor="token-name" className="block mb-1 text-sm font-medium text-gray-600">
+          Token Process ID
+        </label>
+        {selectedRepo?.token?.processId && (
+          <div className="flex items-center gap-4 bg-gray-200 py-2 px-4 rounded-md text-gray-600">
+            {selectedRepo?.token?.processId}
+            <div
+              onClick={() => {
+                navigator.clipboard.writeText(selectedRepo?.token?.processId || '')
+                toast.success('Copied to clipboard')
+              }}
+              className="flex items-center gap-4 cursor-pointer hover:text-gray-900"
+            >
+              <FaCopy />
+            </div>
+          </div>
+        )}
+        {!selectedRepo?.token?.processId && <p className="text-gray-600 text-sm">No process ID yet.</p>}
       </div>
       <div className="flex flex-col gap-4">
         <label htmlFor="token-name" className="block text-base font-medium text-gray-600">

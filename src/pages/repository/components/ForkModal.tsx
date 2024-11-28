@@ -11,6 +11,7 @@ import * as yup from 'yup'
 import CloseCrossIcon from '@/assets/icons/close-cross.svg'
 import { Button } from '@/components/common/buttons'
 import { withAsync } from '@/helpers/withAsync'
+import { spawnTokenProcess } from '@/lib/decentralize'
 import { createNewFork } from '@/lib/git'
 import { useGlobalStore } from '@/stores/globalStore'
 import { getRepositoryMetaFromContract, isRepositoryNameAvailable } from '@/stores/repository-core/actions/repoMeta'
@@ -65,12 +66,16 @@ export default function ForkModal({ setIsOpen, isOpen, repo }: NewRepoModalProps
   async function handleCreateFork(data: yup.InferType<typeof schema>) {
     setIsSubmitting(true)
 
+    const tokenProcessId = await spawnTokenProcess(data.title)
+
     const payload = {
       name: data.title,
       description: data.description ?? '',
       parent: repo.id,
-      dataTxId: repo.dataTxId
+      dataTxId: repo.dataTxId,
+      tokenProcessId
     }
+
 
     const alreadyForked = await isRepositoryAlreadyForked(repo.id)
 
