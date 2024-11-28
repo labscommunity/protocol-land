@@ -5,6 +5,7 @@ import { Fragment, useState } from 'react'
 import React from 'react'
 import { useForm } from 'react-hook-form'
 import toast from 'react-hot-toast'
+import { FaCopy } from 'react-icons/fa'
 // import { FaPlus } from 'react-icons/fa'
 import { HiChevronUpDown } from 'react-icons/hi2'
 import { IoCheckmark } from 'react-icons/io5'
@@ -222,6 +223,26 @@ export default function Token() {
     <div className="flex flex-col gap-4 pb-40">
       <div className="w-full border-b-[1px] border-gray-200 py-1">
         <h1 className="text-2xl text-gray-900">Token Settings</h1>
+      </div>
+      <div className="w-fit">
+        <label htmlFor="token-name" className="block mb-1 text-sm font-medium text-gray-600">
+          Token Process ID
+        </label>
+        {selectedRepo?.token?.processId && (
+          <div className="flex items-center gap-4 bg-gray-200 py-2 px-4 rounded-md text-gray-600">
+            {selectedRepo?.token?.processId}
+            <div
+              onClick={() => {
+                navigator.clipboard.writeText(selectedRepo?.token?.processId || '')
+                toast.success('Copied to clipboard')
+              }}
+              className="flex items-center gap-4 cursor-pointer hover:text-gray-900"
+            >
+              <FaCopy />
+            </div>
+          </div>
+        )}
+        {!selectedRepo?.token?.processId && <p className="text-gray-600 text-sm">No process ID yet.</p>}
       </div>
       <div className="flex flex-col gap-4">
         <label htmlFor="token-name" className="block text-base font-medium text-gray-600">
