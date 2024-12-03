@@ -14,13 +14,14 @@ import * as yup from 'yup'
 import { Button } from '@/components/common/buttons'
 import { isInvalidInput } from '@/helpers/isInvalidInput'
 import { spawnBondingCurveProcess } from '@/lib/decentralize'
+import { calculateTotalLockedValue, CurveStep, CurveType, generateSteps } from '@/lib/discrete-bonding-curve/curve'
 // import { fetchAllUserTokens } from '@/helpers/wallet/fetchAllTokens'
 import { useGlobalStore } from '@/stores/globalStore'
 import { Allocation, BondingCurve, RepoToken, type Token } from '@/types/repository'
 
-import LiquidityPoolTokenSetting from './LiquidityPoolTokenSetting'
+import CurveChart from './CurveChart'
 
-const CURVE_TYPES = ['Exponential-Like', 'Linear', 'Exponential', 'Quadratic']
+const CURVE_TYPES: CurveType[] = ['EXPONENTIAL', 'LINEAR', 'FLAT', 'LOGARITHMIC']
 
 const tokenSchema = yup
   .object({
@@ -32,7 +33,14 @@ const tokenSchema = yup
     denomination: yup.string().required('Denomination is required').matches(/^\d+$/, 'Must be a number'),
     totalSupply: yup.string().required('Total supply is required').matches(/^\d+$/, 'Must be a number'),
     tokenImage: yup.string().required('Image is required'),
-    fundingGoal: yup.string().default('1500').matches(/^\d+$/, 'Must be a number')
+    initialBuyPrice: yup
+      .string()
+      .default('0.001')
+      .matches(/^\d+(\.\d+)?$/, 'Must be a number or a decimal'),
+    finalBuyPrice: yup
+      .string()
+      .default('0.1')
+      .matches(/^\d+(\.\d+)?$/, 'Must be a number or a decimal')
     // allocations: yup
     //   .array()
     //   .of(
@@ -73,7 +81,11 @@ const MOCK_USDA = {
 const RESERVE_TOKENS = [MOCK_USDA]
 
 export default function Token() {
-  const [selectedCurveType] = useState(CURVE_TYPES[0])
+  const [tvl, setTvl] = useState(0)
+  const [baseAssetPriceUSD, setBaseAssetPriceUSD] = useState(0)
+  const [potentialMarketCap, setPotentialMarketCap] = useState(0)
+  const [curveSteps, setCurveSteps] = useState<CurveStep[]>([])
+  const [selectedCurveType, setSelectedCurveType] = useState(CURVE_TYPES[1])
   // const [isTokenListLoading, setIsTokenListLoading] = useState(true)
   // const [tokenList, setTokenList] = useState<(typeof USDA_TST)[]>([USDA_TST])
   const [selectedToken, setSelectedToken] = useState<typeof MOCK_USDA>(MOCK_USDA)
@@ -87,6 +99,7 @@ export default function Token() {
   const {
     register,
     handleSubmit,
+    watch,
     // control,
     formState: { errors: tokenErrors }
   } = useForm({
@@ -96,13 +109,17 @@ export default function Token() {
       tokenName: selectedRepo?.token?.tokenName || '',
       tokenTicker: selectedRepo?.token?.tokenTicker || '',
       denomination: selectedRepo?.token?.denomination || '12',
-      totalSupply: selectedRepo?.token?.totalSupply || '',
+      totalSupply: selectedRepo?.token?.totalSupply || '1000000',
       tokenImage: selectedRepo?.token?.tokenImage || '',
-      fundingGoal: selectedRepo?.bondingCurve?.fundingGoal || '1500'
+      initialBuyPrice: selectedRepo?.bondingCurve?.initialBuyPrice || '0.00001',
+      finalBuyPrice: selectedRepo?.bondingCurve?.finalBuyPrice || '0.1'
       // allocations: selectedRepo?.token?.allocations || []
     }
   })
 
+  const initialBuyPrice = watch('initialBuyPrice')
+  const finalBuyPrice = watch('finalBuyPrice')
+  const totalSupply = watch('totalSupply')
   // const { fields, append, remove } = useFieldArray({
   //   name: 'allocations',
   //   control
@@ -122,10 +139,28 @@ export default function Token() {
   // }, [fields])
 
   React.useEffect(() => {
+    if (tvl > 0 && baseAssetPriceUSD > 0) {
+      setPotentialMarketCap(tvl * baseAssetPriceUSD)
+    }
+  }, [tvl, baseAssetPriceUSD])
+
+  React.useEffect(() => {
+    calculateCurveSteps()
+  }, [selectedCurveType, initialBuyPrice, finalBuyPrice, totalSupply])
+
+  React.useEffect(() => {
+    setTvl(+calculateTotalLockedValue(curveSteps).toPrecision(12))
+  }, [curveSteps])
+
+  React.useEffect(() => {
     if (selectedRepo?.bondingCurve) {
       setSelectedToken(selectedRepo.bondingCurve.reserveToken)
     }
   }, [selectedRepo])
+
+  React.useEffect(() => {
+    fetchBaseAssetPriceUSD()
+  }, [selectedToken])
 
   // function appendEmptyRecipient() {
   //   append({
@@ -188,6 +223,42 @@ export default function Token() {
     }
   }
 
+  async function fetchBaseAssetPriceUSD() {
+    if (!selectedToken) return
+    const token = selectedToken
+
+    if (token.tokenTicker === 'TUSDA') {
+      setBaseAssetPriceUSD(1)
+
+      return
+    }
+
+    try {
+      const response = await fetch('https://api.redstone.finance/prices?symbol=AR&provider=redstone-rapid&limit=1')
+      const data = await response.json()
+      setBaseAssetPriceUSD(data[0].value)
+    } catch (error) {
+      console.error('Failed to fetch AR price:', error)
+      setBaseAssetPriceUSD(0)
+    }
+  }
+
+  async function calculateCurveSteps() {
+    const steps = generateSteps({
+      reserveToken: selectedToken,
+      curveData: {
+        curveType: selectedCurveType,
+        initialPrice: parseFloat(initialBuyPrice || '0.00001'),
+        finalPrice: parseFloat(selectedCurveType === 'FLAT' ? initialBuyPrice : finalBuyPrice || '0.1'),
+        maxSupply: parseInt(totalSupply || '1000000'),
+        lpAllocation: parseInt(totalSupply || '1000000') * 0.2,
+        stepCount: 10
+      }
+    })
+
+    setCurveSteps(steps.stepData)
+  }
+
   // function handleDeleteAllocation(idx: number) {
   //   remove(idx)
   // }
@@ -244,7 +315,7 @@ export default function Token() {
         )}
         {!selectedRepo?.token?.processId && <p className="text-gray-600 text-sm">No process ID yet.</p>}
       </div>
-      <div className="flex flex-col gap-4">
+      <div className="flex flex-col gap-4 mt-4">
         <label htmlFor="token-name" className="block text-base font-medium text-gray-600">
           General
         </label>
@@ -338,6 +409,7 @@ export default function Token() {
           <span className="text-red-500">*</span>20% of the maximum supply will be reserved for the bonding curve to
           create liquidity pool.
         </p>
+
         <div className="flex flex-col w-full">
           <label htmlFor="token-name" className="block mb-1 text-sm font-medium text-gray-600">
             Token Image
@@ -441,143 +513,181 @@ export default function Token() {
           </div>
         </div> */}
 
-        <div className="flex flex-col w-full">
+        <div className="flex flex-col w-full mt-4">
           <div className="w-full flex flex-col gap-3">
             <label htmlFor="token-name" className="block mb-1 text-base font-medium text-gray-600">
               Bonding Curve
             </label>
 
-            {selectedRepo?.liquidityPoolId && <LiquidityPoolTokenSetting poolId={selectedRepo?.liquidityPoolId} />}
-
             {!selectedRepo?.liquidityPoolId && (
-              <div className="flex flex-col items-start gap-4 w-full">
-                <div className="flex flex-col w-full">
-                  <label htmlFor="curve-type" className="block mb-1 text-sm font-medium text-gray-600">
-                    Curve Type
-                  </label>
-                  <div className="flex items-center gap-4">
-                    <div className="w-72">
-                      <Listbox disabled={true}>
-                        <div className="relative mt-1">
-                          <ListboxButton className="relative w-full cursor-default rounded-lg bg-white py-2 pl-3 pr-10 text-left shadow-md focus:outline-none focus-visible:border-indigo-500 focus-visible:ring-2 focus-visible:ring-white/75 focus-visible:ring-offset-2 focus-visible:ring-offset-orange-300 sm:text-sm">
-                            <span className="block truncate">{selectedCurveType}</span>
-                            <span className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2">
-                              <HiChevronUpDown className="h-5 w-5 text-gray-400" aria-hidden="true" />
-                            </span>
-                          </ListboxButton>
-                          <Transition
-                            as={Fragment}
-                            leave="transition ease-in duration-100"
-                            leaveFrom="opacity-100"
-                            leaveTo="opacity-0"
-                          >
-                            <ListboxOptions className="absolute mt-1 max-h-60 w-full overflow-auto rounded-md bg-white py-1 text-base shadow-lg ring-1 ring-black/5 focus:outline-none sm:text-sm">
-                              {CURVE_TYPES.map((curveType) => (
-                                <ListboxOption
-                                  key={curveType}
-                                  className={({ active }) =>
-                                    `relative cursor-default select-none py-2 pl-10 pr-4 ${
-                                      active ? 'bg-primary-100' : 'text-gray-900'
-                                    }`
-                                  }
-                                  value={curveType}
-                                >
-                                  {({ selected }) => (
-                                    <>
-                                      <span className={`block truncate ${selected ? 'font-medium' : 'font-normal'}`}>
-                                        {curveType}
-                                      </span>
-                                      {selected ? (
-                                        <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-primary-700">
-                                          <IoCheckmark className="h-5 w-5" aria-hidden="true" />
+              <div className="flex gap-8">
+                <div className="flex flex-col items-start gap-4 w-[60%]">
+                  <div className="flex flex-col w-[80%]">
+                    <label htmlFor="curve-type" className="block mb-1 text-sm font-medium text-gray-600">
+                      Curve Type
+                    </label>
+                    <div className="flex items-center gap-4">
+                      <div className="w-full">
+                        <Listbox value={selectedCurveType} onChange={setSelectedCurveType}>
+                          <div className="relative mt-1">
+                            <ListboxButton className="relative w-full cursor-default rounded-lg bg-white py-2 pl-3 pr-10 text-left shadow-md focus:outline-none focus-visible:border-indigo-500 focus-visible:ring-2 focus-visible:ring-white/75 focus-visible:ring-offset-2 focus-visible:ring-offset-orange-300 sm:text-sm">
+                              <span className="block truncate capitalize">{selectedCurveType.toLowerCase()}</span>
+                              <span className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2">
+                                <HiChevronUpDown className="h-5 w-5 text-gray-400" aria-hidden="true" />
+                              </span>
+                            </ListboxButton>
+                            <Transition
+                              as={Fragment}
+                              leave="transition ease-in duration-100"
+                              leaveFrom="opacity-100"
+                              leaveTo="opacity-0"
+                            >
+                              <ListboxOptions className="absolute z-50 mt-1 max-h-60 w-full overflow-auto rounded-md bg-white py-1 text-base shadow-lg ring-1 ring-black/5 focus:outline-none sm:text-sm">
+                                {CURVE_TYPES.map((curveType) => (
+                                  <ListboxOption
+                                    key={curveType}
+                                    className={({ active }) =>
+                                      `relative cursor-default select-none py-2 pl-10 pr-4 ${
+                                        active ? 'bg-primary-100' : 'text-gray-900'
+                                      }`
+                                    }
+                                    value={curveType}
+                                  >
+                                    {({ selected }) => (
+                                      <>
+                                        <span
+                                          className={`block capitalize truncate ${
+                                            selected ? 'font-medium' : 'font-normal'
+                                          }`}
+                                        >
+                                          {curveType.toLowerCase()}
                                         </span>
-                                      ) : null}
-                                    </>
-                                  )}
-                                </ListboxOption>
-                              ))}
-                            </ListboxOptions>
-                          </Transition>
-                        </div>
-                      </Listbox>
+                                        {selected ? (
+                                          <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-primary-700">
+                                            <IoCheckmark className="h-5 w-5" aria-hidden="true" />
+                                          </span>
+                                        ) : null}
+                                      </>
+                                    )}
+                                  </ListboxOption>
+                                ))}
+                              </ListboxOptions>
+                            </Transition>
+                          </div>
+                        </Listbox>
+                      </div>
                     </div>
                   </div>
-                </div>
-                <div className="flex flex-col w-full">
-                  <label htmlFor="token-name" className="block mb-1 text-sm font-medium text-gray-600">
-                    Reserve Token
-                  </label>
-                  <div className="flex items-center gap-4">
-                    <div className="w-72">
-                      <Listbox disabled={true} value={selectedToken} onChange={setSelectedToken}>
-                        <div className="relative mt-1">
-                          <ListboxButton className="relative w-full cursor-default rounded-lg bg-white py-2 pl-3 pr-10 text-left shadow-md focus:outline-none focus-visible:border-indigo-500 focus-visible:ring-2 focus-visible:ring-white/75 focus-visible:ring-offset-2 focus-visible:ring-offset-orange-300 sm:text-sm">
-                            <span className="block truncate">{selectedToken.tokenTicker}</span>
-                            <span className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2">
-                              <HiChevronUpDown className="h-5 w-5 text-gray-400" aria-hidden="true" />
-                            </span>
-                          </ListboxButton>
-                          <Transition
-                            as={Fragment}
-                            leave="transition ease-in duration-100"
-                            leaveFrom="opacity-100"
-                            leaveTo="opacity-0"
-                          >
-                            <ListboxOptions className="absolute mt-1 max-h-60 w-full overflow-auto rounded-md bg-white py-1 text-base shadow-lg ring-1 ring-black/5 focus:outline-none sm:text-sm">
-                              {RESERVE_TOKENS.map((token) => (
-                                <ListboxOption
-                                  key={token.processId}
-                                  className={({ active }) =>
-                                    `relative cursor-default select-none py-2 pl-10 pr-4 ${
-                                      active ? 'bg-primary-100' : 'text-gray-900'
-                                    }`
-                                  }
-                                  value={token}
-                                >
-                                  {({ selected }) => (
-                                    <>
-                                      <span className={`block truncate ${selected ? 'font-medium' : 'font-normal'}`}>
-                                        {token.tokenTicker}
-                                      </span>
-                                      {selected ? (
-                                        <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-primary-700">
-                                          <IoCheckmark className="h-5 w-5" aria-hidden="true" />
+                  <div className="flex flex-col w-[80%]">
+                    <label htmlFor="token-name" className="block mb-1 text-sm font-medium text-gray-600">
+                      Reserve Token
+                    </label>
+                    <div className="flex items-center gap-4">
+                      <div className="w-full">
+                        <Listbox disabled={true} value={selectedToken} onChange={setSelectedToken}>
+                          <div className="relative mt-1">
+                            <ListboxButton className="relative w-full cursor-default rounded-lg bg-white py-2 pl-3 pr-10 text-left shadow-md focus:outline-none focus-visible:border-indigo-500 focus-visible:ring-2 focus-visible:ring-white/75 focus-visible:ring-offset-2 focus-visible:ring-offset-orange-300 sm:text-sm">
+                              <span className="block truncate">{selectedToken.tokenTicker}</span>
+                              <span className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2">
+                                <HiChevronUpDown className="h-5 w-5 text-gray-400" aria-hidden="true" />
+                              </span>
+                            </ListboxButton>
+                            <Transition
+                              as={Fragment}
+                              leave="transition ease-in duration-100"
+                              leaveFrom="opacity-100"
+                              leaveTo="opacity-0"
+                            >
+                              <ListboxOptions className="absolute mt-1 max-h-60 w-full overflow-auto rounded-md bg-white py-1 text-base shadow-lg ring-1 ring-black/5 focus:outline-none sm:text-sm">
+                                {RESERVE_TOKENS.map((token) => (
+                                  <ListboxOption
+                                    key={token.processId}
+                                    className={({ active }) =>
+                                      `relative cursor-default select-none py-2 pl-10 pr-4 ${
+                                        active ? 'bg-primary-100' : 'text-gray-900'
+                                      }`
+                                    }
+                                    value={token}
+                                  >
+                                    {({ selected }) => (
+                                      <>
+                                        <span className={`block truncate ${selected ? 'font-medium' : 'font-normal'}`}>
+                                          {token.tokenTicker}
                                         </span>
-                                      ) : null}
-                                    </>
-                                  )}
-                                </ListboxOption>
-                              ))}
-                            </ListboxOptions>
-                          </Transition>
-                        </div>
-                      </Listbox>
+                                        {selected ? (
+                                          <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-primary-700">
+                                            <IoCheckmark className="h-5 w-5" aria-hidden="true" />
+                                          </span>
+                                        ) : null}
+                                      </>
+                                    )}
+                                  </ListboxOption>
+                                ))}
+                              </ListboxOptions>
+                            </Transition>
+                          </div>
+                        </Listbox>
+                      </div>
                     </div>
                   </div>
-                </div>
-
-                <div className="w-72">
-                  <label htmlFor="token-name" className="block mb-1 text-sm font-medium text-gray-600">
-                    Funding Goal ({selectedToken.tokenTicker})
-                  </label>
-                  <div className="flex items-center gap-4">
-                    <input
-                      type="text"
-                      {...register('fundingGoal')}
-                      className={clsx(
-                        'bg-white border-[1px] text-gray-900 text-base rounded-lg hover:shadow-[0px_2px_4px_0px_rgba(0,0,0,0.10)] focus:border-primary-500 focus:border-[1.5px] block w-full px-3 py-[10px] outline-none',
-                        tokenErrors.fundingGoal ? 'border-red-500' : 'border-gray-300'
+                  <div className="w-[80%]">
+                    <label htmlFor="token-name" className="block mb-1 text-sm font-medium text-gray-600">
+                      Initial Buy Price
+                    </label>
+                    <div className="flex items-center gap-4">
+                      <input
+                        type="text"
+                        {...register('initialBuyPrice')}
+                        className={clsx(
+                          'bg-white border-[1px] text-gray-9000 text-md rounded-lg hover:shadow-[0px_2px_4px_0px_rgba(0,0,0,0.10)] focus:border-primary-500 focus:border-[1.5px] block w-full px-3 py-[10px] outline-none',
+                          tokenErrors.initialBuyPrice ? 'border-red-500' : 'border-gray-300'
+                        )}
+                        placeholder="0.001"
+                        disabled={!repoOwner || selectedRepo?.decentralized}
+                      />
+                    </div>
+                    {tokenErrors.initialBuyPrice && (
+                      <p className="text-red-500 text-sm italic mt-2">{tokenErrors.initialBuyPrice?.message}</p>
+                    )}
+                  </div>
+                  {selectedCurveType !== 'FLAT' && (
+                    <div className="w-[80%]">
+                      <label htmlFor="token-name" className="block mb-1 text-sm font-medium text-gray-600">
+                        Final Buy Price
+                      </label>
+                      <div className="flex items-center gap-4">
+                        <input
+                          type="text"
+                          {...register('finalBuyPrice')}
+                          className={clsx(
+                            'bg-white border-[1px] text-gray-900 text-md rounded-lg hover:shadow-[0px_2px_4px_0px_rgba(0,0,0,0.10)] focus:border-primary-500 focus:border-[1.5px] block w-full px-3 py-[10px] outline-none',
+                            tokenErrors.finalBuyPrice ? 'border-red-500' : 'border-gray-300'
+                          )}
+                          placeholder="0.001"
+                          disabled={!repoOwner || selectedRepo?.decentralized}
+                        />
+                      </div>
+                      {tokenErrors.finalBuyPrice && (
+                        <p className="text-red-500 text-sm italic mt-2">{tokenErrors.finalBuyPrice?.message}</p>
                       )}
-                      placeholder="1500"
-                      disabled={true}
-
-                      // disabled={!repoOwner || selectedRepo?.decentralized}
-                    />
-                  </div>
-                  {tokenErrors.fundingGoal && (
-                    <p className="text-red-500 text-sm italic mt-2">{tokenErrors.fundingGoal?.message}</p>
+                    </div>
                   )}
+                  <div className="w-72">
+                    <label htmlFor="token-name" className="block mb-1 text-sm font-medium text-gray-600">
+                      Maximum Possible Funding
+                    </label>
+                    <h1 className="text-gray-600 text-2xl font-light">
+                      {tvl} <span className="text-gray-600 text-lg">{selectedToken.tokenTicker}</span>
+                    </h1>
+                  </div>
+                  <div className="w-72">
+                    <label htmlFor="token-name" className="block mb-1 text-sm font-medium text-gray-600">
+                      Potential Market Cap
+                    </label>
+                    <h1 className="text-gray-600 text-2xl font-light">${potentialMarketCap}</h1>
+                  </div>
                 </div>
+                <CurveChart curveSteps={curveSteps} />
               </div>
             )}
           </div>
