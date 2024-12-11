@@ -7,6 +7,8 @@ import { getRepo, sendMessage } from '@/lib/contract'
 import { pollForTxBeingAvailable } from '@/lib/decentralize'
 import { useGlobalStore } from '@/stores/globalStore'
 import { BondingCurve, Repo, RepoToken } from '@/types/repository'
+
+import { SaveRepoTokenDetailsOptions } from '../types'
 // Repo Meta
 
 export const getRepositoryMetaFromContract = async (id: string): Promise<{ result: Repo }> => {
@@ -93,7 +95,11 @@ export const handleCancelContributorInvite = async (id: string, contributor: str
   return repo.contributorInvites
 }
 
-export const handleSaveRepoToken = async (id: string, repoToken: Partial<RepoToken>, address: string) => {
+export const handleSaveRepoToken = async (
+  id: string,
+  repoToken: Partial<SaveRepoTokenDetailsOptions>,
+  address: string
+) => {
   await sendMessage({
     tags: getTags({
       Action: 'Save-Token-Settings',

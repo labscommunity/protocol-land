@@ -1,8 +1,8 @@
 import lodash from 'lodash'
 
-import { Token } from '@/types/repository'
+import { RepoLiquidityPoolToken } from '@/types/repository'
 
-const { uniqBy } = lodash
+const { uniqBy, cloneDeep } = lodash
 
 // interval range: max supply decimal count + 3
 // price: starting price decimal count + 3
@@ -87,7 +87,7 @@ export function generateSteps(form: GenerateStepArgs) {
     // interval range: leading 0 of deltaX + 3
     // price: max price decimal count + 3
 
-    x = formatGraphPoint(x, 12) // mint club generates 18 decimals
+    x = formatGraphPoint(x, 18) // mint club generates 18 decimals
 
     y = Math.max(Math.min(y, maxPrice), initialPrice)
     y = formatGraphPoint(y, Number(reserveToken.denomination))
@@ -102,7 +102,6 @@ export function generateSteps(form: GenerateStepArgs) {
       stepPoints.push({ x, y: Math.min(y ?? 0, maxPrice) })
     }
   }
-
   // If the starting price is 0, call it again to set the first step to the first point
   if (startingPrice === 0) {
     return generateSteps({
@@ -125,9 +124,23 @@ export function generateSteps(form: GenerateStepArgs) {
     }
   }
 
-  const finalData = uniqBy(clonedPoints, (point) => `${point.x}-${point.y}`).map((point) => {
+  let finalData = uniqBy(clonedPoints, (point) => `${point.x}-${point.y}`).map((point) => {
     return { rangeTo: point.x, price: +point.y.toPrecision(5) }
   })
+
+  // we shift the y values to the right
+  const cloned = cloneDeep(finalData)
+
+  for (let i = cloned.length - 1; i > 0; i--) {
+    cloned[i].price = cloned[i - 1].price
+  }
+  // remove the first element as it is not needed
+  cloned.shift()
+  finalData = cloned
+
+  if (lpAllocation > 0) {
+    finalData.unshift({ rangeTo: lpAllocation, price: 0 })
+  }
 
   return { stepData: finalData, mergeCount }
 }
@@ -161,20 +174,20 @@ export function calculateArea(steps: { x: number; y: number }[], partialIndex?: 
   return { intervalArea, totalArea }
 }
 
-export function generateTableData(steps: { x: number; y: number }[]) {
+export function generateTableData(steps: CurveStep[]) {
   const clonedSteps = structuredClone(steps)
-  clonedSteps.sort((a, b) => a.x - b.x)
+  clonedSteps.sort((a, b) => a.rangeTo - b.rangeTo)
   const data: TableData[] = []
   let totalTVL = 0
 
   // Starting from the second point, calculate the area of the trapezoid formed by each step and add it to the total
-  for (let i = 1; i < clonedSteps.length; i++) {
-    const height = clonedSteps[i - 1].y
-    const width = clonedSteps[i].x - clonedSteps[i - 1].x
+  for (let i = 0; i < clonedSteps.length; i++) {
+    const height = clonedSteps[i]?.price || 0
+    const width = clonedSteps[i].rangeTo - (clonedSteps[i - 1]?.rangeTo || 0)
     const obj: Partial<TableData> = {}
-    obj.start = clonedSteps[i - 1].x
-    obj.end = clonedSteps[i].x
-    obj.price = clonedSteps[i - 1].y
+    obj.start = clonedSteps[i - 1]?.rangeTo || 0
+    obj.end = clonedSteps[i].rangeTo
+    obj.price = clonedSteps[i]?.price || 0
 
     if (width > 0 && height > 0) {
       const tvl = width * height
@@ -190,7 +203,7 @@ export function generateTableData(steps: { x: number; y: number }[]) {
 
 export function calculateTotalLockedValue(steps: CurveStep[]) {
   let totalTVL = 0
-  for (let i = 1; i < steps.length; i++) {
+  for (let i = 1; i <= steps.length; i++) {
     const height = steps[i - 1].price
     const width = steps[i].rangeTo - steps[i - 1].rangeTo
 
@@ -204,12 +217,12 @@ export function calculateTotalLockedValue(steps: CurveStep[]) {
 }
 
 export type GenerateStepArgs = {
-  reserveToken: Token
+  reserveToken: RepoLiquidityPoolToken
   curveData: CurveParameter
 }
 
-type CurveParameter = {
-  curveType: CurveType
+export type CurveParameter = {
+  curveType: string
   stepCount?: number
   initialPrice: number
   finalPrice: number

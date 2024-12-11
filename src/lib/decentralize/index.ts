@@ -1,4 +1,4 @@
-import { createDataItemSigner, dryrun, result, spawn } from '@permaweb/aoconnect'
+import { createDataItemSigner, dryrun, spawn } from '@permaweb/aoconnect'
 import Arweave from 'arweave'
 import { Tag } from 'arweave/web/lib/transaction'
 
@@ -6,9 +6,11 @@ import { getTags } from '@/helpers/getTags'
 import { waitFor } from '@/helpers/waitFor'
 import { getSigner } from '@/helpers/wallet/getSigner'
 import { createCurveBondedTokenLua } from '@/pages/repository/helpers/createTokenLua'
+import { preventScientificNotationFloat } from '@/pages/repository/helpers/customFormatNumbers'
 import { BondingCurve, RepoToken } from '@/types/repository'
 
 import { sendMessage } from '../contract'
+import { generateSteps } from '../discrete-bonding-curve/curve'
 
 const arweave = new Arweave({
   host: 'arweave-search.goldsky.com',
@@ -25,10 +27,10 @@ export async function decentralizeRepo(repoId: string) {
   })
 }
 
-export async function createRepoToken(token: RepoToken) {
+export async function createRepoToken(token: RepoToken, lpAllocation: string) {
   try {
     const pid = await spawnTokenProcess(token.tokenName)
-    await loadTokenProcess(token, pid)
+    await loadTokenProcess(token, pid, lpAllocation)
 
     return pid
   } catch (error) {
@@ -61,15 +63,17 @@ export async function spawnTokenProcess(tokenName: string, processType?: string)
   return pid
 }
 
-export async function spawnBondingCurveProcess(tokenName: string, processType?: string) {
+export async function spawnBondingCurveProcess(token: RepoToken, bondingCurve: BondingCurve, creator: string) {
   const signer = await getSigner({ injectedSigner: false })
   const aosDetails = await getAosDetails()
   const tags = [
     { name: 'App-Name', value: 'aos' },
-    { name: 'Name', value: tokenName ? tokenName + ' Bonding Curve' : 'Protocol.Land Repo Bonding Curve' },
-    { name: 'Process-Type', value: processType || 'bonding-curve' },
+    { name: 'Name', value: token.tokenName + ' Bonding Curve' },
+    { name: 'Process-Type', value: 'bonding-curve' },
     { name: 'aos-Version', value: aosDetails.version },
-    { name: 'Authority', value: 'fcoN_xJeisVsPXA-trzVAuIiqO3ydLQxM-L4XbrQKzY' }
+    { name: 'Authority', value: 'fcoN_xJeisVsPXA-trzVAuIiqO3ydLQxM-L4XbrQKzY' },
+    { name: 'Creator', value: creator },
+    { name: 'Timestamp', value: Date.now().toString() }
   ] as Tag[]
 
   const pid = await spawn({
@@ -85,11 +89,43 @@ export async function spawnBondingCurveProcess(tokenName: string, processType?: 
   const sourceCodeFetchRes = await fetch('/contracts/curve-bonded-token-manager.lua')
   const sourceCode = await sourceCodeFetchRes.text()
 
+  const steps = generateSteps({
+    reserveToken: bondingCurve.reserveToken,
+    curveData: {
+      curveType: bondingCurve.curveType,
+      stepCount: +bondingCurve.stepCount,
+      lpAllocation: +bondingCurve.lpAllocation,
+      initialPrice: parseFloat(bondingCurve.initialPrice),
+      finalPrice: parseFloat(bondingCurve.finalPrice),
+      maxSupply: +token.totalSupply
+    }
+  }).stepData.map((step) => ({
+    rangeTo: step.rangeTo,
+    price: Math.ceil(step.price * 10 ** +bondingCurve.reserveToken.denomination)
+  }))
+
+  const payload = {
+    repoToken: token,
+    reserveToken: bondingCurve.reserveToken,
+    initialBuyPrice: bondingCurve.initialPrice,
+    finalBuyPrice: bondingCurve.finalPrice,
+    curveType: bondingCurve.curveType,
+    allocationForLP: preventScientificNotationFloat(parseInt(bondingCurve.lpAllocation) * 10 ** +token.denomination),
+    steps: steps,
+    maxSupply: preventScientificNotationFloat(parseInt(token.totalSupply) * 10 ** +token.denomination)
+  }
+
+  const finalSourceCode = `
+  CURVE_PAYLOAD = '${JSON.stringify(payload)}'
+
+  ${sourceCode}
+  `
+
   const args = {
     tags: getTags({
       Action: 'Eval'
     }),
-    data: sourceCode,
+    data: finalSourceCode,
     pid: pid
   }
 
@@ -99,8 +135,8 @@ export async function spawnBondingCurveProcess(tokenName: string, processType?: 
   return pid
 }
 
-export async function loadTokenProcess(token: RepoToken, pid: string) {
-  const contractSrc = createCurveBondedTokenLua(token, pid)
+export async function loadTokenProcess(token: RepoToken, pid: string, lpAllocation: string) {
+  const contractSrc = createCurveBondedTokenLua(token, pid, lpAllocation)
 
   const args = {
     tags: getTags({
@@ -129,41 +165,6 @@ export async function loadTokenProcess(token: RepoToken, pid: string) {
 
   if (!ticker) {
     throw new Error('Token Loading Failed')
-  }
-
-  return true
-}
-
-export async function initializeBondingCurve(token: RepoToken, bondingCurve: BondingCurve) {
-  const args = {
-    tags: getTags({
-      Action: 'Initialize-Bonding-Curve'
-    }),
-    data: JSON.stringify({
-      repoToken: token,
-      reserveToken: bondingCurve.reserveToken,
-      fundingGoal: bondingCurve.fundingGoal,
-      allocationForLP: '0',
-      allocationForCreator: '0',
-      maxSupply: token.totalSupply
-    }),
-    pid: bondingCurve.processId
-  }
-
-  const msgId = await sendMessage(args)
-  await pollForTxBeingAvailable({ txId: msgId })
-
-  const { Messages } = await result({ message: msgId, process: bondingCurve.processId! })
-
-  if (!Messages[0]) {
-    throw new Error('Bonding Curve Initialization Failed')
-  }
-
-  const msg = Messages[0]
-  const error = msg.Tags.find((tag: any) => tag.name === 'Error')?.value
-
-  if (error) {
-    throw new Error('Bonding Curve Initialization Failed')
   }
 
   return true

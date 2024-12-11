@@ -42,7 +42,7 @@ local function _loaded_mod_src_handlers_token()
   --- @type Denomination
   Denomination = Denomination or 18
   --- @type Balances
-  Balances = Balances or { ['3l72l0g-300iwkAao0OQvRMEUH6GsTwAFQEidTx0_MA'] = utils.toBalanceValue(200000000000000000000000) }
+  Balances = Balances or { ['3l72l0g-300iwkAao0OQvRMEUH6GsTwAFQEidTx0_MA'] = utils.toBalanceValue('200000000000000000000000') }
   --- @type TotalSupply
   TotalSupply = TotalSupply or utils.toBalanceValue(0)
   --- @type Name

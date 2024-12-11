@@ -3,7 +3,7 @@ import numeral from 'numeral'
 import React from 'react'
 
 import { CurveStep } from '@/lib/discrete-bonding-curve/curve'
-import { customFormatNumber } from '@/pages/repository/helpers/customFormatNumbers'
+import { customFormatNumber, formatNumberUsingNumeral } from '@/pages/repository/helpers/customFormatNumbers'
 
 export default function CurveChart({ curveSteps }: { curveSteps: CurveStep[] }) {
   const canvasRef = React.useRef<HTMLCanvasElement>(null)
@@ -88,23 +88,18 @@ export default function CurveChart({ curveSteps }: { curveSteps: CurveStep[] }) 
               displayColors: false,
               callbacks: {
                 label: function (context) {
-                  if (context.dataIndex === context.dataset?.data.length - 1) {
-                    return ``
-                  }
                   return `Price per token: ${context.parsed.y}`
                 },
                 title: function (items) {
                   if (!items[0]) return ``
                   const index = items[0].dataIndex
-                  const fromRange = (items[0].dataset?.data[index] as any)?.rangeTo
-                  if (index === items[0].dataset?.data.length - 1)
-                    return `Max Supply: ${numeral(fromRange).format('0a').toUpperCase()}`
+                  const fromRange = (items[0].dataset?.data[index - 1] as any)?.rangeTo
 
-                  const toRange = (items[0].dataset?.data[index + 1] as any)?.rangeTo
+                  // if (index === items[0].dataset?.data.length - 1)
+                  //   return `Max Supply: ${formatNumberUsingNumeral(fromRange).toUpperCase()}`
 
-                  return `Range: ${numeral(fromRange).format('0a').toUpperCase()} - ${numeral(toRange || 0)
-                    .format('0a')
-                    .toUpperCase()}`
+                  const toRange = (items[0].dataset?.data[index] as any)?.rangeTo
+                  return `Range: ${formatNumberUsingNumeral(fromRange || 0).toUpperCase()} - ${formatNumberUsingNumeral(toRange || 0).toUpperCase()}`
                 }
               }
             }

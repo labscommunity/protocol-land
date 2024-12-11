@@ -1,5 +1,6 @@
 import { Dialog, DialogPanel, DialogTitle, Transition, TransitionChild } from '@headlessui/react'
 import Progress from '@ramonak/react-progress-bar'
+import BigNumber from 'bignumber.js'
 import clsx from 'clsx'
 import { Fragment } from 'react'
 import React from 'react'
@@ -66,8 +67,8 @@ export default function TradeModal({ onClose, isOpen }: TradeModalProps) {
   }, [selectedSide])
 
   React.useEffect(() => {
-    if (curveState.maxSupply && curveState.fundingGoal) {
-      setProgress((+curveState.reserveBalance / +curveState.fundingGoal) * 100)
+    if (curveState.maxSupply) {
+      // setProgress((+curveState.reserveBalance / +curveState.fundingGoal) * 100)
       handleGetTokenHoldersBalances()
     }
   }, [curveState])
@@ -172,7 +173,7 @@ export default function TradeModal({ onClose, isOpen }: TradeModalProps) {
   const debouncedSetAmount = React.useCallback(
     debounce((value: string) => {
       setAmount(value)
-    }, 500),
+    }, 100),
     []
   )
 
@@ -181,9 +182,9 @@ export default function TradeModal({ onClose, isOpen }: TradeModalProps) {
   }
 
   async function handleGetBuyPrice() {
-    if (!amount || !repo?.bondingCurve || !curveState.maxSupply || !curveState.fundingGoal) return
+    if (!amount || !repo?.bondingCurve || !curveState.maxSupply) return
 
-    let price = 0
+    let price = '0'
     const currentSupply = await getTokenCurrentSupply(repo.token!.processId!)
     if (selectedSide === 'buy') {
       const tokensToBuy = +amount
@@ -194,7 +195,7 @@ export default function TradeModal({ onClose, isOpen }: TradeModalProps) {
       //   +curveState.fundingGoal
       // )
 
-      price = await getTokenBuyPrice(tokensToBuy.toString(), currentSupply, repo.bondingCurve.processId!)
+      price = await getTokenBuyPrice(tokensToBuy.toString(), currentSupply, curveState)
     }
     if (selectedSide === 'sell') {
       const tokensToSell = +amount * 10 ** +repo.token!.denomination
@@ -206,12 +207,14 @@ export default function TradeModal({ onClose, isOpen }: TradeModalProps) {
       )
     }
     setPriceUnscaled(price.toString())
-    const priceInReserveTokens = price / 10 ** +repo.bondingCurve.reserveToken.denomination
-    const formattedPrice = parseScientific(
-      roundToSignificantFigures(priceInReserveTokens, +repo.bondingCurve.reserveToken.denomination).toString()
-    )
+    // const priceInReserveTokens = BigNumber(price)
+    //   .dividedBy(BigNumber(10).pow(BigNumber(repo.bondingCurve.reserveToken.denomination)))
+    //   .toString()
+    // // const formattedPrice = parseScientific(
+    // //   roundToSignificantFigures(priceInReserveTokens, +repo.bondingCurve.reserveToken.denomination).toString()
+    // // )
 
-    setPrice(formattedPrice || '')
+    setPrice(price || '')
   }
 
   async function handleSelectedSideChange(side: 'buy' | 'sell') {
@@ -345,7 +348,7 @@ export default function TradeModal({ onClose, isOpen }: TradeModalProps) {
                   ) : (
                     <div className="w-[30%] bg-white rounded-lg shadow-md p-4 flex flex-col gap-8">
                       <div className="flex flex-col gap-2">
-                        <h1 className="text-base text-gray-600 font-medium">Funding Goal Progress</h1>
+                        <h1 className="text-base text-gray-600 font-medium">Bonding Curve Progress</h1>
                         <Progress
                           height="18px"
                           labelClassName="text-white text-sm pr-2"

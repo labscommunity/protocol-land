@@ -43,14 +43,16 @@ export type RepoToken = {
   denomination: string
   totalSupply: string
   tokenImage: string
-  allocations: Allocation[]
   processId?: string
+  socialLink?: string
 }
 
 export type BondingCurve = {
-  fundingGoal: string
-  initialBuyPrice: string
-  finalBuyPrice: string
+  curveType: string
+  stepCount: string
+  initialPrice: string
+  finalPrice: string
+  lpAllocation: string
   processId?: string
   reserveToken: RepoLiquidityPoolToken
 }

@@ -132,7 +132,7 @@ const createRepoCoreSlice: StateCreator<CombinedSlices, [['zustand/immer', never
         state.repoCoreState.selectedRepo.repo!.decentralized = true
       })
     },
-    saveRepoTokenDetails: async (token) => {
+    saveRepoTokenDetails: async (details) => {
       const repo = get().repoCoreState.selectedRepo.repo
       const userAddress = get().authState.address
 
@@ -141,7 +141,7 @@ const createRepoCoreSlice: StateCreator<CombinedSlices, [['zustand/immer', never
         return
       }
 
-      const { error, response } = await withAsync(() => handleSaveRepoToken(repo.id, token, userAddress))
+      const { error, response } = await withAsync(() => handleSaveRepoToken(repo.id, details, userAddress))
 
       if (error) {
         toast.error('Failed to save token.')

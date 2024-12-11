@@ -48,8 +48,8 @@ export default function Confirm({
             <p>{token.totalSupply}</p>
           </div>
           <div className="flex flex-col">
-            <label className="text-sm font-medium text-gray-500">Funding Goal</label>
-            <p>{bondingCurve.fundingGoal}</p>
+            <label className="text-sm font-medium text-gray-500">Social Link</label>
+            <p>{token.socialLink}</p>
           </div>
           <div className="flex flex-col">
             <label className="text-sm font-medium text-gray-500">Reserve Token</label>

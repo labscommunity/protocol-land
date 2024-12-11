@@ -1,9 +1,10 @@
-import { dryrun } from '@permaweb/aoconnect'
 import { arGql, GQLUrls } from 'ar-gql'
 import Arweave from 'arweave'
+import BigNumber from 'bignumber.js'
 
 import { getTags } from '@/helpers/getTags'
 import { waitFor } from '@/helpers/waitFor'
+import { CurveState } from '@/stores/repository-core/types'
 
 import { sendMessage } from '../contract'
 import { pollForTxBeingAvailable } from '../decentralize'
@@ -14,28 +15,59 @@ const arweave = new Arweave({
   protocol: 'https'
 })
 const goldsky = arGql({ endpointUrl: GQLUrls.goldsky })
-export async function getTokenBuyPrice(amount: string, currentSupply: string, cruveId: string) {
-  const args = {
-    tags: getTags({
-      Action: 'Get-Buy-Price',
-      'Token-Quantity': amount,
-      'Current-Supply': currentSupply
-    }),
-    process: cruveId
-  }
-  const { Messages } = await dryrun(args)
 
-  if (!Messages || !Messages[0]) {
-    throw new Error('Failed to get token buy price')
-  }
+export async function getTokenBuyPrice(amount: string, currentSupply: string, curveState: CurveState) {
+  debugger
 
-  const cost = Messages[0].Data
+  let currentSupplyBn = BigNumber(currentSupply).dividedBy(
+    BigNumber(10).pow(BigNumber(curveState.repoToken.denomination))
+  )
+  const amountBn = BigNumber(amount)
 
-  if (!cost) {
-    throw new Error('Failed to get token buy price')
+  const newSupply = currentSupplyBn.plus(amountBn)
+  const maxSupply = BigNumber(curveState.maxSupply).dividedBy(
+    BigNumber(10).pow(BigNumber(curveState.repoToken.denomination))
+  )
+
+  if (newSupply.isGreaterThan(maxSupply)) {
+    throw new Error('Purchase would exceed maximum supply')
   }
 
-  return parseInt(cost)
+  // Get curve steps from state
+  const steps = curveState.steps.map((step) => ({
+    rangeTo: BigNumber(step.rangeTo),
+    price: step.price / 10 ** +curveState.reserveToken.denomination
+  }))
+
+  let supplyLeft
+  let tokensLeftBn = amountBn
+  let reserveToBondBn = BigNumber(0)
+
+  for (const step of steps) {
+    if (currentSupplyBn.isLessThanOrEqualTo(step.rangeTo)) {
+      supplyLeft = step.rangeTo.minus(currentSupplyBn)
+
+      if (supplyLeft.isLessThan(tokensLeftBn)) {
+        if (supplyLeft.isEqualTo(0)) {
+          continue
+        }
+
+        reserveToBondBn = reserveToBondBn.plus(supplyLeft.multipliedBy(step.price))
+        currentSupplyBn = currentSupplyBn.plus(supplyLeft)
+        tokensLeftBn = tokensLeftBn.minus(supplyLeft)
+      } else {
+        reserveToBondBn = reserveToBondBn.plus(tokensLeftBn.times(BigNumber(step.price)))
+        tokensLeftBn = BigNumber(0)
+        break
+      }
+    }
+  }
+
+  if (reserveToBondBn.isEqualTo(0) || tokensLeftBn.isGreaterThan(0)) {
+    throw new Error('Invalid tokens quantity.')
+  }
+
+  return reserveToBondBn.toString()
 }
 
 const GET_BUY_PRICE_RESPONSE_ACTION = 'Get-Buy-Price-Response'
