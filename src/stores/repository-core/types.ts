@@ -114,6 +114,7 @@ export type ForkRepositoryOptions = {
   description: string
   parent: string
   dataTxId: string
+  tokenProcessId: string
 }
 
 export type CurveState = {

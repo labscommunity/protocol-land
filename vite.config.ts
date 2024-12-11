@@ -29,5 +29,12 @@ export default defineConfig({
       '@codemirror': path.resolve(__dirname, 'node_modules/@codemirror/'),
       '@arweave-wallet-kit': path.resolve(__dirname, 'node_modules/@arweave-wallet-kit-beta/')
     }
+  },
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks: {}
+      }
+    }
   }
 })
