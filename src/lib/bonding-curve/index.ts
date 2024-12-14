@@ -8,6 +8,7 @@ import { CurveState } from '@/stores/repository-core/types'
 
 import { sendMessage } from '../contract'
 import { pollForTxBeingAvailable } from '../decentralize'
+import { CurveStep } from '../discrete-bonding-curve/curve'
 
 const arweave = new Arweave({
   host: 'arweave-search.goldsky.com',
@@ -17,17 +18,11 @@ const arweave = new Arweave({
 const goldsky = arGql({ endpointUrl: GQLUrls.goldsky })
 
 export async function getTokenBuyPrice(amount: string, currentSupply: string, curveState: CurveState) {
-  debugger
-
-  let currentSupplyBn = BigNumber(currentSupply).dividedBy(
-    BigNumber(10).pow(BigNumber(curveState.repoToken.denomination))
-  )
-  const amountBn = BigNumber(amount)
+  let currentSupplyBn = BigNumber(currentSupply)
+  const amountBn = BigNumber(amount).multipliedBy(BigNumber(10).pow(BigNumber(curveState.repoToken.denomination)))
 
   const newSupply = currentSupplyBn.plus(amountBn)
-  const maxSupply = BigNumber(curveState.maxSupply).dividedBy(
-    BigNumber(10).pow(BigNumber(curveState.repoToken.denomination))
-  )
+  const maxSupply = BigNumber(curveState.maxSupply)
 
   if (newSupply.isGreaterThan(maxSupply)) {
     throw new Error('Purchase would exceed maximum supply')
@@ -36,7 +31,7 @@ export async function getTokenBuyPrice(amount: string, currentSupply: string, cu
   // Get curve steps from state
   const steps = curveState.steps.map((step) => ({
     rangeTo: BigNumber(step.rangeTo),
-    price: step.price / 10 ** +curveState.reserveToken.denomination
+    price: +step.price
   }))
 
   let supplyLeft
@@ -67,7 +62,103 @@ export async function getTokenBuyPrice(amount: string, currentSupply: string, cu
     throw new Error('Invalid tokens quantity.')
   }
 
-  return reserveToBondBn.toString()
+  return reserveToBondBn.dividedBy(BigNumber(10).pow(BigNumber(curveState.repoToken.denomination))).toString()
+}
+
+export async function getTokenSellPrice(amount: string, currentSupply: string, curveState: CurveState) {
+  let currentSupplyBn = BigNumber(currentSupply)
+  const amountBn = BigNumber(amount).multipliedBy(BigNumber(10).pow(BigNumber(curveState.repoToken.denomination)))
+
+  let tokensLeftBn = amountBn
+  let currentStepIdx = 0
+
+  const steps = curveState.steps.map((step) => ({
+    rangeTo: BigNumber(step.rangeTo),
+    price: +step.price
+  }))
+
+  // Find current step index by comparing current supply with step ranges
+  for (let i = 0; i < steps.length; i++) {
+    if (currentSupplyBn.isLessThanOrEqualTo(steps[i].rangeTo)) {
+      currentStepIdx = i
+      break
+    }
+  }
+
+  let reserveFromBondBn = BigNumber(0)
+
+  while (tokensLeftBn.isGreaterThan(0)) {
+    let supplyLeft = currentSupplyBn
+
+    if (currentStepIdx > 0) {
+      supplyLeft = currentSupplyBn.minus(steps[currentStepIdx - 1].rangeTo)
+    }
+
+    let tokensToHandle = supplyLeft
+    if (tokensLeftBn.isLessThan(supplyLeft)) {
+      tokensToHandle = tokensLeftBn
+    }
+
+    reserveFromBondBn = reserveFromBondBn.plus(tokensToHandle.multipliedBy(steps[currentStepIdx].price))
+    tokensLeftBn = tokensLeftBn.minus(tokensToHandle)
+    currentSupplyBn = currentSupplyBn.minus(tokensToHandle)
+
+    if (currentStepIdx > 0) {
+      currentStepIdx = currentStepIdx - 1
+    }
+  }
+
+  if (reserveFromBondBn.isEqualTo(0) || tokensLeftBn.isGreaterThan(0)) {
+    throw new Error('Invalid tokens quantity.')
+  }
+
+  return reserveFromBondBn.dividedBy(BigNumber(10).pow(BigNumber(curveState.repoToken.denomination))).toString()
+}
+
+export async function getTokenNextBuyPrice(currentSupply: string, curveState: CurveState) {
+  if (!curveState) return '0'
+  let currentSupplyBn = BigNumber(currentSupply)
+  const maxSupplyBn = BigNumber(curveState.maxSupply)
+
+  // Get curve steps from state
+  const steps = curveState.steps.map((step) => ({
+    rangeTo: BigNumber(step.rangeTo),
+    price: +step.price
+  }))
+
+  if (currentSupplyBn.isLessThan(maxSupplyBn)) {
+    currentSupplyBn = currentSupplyBn.plus(
+      BigNumber(1).multipliedBy(BigNumber(10).pow(BigNumber(curveState.repoToken.denomination)))
+    )
+  }
+
+  let nextPrice = BigNumber(0)
+
+  for (const step of steps) {
+    if (currentSupplyBn.isLessThanOrEqualTo(step.rangeTo)) {
+      nextPrice = BigNumber(step.price)
+      break
+    }
+  }
+
+  return nextPrice.toString()
+}
+
+export async function getCurrentStep(currentSupply: string, steps: CurveStep[]) {
+  const currentSupplyBn = BigNumber(currentSupply)
+
+  const stepsBn = steps.map((step) => ({
+    rangeTo: BigNumber(step.rangeTo),
+    price: +step.price
+  }))
+
+  for (let i = 0; i < stepsBn.length; i++) {
+    if (currentSupplyBn.isLessThanOrEqualTo(stepsBn[i].rangeTo)) {
+      return i
+    }
+  }
+
+  return 0
 }
 
 const GET_BUY_PRICE_RESPONSE_ACTION = 'Get-Buy-Price-Response'

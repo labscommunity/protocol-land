@@ -526,7 +526,7 @@ local function _loaded_mod_src_handlers_bonding_curve()
   local mod        = {}
   
   --- @type table<string, string>
-  RefundsMap = {}
+  RefundsMap       = {}
   
   function RefundHandler(amount, target, pid)
       local refundResp = ao.send({
@@ -551,6 +551,90 @@ local function _loaded_mod_src_handlers_bonding_curve()
   
   function LogActivity(action, data, msg)
       ao.send({ Target = ao.id, Action = "Activity-Log", ["User-Action"] = action, Data = data, Message = msg })
+  end
+  
+  local function calculateBuyPrice(tokensToBuy, currentSupply)
+      local currentSupplyResp = currentSupply
+      local newSupply = utils.add(currentSupplyResp, tokensToBuy)
+      local maxSupply = CurveDetails.maxSupply
+  
+      assert(bint.__le(bint(newSupply), bint(maxSupply)), 'Purchase would exceed maximum supply')
+  
+      local tokensLeft = tokensToBuy
+      local reserveToBond = '0'
+      local supplyLeft;
+  
+      for _, step in ipairs(CurveDetails.steps) do
+          if bint.__le(bint(currentSupplyResp), bint(step.rangeTo)) then
+              supplyLeft = utils.subtract(step.rangeTo, currentSupplyResp)
+  
+              if bint.__lt(bint(supplyLeft), bint(tokensLeft)) then
+                  if bint.__eq(bint(supplyLeft), bint(0)) then
+                      goto continue
+                  end
+  
+                  reserveToBond = utils.add(reserveToBond, utils.multiply(supplyLeft, step.price))
+                  currentSupplyResp = utils.add(currentSupplyResp, supplyLeft)
+                  tokensLeft = utils.subtract(tokensLeft, supplyLeft)
+              else
+                  reserveToBond = utils.add(reserveToBond, utils.multiply(tokensLeft, step.price))
+                  tokensLeft = '0'
+  
+                  break;
+              end
+          end
+          ::continue::
+      end
+  
+      assert(bint.__lt(bint(0), bint(reserveToBond)), 'Invalid tokens quantity')
+      assert(bint.__eq(bint(tokensLeft), bint(0)), 'Invalid tokens quantity')
+  
+      return {
+          reserveToBond = utils.udivide(reserveToBond, 10 ^ CurveDetails.repoToken.denomination),
+      }
+  end
+  
+  local function calculateSellPrice(tokensToSell, currentSupply)
+      local currentSupplyResp = currentSupply
+  
+      local tokensLeft = tokensToSell
+      local reserveFromBond = '0'
+      local currentStepIdx = 1
+  
+      for idx, step in ipairs(CurveDetails.steps) do
+          if bint.__le(bint(currentSupplyResp), bint(step.rangeTo)) then
+              currentStepIdx = idx
+              break
+          end
+      end
+  
+      while bint.__lt(bint(0), bint(tokensLeft)) do
+          local supplyLeft = currentSupplyResp
+  
+          if currentStepIdx > 1 then
+              supplyLeft = utils.subtract(currentSupplyResp, CurveDetails.steps[currentStepIdx - 1].rangeTo)
+          end
+  
+          local tokensToHandle = supplyLeft
+          if bint.__lt(bint(tokensLeft), bint(supplyLeft)) then
+              tokensToHandle = tokensLeft
+          end
+  
+          reserveFromBond = utils.add(reserveFromBond,
+              utils.multiply(tokensToHandle, CurveDetails.steps[currentStepIdx].price))
+          tokensLeft = utils.subtract(tokensLeft, tokensToHandle)
+          currentSupplyResp = utils.subtract(currentSupplyResp, tokensToHandle)
+  
+          if currentStepIdx > 1 then
+              currentStepIdx = currentStepIdx - 1
+          end
+      end
+  
+      assert(bint.__eq(bint(tokensLeft), bint(0)), 'Invalid tokens quantity')
+  
+      return {
+          reserveFromBond = utils.udivide(reserveFromBond, 10 ^ CurveDetails.repoToken.denomination),
+      }
   end
   
   ---@type HandlerFunction
@@ -630,6 +714,24 @@ local function _loaded_mod_src_handlers_bonding_curve()
   end
   
   ---@type HandlerFunction
+  function mod.getBuyPrice(msg)
+      local currentSupply = msg.Tags['Current-Supply']
+      local tokensToBuy = msg.Tags['Token-Quantity']
+  
+      assert(type(currentSupply) == 'string', 'Current supply is required!')
+      assert(type(tokensToBuy) == 'string', 'Token quantity is required!')
+      assert(bint.__lt(0, bint(tokensToBuy)), 'Token quantity must be greater than zero!')
+  
+      local buyPrice = calculateBuyPrice(tokensToBuy, currentSupply)
+  
+      msg.reply({
+          Action = 'Get-Buy-Price-Response',
+          Price = buyPrice.reserveToBond,
+          Data = json.encode(buyPrice)
+      })
+  end
+  
+  ---@type HandlerFunction
   function mod.buyTokens(msg)
       LogActivity(msg.Tags['X-Action'], json.encode(msg.Tags), "Buy-Tokens Called")
   
@@ -666,68 +768,21 @@ local function _loaded_mod_src_handlers_bonding_curve()
       end
   
       currentSupplyResp = tostring(currentSupplyResp)
-      local newSupply = utils.add(currentSupplyResp, tokensToBuy)
-      local maxSupply = CurveDetails.maxSupply
   
-      if bint.__lt(bint(maxSupply), bint(newSupply)) then
-          msg.reply({
-              Action = 'Buy-Tokens-Error',
-              Error = 'Purchase would exceed maximum supply'
-          })
-  
-          return
-      end
-  
-      local tokensLeft = tokensToBuy
-      local reserveToBond = '0'
-      local supplyLeft;
-  
-  
-  
-      for _, step in ipairs(CurveDetails.steps) do
-          if bint.__le(bint(currentSupplyResp), bint(step.rangeTo)) then
-              supplyLeft = utils.subtract(step.rangeTo, currentSupplyResp)
-  
-              if bint.__lt(bint(supplyLeft), bint(tokensLeft)) then
-                  if bint.__eq(bint(supplyLeft), bint(0)) then
-                      goto continue
-                  end
-  
-                  reserveToBond = utils.add(reserveToBond, utils.multiply(supplyLeft, step.price))
-                  currentSupplyResp = utils.add(currentSupplyResp, supplyLeft)
-                  tokensLeft = utils.subtract(tokensLeft, supplyLeft)
-              else
-                  reserveToBond = utils.add(reserveToBond, utils.multiply(tokensLeft, step.price))
-                  tokensLeft = '0'
-  
-                  break;
-              end
-          end
-          ::continue::
-      end
-  
-      if bint.__eq(bint(reserveToBond), bint(0)) or bint.__lt(0, bint(tokensLeft)) then
-          msg.reply({
-              Action = 'Buy-Tokens-Error',
-              Error = 'Invalid tokens quantity'
-          })
-  
-          return
-      end
-  
+      local buyPrice = calculateBuyPrice(tokensToBuy, currentSupplyResp)
   
       LogActivity(msg.Tags['X-Action'],
-          json.encode({ Cost = tostring(reserveToBond), AmountSent = tostring(quantityReservesSent) }),
+          json.encode({ Cost = buyPrice.reserveToBond, AmountSent = tostring(quantityReservesSent) }),
           "Calculated cost of buying tokens for Reserves sent")
-      if bint.__lt(bint(quantityReservesSent), bint(reserveToBond)) then
+      if bint.__lt(bint(quantityReservesSent), bint(buyPrice.reserveToBond)) then
           LogActivity(msg.Tags['X-Action'],
-              json.encode({ Cost = tostring(reserveToBond), AmountSent = tostring(quantityReservesSent) }),
+              json.encode({ Cost = buyPrice.reserveToBond, AmountSent = tostring(quantityReservesSent) }),
               "Insufficient funds sent to buy")
           local refundSuccess = RefundHandler(quantityReservesSent, sender, reservePID)
   
           if not refundSuccess then
               LogActivity(msg.Tags['X-Action'],
-                  json.encode({ Cost = tostring(reserveToBond), AmountSent = tostring(quantityReservesSent) }),
+                  json.encode({ Cost = buyPrice.reserveToBond, AmountSent = tostring(quantityReservesSent) }),
                   "Refund failed")
               return
           end
@@ -739,7 +794,7 @@ local function _loaded_mod_src_handlers_bonding_curve()
           })
   
           msg.reply({
-              Cost = tostring(reserveToBond),
+              Cost = buyPrice.reserveToBond,
               AmountSent = tostring(quantityReservesSent),
               Action = 'Buy-Tokens-Error',
               Error = 'Insufficient funds sent to buy'
@@ -753,13 +808,13 @@ local function _loaded_mod_src_handlers_bonding_curve()
   
       if mintResp.Tags['Action'] ~= 'Mint-Response' then
           LogActivity(msg.Tags['X-Action'],
-              json.encode({ Cost = tostring(reserveToBond), AmountSent = tostring(quantityReservesSent) }),
+              json.encode({ Cost = buyPrice.reserveToBond, AmountSent = tostring(quantityReservesSent) }),
               "Failed to mint tokens")
           local refundSuccess = RefundHandler(quantityReservesSent, sender, reservePID)
   
           if not refundSuccess then
               LogActivity(msg.Tags['X-Action'],
-                  json.encode({ Cost = tostring(reserveToBond), AmountSent = tostring(quantityReservesSent) }),
+                  json.encode({ Cost = buyPrice.reserveToBond, AmountSent = tostring(quantityReservesSent) }),
                   "Refund failed after failed mint")
               return
           end
@@ -777,18 +832,36 @@ local function _loaded_mod_src_handlers_bonding_curve()
           return
       end
   
-      CurveDetails.reserveBalance = utils.add(CurveDetails.reserveBalance, quantityReservesSent)
+      CurveDetails.reserveBalance = utils.add(CurveDetails.reserveBalance, buyPrice.reserveToBond)
   
   
       LogActivity(msg.Tags['X-Action'],
-          json.encode({ Cost = tostring(reserveToBond), AmountSent = tostring(quantityReservesSent) }),
+          json.encode({ Cost = buyPrice.reserveToBond, AmountSent = tostring(quantityReservesSent) }),
           "Successfully bought tokens")
   
       msg.reply({
           Action = 'Buy-Tokens-Response',
           TokensBought = utils.toBalanceValue(tokensToBuy),
-          Cost = tostring(reserveToBond),
+          Cost = buyPrice.reserveToBond,
           Data = mintResp.Data or ('Successfully bought ' .. tokensToBuy .. ' tokens')
+      })
+  end
+  
+  ---@type HandlerFunction
+  function mod.getSellPrice(msg)
+      local currentSupply = msg.Tags['Current-Supply']
+      local tokensToSell = msg.Tags['Token-Quantity']
+  
+      assert(type(currentSupply) == 'string', 'Current supply is required!')
+      assert(type(tokensToSell) == 'string', 'Token quantity is required!')
+      assert(bint.__lt(0, bint(tokensToSell)), 'Token quantity must be greater than zero!')
+  
+      local sellPrice = calculateSellPrice(tokensToSell, currentSupply)
+  
+      msg.reply({
+          Action = 'Get-Sell-Price-Response',
+          Price = sellPrice.reserveFromBond,
+          Data = json.encode(sellPrice)
       })
   end
   
@@ -824,6 +897,7 @@ local function _loaded_mod_src_handlers_bonding_curve()
   
           return
       end
+      currentSupplyResp = tostring(currentSupplyResp)
   
       if bint.__lt(bint(currentSupplyResp), bint(tokensToSell)) then
           msg.reply({
@@ -834,48 +908,8 @@ local function _loaded_mod_src_handlers_bonding_curve()
           return
       end
   
-      local tokensLeft = tokensToSell
-      local reserveFromBond = '0'
-      local currentStepIdx = 1
   
-      -- get current step
-  
-      for idx, step in ipairs(CurveDetails.steps) do
-          if bint.__le(bint(currentSupplyResp), bint(step.rangeTo)) then
-              currentStepIdx = idx
-              break
-          end
-      end
-  
-      while bint.__lt(bint(0), bint(tokensLeft)) do
-          local supplyLeft = currentSupplyResp
-  
-          if currentStepIdx > 1 then
-              supplyLeft = utils.subtract(currentSupplyResp, CurveDetails.steps[currentStepIdx].rangeTo)
-          end
-  
-          local tokensToHandle = supplyLeft
-          if bint.__lt(bint(tokensLeft), bint(supplyLeft)) then
-              tokensToHandle = tokensLeft
-          end
-  
-          reserveFromBond = utils.add(reserveFromBond, utils.multiply(tokensToHandle, CurveDetails.steps[currentStepIdx].price))
-          tokensLeft = utils.subtract(tokensLeft, tokensToHandle)
-          currentSupplyResp = utils.subtract(currentSupplyResp, tokensToHandle)
-  
-          if currentStepIdx > 1 then
-              currentStepIdx = currentStepIdx - 1
-          end
-      end
-  
-      if bint.__lt(bint(0), bint(tokensLeft)) then
-          msg.reply({
-              Action = 'Sell-Tokens-Error',
-              Error = 'Invalid tokens quantity'
-          })
-  
-          return
-      end
+      local sellPrice = calculateSellPrice(tokensToSell, currentSupplyResp)
   
       local burnResp = ao.send({ Target = CurveDetails.repoToken.processId, Action = "Burn", Tags = { Quantity = tokensToSell, Recipient = seller } })
           .receive()
@@ -892,7 +926,7 @@ local function _loaded_mod_src_handlers_bonding_curve()
           Target = CurveDetails.reserveToken.processId,
           Action = "Transfer",
           Recipient = seller,
-          Quantity = reserveFromBond
+          Quantity = sellPrice.reserveFromBond
       }).receive()
       if transferResp.Tags['Action'] ~= 'Debit-Notice' then
           msg.reply({
@@ -903,12 +937,12 @@ local function _loaded_mod_src_handlers_bonding_curve()
           return
       end
   
-      CurveDetails.reserveBalance = utils.subtract(CurveDetails.reserveBalance, reserveFromBond)
+      CurveDetails.reserveBalance = utils.subtract(CurveDetails.reserveBalance, sellPrice.reserveFromBond)
   
       msg.reply({
           Action = 'Sell-Tokens-Response',
           TokensSold = utils.toBalanceValue(tokensToSell),
-          Cost = utils.toBalanceValue(reserveFromBond),
+          Cost = sellPrice.reserveFromBond,
           Data = 'Successfully sold ' .. tokensToSell .. ' tokens'
       })
   end
@@ -1227,6 +1261,16 @@ Handlers.add('Deposit-To-Liquidity-Pool', {
         Action = "Deposit-To-Liquidity-Pool"
     },
     liquidityPool.depositToLiquidityPool)
+
+Handlers.add('Get-Buy-Price', {
+        Action = "Get-Buy-Price"
+    },
+    bondingCurve.getBuyPrice)
+
+Handlers.add('Get-Sell-Price', {
+        Action = "Get-Sell-Price"
+    },
+    bondingCurve.getSellPrice)
 
 Handlers.add(
     "Buy-Tokens",

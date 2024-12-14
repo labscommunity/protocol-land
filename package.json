@@ -37,6 +37,7 @@
     "bignumber.js": "^9.1.2",
     "canvas-confetti": "^1.9.3",
     "chart.js": "^4.4.7",
+    "chartjs-plugin-annotation": "^3.1.0",
     "clsx": "^2.0.0",
     "date-fns": "^2.30.0",
     "dexie": "^3.2.4",

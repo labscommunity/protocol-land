@@ -1,6 +1,6 @@
 import numeral from 'numeral'
 
-export function customFormatNumber(num: number, decimals: number = 12) {
+export function customFormatNumber(num: number, decimals: number = 12, shrinkAfterDecimal: number = 3) {
   if (num === 0) {
     return '0'
   }
@@ -34,7 +34,7 @@ export function customFormatNumber(num: number, decimals: number = 12) {
     }
   }
 
-  if (zerosAfterDecimal >= 3) {
+  if (zerosAfterDecimal >= shrinkAfterDecimal) {
     // Extract significant digits after leading zeros
     const significantDigits = decimalPart.substring(zerosAfterDecimal)
     // Format the number as per the requirement

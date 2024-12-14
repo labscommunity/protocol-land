@@ -23,12 +23,12 @@ import { RepoLiquidityPoolToken, type Token } from '@/types/repository'
 import CurveChart from './CurveChart'
 
 const CURVE_TYPES: CurveType[] = ['EXPONENTIAL', 'LINEAR', 'FLAT', 'LOGARITHMIC']
-const DEFAULT_TOTAL_SUPPLY = '1000000'
-const DEFAULT_INITIAL_BUY_PRICE = '0.001'
-const DEFAULT_FINAL_BUY_PRICE = '0.1'
+const DEFAULT_TOTAL_SUPPLY = '1000000000'
+const DEFAULT_INITIAL_BUY_PRICE = '0.0000001'
+const DEFAULT_FINAL_BUY_PRICE = '0.000069'
 const DEFAULT_LP_ALLOCATION = (parseInt(DEFAULT_TOTAL_SUPPLY) * 0.2).toString()
 const DEFAULT_DENOMINATION = '18'
-const DEFAULT_STEP_COUNT = '10'
+const DEFAULT_STEP_COUNT = '500'
 
 const tokenSchema = yup
   .object({
@@ -222,7 +222,7 @@ export default function Token() {
         finalPrice: parseFloat(selectedCurveType === 'FLAT' ? initialBuyPrice : finalBuyPrice || '0.01'),
         maxSupply: parseInt(totalSupply || '1000000'),
         lpAllocation: parseInt(totalSupply || '1000000') * 0.2,
-        stepCount: 10
+        stepCount: 500
       }
     })
 
@@ -608,7 +608,7 @@ export default function Token() {
                         <h1 className="text-gray-600 text-2xl font-light">${potentialMarketCap}</h1>
                       </div>
                     </div>
-                    <CurveChart curveSteps={[...curveSteps]} />
+                    <CurveChart curveSteps={curveSteps} />
                   </div>
                 )}
               </div>

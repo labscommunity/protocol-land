@@ -100,8 +100,8 @@ export async function spawnBondingCurveProcess(token: RepoToken, bondingCurve: B
       maxSupply: +token.totalSupply
     }
   }).stepData.map((step) => ({
-    rangeTo: step.rangeTo,
-    price: Math.ceil(step.price * 10 ** +bondingCurve.reserveToken.denomination)
+    rangeTo: preventScientificNotationFloat(step.rangeTo * 10 ** +token.denomination),
+    price: preventScientificNotationFloat(Math.ceil(step.price * 10 ** +bondingCurve.reserveToken.denomination))
   }))
 
   const payload = {

@@ -88,7 +88,7 @@ export default function CurveChart({ curveSteps }: { curveSteps: CurveStep[] }) 
               displayColors: false,
               callbacks: {
                 label: function (context) {
-                  return `Price per token: ${context.parsed.y}`
+                  return `Price per token: ${customFormatNumber(context.parsed.y, 18, 5)}`
                 },
                 title: function (items) {
                   if (!items[0]) return ``

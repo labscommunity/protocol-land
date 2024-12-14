@@ -1,5 +1,7 @@
 import React from 'react'
 
+import { formatNumberUsingNumeral } from '../../helpers/customFormatNumbers'
+
 interface MarketStatsProps {
   marketCap: string
   volume: string
@@ -21,7 +23,7 @@ const MarketStats: React.FC<MarketStatsProps> = ({ marketCap, volume, circulatin
         </div>
         <div className="flex flex-col">
           <span className="text-gray-500 text-sm">Circulating Supply</span>
-          <span className="text-2xl font-bold">{circulatingSupply}</span>
+          <span className="text-2xl font-bold uppercase">{formatNumberUsingNumeral(Number(circulatingSupply))}</span>
         </div>
       </div>
     </div>

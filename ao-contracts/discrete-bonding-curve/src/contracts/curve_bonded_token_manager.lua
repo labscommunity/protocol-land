@@ -29,6 +29,16 @@ Handlers.add('Deposit-To-Liquidity-Pool', {
     },
     liquidityPool.depositToLiquidityPool)
 
+Handlers.add('Get-Buy-Price', {
+        Action = "Get-Buy-Price"
+    },
+    bondingCurve.getBuyPrice)
+
+Handlers.add('Get-Sell-Price', {
+        Action = "Get-Sell-Price"
+    },
+    bondingCurve.getSellPrice)
+
 Handlers.add(
     "Buy-Tokens",
     { Action = "Credit-Notice", ["X-Action"] = "Buy-Tokens" },
