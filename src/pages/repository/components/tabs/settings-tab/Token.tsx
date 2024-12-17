@@ -1,5 +1,6 @@
 import { Listbox, ListboxButton, ListboxOption, ListboxOptions, Switch, Transition } from '@headlessui/react'
 import { yupResolver } from '@hookform/resolvers/yup'
+import BigNumber from 'bignumber.js'
 import clsx from 'clsx'
 import { AnimatePresence, motion } from 'framer-motion'
 import { Fragment, useState } from 'react'
@@ -110,6 +111,7 @@ export default function Token() {
     register,
     handleSubmit,
     watch,
+    setValue,
     // control,
     formState: { errors: tokenErrors }
   } = useForm({
@@ -141,6 +143,12 @@ export default function Token() {
   }, [totalSupply, finalBuyPrice])
 
   React.useEffect(() => {
+    if (BigNumber(totalSupply).isGreaterThan(0)) {
+      setValue('lpAllocation', BigNumber(totalSupply).multipliedBy(0.2).toString())
+    }
+  }, [totalSupply])
+
+  React.useEffect(() => {
     calculateCurveSteps()
   }, [selectedCurveType, initialBuyPrice, finalBuyPrice, totalSupply])
 
@@ -169,22 +177,6 @@ export default function Token() {
     setIsSubmitting(true)
 
     try {
-      // const combinedData = { ...(selectedRepo.token || {}), ...selectedRepo.bondingCurve }
-      // const updatedFields = getUpdatedFields(combinedData, data)
-
-      // if (!selectedRepo?.bondingCurve?.processId) {
-      //   const pid = await spawnBondingCurveProcess(data.tokenName)
-
-      //   bondingCurve.processId = pid
-      // }
-      console.log({ data })
-      // await saveRepoBondingCurveDetails(bondingCurve)
-
-      // if (Object.keys(updatedFields).length === 0) {
-      //   toast.success('Changes are already in sync.')
-      //   return
-      // }
-
       await saveRepoTokenDetails({ ...data, reserveToken: selectedToken })
     } catch (error) {
       toast.error('Failed to save token.')
