@@ -1,0 +1,18 @@
+{
+  "name": "discrete-bonding-curve",
+  "version": "1.0.0",
+  "license": "MIT",
+  "scripts": {
+    "build": "ao-deploy aod.config.js --build-only",
+    "deploy": "ao-deploy aod.config.js",
+    "test": "arweave test . --lpath='./src/?.lua;./src/?/?.lua;./src/?/init.lua;/Users/dexter/Library/Application Support/create-ao-contract-nodejs/aos-process/?.lua'"
+  },
+  "type": "module",
+  "dependencies": {
+    "ao-deploy": "^0.5.0"
+  },
+  "cacMetadata": {
+    "initVersion": "1.0.3"
+  },
+  "packageManager": "pnpm@8.14.1"
+}

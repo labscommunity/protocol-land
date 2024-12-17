@@ -167,7 +167,7 @@ export default function TransferToLP({
     <div className="w-[30%] bg-white rounded-lg shadow-md p-4 flex flex-col gap-8 justify-center h-full">
       <div className="flex gap-2 items-center justify-center">
         <BsFillPatchCheckFill className="text-green-500 w-6 h-6" />
-        <p className="text-lg font-medium text-gray-700">Funding goal reached</p>
+        <p className="text-lg font-medium text-gray-700">Market Cap reached</p>
       </div>
       {repo.owner !== address && !curveState.liquidityPool && (
         <div className="flex flex-col gap-2">

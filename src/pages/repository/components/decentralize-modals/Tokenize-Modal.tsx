@@ -7,8 +7,9 @@ import { FadeLoader } from 'react-spinners'
 
 import CloseCrossIcon from '@/assets/icons/close-cross.svg'
 import { waitFor } from '@/helpers/waitFor'
-import { decentralizeRepo, initializeBondingCurve, loadTokenProcess } from '@/lib/decentralize'
+import { decentralizeRepo, loadTokenProcess, spawnBondingCurveProcess } from '@/lib/decentralize'
 import { useGlobalStore } from '@/stores/globalStore'
+import { handleSaveBondingCurveId } from '@/stores/repository-core/actions'
 import { BondingCurve, RepoToken } from '@/types/repository'
 
 import { createConfetti } from '../../helpers/createConfetti'
@@ -29,7 +30,8 @@ type DecentralizeStatus = 'IDLE' | 'PENDING' | 'SUCCESS' | 'ERROR'
 export default function TokenizeModal({ setIsTradeModalOpen, onClose, isOpen }: TokenizeModalProps) {
   const navigate = useNavigate()
   const [isLoading, setIsLoading] = useState(true)
-  const [repo, setRepoDecentralized] = useGlobalStore((state) => [
+  const [address, repo, setRepoDecentralized] = useGlobalStore((state) => [
+    state.authState.address,
     state.repoCoreState.selectedRepo.repo,
     state.repoCoreActions.setRepoDecentralized
   ])
@@ -65,7 +67,15 @@ export default function TokenizeModal({ setIsTradeModalOpen, onClose, isOpen }: 
       return false
     }
 
-    const requiredFields = ['tokenName', 'tokenTicker', 'denomination', 'totalSupply', 'tokenImage', 'processId']
+    const requiredFields = [
+      'tokenName',
+      'tokenTicker',
+      'denomination',
+      'totalSupply',
+      'tokenImage',
+      'processId',
+      'socialLink'
+    ]
     for (const field of requiredFields) {
       const typedField = field as keyof RepoToken
       if (!repo.token[typedField]) {
@@ -83,7 +93,7 @@ export default function TokenizeModal({ setIsTradeModalOpen, onClose, isOpen }: 
       return false
     }
 
-    const requiredFields = ['fundingGoal', 'reserveToken', 'processId']
+    const requiredFields = ['curveType', 'stepCount', 'initialPrice', 'finalPrice', 'lpAllocation', 'reserveToken']
     for (const field of requiredFields) {
       const typedField = field as keyof BondingCurve
       if (!repo.bondingCurve[typedField]) {
@@ -103,7 +113,7 @@ export default function TokenizeModal({ setIsTradeModalOpen, onClose, isOpen }: 
     }
 
     setDecentralizeStatus('PENDING')
-    setTokenizeProgress(20)
+    setTokenizeProgress(10)
     setTokenizeProgressText('Validating token settings...')
     try {
       if (!isTokenSettingsValid()) {
@@ -120,20 +130,23 @@ export default function TokenizeModal({ setIsTradeModalOpen, onClose, isOpen }: 
         return
       }
 
-      await waitFor(1000)
-      setTokenizeProgress(40)
-
-      setTokenizeProgressText('Creating project token...')
-      await loadTokenProcess(repo.token!, repo.bondingCurve!.processId!) //loading bonding curve id too
-      await waitFor(1000)
-      setTokenizeProgress(60)
+      setTokenizeProgress(20)
       setTokenizeProgressText('Creating bonding curve...')
-      const bondingCurveInitialized = await initializeBondingCurve(repo.token!, repo.bondingCurve!)
-      if (!bondingCurveInitialized) {
+
+      const bondingCurvePid = await spawnBondingCurveProcess(repo.token!, repo.bondingCurve!, address!)
+      if (!bondingCurvePid) {
         setDecentralizeError('error-generic')
         setDecentralizeStatus('ERROR')
         return
       }
+
+      await handleSaveBondingCurveId(repo.id, bondingCurvePid)
+
+      await waitFor(500)
+      setTokenizeProgress(50)
+
+      setTokenizeProgressText('Creating project token...')
+      await loadTokenProcess(repo.token!, bondingCurvePid, repo.bondingCurve!.lpAllocation) //loading bonding curve id too
       await waitFor(1000)
       setTokenizeProgress(80)
       setTokenizeProgressText('Tokenizing repository...')

@@ -157,7 +157,8 @@ export async function createNewFork(data: ForkRepositoryOptions) {
       Name: data.name,
       Description: data.description,
       'Data-TxId': data.dataTxId,
-      Parent: data.parent
+      Parent: data.parent,
+      'Token-Process-Id': data.tokenProcessId
     })
   })
 

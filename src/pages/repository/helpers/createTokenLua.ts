@@ -1,6 +1,8 @@
 import { RepoToken } from '@/types/repository'
 
-export function createCurveBondedTokenLua(token: RepoToken, bondingCurveId: string): string {
+import { preventScientificNotationFloat } from './customFormatNumbers'
+
+export function createCurveBondedTokenLua(token: RepoToken, bondingCurveId: string, lpAllocation: string): string {
   let luaCode = `
 -- module: "src.utils.mod"
 local function _loaded_mod_src_utils_mod()
@@ -45,9 +47,13 @@ local function _loaded_mod_src_handlers_token()
   --- @type Denomination
   Denomination = Denomination or ${+token.denomination}
   --- @type Balances
-  Balances = Balances or { [ao.id] = utils.toBalanceValue(0) }
+  Balances = Balances or { ['${bondingCurveId}'] = utils.toBalanceValue('${preventScientificNotationFloat(
+    +lpAllocation * 10 ** +token.denomination
+  )}') }
   --- @type TotalSupply
-  TotalSupply = TotalSupply or utils.toBalanceValue(0)
+  TotalSupply = TotalSupply or utils.toBalanceValue('${preventScientificNotationFloat(
+    +lpAllocation * 10 ** +token.denomination
+  )}')
   --- @type Name
   Name = Name or '${token.tokenName}'
   --- @type Ticker
@@ -55,7 +61,7 @@ local function _loaded_mod_src_handlers_token()
   --- @type Logo
   Logo = Logo or '${token.tokenImage}'
   --- @type MaxSupply
-  MaxSupply = MaxSupply or '${+token.totalSupply * 10 ** +token.denomination}' ;
+  MaxSupply = MaxSupply or '${preventScientificNotationFloat(+token.totalSupply * 10 ** +token.denomination)}';
   --- @type BondingCurveProcess
   BondingCurveProcess = BondingCurveProcess or '${bondingCurveId}';
   
@@ -696,12 +702,13 @@ local function _loaded_mod_src_utils_assertions()
   mod.isAddress = function(name, value)
       Type
           `
-          luaCode += ':string("Invalid type for `" .. name .. "`. Expected a string for Arweave address.")\n'
-          luaCode += ':length(43, nil, "Incorrect length for Arweave address `" .. name .. "`. Must be exactly 43 characters long.")\n'
-      luaCode += ':match("[a-zA-Z0-9-_]+",\n'
-      luaCode +='"Invalid characters in Arweave address `" ..\n'
-             luaCode +='name .. "`. Only alphanumeric characters, dashes, and underscores are allowed.")\n'
-             luaCode +=':assert(value)\n'
+  luaCode += ':string("Invalid type for `" .. name .. "`. Expected a string for Arweave address.")\n'
+  luaCode +=
+    ':length(43, nil, "Incorrect length for Arweave address `" .. name .. "`. Must be exactly 43 characters long.")\n'
+  luaCode += ':match("[a-zA-Z0-9-_]+",\n'
+  luaCode += '"Invalid characters in Arweave address `" ..\n'
+  luaCode += 'name .. "`. Only alphanumeric characters, dashes, and underscores are allowed.")\n'
+  luaCode += ':assert(value)\n'
   luaCode += `end
   
   ---Assert value is an UUID
@@ -710,11 +717,11 @@ local function _loaded_mod_src_utils_assertions()
   mod.isUuid = function(name, value)
       Type
       `
-      luaCode += ':string("Invalid type for `" .. name .. "`. Expected a string for UUID.")'
-      luaCode += ':match("^[0-9a-fA-F]%x%x%x%x%x%x%x%-%x%x%x%x%-%x%x%x%x%-%x%x%x%x%-%x%x%x%x%x%x%x%x%x%x%x%x$",'
-      luaCode += '    "Invalid UUID format for `" ..'
-             luaCode +='    name .. "`. A valid UUID should follow the 8-4-4-4-12 hexadecimal format.")'
-             luaCode +='    :assert(value)'
+  luaCode += ':string("Invalid type for `" .. name .. "`. Expected a string for UUID.")'
+  luaCode += ':match("^[0-9a-fA-F]%x%x%x%x%x%x%x%-%x%x%x%x%-%x%x%x%x%-%x%x%x%x%-%x%x%x%x%x%x%x%x%x%x%x%x$",'
+  luaCode += '    "Invalid UUID format for `" ..'
+  luaCode += '    name .. "`. A valid UUID should follow the 8-4-4-4-12 hexadecimal format.")'
+  luaCode += '    :assert(value)'
   luaCode += `end
   
   mod.Array = Type:array("Invalid type (must be array)")

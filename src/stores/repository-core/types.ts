@@ -1,8 +1,9 @@
 import { Edge, Node } from '@xyflow/react'
 
+import { CurveStep } from '@/lib/discrete-bonding-curve/curve'
 import { UserCommit, UserContributionData, UserPROrIssue } from '@/lib/user'
 import { CommitResult } from '@/types/commit'
-import { BondingCurve, Deployment, Domain, GithubSync, Repo, RepoToken } from '@/types/repository'
+import { BondingCurve, Deployment, Domain, GithubSync, Repo, RepoLiquidityPoolToken, RepoToken } from '@/types/repository'
 
 export interface RepoCoreSlice {
   repoCoreState: RepoCoreState
@@ -79,7 +80,7 @@ export type RepoCoreActions = {
   setRepoContributionStats: (data: UserContributionData) => void
   setRepoDecentralized: () => void
   setRepoTokenProcessId: (processId: string) => void
-  saveRepoTokenDetails: (token: Partial<RepoToken>) => Promise<void>
+  saveRepoTokenDetails: (token: Partial<SaveRepoTokenDetailsOptions>) => Promise<void>
   saveRepoBondingCurveDetails: (bondingCurve: BondingCurve) => Promise<void>
   saveLiquidityPoolId: (liquidityPoolId: string) => Promise<void>
   saveBondingCurveId: (bondingCurveId: string) => Promise<void>
@@ -114,19 +115,22 @@ export type ForkRepositoryOptions = {
   description: string
   parent: string
   dataTxId: string
+  tokenProcessId: string
 }
+
+export type SaveRepoTokenDetailsOptions = RepoToken & BondingCurve
 
 export type CurveState = {
   reserveBalance: string
-  initialized: boolean
-  repoToken: RepoToken
-  reserveToken: RepoToken
-  fundingGoal: string
-  allocationForLP: string
-  allocationForCreator: string
-  maxSupply: string
-  supplyToSell: string
-  reachedFundingGoal: boolean
   liquidityPool?: string
+  curveType: string
+  finalBuyPrice: string
+  initialBuyPrice: string
+  maxSupply: string
+  allocationForLP: string
+  steps: CurveStep[]
+  reserveToken: RepoLiquidityPoolToken
+  repoToken: RepoToken
+  createdAt: string
   creator: string
 }

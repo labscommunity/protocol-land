@@ -1,0 +1,6 @@
+{
+    "Lua.workspace.library": [
+        "${addons}/ao/module/library"
+    ],
+    "Lua.workspace.checkThirdParty": false
+}
