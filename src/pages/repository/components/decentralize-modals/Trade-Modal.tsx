@@ -89,8 +89,10 @@ export default function TradeModal({ onClose, isOpen }: TradeModalProps) {
   }, [currentSupply, curveState])
 
   React.useEffect(() => {
-    if (amount) {
+    if (BigNumber(amount).gt(0)) {
       handleGetBuyPrice()
+    } else {
+      setPrice('0')
     }
   }, [amount])
 
@@ -195,7 +197,34 @@ export default function TradeModal({ onClose, isOpen }: TradeModalProps) {
   }
 
   function handleAmountChange(e: React.ChangeEvent<HTMLInputElement>) {
-    setAmount(e.target.value)
+    const amt = e.target.value
+    if (!curveState.maxSupply) return
+
+    if (!amt) {
+      setAmount('0')
+      setPrice('0')
+      return
+    }
+
+    const formattedMaxSupply = BigNumber(curveState.maxSupply).dividedBy(
+      BigNumber(10).pow(BigNumber(curveState.repoToken!.denomination))
+    )
+    const formattedAllocationForLP = BigNumber(curveState.allocationForLP).dividedBy(
+      BigNumber(10).pow(BigNumber(curveState.repoToken!.denomination))
+    )
+    const formattedMaxSupplyMinusAllocationForLP = formattedMaxSupply.minus(formattedAllocationForLP)
+
+    if (selectedSide === 'buy' && BigNumber(amt).gte(formattedMaxSupplyMinusAllocationForLP)) {
+      setAmount(formattedMaxSupplyMinusAllocationForLP.toFixed())
+      amountRef.current!.value = formattedMaxSupplyMinusAllocationForLP.toFixed()
+    }
+
+    if (selectedSide === 'sell' && BigNumber(amt).gt(repoTokenBalance)) {
+      setAmount(repoTokenBalance)
+      amountRef.current!.value = repoTokenBalance
+    }
+
+    setAmount(amt)
   }
 
   async function handleGetBuyPrice() {
@@ -227,7 +256,7 @@ export default function TradeModal({ onClose, isOpen }: TradeModalProps) {
     setPrice(
       BigNumber(tokenPrice)
         .dividedBy(BigNumber(10).pow(BigNumber(repo.bondingCurve.reserveToken.denomination)))
-        .toString() || ''
+        .toFixed() || ''
     )
   }
 
