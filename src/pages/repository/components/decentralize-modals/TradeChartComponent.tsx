@@ -106,25 +106,16 @@ export default function TradeChartComponent({
   React.useEffect(() => {
     if (!curveStepsCache || !stats?.circulatingSupply) return
     const point = curveStepsCache.find((step) => Number(stats.circulatingSupply) <= step.rangeTo)
-    console.log('currentPoint: ', { rangeTo: Number(stats.circulatingSupply), price: point ? point.price : 0 })
 
     setCurrentSupply({ rangeTo: Number(stats.circulatingSupply), price: point ? point.price : 0 })
   }, [curveStepsCache, stats])
 
   React.useEffect(() => {
     if (!curveStepsCache || !stats?.circulatingSupply) return
-    const point = curveStepsCache.find(
-      (step) => Number(stats.circulatingSupply) + Number(repoTokenBuyAmount) <= step.rangeTo
-    )
-    console.log('afterBuyPoint: ', {
-      rangeTo: Number(stats.circulatingSupply) + Number(repoTokenBuyAmount),
-      price: point ? point.price : 0
-    })
+    const afterAmount = Number(stats.circulatingSupply) + Number(repoTokenBuyAmount)
+    const point = curveStepsCache.find((step) => afterAmount <= step.rangeTo)
 
-    setAfterTradeSupply({
-      rangeTo: Number(stats.circulatingSupply) + Number(repoTokenBuyAmount),
-      price: point ? point.price : 0
-    })
+    setAfterTradeSupply({ rangeTo: afterAmount, price: point ? point.price : 0 })
   }, [curveStepsCache, repoTokenBuyAmount, stats])
 
   React.useEffect(() => {
@@ -159,8 +150,6 @@ export default function TradeChartComponent({
       volume: '0',
       circulatingSupply: normalizedSupply
     })
-
-    console.log('Normalized supply: ', normalizedSupply)
   }
 
   React.useEffect(() => {
@@ -257,7 +246,7 @@ export default function TradeChartComponent({
               data: curveSteps,
               borderColor: lineColor,
               backgroundColor: 'transparent',
-              borderWidth: 1,
+              borderWidth: 2,
               pointBackgroundColor: lineColor,
               stepped: 'before',
               fill: true,
@@ -386,31 +375,9 @@ export default function TradeChartComponent({
       _chart.update()
     }
 
-    // const updateSpecialPoints = (currentSupply: number, arbitraryAmount: number) => {
-    //   const afterBuySupply = currentSupply + arbitraryAmount
-
-    //   const currentSupplyPoint = {
-    //     rangeTo: currentSupply,
-    //     price: getPrice(currentSupply)
-    //   }
-
-    //   const afterBuyPoint = {
-    //     rangeTo: afterBuySupply,
-    //     price: getPrice(afterBuySupply)
-    //   }
-
-    //   console.log(currentSupplyPoint, afterBuyPoint)
-
-    //   _chart.data.datasets[1].data = [currentSupplyPoint]
-    //   _chart.data.datasets[2].data = [afterBuyPoint]
-    //   _chart.update()
-    // }
-
-    // console.log('lalala', repoTokenBalance, repoTokenBuyAmount)
-    // updateSpecialPoints(Number(repoTokenBalance), Number(repoTokenBuyAmount))
-
     chart.current = _chart
   }
+
   return (
     <div className="h-full w-full flex flex-col gap-2 relative">
       <div className="z-10 max-h-[32px] h-full absolute top-0 left-0 flex flex-col items-start justify-between px-4 py-4 gap-1">
