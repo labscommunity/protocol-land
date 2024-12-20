@@ -401,6 +401,7 @@ export default function TradeModal({ onClose, isOpen }: TradeModalProps) {
                       repo={repo}
                       data={chartData}
                       curveState={curveState}
+                      repoTokenBuyAmount={amount}
                     />
                   </div>
 
