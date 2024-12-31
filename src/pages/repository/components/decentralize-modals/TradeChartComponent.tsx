@@ -235,7 +235,7 @@ export default function TradeChartComponent({
     let _chart: Chart<'line' | 'scatter', CurveStep[], unknown> | null = chart.current
     if (!_chart) {
       const lineColor = '#06b6d4'
-      const currentColor = 'blue'
+      const currentColor = '#667085'
       const afterBuyColor = 'green'
       _chart = new Chart(ctx, {
         data: {
@@ -298,6 +298,13 @@ export default function TradeChartComponent({
               display: false
             },
             tooltip: {
+              filter(e) {
+                if (!e.label) {
+                  return false
+                }
+
+                return true
+              },
               displayColors: false,
               callbacks: {
                 label: function (context) {
