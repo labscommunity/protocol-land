@@ -196,7 +196,7 @@ async function getAosDetails() {
 
 export async function pollForTxBeingAvailable({ txId }: { txId: string }): Promise<void> {
   const pollingOptions = {
-    maxAttempts: 10,
+    maxAttempts: 50,
     pollingIntervalMs: 3_000,
     initialBackoffMs: 7_000
   }
