@@ -7,6 +7,8 @@ import { getRepo, sendMessage } from '@/lib/contract'
 import { pollForTxBeingAvailable } from '@/lib/decentralize'
 import { useGlobalStore } from '@/stores/globalStore'
 import { BondingCurve, Repo, RepoToken } from '@/types/repository'
+
+import { SaveRepoTokenDetailsOptions } from '../types'
 // Repo Meta
 
 export const getRepositoryMetaFromContract = async (id: string): Promise<{ result: Repo }> => {
@@ -93,8 +95,14 @@ export const handleCancelContributorInvite = async (id: string, contributor: str
   return repo.contributorInvites
 }
 
-export const handleSaveRepoToken = async (id: string, repoToken: Partial<RepoToken>, address: string) => {
-  await sendMessage({
+export const handleSaveRepoToken = async (
+  id: string,
+  repoToken: Partial<SaveRepoTokenDetailsOptions>
+): Promise<{
+  token: RepoToken
+  bondingCurve: BondingCurve
+}> => {
+  const msgId = await sendMessage({
     tags: getTags({
       Action: 'Save-Token-Settings',
       Id: id
@@ -102,15 +110,20 @@ export const handleSaveRepoToken = async (id: string, repoToken: Partial<RepoTok
     data: JSON.stringify(repoToken)
   })
 
-  const { Messages } = await dryrun({
-    process: AOS_PROCESS_ID,
-    tags: getTags({ Action: 'Get-Repo-Token-Details', Id: id }),
-    Owner: address
+  await pollForTxBeingAvailable({ txId: msgId })
+
+  const { Messages } = await result({
+    message: msgId,
+    process: AOS_PROCESS_ID
   })
 
-  const repoTokenDetails = JSON.parse(Messages[0].Data)?.result as RepoToken
+  if (!Messages[0]) {
+    throw new Error('Failed to save token settings')
+  }
 
-  return repoTokenDetails
+  const data = JSON.parse(Messages[0].Data)
+
+  return { token: data.token, bondingCurve: data.bondingCurve }
 }
 
 export const handleSaveRepoBondingCurve = async (id: string, bondingCurve: BondingCurve, address: string) => {
