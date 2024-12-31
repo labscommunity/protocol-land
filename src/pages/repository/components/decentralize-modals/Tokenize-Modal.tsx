@@ -67,15 +67,7 @@ export default function TokenizeModal({ setIsTradeModalOpen, onClose, isOpen }: 
       return false
     }
 
-    const requiredFields = [
-      'tokenName',
-      'tokenTicker',
-      'denomination',
-      'totalSupply',
-      'tokenImage',
-      'processId',
-      'socialLink'
-    ]
+    const requiredFields = ['tokenName', 'tokenTicker', 'denomination', 'totalSupply', 'tokenImage', 'processId']
     for (const field of requiredFields) {
       const typedField = field as keyof RepoToken
       if (!repo.token[typedField]) {

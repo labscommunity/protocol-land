@@ -217,11 +217,15 @@ export default function TradeModal({ onClose, isOpen }: TradeModalProps) {
     if (selectedSide === 'buy' && BigNumber(amt).gte(formattedMaxSupplyMinusAllocationForLP)) {
       setAmount(formattedMaxSupplyMinusAllocationForLP.toFixed())
       amountRef.current!.value = formattedMaxSupplyMinusAllocationForLP.toFixed()
+
+      return
     }
 
     if (selectedSide === 'sell' && BigNumber(amt).gt(repoTokenBalance)) {
       setAmount(repoTokenBalance)
       amountRef.current!.value = repoTokenBalance
+
+      return
     }
 
     setAmount(amt)
@@ -401,6 +405,7 @@ export default function TradeModal({ onClose, isOpen }: TradeModalProps) {
                       repo={repo}
                       data={chartData}
                       curveState={curveState}
+                      repoTokenBuyAmount={selectedSide === 'buy' ? amount : `-${amount}`}
                     />
                   </div>
 

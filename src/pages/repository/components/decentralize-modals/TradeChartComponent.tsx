@@ -54,12 +54,14 @@ export default function TradeChartComponent({
   data,
   repo,
   reserveBalance,
-  curveState
+  curveState,
+  repoTokenBuyAmount
 }: {
   data: ChartData[]
   repo: Repo
   reserveBalance: string
   curveState: CurveState
+  repoTokenBuyAmount: string
 }) {
   const [currentStep, setCurrentStep] = React.useState<number>(0)
   const [isFetchingNextPrice, setIsFetchingNextPrice] = React.useState<boolean>(false)
@@ -71,8 +73,16 @@ export default function TradeChartComponent({
     volume: '0',
     circulatingSupply: '0'
   })
+
+  const [curveStepsCache, setCurveStepsCache] = React.useState<{ rangeTo: number; price: number }[]>([])
+  const [currentSupply, setCurrentSupply] = React.useState<{ rangeTo: number; price: number }>({ rangeTo: 0, price: 0 })
+  const [afterTradeSupply, setAfterTradeSupply] = React.useState<{ rangeTo: number; price: number }>({
+    rangeTo: 0,
+    price: 0
+  })
+
   const canvasRef = React.useRef<HTMLCanvasElement>(null)
-  const chart = React.useRef<Chart<'line', CurveStep[], unknown> | null>(null)
+  const chart = React.useRef<Chart<'line' | 'scatter', CurveStep[], unknown> | null>(null)
   console.log({ currentStep })
   // React.useEffect(() => {
   //   if (!chartContainerRef.current) return
@@ -92,6 +102,32 @@ export default function TradeChartComponent({
     if (!curveState) return
     fetchStats()
   }, [data, reserveBalance, curveState])
+
+  React.useEffect(() => {
+    if (!curveStepsCache || !stats?.circulatingSupply) return
+    const point = curveStepsCache.find((step) => Number(stats.circulatingSupply) <= step.rangeTo)
+
+    setCurrentSupply({ rangeTo: Number(stats.circulatingSupply), price: point ? point.price : 0 })
+  }, [curveStepsCache, stats])
+
+  React.useEffect(() => {
+    if (!curveStepsCache || !stats?.circulatingSupply) return
+    const afterAmount = Number(stats.circulatingSupply) + Number(repoTokenBuyAmount)
+    const point = curveStepsCache.find((step) => afterAmount <= step.rangeTo)
+
+    setAfterTradeSupply({ rangeTo: afterAmount, price: point ? point.price : 0 })
+  }, [curveStepsCache, repoTokenBuyAmount, stats])
+
+  React.useEffect(() => {
+    if (!chart.current) return
+    chart.current.data.datasets[1].data = [currentSupply]
+    chart.current?.update()
+  }, [currentSupply])
+  React.useEffect(() => {
+    if (!chart.current) return
+    chart.current.data.datasets[2].data = [afterTradeSupply]
+    chart.current?.update()
+  }, [afterTradeSupply])
 
   async function fetchStats() {
     if (!repo?.token?.processId) return
@@ -192,27 +228,61 @@ export default function TradeChartComponent({
       rangeTo: BigNumber(step.rangeTo / 10 ** +curveState.repoToken.denomination).toNumber(),
       price: BigNumber(step.price / 10 ** +curveState.reserveToken.denomination).toNumber()
     }))
+    setCurveStepsCache(curveSteps)
     const ctx = canvasRef.current
     if (!ctx) return
-    let _chart: Chart<'line', CurveStep[], unknown> | null = chart.current
+
+    let _chart: Chart<'line' | 'scatter', CurveStep[], unknown> | null = chart.current
     if (!_chart) {
+      const lineColor = '#06b6d4'
+      const currentColor = '#667085'
+      const afterBuyColor = 'green'
       _chart = new Chart(ctx, {
-        type: 'line',
         data: {
           datasets: [
             {
+              type: 'line',
               label: 'Price',
               data: curveSteps,
-              borderColor: '#06b6d4',
+              borderColor: lineColor,
               backgroundColor: 'transparent',
               borderWidth: 2,
-              pointBackgroundColor: '#06b6d4',
+              pointBackgroundColor: lineColor,
               stepped: 'before',
               fill: true,
               parsing: {
                 xAxisKey: 'rangeTo', // Use 'rangeTo' as the x-axis value
                 yAxisKey: 'price' // Use 'price' as the y-axis value
-              }
+              },
+              order: 3
+            },
+            {
+              label: 'Current Supply',
+              data: [],
+              borderColor: currentColor,
+              backgroundColor: 'transparent',
+              pointRadius: 6,
+              borderWidth: 2,
+              type: 'scatter',
+              parsing: {
+                xAxisKey: 'rangeTo', // Use 'rangeTo' as the x-axis value
+                yAxisKey: 'price' // Use 'price' as the y-axis value
+              },
+              order: 1
+            },
+            {
+              label: 'After Buy Supply',
+              data: [],
+              borderColor: afterBuyColor,
+              backgroundColor: 'transparent',
+              pointRadius: 6,
+              borderWidth: 2,
+              type: 'scatter',
+              parsing: {
+                xAxisKey: 'rangeTo', // Use 'rangeTo' as the x-axis value
+                yAxisKey: 'price' // Use 'price' as the y-axis value
+              },
+              order: 2
             }
           ]
         },
@@ -228,6 +298,13 @@ export default function TradeChartComponent({
               display: false
             },
             tooltip: {
+              filter(e) {
+                if (!e.label) {
+                  return false
+                }
+
+                return true
+              },
               displayColors: false,
               callbacks: {
                 label: function (context) {
@@ -307,6 +384,7 @@ export default function TradeChartComponent({
 
     chart.current = _chart
   }
+
   return (
     <div className="h-full w-full flex flex-col gap-2 relative">
       <div className="z-10 max-h-[32px] h-full absolute top-0 left-0 flex flex-col items-start justify-between px-4 py-4 gap-1">
