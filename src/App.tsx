@@ -18,7 +18,7 @@ import Repository from './pages/repository/Repository'
 import RepositoryWrapper from './pages/repository/RepositoryWrapper'
 
 const repositoryRoutes = [
-  { path: '/repository/:id/:tabName?/*?/:settingsTabName?', element: <Repository /> },
+  { path: '/repository/:id/:tabName?/*/:settingsTabName?', element: <Repository /> },
   { path: '/repository/:id/pull/new', element: <NewPullRequest /> },
   { path: '/repository/:id/pull/:pullId', element: <ReadPullRequest /> },
   { path: '/repository/:id/issue/new', element: <CreateIssuePage /> },

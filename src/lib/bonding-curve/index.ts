@@ -116,7 +116,7 @@ export async function getTokenSellPrice(amount: string, currentSupply: string, c
 }
 
 export async function getTokenNextBuyPrice(currentSupply: string, curveState: CurveState) {
-  if (!curveState) return '0'
+  if (!curveState || !curveState.steps) return '0'
   let currentSupplyBn = BigNumber(currentSupply)
   const maxSupplyBn = BigNumber(curveState.maxSupply)
 
