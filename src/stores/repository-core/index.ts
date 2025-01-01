@@ -96,10 +96,9 @@ const createRepoCoreSlice: StateCreator<CombinedSlices, [['zustand/immer', never
     },
     fetchRepoHierarchy: async () => {
       const repo = get().repoCoreState.selectedRepo.repo
-      const userAddress = get().authState.address
 
-      if (!repo || !userAddress) {
-        toast.error('Not authorized to toggle decentralization.')
+      if (!repo) {
+        toast.error('Repository not found.')
         return
       }
 
