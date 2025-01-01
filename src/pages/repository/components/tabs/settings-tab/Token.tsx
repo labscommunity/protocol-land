@@ -14,11 +14,13 @@ import { IoCheckmark } from 'react-icons/io5'
 import * as yup from 'yup'
 
 import { Button } from '@/components/common/buttons'
+import { spawnTokenProcess } from '@/lib/decentralize'
 // import { isInvalidInput } from '@/helpers/isInvalidInput'
 // import { spawnBondingCurveProcess } from '@/lib/decentralize'
 import { CurveStep, CurveType, generateSteps, generateTableData } from '@/lib/discrete-bonding-curve/curve'
 // import { fetchAllUserTokens } from '@/helpers/wallet/fetchAllTokens'
 import { useGlobalStore } from '@/stores/globalStore'
+import { SaveRepoTokenDetailsOptions } from '@/stores/repository-core/types'
 import { RepoLiquidityPoolToken, type Token } from '@/types/repository'
 
 import CurveChart from './CurveChart'
@@ -173,11 +175,18 @@ export default function Token() {
       toast.error('This repository is a decentralized repository. Cannot update token after this point.')
       return
     }
-
     setIsSubmitting(true)
 
+    const payloadToSave: SaveRepoTokenDetailsOptions = { ...data, reserveToken: selectedToken }
+
+    if (!selectedRepo.token || !selectedRepo?.token?.processId) {
+      //spawn process
+      const pid = await spawnTokenProcess(data.tokenName)
+      payloadToSave.processId = pid
+    }
+
     try {
-      await saveRepoTokenDetails({ ...data, reserveToken: selectedToken })
+      await saveRepoTokenDetails(payloadToSave)
     } catch (error) {
       toast.error('Failed to save token.')
     } finally {

@@ -43,9 +43,20 @@ export default function Repository() {
     // Otherwise, if tabName is present, load the current branch from branchState.
     // If neither branchName nor tabName is available, default to the master branch.
     if (isPageNotFound) return
-    const loadBranch = branchName || (tabName ? branchState.currentBranch : 'master')
+    let loadBranch = 'master'
+    if (tabName && branchName && tabName === 'tree') {
+      loadBranch = branchName
+    }
+
+    if (branchName && tabName && tabName !== 'tree') {
+      loadBranch = branchState.currentBranch
+    }
+
     fetchAndLoadRepository(id!, loadBranch).then((currentBranch) => {
-      if (branchName && currentBranch && currentBranch !== branchName) {
+      if (loadBranch && currentBranch && currentBranch !== loadBranch) {
+        if (loadBranch === 'master' && currentBranch === 'main') {
+          return
+        }
         setBranchAbscent(true)
       }
     })
@@ -57,7 +68,7 @@ export default function Repository() {
     const tab = rootTabConfig[idx]
     const repo = selectedRepo.repo
 
-    const targetPath = tab.getPath(id!, branchName || branchState.currentBranch)
+    const targetPath = tab.getPath(id!)
 
     navigate(targetPath)
 
