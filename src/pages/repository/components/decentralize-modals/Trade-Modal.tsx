@@ -1,5 +1,6 @@
 import { Dialog, DialogPanel, DialogTitle, Transition, TransitionChild } from '@headlessui/react'
 import Progress from '@ramonak/react-progress-bar'
+import BigNumber from 'bignumber.js'
 import clsx from 'clsx'
 import { Fragment } from 'react'
 import React from 'react'
@@ -9,19 +10,16 @@ import SVG from 'react-inlinesvg'
 import CloseCrossIcon from '@/assets/icons/close-cross.svg'
 import { Button } from '@/components/common/buttons'
 import { imgUrlFormatter } from '@/helpers/imgUrlFormatter'
-import { parseScientific } from '@/helpers/parseScientific'
 import { shortenAddress } from '@/helpers/shortenAddress'
-import { debounce } from '@/helpers/withDebounce'
-import { getBuySellTransactionsOfCurve, getTokenBuyPrice } from '@/lib/bonding-curve'
+import { getBuySellTransactionsOfCurve, getTokenBuyPrice, getTokenSellPrice } from '@/lib/bonding-curve'
 import { buyTokens } from '@/lib/bonding-curve/buy'
 import { getCurveState, getTokenCurrentSupply } from '@/lib/bonding-curve/helpers'
-import { calculateTokensSellCost, sellTokens } from '@/lib/bonding-curve/sell'
+import { sellTokens } from '@/lib/bonding-curve/sell'
 import { fetchTokenBalance, fetchTokenBalances } from '@/lib/decentralize'
 import { useGlobalStore } from '@/stores/globalStore'
 import { CurveState } from '@/stores/repository-core/types'
 import { RepoToken } from '@/types/repository'
 
-import { roundToSignificantFigures } from '../../helpers/roundToSigFigures'
 import TradeChartComponent from './TradeChartComponent'
 import TransferToLP from './TransferToLP'
 
@@ -43,7 +41,10 @@ export default function TradeModal({ onClose, isOpen }: TradeModalProps) {
   const [curveState, setCurveState] = React.useState<CurveState>({} as CurveState)
   const [price, setPrice] = React.useState<string>('0')
   const [priceUnscaled, setPriceUnscaled] = React.useState<string>('0')
+  const [currentSupply, setCurrentSupply] = React.useState<string>('0')
+  const [maxSupply, setMaxSupply] = React.useState<string>('0')
   const [reserveTokenBalance, setReserveTokenBalance] = React.useState<string>('0')
+
   const [repoTokenBalance, setRepoTokenBalance] = React.useState<string>('0')
   const [amount, setAmount] = React.useState<string>('')
   const [tokenPair, setTokenPair] = React.useState<RepoToken[]>([])
@@ -57,24 +58,41 @@ export default function TradeModal({ onClose, isOpen }: TradeModalProps) {
       setSelectedTokenToTransact(0)
       handleGetCurveState()
       handleGetTokenBalances()
-      handleGetTransactions()
+      handleGetCurrentSupply()
+      // handleGetTransactions()
     }
   }, [repo])
-  console.log({ reserveTokenBalance })
+
   React.useEffect(() => {
     setAmount('')
   }, [selectedSide])
-
+  console.log(reserveTokenBalance)
   React.useEffect(() => {
-    if (curveState.maxSupply && curveState.fundingGoal) {
-      setProgress((+curveState.reserveBalance / +curveState.fundingGoal) * 100)
+    if (curveState.maxSupply) {
+      const formattedMaxSupply = BigNumber(curveState.maxSupply)
+        .dividedBy(BigNumber(10).pow(BigNumber(curveState.repoToken.denomination)))
+        .toString()
+      setMaxSupply(formattedMaxSupply)
+      // setProgress((+curveState.reserveBalance / +curveState.fundingGoal) * 100)
       handleGetTokenHoldersBalances()
     }
   }, [curveState])
 
   React.useEffect(() => {
-    if (amount) {
+    if (!repo?.token || !curveState?.maxSupply) return
+    if (+currentSupply > 0) {
+      const formattedMaxSupply = BigNumber(curveState.maxSupply)
+        .dividedBy(BigNumber(10).pow(BigNumber(repo.token!.denomination)))
+        .toString()
+      setProgress(BigNumber(+currentSupply).dividedBy(BigNumber(formattedMaxSupply)).multipliedBy(100).toNumber())
+    }
+  }, [currentSupply, curveState])
+
+  React.useEffect(() => {
+    if (BigNumber(amount).gt(0)) {
       handleGetBuyPrice()
+    } else {
+      setPrice('0')
     }
   }, [amount])
 
@@ -154,6 +172,15 @@ export default function TradeModal({ onClose, isOpen }: TradeModalProps) {
     setCurveState(state)
   }
 
+  async function handleGetCurrentSupply() {
+    if (!repo?.token) return
+    const currentSupply = await getTokenCurrentSupply(repo.token!.processId!)
+    const formattedSupply = BigNumber(currentSupply)
+      .dividedBy(BigNumber(10).pow(BigNumber(repo.token!.denomination)))
+      .toString()
+    setCurrentSupply(formattedSupply)
+  }
+
   function handleTokenSwitch() {
     toast.success('Coming soon')
     return
@@ -169,24 +196,47 @@ export default function TradeModal({ onClose, isOpen }: TradeModalProps) {
     onClose()
   }
 
-  const debouncedSetAmount = React.useCallback(
-    debounce((value: string) => {
-      setAmount(value)
-    }, 500),
-    []
-  )
-
   function handleAmountChange(e: React.ChangeEvent<HTMLInputElement>) {
-    debouncedSetAmount(e.target.value)
+    const amt = e.target.value
+    if (!curveState.maxSupply) return
+
+    if (!amt) {
+      setAmount('0')
+      setPrice('0')
+      return
+    }
+
+    const formattedMaxSupply = BigNumber(curveState.maxSupply).dividedBy(
+      BigNumber(10).pow(BigNumber(curveState.repoToken!.denomination))
+    )
+    const formattedAllocationForLP = BigNumber(curveState.allocationForLP).dividedBy(
+      BigNumber(10).pow(BigNumber(curveState.repoToken!.denomination))
+    )
+    const formattedMaxSupplyMinusAllocationForLP = formattedMaxSupply.minus(formattedAllocationForLP)
+
+    if (selectedSide === 'buy' && BigNumber(amt).gte(formattedMaxSupplyMinusAllocationForLP)) {
+      setAmount(formattedMaxSupplyMinusAllocationForLP.toFixed())
+      amountRef.current!.value = formattedMaxSupplyMinusAllocationForLP.toFixed()
+
+      return
+    }
+
+    if (selectedSide === 'sell' && BigNumber(amt).gt(repoTokenBalance)) {
+      setAmount(repoTokenBalance)
+      amountRef.current!.value = repoTokenBalance
+
+      return
+    }
+
+    setAmount(amt)
   }
 
   async function handleGetBuyPrice() {
-    if (!amount || !repo?.bondingCurve || !curveState.maxSupply || !curveState.fundingGoal) return
+    if (!amount || !repo?.bondingCurve || !curveState.maxSupply) return
 
-    let price = 0
+    let tokenPrice = '0'
     const currentSupply = await getTokenCurrentSupply(repo.token!.processId!)
     if (selectedSide === 'buy') {
-      const tokensToBuy = +amount
       // price = await calculateTokensBuyCost(
       //   repo.token!.processId!,
       //   tokensToBuy,
@@ -194,27 +244,28 @@ export default function TradeModal({ onClose, isOpen }: TradeModalProps) {
       //   +curveState.fundingGoal
       // )
 
-      price = await getTokenBuyPrice(tokensToBuy.toString(), currentSupply, repo.bondingCurve.processId!)
+      tokenPrice = await getTokenBuyPrice(amount, currentSupply, curveState)
     }
     if (selectedSide === 'sell') {
-      const tokensToSell = +amount * 10 ** +repo.token!.denomination
-      price = await calculateTokensSellCost(
-        repo.token!.processId!,
-        tokensToSell,
-        +curveState.fundingGoal,
-        +curveState.supplyToSell
-      )
+      tokenPrice = await getTokenSellPrice(amount, currentSupply, curveState)
     }
-    setPriceUnscaled(price.toString())
-    const priceInReserveTokens = price / 10 ** +repo.bondingCurve.reserveToken.denomination
-    const formattedPrice = parseScientific(
-      roundToSignificantFigures(priceInReserveTokens, +repo.bondingCurve.reserveToken.denomination).toString()
-    )
+    setPriceUnscaled(tokenPrice)
+    // const priceInReserveTokens = BigNumber(price)
+    //   .dividedBy(BigNumber(10).pow(BigNumber(repo.bondingCurve.reserveToken.denomination)))
+    //   .toString()
+    // // const formattedPrice = parseScientific(
+    // //   roundToSignificantFigures(priceInReserveTokens, +repo.bondingCurve.reserveToken.denomination).toString()
+    // // )
 
-    setPrice(formattedPrice || '')
+    setPrice(
+      BigNumber(tokenPrice)
+        .dividedBy(BigNumber(10).pow(BigNumber(repo.bondingCurve.reserveToken.denomination)))
+        .toFixed() || ''
+    )
   }
 
   async function handleSelectedSideChange(side: 'buy' | 'sell') {
+    if (transactionPending) return
     setSelectedSide(side)
     setAmount('')
     amountRef.current!.value = '0'
@@ -241,16 +292,19 @@ export default function TradeModal({ onClose, isOpen }: TradeModalProps) {
     try {
       setTransactionPending(true)
       // const currentSupply = await getTokenCurrentSupply(repo.token!.processId!)
-
       const { success } = await buyTokens(
         repo.bondingCurve.processId!,
         repo.bondingCurve.reserveToken.processId!,
-        amount,
+        BigNumber(amount)
+          .multipliedBy(BigNumber(10).pow(BigNumber(repo.token!.denomination)))
+          .toFixed(),
         priceUnscaled
       )
       if (success) {
         toast.success('Tokens bought successfully.')
         setAmount('')
+        setPrice('0')
+        await handleGetCurrentSupply()
         amountRef.current!.value = ''
       }
 
@@ -270,10 +324,17 @@ export default function TradeModal({ onClose, isOpen }: TradeModalProps) {
     if (+price <= 0) return
     try {
       setTransactionPending(true)
-      const { success } = await sellTokens(repo.bondingCurve.processId!, amount)
+      const { success } = await sellTokens(
+        repo.bondingCurve.processId!,
+        BigNumber(amount)
+          .multipliedBy(BigNumber(10).pow(BigNumber(repo.token!.denomination)))
+          .toFixed()
+      )
       if (success) {
         toast.success('Tokens sold successfully.')
         setAmount('')
+        setPrice('0')
+        await handleGetCurrentSupply()
         amountRef.current!.value = ''
       }
 
@@ -289,15 +350,17 @@ export default function TradeModal({ onClose, isOpen }: TradeModalProps) {
 
   function parseReserveBalance() {
     if (!repo?.bondingCurve?.reserveToken || !curveState.reserveBalance) return 0
-    return parseFloat(curveState.reserveBalance) / 10 ** +(repo?.bondingCurve?.reserveToken?.denomination || 0)
+    return BigNumber(curveState.reserveBalance)
+      .dividedBy(BigNumber(10).pow(BigNumber(repo?.bondingCurve?.reserveToken?.denomination || 0)))
+      .toString()
   }
 
   const selectedToken = tokenPair[selectedTokenToTransact]
   if (!repo || !selectedToken) return null
-  console.log({ curveState })
+
   return (
     <Transition appear show={isOpen} as={Fragment}>
-      <Dialog as="div" className="relative z-10" onClose={closeModal}>
+      <Dialog as="div" className="relative z-10" onClose={() => (transactionPending ? undefined : closeModal)}>
         <TransitionChild
           as={Fragment}
           enter="ease-out duration-300"
@@ -326,7 +389,12 @@ export default function TradeModal({ onClose, isOpen }: TradeModalProps) {
                   <DialogTitle as="h3" className="text-xl font-medium text-gray-900">
                     {repo.token?.tokenTicker}/{repo.bondingCurve?.reserveToken?.tokenTicker}
                   </DialogTitle>
-                  <SVG onClick={closeModal} src={CloseCrossIcon} className="w-6 h-6 cursor-pointer" />
+
+                  <SVG
+                    onClick={transactionPending ? undefined : closeModal}
+                    src={CloseCrossIcon}
+                    className="w-6 h-6 cursor-pointer"
+                  />
                 </div>
 
                 <div className="mt-6 flex h-[700px] gap-8">
@@ -336,16 +404,18 @@ export default function TradeModal({ onClose, isOpen }: TradeModalProps) {
                       reserveBalance={parseReserveBalance().toString()}
                       repo={repo}
                       data={chartData}
+                      curveState={curveState}
+                      repoTokenBuyAmount={selectedSide === 'buy' ? amount : `-${amount}`}
                     />
                   </div>
 
                   {/* Buy/Sell Widget Section - 30% */}
-                  {curveState && curveState.reachedFundingGoal ? (
+                  {BigNumber(currentSupply).gt(0) && BigNumber(currentSupply).eq(BigNumber(maxSupply)) ? (
                     <TransferToLP getCurveState={handleGetCurveState} curveState={curveState} />
                   ) : (
                     <div className="w-[30%] bg-white rounded-lg shadow-md p-4 flex flex-col gap-8">
                       <div className="flex flex-col gap-2">
-                        <h1 className="text-base text-gray-600 font-medium">Funding Goal Progress</h1>
+                        <h1 className="text-base text-gray-600 font-medium">Bonding Curve Progress</h1>
                         <Progress
                           height="18px"
                           labelClassName="text-white text-sm pr-2"
@@ -397,8 +467,9 @@ export default function TradeModal({ onClose, isOpen }: TradeModalProps) {
                             </div>
                             <div className="flex w-full relative items-center pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500">
                               <input
+                                disabled={transactionPending}
                                 onChange={handleAmountChange}
-                                className="w-full focus:outline-none  px-3 flex-1"
+                                className="w-full focus:outline-none  px-3 flex-1 disabled:bg-transparent"
                                 type="number"
                                 ref={amountRef}
                                 placeholder="0.00"

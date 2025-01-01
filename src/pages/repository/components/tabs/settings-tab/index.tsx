@@ -7,7 +7,7 @@ import { tabConfig } from './tabConfig'
 const activeClasses = 'text-gray-900 font-medium'
 
 export default function SettingsTab() {
-  const { id, settingsTabName } = useParams()
+  const { id, '*': settingsTabName } = useParams()
 
   const navigate = useNavigate()
   function handleTabChangeEventTracking(idx: number) {

@@ -27,6 +27,14 @@ type Props = {
 //   tokenImage: 'K8nurc9H0_ZQm17jbs3ryEs6MrlX-oIK_krpprWlQ-Q'
 // }
 
+// const MOCK_USDA = {
+//   tokenName: 'USDA Mock',
+//   tokenTicker: 'TUSDA',
+//   processId: 'b87Jd4usKGyMjovbNeX4P3dcvkC4mrtBZ5HxW_ENtn4',
+//   denomination: '12',
+//   tokenImage: 'TPkPIvnvWuyd-hv8J1IAdUlb8aii00Z7vjwMBk_kp0M'
+// }
+
 const QAR = {
   tokenName: 'Q Arweave',
   tokenTicker: 'qAR',

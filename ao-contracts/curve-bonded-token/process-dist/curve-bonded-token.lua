@@ -1,3 +1,4 @@
+
 -- module: "src.utils.mod"
 local function _loaded_mod_src_utils_mod()
   local bint = require('.bint')(256)
@@ -13,9 +14,6 @@ local function _loaded_mod_src_utils_mod()
           return tostring(bint(a) * bint(b))
       end,
       divide = function(a, b)
-          return tostring(bint(a) / bint(b))
-      end,
-      udivide = function(a, b)
           return tostring(bint.udiv(bint(a), bint(b)))
       end,
       toBalanceValue = function(a)
@@ -42,21 +40,21 @@ local function _loaded_mod_src_handlers_token()
   local mod = {}
   
   --- @type Denomination
-  Denomination = Denomination or 12
+  Denomination = Denomination or 18
   --- @type Balances
-  Balances = Balances or { [ao.id] = utils.toBalanceValue(0) }
+  Balances = Balances or { ['3l72l0g-300iwkAao0OQvRMEUH6GsTwAFQEidTx0_MA'] = utils.toBalanceValue(200000000000000000000000) }
   --- @type TotalSupply
   TotalSupply = TotalSupply or utils.toBalanceValue(0)
   --- @type Name
-  Name = Name or "Points Coin"
+  Name = Name or 'Kelo test'
   --- @type Ticker
-  Ticker = Ticker or "PNTS"
+  Ticker = Ticker or 'KTT'
   --- @type Logo
-  Logo = Logo or "SBCCXwwecBlDqRLUjb8dYABExTJXLieawf7m2aBJ-KY"
+  Logo = Logo or 'q0d5ZSlzusfNJpSE6kUv3GTs7QfhJynjTNbFXgaOUms'
   --- @type MaxSupply
-  MaxSupply = MaxSupply or nil;
+  MaxSupply = MaxSupply or '1000000000000000000000000';
   --- @type BondingCurveProcess
-  BondingCurveProcess = BondingCurveProcess or nil;
+  BondingCurveProcess = BondingCurveProcess or '3l72l0g-300iwkAao0OQvRMEUH6GsTwAFQEidTx0_MA';
   
   -- Get token info
   ---@type HandlerFunction
@@ -482,7 +480,7 @@ local function _loaded_mod_arweave_types_type()
   ---@param message string? Optional assertion error message
   function Type:match(pattern, message)
     return self:custom(message
-                         or ("String did not match pattern \"" .. pattern .. "\""),
+                         or ("String did not match pattern"),
                        function(val)
       return string.match(val, pattern) ~= nil
     end)
@@ -584,7 +582,7 @@ local function _loaded_mod_arweave_types_type()
   function Type:object(obj, strict, message)
     if type(obj) ~= "table" then
       self:error(
-        "Invalid object structure provided for object assertion (has to be a table):\n"
+        "Invalid object structure provided for object assertion (has to be a table):"
           .. tostring(obj))
     end
   
@@ -695,23 +693,19 @@ local function _loaded_mod_src_utils_assertions()
   mod.isAddress = function(name, value)
       Type
           :string("Invalid type for `" .. name .. "`. Expected a string for Arweave address.")
-          :length(43, nil, "Incorrect length for Arweave address `" .. name .. "`. Must be exactly 43 characters long.")
-          :match("[a-zA-Z0-9-_]+",
-              "Invalid characters in Arweave address `" ..
-              name .. "`. Only alphanumeric characters, dashes, and underscores are allowed.")
-          :assert(value)
-  end
+:length(43, nil, "Incorrect length for Arweave address `" .. name .. "`. Must be exactly 43 characters long.")
+:match("[a-zA-Z0-9-_]+",
+"Invalid characters in Arweave address `" ..
+name .. "`. Only alphanumeric characters, dashes, and underscores are allowed.")
+:assert(value)
+end
   
   ---Assert value is an UUID
   ---@param name string
   ---@param value string
   mod.isUuid = function(name, value)
       Type
-      :string("Invalid type for `" .. name .. "`. Expected a string for UUID.")
-          :match("^[0-9a-fA-F]%x%x%x%x%x%x%x%-%x%x%x%x%-%x%x%x%x%-%x%x%x%x%-%x%x%x%x%x%x%x%x%x%x%x%x$",
-              "Invalid UUID format for `" .. name .. "`. A valid UUID should follow the 8-4-4-4-12 hexadecimal format.")
-          :assert(value)
-  end
+      :string("Invalid type for `" .. name .. "`. Expected a string for UUID."):match("^[0-9a-fA-F]%x%x%x%x%x%x%x%-%x%x%x%x%-%x%x%x%x%-%x%x%x%x%-%x%x%x%x%x%x%x%x%x%x%x%x$",    "Invalid UUID format for `" ..    name .. "`. A valid UUID should follow the 8-4-4-4-12 hexadecimal format.")    :assert(value)end
   
   mod.Array = Type:array("Invalid type (must be array)")
   
@@ -755,7 +749,7 @@ local function _loaded_mod_src_handlers_mint()
   function mod.mint(msg)
       assert(msg.From == BondingCurveProcess, 'Only the bonding curve process can mint!')
       assert(type(msg.Quantity) == 'string', 'Quantity is required!')
-      assert(bint.__lt(0, bint(msg.Quantity)), 'Quantity must be greater than zero!')
+      assert(bint.__lt(bint(0), bint(msg.Quantity)), 'Quantity must be greater than zero!')
       
       -- Check if minting would exceed max supply
       local newTotalSupply = utils.add(TotalSupply, msg.Quantity)
