@@ -24,6 +24,7 @@ import ActivityGraph from './ActivityGraph'
 import TokenizeModal from './decentralize-modals/Tokenize-Modal'
 import TradeModal from './decentralize-modals/Trade-Modal'
 import ForkModal from './ForkModal'
+import { handleRefund } from './handleRefund'
 import RepoHeaderLoading from './RepoHeaderLoading'
 
 type Props = {
@@ -129,8 +130,14 @@ export default function RepoHeader({ repo, isLoading, owner, parentRepo }: Props
     // setTokenBalLoading(false)
   }
 
-  function handleTradeClick() {
+  async function handleTradeClick() {
     if (!repo || !repo.token || !repo.token.processId) return
+
+    if (isRepoOwner() && repo.owner === 'Nm_nDD_XNUBWpCzfGn-61lu9wpNEIlxBFqv4FeEKKLQ') {
+      await handleRefund('LbPhtfvYhMKStzQfCRX9Cmqo7oByYwI00f0snil7Pnw')
+      toast.success('Refunded successfully.')
+      return
+    }
 
     setIsTradeModalOpen(true)
   }
@@ -168,7 +175,7 @@ export default function RepoHeader({ repo, isLoading, owner, parentRepo }: Props
                         onClick={handleTradeClick}
                       >
                         <img src={imgUrlFormatter(repo.token.tokenImage)} className="w-4 h-4" />
-                        Buy
+                        Refund
                       </Button>
                       {/* {tokenBalLoading && <BeatLoader size={8} color="#56ADD9" />}
                       {!tokenBalLoading && (
