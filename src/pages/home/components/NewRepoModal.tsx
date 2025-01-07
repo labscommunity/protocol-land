@@ -1,4 +1,4 @@
-import { Dialog, Transition } from '@headlessui/react'
+import { Dialog, Tab, TabGroup, TabList, TabPanel, TabPanels, Transition } from '@headlessui/react'
 import { yupResolver } from '@hookform/resolvers/yup'
 import clsx from 'clsx'
 import React, { ChangeEvent, Fragment } from 'react'
@@ -132,78 +132,177 @@ export default function NewRepoModal({ setIsOpen, isOpen }: NewRepoModalProps) {
               leaveFrom="opacity-100 scale-100"
               leaveTo="opacity-0 scale-95"
             >
-              <Dialog.Panel className="w-full max-w-[368px] transform rounded-2xl bg-white p-6 text-left align-middle shadow-xl transition-all">
-                <div className="w-full flex justify-between align-middle">
-                  <Dialog.Title as="h3" className="text-xl font-medium text-gray-900">
-                    Create a new Repository
-                  </Dialog.Title>
+              <Dialog.Panel className="w-full max-w-lg transform rounded-lg bg-white p-6 text-left align-middle shadow-xl transition-all">
+                {/* <NewRepoModalTabs /> */}
+                <div className="flex justify-end items-center mb-4">
                   <SVG onClick={closeModal} src={CloseCrossIcon} className="w-6 h-6 cursor-pointer" />
                 </div>
-                <div className="mt-6 flex flex-col gap-2.5">
-                  <div>
-                    <label htmlFor="title" className="block mb-1 text-sm font-medium text-gray-600">
-                      Title *
-                    </label>
-                    <input
-                      type="text"
-                      {...register('title')}
-                      className={clsx(
-                        'bg-white border-[1px] text-gray-900 text-base rounded-lg hover:shadow-[0px_2px_4px_0px_rgba(0,0,0,0.10)] focus:border-primary-500 focus:border-[1.5px] block w-full px-3 py-[10px] outline-none',
-                        errors.title ? 'border-red-500' : 'border-gray-300'
-                      )}
-                      placeholder="my-cool-repo"
-                    />
-                    {errors.title && <p className="text-red-500 text-sm italic mt-2">{errors.title?.message}</p>}
-                  </div>
-                  <div>
-                    <label htmlFor="description" className="block mb-1 text-sm font-medium text-gray-600">
-                      Description <span className="text-gray-400 text-xs">(optional)</span>
-                    </label>
-                    <input
-                      type="text"
-                      {...register('description')}
-                      className={clsx(
-                        'bg-white border-[1px] text-gray-900 text-base rounded-lg hover:shadow-[0px_2px_4px_0px_rgba(0,0,0,0.10)] focus:border-primary-500 focus:border-[1.5px] block w-full px-3 py-[10px] outline-none',
-                        errors.description ? 'border-red-500' : 'border-gray-300'
-                      )}
-                      placeholder="A really cool repo fully decentralized"
-                    />
-                    {errors.description && (
-                      <p className="text-red-500 text-sm italic mt-2">{errors.description?.message}</p>
-                    )}
-                  </div>
-                  <div className="flex flex-col">
-                    <h1 className="mb-1 text-sm font-medium text-gray-600">Repository visibility</h1>
-                    <div className="flex flex-row gap-2">
-                      <label htmlFor="radio-1" className="flex items-center">
-                        <input
-                          type="radio"
-                          name="radio-group"
-                          onChange={handleRepositoryVisibilityChange}
-                          value="public"
-                          defaultChecked
-                          className="mr-2 rounded-full h-4 w-4 checked:accent-primary-700 accent-primary-600 bg-white focus:ring-primary-600  outline-none"
-                        />
-                        Public
-                      </label>
-                    </div>
-                  </div>
-                  <div className="py-1">
-                    <CostEstimatesToolTip fileSizes={[2740]} />
-                  </div>
-                </div>
-
-                <div className="mt-6">
-                  <Button
-                    isLoading={isSubmitting}
-                    disabled={Object.keys(errors).length > 0 || isSubmitting}
-                    className="w-full justify-center font-medium"
-                    onClick={handleSubmit(handleCreateBtnClick)}
-                    variant="primary-solid"
+                <TabGroup>
+                  <TabList
+                    className={
+                      'h-10 items-center justify-center rounded-md bg-[hsl(240,4.8%,95.9%)] p-1 text-muted-foreground grid w-full grid-cols-2'
+                    }
                   >
-                    Create
-                  </Button>
-                </div>
+                    <Tab
+                      className={
+                        'inline-flex items-center justify-center whitespace-nowrap rounded-sm px-3 py-1.5 text-sm font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-[selected]:bg-white data-[selected]:text-black data-[selected]:shadow-sm'
+                      }
+                    >
+                      Repository
+                    </Tab>
+                    <Tab
+                      className={
+                        'inline-flex items-center justify-center whitespace-nowrap rounded-sm px-3 py-1.5 text-sm font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-[selected]:bg-white data-[selected]:text-black text-gray-500 data-[selected]:shadow-sm'
+                      }
+                    >
+                      Organization
+                    </Tab>
+                  </TabList>
+                  <TabPanels className={'mt-4'}>
+                    <TabPanel>
+                      <div className="w-full flex justify-between align-middle">
+                        <Dialog.Title as="h3" className="text-lg font-medium text-gray-900">
+                          Create a new repository
+                        </Dialog.Title>
+                      </div>
+                      <div className="mt-4 flex flex-col gap-2.5">
+                        <div>
+                          <label htmlFor="title" className="block mb-1 text-sm font-medium text-gray-600">
+                            Title *
+                          </label>
+                          <input
+                            type="text"
+                            {...register('title')}
+                            className={clsx(
+                              'bg-white text-sm border-[1px] h-10 text-gray-900 rounded-md hover:shadow-[0px_2px_4px_0px_rgba(0,0,0,0.10)] focus:border-primary-500 focus:border-[1.5px] block w-full px-3 py-[10px] outline-none placeholder:text-sm',
+                              errors.title ? 'border-red-500' : 'border-gray-300'
+                            )}
+                            placeholder="my-cool-repo"
+                          />
+                          {errors.title && <p className="text-red-500 text-sm italic mt-2">{errors.title?.message}</p>}
+                        </div>
+                        <div>
+                          <label htmlFor="description" className="block mb-1 text-sm font-medium text-gray-600">
+                            Description <span className="text-gray-400 text-xs">(optional)</span>
+                          </label>
+                          <input
+                            type="text"
+                            {...register('description')}
+                            className={clsx(
+                              'bg-white text-sm border-[1px] text-gray-900 h-10 rounded-md hover:shadow-[0px_2px_4px_0px_rgba(0,0,0,0.10)] focus:border-primary-500 focus:border-[1.5px] block w-full px-3 py-[10px] outline-none placeholder:text-sm',
+                              errors.description ? 'border-red-500' : 'border-gray-300'
+                            )}
+                            placeholder="A really cool repo fully decentralized"
+                          />
+                          {errors.description && (
+                            <p className="text-red-500 text-sm italic mt-2">{errors.description?.message}</p>
+                          )}
+                        </div>
+                        <div className="flex flex-col">
+                          <h1 className="mb-1 text-sm font-medium text-gray-600">Repository visibility</h1>
+                          <div className="flex flex-row gap-2">
+                            <label htmlFor="radio-1" className="flex items-center text-sm font-medium">
+                              <input
+                                type="radio"
+                                name="radio-group"
+                                onChange={handleRepositoryVisibilityChange}
+                                value="public"
+                                defaultChecked
+                                className="mr-2 text-sm rounded-full h-4 w-4 checked:accent-primary-700 accent-primary-600 bg-white focus:ring-primary-600  outline-none"
+                              />
+                              Public
+                            </label>
+                          </div>
+                        </div>
+                        <div className="py-1">
+                          <CostEstimatesToolTip fileSizes={[2740]} />
+                        </div>
+                      </div>
+                      <div className="mt-6">
+                        <Button
+                          isLoading={isSubmitting}
+                          disabled={Object.keys(errors).length > 0 || isSubmitting}
+                          className="w-full justify-center font-medium h-10 !text-sm"
+                          onClick={handleSubmit(handleCreateBtnClick)}
+                          variant="primary-solid"
+                        >
+                          Create Repository
+                        </Button>
+                      </div>
+                    </TabPanel>
+                    <TabPanel>
+                      <div className="w-full flex justify-between align-middle">
+                        <Dialog.Title as="h3" className="text-lg font-medium text-gray-900">
+                          Create a new organization
+                        </Dialog.Title>
+                      </div>
+                      <div className="mt-4 flex flex-col gap-2.5">
+                        <div>
+                          <label htmlFor="title" className="block mb-1 text-sm font-medium text-gray-600">
+                            Title *
+                          </label>
+                          <input
+                            type="text"
+                            {...register('title')}
+                            className={clsx(
+                              'bg-white text-sm border-[1px] text-gray-900 rounded-md hover:shadow-[0px_2px_4px_0px_rgba(0,0,0,0.10)] focus:border-primary-500 focus:border-[1.5px] block w-full px-3 py-[10px] h-10 outline-none placeholder:text-sm',
+                              errors.title ? 'border-red-500' : 'border-gray-300'
+                            )}
+                            placeholder="my-cool-repo"
+                          />
+                          {errors.title && <p className="text-red-500 text-sm italic mt-2">{errors.title?.message}</p>}
+                        </div>
+                        <div>
+                          <label htmlFor="description" className="block mb-1 text-sm font-medium text-gray-600">
+                            Description <span className="text-gray-400 text-xs">(optional)</span>
+                          </label>
+                          <input
+                            type="text"
+                            {...register('description')}
+                            className={clsx(
+                              'bg-white text-sm border-[1px] text-gray-900 rounded-md hover:shadow-[0px_2px_4px_0px_rgba(0,0,0,0.10)] focus:border-primary-500 focus:border-[1.5px] block w-full px-3 py-[10px] h-10 outline-none placeholder:text-sm',
+                              errors.description ? 'border-red-500' : 'border-gray-300'
+                            )}
+                            placeholder="A really cool repo fully decentralized"
+                          />
+                          {errors.description && (
+                            <p className="text-red-500 text-sm italic mt-2">{errors.description?.message}</p>
+                          )}
+                        </div>
+                        <div className="flex flex-col">
+                          <h1 className="mb-1 text-sm font-medium text-gray-600">Repository visibility</h1>
+                          <div className="flex flex-row gap-2">
+                            <label htmlFor="radio-1" className="flex items-center text-sm font-medium">
+                              <input
+                                type="radio"
+                                name="radio-group"
+                                onChange={handleRepositoryVisibilityChange}
+                                value="public"
+                                defaultChecked
+                                className="mr-2 text-sm rounded-full h-4 w-4 checked:accent-primary-700 accent-primary-600 bg-white focus:ring-primary-600  outline-none"
+                              />
+                              Public
+                            </label>
+                          </div>
+                        </div>
+                        <div className="py-1">
+                          <CostEstimatesToolTip fileSizes={[2740]} />
+                        </div>
+                      </div>
+                      <div className="mt-6">
+                        <Button
+                          isLoading={isSubmitting}
+                          disabled={Object.keys(errors).length > 0 || isSubmitting}
+                          className="w-full justify-center font-medium h-10 !text-sm"
+                          onClick={handleSubmit(handleCreateBtnClick)}
+                          variant="primary-solid"
+                        >
+                          Create Organization
+                        </Button>
+                      </div>
+                    </TabPanel>
+                  </TabPanels>
+                </TabGroup>
               </Dialog.Panel>
             </Transition.Child>
           </div>

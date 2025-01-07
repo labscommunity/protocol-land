@@ -24,7 +24,7 @@ export default function Button<C extends React.ElementType = 'button'>(props: Bu
   const Component = as || 'button'
 
   const buttonClasses =
-    'px-4 py-[10px] rounded-[8px] disabled:bg-[#E0E0E0] disabled:shadow-[0px_2px_4px_0px_rgba(0,0,0,0.05)] disabled:text-[#A6A6A6] flex items-center'
+    'px-4 py-[10px] rounded-md disabled:bg-[#E0E0E0] disabled:shadow-[0px_2px_4px_0px_rgba(0,0,0,0.05)] disabled:text-[#A6A6A6] flex items-center'
 
   return (
     <Component className={clsx(buttonClasses, variant && VARIANTS[variant], className)} {...buttonProps}>
