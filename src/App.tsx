@@ -1,6 +1,7 @@
 import { Toaster } from 'react-hot-toast'
 import { HashRouter, Route, Routes } from 'react-router-dom'
 
+import OrgRepoWrapper from './components/OrgRepoWrapper'
 import AppLayout from './layouts/AppLayout'
 import Article from './pages/blog/Article'
 import Blog from './pages/blog/BlogList'
@@ -12,10 +13,10 @@ import SubmissionDetails from './pages/hackathon/SubmissionDetails'
 import SubmitHackathon from './pages/hackathon/SubmitHackathon'
 import Home from './pages/home/Home'
 import { CreateIssuePage, ReadIssuePage } from './pages/issue'
+import OrganizationPage from './pages/organization/Organization'
 import Profile from './pages/profile/Profile'
 import { NewPullRequest, ReadPullRequest } from './pages/pull'
 import Repository from './pages/repository/Repository'
-import RepositoryWrapper from './pages/repository/RepositoryWrapper'
 
 const repositoryRoutes = [
   { path: '/repository/:id/:tabName?/*?', element: <Repository /> },
@@ -24,6 +25,8 @@ const repositoryRoutes = [
   { path: '/repository/:id/issue/new', element: <CreateIssuePage /> },
   { path: '/repository/:id/issue/:issueId', element: <ReadIssuePage /> }
 ]
+
+const organizationRoutes = [{ path: '/organization/:id/:tabName?', element: <OrganizationPage /> }]
 
 const hackathonRoutes = [
   { path: '/hackathon', element: <Hackathon /> },
@@ -46,11 +49,18 @@ function App() {
           <Route
             key={index}
             path={path}
-            element={<AppLayout Component={() => <RepositoryWrapper element={element} />} />}
+            element={<AppLayout Component={() => <OrgRepoWrapper element={element} />} />}
           />
         ))}
         {hackathonRoutes.map(({ path, element }, index) => (
           <Route key={index} path={path} element={<AppLayout Component={() => element} />} />
+        ))}
+        {organizationRoutes.map(({ path, element }, index) => (
+          <Route
+            key={index}
+            path={path}
+            element={<AppLayout Component={() => <OrgRepoWrapper element={element} />} />}
+          />
         ))}
       </Routes>
 

@@ -132,7 +132,7 @@ export default function NewRepoModal({ setIsOpen, isOpen }: NewRepoModalProps) {
               leaveFrom="opacity-100 scale-100"
               leaveTo="opacity-0 scale-95"
             >
-              <Dialog.Panel className="w-full max-w-lg transform rounded-lg bg-white p-6 text-left align-middle shadow-xl transition-all">
+              <Dialog.Panel className="w-full max-w-md transform rounded-lg bg-white p-6 text-left align-middle shadow-xl transition-all">
                 {/* <NewRepoModalTabs /> */}
                 <div className="flex justify-end items-center mb-4">
                   <SVG onClick={closeModal} src={CloseCrossIcon} className="w-6 h-6 cursor-pointer" />
@@ -270,7 +270,7 @@ export default function NewRepoModal({ setIsOpen, isOpen }: NewRepoModalProps) {
                           )}
                         </div>
                         <div className="flex flex-col">
-                          <h1 className="mb-1 text-sm font-medium text-gray-600">Repository visibility</h1>
+                          <h1 className="mb-1 text-sm font-medium text-gray-600">Organization visibility</h1>
                           <div className="flex flex-row gap-2">
                             <label htmlFor="radio-1" className="flex items-center text-sm font-medium">
                               <input
