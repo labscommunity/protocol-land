@@ -1,6 +1,5 @@
 import React from 'react'
 import { AiFillCamera } from 'react-icons/ai'
-import { BsFillPersonFill } from 'react-icons/bs'
 
 export default function Avatar({
   url,
