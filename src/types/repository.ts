@@ -16,6 +16,7 @@ export type Repo = {
   token: RepoToken | null | undefined
   bondingCurve: BondingCurve | null | undefined
   liquidityPoolId: string | null
+  organizationId: string | null
   uploadStrategy: 'DEFAULT' | 'ARSEEDING'
   owner: string
   pullRequests: PullRequest[]

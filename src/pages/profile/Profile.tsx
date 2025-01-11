@@ -6,7 +6,8 @@ import { Seo } from '@/components/Seo'
 import { trackGoogleAnalyticsPageView } from '@/helpers/google-analytics'
 import { defaultMetaTagsData } from '@/helpers/seoUtils'
 import { useGlobalStore } from '@/stores/globalStore'
-import { fetchUserRepos } from '@/stores/user/actions'
+import { fetchUserOrgs, fetchUserRepos } from '@/stores/user/actions'
+import { Organization } from '@/types/orgs'
 import { Repo } from '@/types/repository'
 import { User } from '@/types/user'
 
@@ -20,6 +21,7 @@ const activeClasses = 'border-b-[2px] border-primary-600 text-gray-900 font-medi
 export default function Profile() {
   const [status, setStatus] = React.useState('PENDING')
   const [userRepos, setUserRepos] = React.useState<Repo[]>([])
+  const [userOrgs, setUserOrgs] = React.useState<Organization[]>([])
   const [userDetails, setUserDetails] = React.useState<Partial<User>>({})
   const [fetchUserDetailsByAddress] = useGlobalStore((state) => [state.userActions.fetchUserDetailsByAddress])
   const { id } = useParams()
@@ -38,8 +40,10 @@ export default function Profile() {
   async function fetchUserDetails(address: string) {
     const userDetails = await fetchUserDetailsByAddress(address)
     const repos = await fetchUserRepos(address)
+    const orgs = await fetchUserOrgs(address)
 
     setUserRepos(repos)
+    setUserOrgs(orgs)
     setUserDetails(userDetails)
 
     setStatus('SUCCESS')
@@ -82,7 +86,7 @@ export default function Profile() {
                 {status === 'SUCCESS' &&
                   rootTabConfig.map((TabItem) => (
                     <Tab.Panel className={'flex flex-col flex-1'}>
-                      <TabItem.Component userDetails={userDetails} userRepos={userRepos} />
+                      <TabItem.Component userDetails={userDetails} userRepos={userRepos} userOrgs={userOrgs} />
                     </Tab.Panel>
                   ))}
               </Tab.Panels>

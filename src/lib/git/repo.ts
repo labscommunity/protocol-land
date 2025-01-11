@@ -33,7 +33,17 @@ const arweave = new Arweave({
   protocol: 'https'
 })
 
-export async function postNewRepo({ id, title, description, file, owner, visibility,tokenProcessId }: any) {
+export async function postNewRepo({
+  id,
+  title,
+  description,
+  file,
+  owner,
+  visibility,
+  tokenProcessId,
+  creator,
+  orgId
+}: any) {
   const userSigner = await getSigner()
 
   const data = (await toArrayBuffer(file)) as ArrayBuffer
@@ -46,7 +56,8 @@ export async function postNewRepo({ id, title, description, file, owner, visibil
     { name: 'Description', value: description },
     { name: 'Repo-Id', value: id },
     { name: 'Type', value: 'repo-create' },
-    { name: 'Visibility', value: visibility }
+    { name: 'Visibility', value: visibility },
+    { name: 'Scope', value: creator }
   ] as Tag[]
 
   await waitFor(500)
@@ -57,17 +68,24 @@ export async function postNewRepo({ id, title, description, file, owner, visibil
     throw new Error('Failed to post Git repository')
   }
 
+  const tags: Record<string, string> = {
+    Action: 'Initialize-Repo',
+    Id: id,
+    Name: title,
+    Description: description,
+    'Data-TxId': dataTxResponse,
+    Visibility: 'public',
+    'Private-State-TxId': '',
+    'Token-Process-Id': tokenProcessId,
+    Creator: creator
+  }
+
+  if (orgId) {
+    tags['OrgId'] = orgId
+  }
+
   await sendMessage({
-    tags: getTags({
-      Action: 'Initialize-Repo',
-      Id: id,
-      Name: title,
-      Description: description,
-      'Data-TxId': dataTxResponse,
-      Visibility: 'public',
-      'Private-State-TxId': '',
-      'Token-Process-Id': tokenProcessId
-    })
+    tags: getTags(tags)
   })
 
   return { txResponse: dataTxResponse }

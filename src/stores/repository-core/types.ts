@@ -3,7 +3,16 @@ import { Edge, Node } from '@xyflow/react'
 import { CurveStep } from '@/lib/discrete-bonding-curve/curve'
 import { UserCommit, UserContributionData, UserPROrIssue } from '@/lib/user'
 import { CommitResult } from '@/types/commit'
-import { BondingCurve, Deployment, Domain, GithubSync, Repo, RepoLiquidityPoolToken, RepoToken } from '@/types/repository'
+import { Organization } from '@/types/orgs'
+import {
+  BondingCurve,
+  Deployment,
+  Domain,
+  GithubSync,
+  Repo,
+  RepoLiquidityPoolToken,
+  RepoToken
+} from '@/types/repository'
 
 export interface RepoCoreSlice {
   repoCoreState: RepoCoreState
@@ -15,6 +24,7 @@ export type RepoCoreState = {
     status: ApiStatus
     error: unknown | null
     repo: Repo | null
+    organization: Organization | null
     repoHierarchy: RepoHierarchy
     statistics: {
       commits: UserCommit[]
@@ -84,6 +94,8 @@ export type RepoCoreActions = {
   saveRepoBondingCurveDetails: (bondingCurve: BondingCurve) => Promise<void>
   saveLiquidityPoolId: (liquidityPoolId: string) => Promise<void>
   saveBondingCurveId: (bondingCurveId: string) => Promise<void>
+  transferOwnership: (address: string) => Promise<void>
+  transferOwnershipToOrganization: (orgId: string) => Promise<void>
   isRepoOwner: () => boolean
   isContributor: () => boolean
   reset: () => void

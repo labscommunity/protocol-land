@@ -111,7 +111,7 @@ export default function Sidebar({
       if (!userDetails.isUserNameArNS) {
         setValue('isUserNameArNS', false)
       }
-      
+
       for (const [key, value] of Object.entries(userDetails)) {
         setValue(key as any, value)
       }
@@ -324,10 +324,10 @@ export default function Sidebar({
   return (
     <div className="flex flex-col w-[296px] gap-4">
       <Avatar setAvatar={setAvatar} mode={'READ'} url={userDetails?.avatar} />
-      <div className="flex flex-col">
+      <div className="flex flex-col items-center">
         {userDetails.fullname && <h2 className="font-bold text-gray-900 text-2xl">{userDetails.fullname}</h2>}
         {userDetails.username && !userDetails.isUserNameArNS && (
-          <h3 className="font-medium text-gray-600 text-lg">{userDetails.username}</h3>
+          <h3 className="text-gray-600 text-base">{userDetails.username}</h3>
         )}
         {userDetails.username && userDetails.isUserNameArNS && (
           <div
@@ -341,9 +341,16 @@ export default function Sidebar({
             </span>
           </div>
         )}
-        <h3 className="font-medium text-gray-600 text-lg">{shortenAddress(id!, 12)}</h3>
+        <h3 className="font-mono text-gray-600 text-sm mt-1">{shortenAddress(id!, 12)}</h3>
+        {address === id! && isLoggedIn && (
+          <div className="w-full mt-4">
+            <Button onClick={handleEditDetailsClick} className="w-full justify-center" variant="primary-solid">
+              Edit details
+            </Button>
+          </div>
+        )}
       </div>
-      <div className="flex flex-col gap-1">
+      <div className="flex flex-col gap-3 mt-2">
         {userDetails.location && (
           <div className="flex gap-2 items-center text-gray-600 text-lg">
             <TiLocation className="w-5 h-5" />
@@ -369,13 +376,6 @@ export default function Sidebar({
           </div>
         )}
       </div>
-      {address === id! && isLoggedIn && (
-        <div className="w-full mt-4">
-          <Button onClick={handleEditDetailsClick} className="w-full justify-center" variant="primary-solid">
-            Edit details
-          </Button>
-        </div>
-      )}
     </div>
   )
 }

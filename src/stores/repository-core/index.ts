@@ -21,6 +21,7 @@ import { useRepoHeaderStore } from '@/pages/repository/store/repoHeader'
 import { Deployment, Domain, GithubSync } from '@/types/repository'
 
 import { changeBranch, getBranchList, getCurrentActiveBranch } from '../branch/actions'
+import { getOrganizationById } from '../organization/actions'
 import { CombinedSlices } from '../types'
 import {
   countCommits,
@@ -37,6 +38,8 @@ import {
   handleSaveLiquidityPoolId,
   handleSaveRepoBondingCurve,
   handleSaveRepoToken,
+  handleTransferOwnership,
+  handleTransferOwnershipToOrganization,
   loadRepository,
   renameRepoDir,
   saveRepository
@@ -48,6 +51,7 @@ const initialRepoCoreState: RepoCoreState = {
     status: 'IDLE',
     error: null,
     repo: null,
+    organization: null,
     repoHierarchy: {
       edges: [],
       nodes: []
@@ -232,16 +236,33 @@ const createRepoCoreSlice: StateCreator<CombinedSlices, [['zustand/immer', never
     },
     isRepoOwner: () => {
       const repo = get().repoCoreState.selectedRepo.repo
+      const organization = get().repoCoreState.selectedRepo.organization
       const userAddress = get().authState.address
 
       if (!repo || !userAddress) {
         return false
       }
 
-      return repo.owner === userAddress
+      const isOwner = repo.owner === userAddress
+
+      if (isOwner) {
+        return true
+      }
+
+      if (organization) {
+        const isOrgMember = organization.members.find((member) => member.address === userAddress)
+        const isOrgAdmin = organization.members.find((admin) => admin.role === 'ADMIN' || admin.role === 'OWNER')
+
+        const hasAccess = isOrgMember && isOrgAdmin ? true : false
+
+        return hasAccess
+      }
+
+      return false
     },
     isContributor: () => {
       const repo = get().repoCoreState.selectedRepo.repo
+      const organization = get().repoCoreState.selectedRepo.organization
       const userAddress = get().authState.address
 
       if (!repo || !userAddress) {
@@ -260,7 +281,18 @@ const createRepoCoreSlice: StateCreator<CombinedSlices, [['zustand/immer', never
 
       const isContributor = repo?.contributors?.indexOf(userAddress) > -1
 
-      return isContributor
+      if (isContributor) {
+        return true
+      }
+
+      if (repo.organizationId && organization) {
+        const isOrgMember = organization.members.find((member) => member.address === userAddress)
+        if (isOrgMember) {
+          return true
+        }
+      }
+
+      return false
     },
     updateRepoName: async (name: string) => {
       const repo = get().repoCoreState.selectedRepo.repo
@@ -646,6 +678,105 @@ const createRepoCoreSlice: StateCreator<CombinedSlices, [['zustand/immer', never
         })
       }
     },
+    transferOwnership: async (address: string) => {
+      const repo = get().repoCoreState.selectedRepo.repo
+      const loggedInAddress = get().authState.address
+
+      if (!loggedInAddress) {
+        toast.error('You must be logged in to transfer ownership')
+        return
+      }
+
+      if (!repo) {
+        set((state) => (state.repoCoreState.git.status = 'ERROR'))
+
+        return
+      }
+
+      if (repo.owner !== loggedInAddress) {
+        toast.error('You must be the owner of the repository to transfer ownership')
+        return
+      }
+
+      const { error } = await withAsync(() => handleTransferOwnership(repo.id, address))
+
+      if (error) {
+        toast.error('Failed to transfer ownership')
+        return
+      }
+
+      toast.success('Ownership transferred successfully')
+      trackGoogleAnalyticsEvent('Repository', 'Transfer ownership', 'Transfer repo ownership', {
+        repo_name: repo.name,
+        repo_id: repo.id,
+        result: 'SUCCESS'
+      })
+      await get().repoCoreActions.fetchAndLoadRepository(repo.id)
+    },
+    transferOwnershipToOrganization: async (orgId: string) => {
+      const repo = get().repoCoreState.selectedRepo.repo
+      const loggedInAddress = get().authState.address
+
+      if (!loggedInAddress) {
+        toast.error('You must be logged in to transfer ownership')
+        return
+      }
+
+      if (!repo) {
+        set((state) => (state.repoCoreState.git.status = 'ERROR'))
+
+        return
+      }
+
+      if (repo.owner !== loggedInAddress) {
+        toast.error('You must be the owner of the repository to transfer ownership')
+        return
+      }
+
+      if (repo.organizationId) {
+        toast.error('Repository already belongs to an organization')
+        return
+      }
+
+      const { error, response } = await withAsync(() => getOrganizationById(orgId))
+
+      if (error || !response) {
+        toast.error('Failed to get organization')
+        return
+      }
+
+      const userAdmin = response.members.find(
+        (member) =>
+          (member.address === loggedInAddress && member.role === 'ADMIN') ||
+          (member.address === loggedInAddress && member.role === 'OWNER')
+      )
+
+      if (!userAdmin) {
+        toast.error('You must be an admin or owner of the organization to transfer ownership')
+        return
+      }
+
+      const { error: transferError } = await withAsync(() => handleTransferOwnershipToOrganization(repo.id, orgId))
+
+      if (transferError) {
+        toast.error('Failed to transfer ownership')
+        return
+      }
+
+      trackGoogleAnalyticsEvent(
+        'Repository',
+        'Transfer ownership to organization',
+        'Transfer repo ownership to organization',
+        {
+          repo_name: repo.name,
+          repo_id: repo.id,
+          org_id: orgId,
+          result: 'SUCCESS'
+        }
+      )
+
+      await get().repoCoreActions.fetchAndLoadRepository(repo.id)
+    },
     rejectContributor: async () => {
       const repo = get().repoCoreState.selectedRepo.repo
 
@@ -754,6 +885,18 @@ const createRepoCoreSlice: StateCreator<CombinedSlices, [['zustand/immer', never
 
         if (metaError || !metaResponse || !metaResponse.result) {
           throw new Error('Error fetching repository meta.')
+        }
+
+        if (metaResponse.result.organizationId) {
+          const { error: orgError, response: orgResponse } = await withAsync(() =>
+            getOrganizationById(metaResponse.result.organizationId!)
+          )
+          if (orgError || !orgResponse) {
+            throw new Error('Error fetching organization.')
+          }
+          set((state) => {
+            state.repoCoreState.selectedRepo.organization = orgResponse
+          })
         }
 
         set((state) => {

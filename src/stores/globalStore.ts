@@ -9,11 +9,11 @@ import createAuthSlice from './auth'
 import createBranchSlice from './branch'
 import createHackathonSlice from './hackathon'
 import createIssuesSlice from './issues'
+import createOrganizationSlice from './organization'
 import createPullRequestSlice from './pull-request'
 import createRepoCoreSlice from './repository-core'
 import { CombinedSlices } from './types'
 import createUserSlice from './user'
-
 enableMapSet()
 
 const withMiddlewares = <T>(f: StateCreator<T, [['zustand/immer', never]], []>) => devtools(immer<T>(f))
@@ -26,7 +26,8 @@ export const useGlobalStore = createWithEqualityFn(
     ...createBranchSlice(...args),
     ...createPullRequestSlice(...args),
     ...createIssuesSlice(...args),
-    ...createHackathonSlice(...args)
+    ...createHackathonSlice(...args),
+    ...createOrganizationSlice(...args)
   })),
   shallow
 )

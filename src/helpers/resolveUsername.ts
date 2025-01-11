@@ -1,6 +1,6 @@
 import { useGlobalStore } from '@/stores/globalStore'
 
-import { shortenAddress } from './shortenAddress'
+import { shortenAddress, shortenUUID } from './shortenAddress'
 
 /**
  * Retrieves the username for a given address or returns the address itself if the username is not found.
@@ -24,10 +24,21 @@ export function resolveUsername(address: string): string {
  * @returns {string} The username if found; otherwise, a shortened version of the address.
  */
 export function resolveUsernameOrShorten(address: string, range: number = 4): string {
-  const user = useGlobalStore.getState().userState.allUsers.get(address)
-  if (user?.username) {
-    return user.username
+  const arweaveAddressPattern = /^[a-zA-Z0-9_-]{43}$/
+  const uuidPattern = /^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/
+  if (arweaveAddressPattern.test(address)) {
+    const user = useGlobalStore.getState().userState.allUsers.get(address)
+    if (user?.username) {
+      return user.username
+    }
+
+    return shortenAddress(address, range)
+  }
+
+  if (uuidPattern.test(address)) {
+    return shortenUUID(address, range)
   }
 
   return shortenAddress(address, range)
 }
+

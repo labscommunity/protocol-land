@@ -1,5 +1,6 @@
-import { RiBookOpenFill, RiGitRepositoryFill } from 'react-icons/ri'
+import { RiBookOpenFill, RiGitRepositoryFill, RiUserFill } from 'react-icons/ri'
 
+import OrganizationsTab from '../components/tabs/organizations'
 import OverviewTab from '../components/tabs/overview'
 import RepositoriesTab from '../components/tabs/repositories'
 
@@ -13,5 +14,10 @@ export const rootTabConfig = [
     title: 'Repositories',
     Component: RepositoriesTab,
     Icon: RiGitRepositoryFill
+  },
+  {
+    title: 'Organizations',
+    Component: OrganizationsTab,
+    Icon: RiUserFill
   }
 ]

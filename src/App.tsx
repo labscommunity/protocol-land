@@ -26,7 +26,10 @@ const repositoryRoutes = [
   { path: '/repository/:id/issue/:issueId', element: <ReadIssuePage /> }
 ]
 
-const organizationRoutes = [{ path: '/organization/:id/:tabName?', element: <OrganizationPage /> }]
+const organizationRoutes = [
+  { path: '/organization/:username/:tabName?', element: <OrganizationPage /> },
+  // { path: '/organization/:id/:tabName?', element: <OrganizationPage /> }
+]
 
 const hackathonRoutes = [
   { path: '/hackathon', element: <Hackathon /> },

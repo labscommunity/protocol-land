@@ -16,12 +16,14 @@ export const getRepositoryMetaFromContract = async (id: string): Promise<{ resul
   return { result: repo }
 }
 
-export const isRepositoryNameAvailable = async (name: string): Promise<boolean> => {
+export const isRepositoryNameAvailable = async (name: string, orgId?: string): Promise<boolean> => {
   const { Messages } = await dryrun({
     process: AOS_PROCESS_ID,
     tags: getTags({
       Action: 'Get-Repo-Availability',
-      Name: name
+      Name: name,
+      Creator: orgId ? 'ORGANIZATION' : 'USER',
+      OrgId: orgId || ''
     }),
     Owner: useGlobalStore.getState().authState.address as string
   })
@@ -213,4 +215,60 @@ export const fetchRepoHierarchy = async (id: string) => {
   })
 
   return JSON.parse(Messages[0].Data)
+}
+
+export const handleTransferOwnership = async (id: string, address: string) => {
+  const msgId = await sendMessage({
+    tags: getTags({
+      Action: 'Change-Repo-Owner',
+      Id: id,
+      'User-Address': address
+    }),
+    pid: AOS_PROCESS_ID
+  })
+
+  // await pollForTxBeingAvailable({ txId: msgId })
+
+  const { Messages } = await result({
+    message: msgId,
+    process: AOS_PROCESS_ID
+  })
+
+  if (!Messages[0]) {
+    throw new Error('Failed to transfer ownership')
+  }
+
+  const action = Messages[0].Tags.find((tag: Tag) => tag.name === 'Action' && tag.value === 'Repo-Owner-Changed')
+
+  if (!action) {
+    throw new Error('Failed to transfer ownership')
+  }
+}
+
+export const handleTransferOwnershipToOrganization = async (id: string, orgId: string) => {
+  const msgId = await sendMessage({
+    tags: getTags({
+      Action: 'Add-Repo-To-Organization',
+      'Repo-Id': id,
+      'Org-Id': orgId
+    }),
+    pid: AOS_PROCESS_ID
+  })
+
+  // await pollForTxBeingAvailable({ txId: msgId })
+
+  const { Messages } = await result({
+    message: msgId,
+    process: AOS_PROCESS_ID
+  })
+
+  if (!Messages[0]) {
+    throw new Error('Failed to transfer ownership')
+  }
+
+  const action = Messages[0].Tags.find((tag: Tag) => tag.name === 'Action' && tag.value === 'Organization-Repo-Added')
+
+  if (!action) {
+    throw new Error('Failed to transfer ownership')
+  }
 }

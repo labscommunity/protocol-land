@@ -135,18 +135,36 @@ export default function RepoHeader({ repo, isLoading, owner, parentRepo }: Props
     setIsTradeModalOpen(true)
   }
 
+  function handleUsernameClick() {
+    if (!repo || !repo.owner) return
+
+    const arweaveAddressPattern = /^[a-zA-Z0-9_-]{43}$/
+    const uuidPattern = /^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/
+
+    if (arweaveAddressPattern.test(repo.owner)) {
+      navigate(`/user/${repo.owner}`)
+    } else if (uuidPattern.test(repo.owner)) {
+      navigate(`/organization/${repo.owner}`)
+    }
+  }
+
   return (
     <div className="flex flex-col">
       <div className="flex justify-between">
         <div className="flex flex-col gap-4">
           <div className="flex gap-4 items-center">
-            <div className="bg-white rounded-full w-12 h-12 flex justify-center items-center border-[1px] border-gray-300">
-              <h4 className="text-2xl font-bold tracking-wide text-gray-900">SK</h4>
+            <div className="aspect-square h-14 w-14 bg-gray-200 rounded-full flex items-center justify-center">
+              <span className="text-gray-500 font-bold text-2xl uppercase">{repo.name.charAt(0)}</span>
             </div>
             <div className="gap-1 flex flex-col">
               <div className="flex items-center gap-4">
                 <div className="flex items-center gap-1">
-                  <h1 className="text-xl font-bold text-gray-900">{repo.name}</h1>
+                  <h1 className="text-xl font-bold text-gray-900">
+                    <span onClick={handleUsernameClick} className="text-gray-600 underline cursor-pointer">
+                      {resolveUsernameOrShorten(repo.owner, 4)}
+                    </span>{' '}
+                    / {repo.name}
+                  </h1>
                   <SVG className="w-5 h-5 cursor-pointer" onClick={handleComingSoon} src={IconStarOutline} />
                 </div>
                 <span className={`border-[1px] border-primary-600 text-primary-600 rounded-full px-2 text-sm`}>
