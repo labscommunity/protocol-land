@@ -14,6 +14,8 @@ import { Button } from '@/components/common/buttons'
 import { trackGoogleAnalyticsPageView } from '@/helpers/google-analytics'
 import { imgUrlFormatter } from '@/helpers/imgUrlFormatter'
 import { resolveUsernameOrShorten } from '@/helpers/resolveUsername'
+import { pollTokenUpgradeProcess } from '@/lib/decentralize'
+import { upgradeTokenProcess } from '@/lib/decentralize'
 // import { fetchTokenBalance } from '@/lib/decentralize'
 import { useGlobalStore } from '@/stores/globalStore'
 import { Repo } from '@/types/repository'
@@ -34,6 +36,8 @@ type Props = {
 }
 
 export default function RepoHeader({ repo, isLoading, owner, parentRepo }: Props) {
+  const [isTokenUpgradeLoading, setIsTokenUpgradeLoading] = React.useState(false)
+  const [tokenUpgraded, setTokenUpgraded] = React.useState(false)
   const [isDecentralizationModalOpen, setIsDecentralizationModalOpen] = React.useState(false)
   const [isDecentralized, setIsDecentralized] = React.useState(false)
   const [isForkModalOpen, setIsForkModalOpen] = React.useState(false)
@@ -135,6 +139,40 @@ export default function RepoHeader({ repo, isLoading, owner, parentRepo }: Props
     setIsTradeModalOpen(true)
   }
 
+  async function handleTokenUpgrade() {
+    if (!repo || !repo.token || !repo.token.processId || !repo.bondingCurve?.processId) return
+    setIsTokenUpgradeLoading(true)
+    try {
+      // const msgId = await upgradeTokenProcess(repo.token.processId, repo.bondingCurve.processId, repo.bondingCurve)
+
+      const { status, message } = await pollTokenUpgradeProcess(repo.token.processId, 2)
+
+      if (status === 'ERROR' && message === 'Action not found') {
+        const msgId = await upgradeTokenProcess(repo.token.processId, repo.bondingCurve.processId, repo.bondingCurve)
+
+        if (!msgId) {
+          throw new Error('Failed to upgrade token')
+        }
+
+        setTokenUpgraded(true)
+        toast.success('Token Upgraded Successfully')
+
+        console.log('status', status)
+        return
+      }
+
+      if (status === 'OK') {
+        toast.success('Token Already Upgraded')
+        setTokenUpgraded(true)
+      }
+    } catch (error) {
+      toast.error('Failed to check upgrade')
+      console.error(error)
+    } finally {
+      setIsTokenUpgradeLoading(false)
+    }
+  }
+
   return (
     <div className="flex flex-col">
       <div className="flex justify-between">
@@ -162,14 +200,28 @@ export default function RepoHeader({ repo, isLoading, owner, parentRepo }: Props
                 {isDecentralized && repo.token && repo.token.processId && (
                   <div className="flex items-center gap-2">
                     <div className="flex items-center">
-                      <Button
-                        className="!bg-[#26d9af] text-gray-200 !px-2 text-sm font-medium rounded-md h-full !py-[1px] justify-between gap-1"
-                        variant="solid"
-                        onClick={handleTradeClick}
-                      >
-                        <img src={imgUrlFormatter(repo.token.tokenImage)} className="w-4 h-4" />
-                        Buy
-                      </Button>
+                      {tokenUpgraded && (
+                        <Button
+                          className="!bg-[#26d9af] text-gray-200 !px-2 text-sm font-medium rounded-md h-full !py-[1px] justify-between gap-1"
+                          variant="solid"
+                          onClick={handleTradeClick}
+                        >
+                          <img src={imgUrlFormatter(repo.token.tokenImage)} className="w-4 h-4" />
+                          Buy
+                        </Button>
+                      )}
+                      {!tokenUpgraded && (
+                        <Button
+                          className="!bg-[#26d9af]  disabled:text-white text-gray-200 !px-2 text-sm font-medium rounded-md h-full !py-[1px] justify-between gap-1"
+                          variant="solid"
+                          disabled={isTokenUpgradeLoading}
+                          isLoading={isTokenUpgradeLoading}
+                          onClick={handleTokenUpgrade}
+                        >
+                          Check Upgrade
+                        </Button>
+                      )}
+
                       {/* {tokenBalLoading && <BeatLoader size={8} color="#56ADD9" />}
                       {!tokenBalLoading && (
                         <span

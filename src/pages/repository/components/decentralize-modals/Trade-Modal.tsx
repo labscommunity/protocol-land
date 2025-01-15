@@ -2,6 +2,7 @@ import { Dialog, DialogPanel, DialogTitle, Transition, TransitionChild } from '@
 import Progress from '@ramonak/react-progress-bar'
 import BigNumber from 'bignumber.js'
 import clsx from 'clsx'
+import { debounce } from 'lodash'
 import { Fragment } from 'react'
 import React from 'react'
 import { toast } from 'react-hot-toast'
@@ -196,7 +197,7 @@ export default function TradeModal({ onClose, isOpen }: TradeModalProps) {
     onClose()
   }
 
-  function handleAmountChange(e: React.ChangeEvent<HTMLInputElement>) {
+  const handleAmountChange = debounce((e: React.ChangeEvent<HTMLInputElement>) => {
     const amt = e.target.value
     if (!curveState.maxSupply) return
 
@@ -229,7 +230,7 @@ export default function TradeModal({ onClose, isOpen }: TradeModalProps) {
     }
 
     setAmount(amt)
-  }
+  }, 800)
 
   async function handleGetBuyPrice() {
     if (!amount || !repo?.bondingCurve || !curveState.maxSupply) return

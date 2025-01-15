@@ -63,6 +63,63 @@ export async function spawnTokenProcess(tokenName: string, processType?: string)
   return pid
 }
 
+export async function upgradeTokenProcess(tokenPid: string, curvePid: string, bondingCurve: BondingCurve) {
+  const tokenArgs = {
+    tags: getTags({
+      Action: 'Eval',
+      'Upgrade-Token-Process': 'DONE'
+    }),
+    data: `
+    Balances = {}
+
+    TotalSupply = "0"
+    
+    MaxSupply = "10000000000000000000000000"
+    `,
+    pid: tokenPid
+  }
+
+  const steps = generateSteps({
+    reserveToken: bondingCurve.reserveToken,
+    curveData: {
+      curveType: bondingCurve.curveType,
+      stepCount: 500,
+      lpAllocation: 2000000,
+      initialPrice: 0.00000001,
+      finalPrice: 0.0002,
+      maxSupply: 10000000
+    }
+  }).stepData.map((step) => ({
+    rangeTo: preventScientificNotationFloat(step.rangeTo * 10 ** 18),
+    price: preventScientificNotationFloat(Math.ceil(step.price * 10 ** +bondingCurve.reserveToken.denomination))
+  }))
+
+  const curveArgs = {
+    tags: getTags({
+      Action: 'Eval',
+      'Upgrade-Token-Process': 'DONE'
+    }),
+    data: `
+    local json = require("json")
+    _Steps = '${JSON.stringify(steps)}'
+    CurveDetails.maxSupply = "10000000000000000000000000"
+    CurveDetails.initialBuyPrice = "0.00000001"
+    CurveDetails.finalBuyPrice = "0.0002"
+    CurveDetails.steps = json.decode(_Steps)
+    CurveDetails.allocationForLP = "2000000000000000000000000"
+    `,
+    pid: curvePid
+  }
+
+  const tokenMsgId = await sendMessage(tokenArgs)
+  await pollForTxBeingAvailable({ txId: tokenMsgId })
+
+  const curveMsgId = await sendMessage(curveArgs)
+  await pollForTxBeingAvailable({ txId: curveMsgId })
+
+  return true
+}
+
 export async function spawnBondingCurveProcess(token: RepoToken, bondingCurve: BondingCurve, creator: string) {
   const signer = await getSigner({ injectedSigner: false })
   const aosDetails = await getAosDetails()
@@ -322,11 +379,11 @@ export async function pollLiquidityPoolMessages(msgId: string) {
   throw new Error('Transaction not found after polling, transaction id: ' + msgId)
 }
 
-const PROVIDE_CONFIRM_ACTION = 'Provide-Confirmation'
-const PROVIDE_ERROR_ACTION = 'Provide-Error'
-export async function pollLiquidityProvideMessages(msgId: string) {
+const UPGRADE_ACTION = 'Upgrade-Token-Process'
+
+export async function pollTokenUpgradeProcess(msgId: string, _maxAttempts = 50) {
   const pollingOptions = {
-    maxAttempts: 50,
+    maxAttempts: _maxAttempts,
     pollingIntervalMs: 3_000,
     initialBackoffMs: 7_000
   }
@@ -343,7 +400,7 @@ export async function pollLiquidityProvideMessages(msgId: string) {
     try {
       const response = await arweave.api.post('/graphql', {
         query:
-          'query ($messageId: String!, $limit: Int!, $sortOrder: SortOrder!, $cursor: String) {\n  transactions(\n    sort: $sortOrder\n    first: $limit\n    after: $cursor\n    tags: [{name: \n"Pushed-For", values: [$messageId]}] \n ) {\n    count\n    ...MessageFields\n  }\n}\nfragment MessageFields on TransactionConnection {\n  edges {\n    cursor\n    node {\n      id\n      ingested_at\n      recipient\n      block {\n        timestamp\n        height\n      }\n      tags {\n        name\n        value\n      }\n      data {\n        size\n      }\n      owner {\n        address\n      }\n    }\n  }\n}',
+          'query ($messageId: String!, $limit: Int!, $sortOrder: SortOrder!, $cursor: String) {\n  transactions(\n    sort: $sortOrder\n    first: $limit\n    after: $cursor\n    recipients: [$messageId] \n ) {\n    count\n    ...MessageFields\n  }\n}\nfragment MessageFields on TransactionConnection {\n  edges {\n    cursor\n    node {\n      id\n      ingested_at\n      recipient\n      block {\n        timestamp\n        height\n      }\n      tags {\n        name\n        value\n      }\n      data {\n        size\n      }\n      owner {\n        address\n      }\n    }\n  }\n}',
         variables: {
           messageId: msgId,
           limit: 100,
@@ -363,20 +420,11 @@ export async function pollLiquidityProvideMessages(msgId: string) {
       const messages = transaction.edges.map((edge: any) => edge.node)
 
       for (const msg of messages) {
-        const provideErrorMessage = msg.tags.find(
-          (tag: any) => tag.name === 'Action' && tag.value === PROVIDE_ERROR_ACTION
+        const upgradeConfirmationMessage = msg.tags.find(
+          (tag: any) => tag.name === UPGRADE_ACTION && tag.value === 'DONE'
         )
 
-        if (provideErrorMessage) {
-          const errMessage = msg.tags.find((tag: any) => tag.name === 'Error')?.value
-          return { status: 'ERROR', message: errMessage || 'Provide failed.' }
-        }
-
-        const provideConfirmationMessage = msg.tags.find(
-          (tag: any) => tag.name === 'Action' && tag.value === PROVIDE_CONFIRM_ACTION
-        )
-
-        if (provideConfirmationMessage) {
+        if (upgradeConfirmationMessage) {
           return { status: 'OK' }
         }
       }
@@ -390,7 +438,7 @@ export async function pollLiquidityProvideMessages(msgId: string) {
     await waitFor(pollingIntervalMs)
   }
 
-  throw new Error('Transaction not found after polling, transaction id: ' + msgId)
+  return { status: 'ERROR', message: 'Action not found' }
 }
 
 export async function fetchTokenBalance(tokenId: string, address: string) {
