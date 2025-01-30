@@ -4,6 +4,7 @@ local transfer = require "src.handlers.transfer"
 local mint = require "src.handlers.mint"
 local burn = require "src.handlers.burn"
 
+token.initToken()
 -- Info
 Handlers.add('Info', Handlers.utils.hasMatchingTag('Action', 'Info'), token.info)
 

@@ -7,7 +7,7 @@ import { FadeLoader } from 'react-spinners'
 
 import CloseCrossIcon from '@/assets/icons/close-cross.svg'
 import { waitFor } from '@/helpers/waitFor'
-import { decentralizeRepo, loadTokenProcess, spawnBondingCurveProcess } from '@/lib/decentralize'
+import { decentralizeRepo, spawnBondingCurveProcess } from '@/lib/decentralize'
 import { useGlobalStore } from '@/stores/globalStore'
 import { handleSaveBondingCurveId } from '@/stores/repository-core/actions'
 import { BondingCurve, RepoToken } from '@/types/repository'
@@ -125,21 +125,21 @@ export default function TokenizeModal({ setIsTradeModalOpen, onClose, isOpen }: 
       setTokenizeProgress(20)
       setTokenizeProgressText('Creating bonding curve...')
 
-      const bondingCurvePid = await spawnBondingCurveProcess(repo.token!, repo.bondingCurve!, address!)
-      if (!bondingCurvePid) {
+      const bondingCurve = await spawnBondingCurveProcess(repo.token!, repo.bondingCurve!, address!)
+      if (!bondingCurve) {
         setDecentralizeError('error-generic')
         setDecentralizeStatus('ERROR')
         return
       }
 
-      await handleSaveBondingCurveId(repo.id, bondingCurvePid)
+      await handleSaveBondingCurveId(repo.id, bondingCurve.curveProcessId)
 
       await waitFor(500)
       setTokenizeProgress(50)
 
       setTokenizeProgressText('Creating project token...')
-      await loadTokenProcess(repo.token!, bondingCurvePid, repo.bondingCurve!.lpAllocation) //loading bonding curve id too
-      await waitFor(1000)
+
+      await waitFor(2000)
       setTokenizeProgress(80)
       setTokenizeProgressText('Tokenizing repository...')
       await decentralizeRepo(repo.id)

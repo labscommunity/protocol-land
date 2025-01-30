@@ -2,22 +2,32 @@ local utils = require "src.utils.mod"
 
 local mod = {}
 
---- @type Denomination
-Denomination = Denomination or 12
---- @type Balances
-Balances = Balances or { [ao.id] = utils.toBalanceValue(0) }
---- @type TotalSupply
-TotalSupply = TotalSupply or utils.toBalanceValue(0)
---- @type Name
-Name = Name or "Points Coin"
---- @type Ticker
-Ticker = Ticker or "PNTS"
---- @type Logo
-Logo = Logo or "SBCCXwwecBlDqRLUjb8dYABExTJXLieawf7m2aBJ-KY"
---- @type MaxSupply
-MaxSupply = MaxSupply or nil;
---- @type BondingCurveProcess
-BondingCurveProcess = BondingCurveProcess or nil;
+function mod.initToken()
+    local decodeCheck, data = utils.decodeMessageData(USER_PAYLOAD)
+
+    if not decodeCheck or not data then
+        ao.send({ Action = 'Init-Error', Tags = { Status = 'Error', Message = 'Invalid User Payload' } })
+        return
+    end
+
+    --- @type Denomination
+    Denomination = Denomination or data.denomination
+    --- @type Balances
+    Balances = Balances or { [ao.id] = utils.toBalanceValue(0) }
+    --- @type TotalSupply
+    TotalSupply = TotalSupply or utils.toBalanceValue(0)
+    --- @type Name
+    Name = Name or data.name
+    --- @type Ticker
+    Ticker = Ticker or data.ticker
+    --- @type Logo
+    Logo = Logo or data.logo
+    --- @type MaxSupply
+    MaxSupply = MaxSupply or data.maxSupply;
+    --- @type BondingCurveProcess
+    BondingCurveProcess = BondingCurveProcess or data.bondingCurve;
+    Creator = Creator or data.creator
+end
 
 -- Get token info
 ---@type HandlerFunction

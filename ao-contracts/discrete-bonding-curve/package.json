@@ -4,12 +4,14 @@
   "license": "MIT",
   "scripts": {
     "build": "ao-deploy aod.config.js --build-only",
+    "build:launcher": "pnpm run build && node ./script/buildLauncher.js",
     "deploy": "ao-deploy aod.config.js",
     "test": "arweave test . --lpath='./src/?.lua;./src/?/?.lua;./src/?/init.lua;/Users/dexter/Library/Application Support/create-ao-contract-nodejs/aos-process/?.lua'"
   },
   "type": "module",
   "dependencies": {
-    "ao-deploy": "^0.5.0"
+    "ao-deploy": "^0.5.0",
+    "rimraf": "^6.0.1"
   },
   "cacMetadata": {
     "initVersion": "1.0.3"

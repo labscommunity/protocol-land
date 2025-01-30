@@ -2,7 +2,9 @@ import { createDataItemSigner, dryrun, spawn } from '@permaweb/aoconnect'
 import Arweave from 'arweave'
 import { Tag } from 'arweave/web/lib/transaction'
 
+import { TOKENIZATION_LAUNCHER_ID } from '@/helpers/constants'
 import { getTags } from '@/helpers/getTags'
+import { pollForMessage } from '@/helpers/pollForMessage'
 import { waitFor } from '@/helpers/waitFor'
 import { getSigner } from '@/helpers/wallet/getSigner'
 import { createCurveBondedTokenLua } from '@/pages/repository/helpers/createTokenLua'
@@ -63,31 +65,31 @@ export async function spawnTokenProcess(tokenName: string, processType?: string)
   return pid
 }
 
-export async function spawnBondingCurveProcess(token: RepoToken, bondingCurve: BondingCurve, creator: string) {
-  const signer = await getSigner({ injectedSigner: false })
-  const aosDetails = await getAosDetails()
-  const tags = [
-    { name: 'App-Name', value: 'aos' },
-    { name: 'Name', value: token.tokenName + ' Bonding Curve' },
-    { name: 'Process-Type', value: 'bonding-curve' },
-    { name: 'aos-Version', value: aosDetails.version },
-    { name: 'Authority', value: 'fcoN_xJeisVsPXA-trzVAuIiqO3ydLQxM-L4XbrQKzY' },
-    { name: 'Creator', value: creator },
-    { name: 'Timestamp', value: Date.now().toString() }
-  ] as Tag[]
+export async function spawnBondingCurveProcess(token: RepoToken, bondingCurve: BondingCurve) {
+  // const signer = await getSigner({ injectedSigner: false })
+  // const aosDetails = await getAosDetails()
+  // const tags = [
+  //   { name: 'App-Name', value: 'aos' },
+  //   { name: 'Name', value: token.tokenName + ' Bonding Curve' },
+  //   { name: 'Process-Type', value: 'bonding-curve' },
+  //   { name: 'aos-Version', value: aosDetails.version },
+  //   { name: 'Authority', value: 'fcoN_xJeisVsPXA-trzVAuIiqO3ydLQxM-L4XbrQKzY' },
+  //   { name: 'Creator', value: creator },
+  //   { name: 'Timestamp', value: Date.now().toString() }
+  // ] as Tag[]
 
-  const pid = await spawn({
-    module: aosDetails.module,
-    tags,
-    scheduler: aosDetails.scheduler,
-    data: '1984',
-    signer: createDataItemSigner(signer)
-  })
+  // const pid = await spawn({
+  //   module: aosDetails.module,
+  //   tags,
+  //   scheduler: aosDetails.scheduler,
+  //   data: '1984',
+  //   signer: createDataItemSigner(signer)
+  // })
 
-  await pollForTxBeingAvailable({ txId: pid })
+  // await pollForTxBeingAvailable({ txId: pid })
 
-  const sourceCodeFetchRes = await fetch('/contracts/curve-bonded-token-manager.lua')
-  const sourceCode = await sourceCodeFetchRes.text()
+  // const sourceCodeFetchRes = await fetch('/contracts/curve-bonded-token-manager.lua')
+  // const sourceCode = await sourceCodeFetchRes.text()
 
   const steps = generateSteps({
     reserveToken: bondingCurve.reserveToken,
@@ -115,24 +117,43 @@ export async function spawnBondingCurveProcess(token: RepoToken, bondingCurve: B
     maxSupply: preventScientificNotationFloat(parseInt(token.totalSupply) * 10 ** +token.denomination)
   }
 
-  const finalSourceCode = `
-  CURVE_PAYLOAD = '${JSON.stringify(payload)}'
+  // const finalSourceCode = `
+  // CURVE_PAYLOAD = '${JSON.stringify(payload)}'
 
-  ${sourceCode}
-  `
+  // ${sourceCode}
+  // `
 
   const args = {
     tags: getTags({
       Action: 'Eval'
     }),
-    data: finalSourceCode,
-    pid: pid
+    data: `Owner = '${TOKENIZATION_LAUNCHER_ID}'`,
+    pid: token.processId!
   }
 
-  const msgId = await sendMessage(args)
-  await pollForTxBeingAvailable({ txId: msgId })
+  const tokenEvalMsgId = await sendMessage(args)
+  await pollForTxBeingAvailable({ txId: tokenEvalMsgId })
 
-  return pid
+  const curveBondedTokenArgs = {
+    tags: getTags({
+      Action: 'Initialize-Curve-Bonded-Token'
+    }),
+    data: JSON.stringify(payload),
+    pid: TOKENIZATION_LAUNCHER_ID
+  }
+
+  const msgId = await sendMessage(curveBondedTokenArgs)
+  const { success, message } = await pollForMessage(msgId, [{ name: 'Action', value: 'Tokenization-Success' }], {
+    maxAttempts: 50
+  })
+debugger
+  if (!success) {
+    throw new Error('Tokenization failed')
+  }
+
+  const res = JSON.parse(message.Data || '{}')
+
+  return res as { curveProcessId: string; assetProcessId: string }
 }
 
 export async function loadTokenProcess(token: RepoToken, pid: string, lpAllocation: string) {

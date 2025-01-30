@@ -1,5 +1,5 @@
 local bint = require('.bint')(256)
-
+local json = require('json')
 local utils = {
     add = function(a, b)
         return tostring(bint(a) + bint(b))
@@ -21,7 +21,7 @@ local utils = {
         local den = bint(b)
         local quotient = bint.udiv(num, den)
         local remainder = bint.umod(num, den)
-        
+
         if remainder ~= bint(0) then
             quotient = quotient + bint(1)
         end
@@ -36,6 +36,24 @@ local utils = {
     end,
     toSubUnits = function(val, denom)
         return bint(val) * bint.ipow(bint(10), bint(denom))
+    end,
+    decodeMessageData = function(data)
+        local status, decodedData = pcall(json.decode, data)
+        if not status or type(decodedData) ~= 'table' then
+            return false, nil
+        end
+
+        return true, decodedData
+    end,
+    checkValidAddress = function(address)
+        if not address or type(address) ~= "string" then
+            return false
+        end
+
+        return string.match(address, "^[%w%-_]+$") ~= nil and #address == 43
+    end,
+    checkValidAmount = function(data)
+        return (math.type(tonumber(data)) == "integer" or math.type(tonumber(data)) == "float") and bint(data) > 0
     end
 }
 
