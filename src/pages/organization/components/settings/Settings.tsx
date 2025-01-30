@@ -42,9 +42,11 @@ export default function SettingsTab() {
   const [originalContent, setOriginalContent] = React.useState('')
   const [content, setContent] = React.useState('')
   const [selectedTab, setSelectedTab] = React.useState<'write' | 'preview'>('write')
-  const [selectedOrganization, updateOrganizationDetails] = useGlobalStore((state) => [
+  const [selectedOrganization, updateOrganizationDetails, isOrgOwner, isOrgAdmin] = useGlobalStore((state) => [
     state.organizationState.selectedOrganization,
-    state.organizationActions.updateOrganizationDetails
+    state.organizationActions.updateOrganizationDetails,
+    state.organizationActions.isOrgOwner,
+    state.organizationActions.isOrgAdmin
   ])
   const {
     register,
@@ -149,6 +151,9 @@ export default function SettingsTab() {
     toast.success('Coming soon')
   }
 
+  const isOwner = isOrgOwner()
+  const isAdmin = isOrgAdmin()
+
   return (
     <div>
       <div className="mt-2 space-y-4">
@@ -163,6 +168,7 @@ export default function SettingsTab() {
                 Organization Name
               </label>
               <input
+                disabled={!isOwner || !isAdmin}
                 placeholder="Protocol Land"
                 {...register('name')}
                 className="flex h-10 w-full rounded-md border border-input bg-white px-3 py-2 text-sm outline-none disabled:cursor-not-allowed disabled:opacity-50"
@@ -175,6 +181,7 @@ export default function SettingsTab() {
                 Description
               </label>
               <input
+                disabled={!isOwner || !isAdmin}
                 placeholder="Building the next generation of the decentralized Organization"
                 {...register('description')}
                 className="flex h-10 w-full rounded-md border border-input bg-white px-3 py-2 text-sm outline-none disabled:cursor-not-allowed disabled:opacity-50"
@@ -185,6 +192,7 @@ export default function SettingsTab() {
               <label className="text-sm font-medium">About</label>
               <ReactMde
                 value={content}
+                readOnly={!isOwner || !isAdmin}
                 onChange={setContent}
                 selectedTab={selectedTab}
                 onTabChange={setSelectedTab}
@@ -203,6 +211,7 @@ export default function SettingsTab() {
                 Website
               </label>
               <input
+                disabled={!isOwner || !isAdmin}
                 placeholder="https://protocol.land"
                 {...register('website')}
                 className="flex h-10 w-full rounded-md border border-input bg-white px-3 py-2 text-sm outline-none disabled:cursor-not-allowed disabled:opacity-50"
@@ -210,32 +219,36 @@ export default function SettingsTab() {
               />
             </div>
 
-            <Button
-              disabled={submitting}
-              isLoading={submitting}
-              onClick={handleSubmit(handleSaveButtonClick)}
-              variant="primary-solid"
-              className="h-10 text-sm rounded-md !mt-8"
-            >
-              Save Changes
-            </Button>
+            {isOwner && isAdmin && (
+              <Button
+                disabled={submitting}
+                isLoading={submitting}
+                onClick={handleSubmit(handleSaveButtonClick)}
+                variant="primary-solid"
+                className="h-10 text-sm rounded-md !mt-8"
+              >
+                Save Changes
+              </Button>
+            )}
           </div>
         </div>
-        <div className="rounded-lg border bg-transparent shadow-sm">
-          <div className="flex flex-col space-y-1.5 p-6">
-            <h3 className="text-2xl font-semibold leading-none tracking-tight">Danger Zone</h3>
-            <p className="text-sm text-gray-500">Irreversible and destructive actions</p>
+        {isOwner && isAdmin && (
+          <div className="rounded-lg border bg-transparent shadow-sm">
+            <div className="flex flex-col space-y-1.5 p-6">
+              <h3 className="text-2xl font-semibold leading-none tracking-tight">Danger Zone</h3>
+              <p className="text-sm text-gray-500">Irreversible and destructive actions</p>
+            </div>
+            <div className="p-6 pt-0">
+              <Button
+                onClick={handleDeleteOrganization}
+                variant="primary-solid"
+                className="h-10 text-sm rounded-md bg-red-500 hover:bg-red-600 active:bg-red-700"
+              >
+                Delete Organization
+              </Button>
+            </div>
           </div>
-          <div className="p-6 pt-0">
-            <Button
-              onClick={handleDeleteOrganization}
-              variant="primary-solid"
-              className="h-10 text-sm rounded-md bg-red-500 hover:bg-red-600 active:bg-red-700"
-            >
-              Delete Organization
-            </Button>
-          </div>
-        </div>
+        )}
       </div>
     </div>
   )

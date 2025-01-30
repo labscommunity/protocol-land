@@ -6,7 +6,10 @@ import { useGlobalStore } from '@/stores/globalStore'
 import InvitePeopleModal from './components/InvitePeopleModal'
 
 export default function PeopleTab() {
-  const [selectedOrganization] = useGlobalStore((state) => [state.organizationState.selectedOrganization])
+  const [address, selectedOrganization] = useGlobalStore((state) => [
+    state.authState.address,
+    state.organizationState.selectedOrganization
+  ])
   const [isOpen, setIsOpen] = React.useState(false)
 
   return (
@@ -34,43 +37,47 @@ export default function PeopleTab() {
               placeholder="Find a member"
             />
           </div>
-          <button
-            onClick={() => setIsOpen(true)}
-            className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&amp;_svg]:pointer-events-none [&amp;_svg]:size-4 [&amp;_svg]:shrink-0 bg-primary-600 text-white hover:bg-primary-600/90 h-10 px-4 py-2"
-          >
-            Invite Member
-          </button>
+          {address === selectedOrganization.organization?.owner && (
+            <button
+              onClick={() => setIsOpen(true)}
+              className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&amp;_svg]:pointer-events-none [&amp;_svg]:size-4 [&amp;_svg]:shrink-0 bg-primary-600 text-white hover:bg-primary-600/90 h-10 px-4 py-2"
+            >
+              Invite Member
+            </button>
+          )}
         </div>
         <div className="rounded-lg border bg-card text-card-foreground shadow-sm">
           <div className="p-0">
             <ul>
-              {selectedOrganization.organization?.memberInvites.map((invite) => (
-                <li className="p-4 border-b">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <span className="relative flex h-10 w-10 shrink-0 overflow-hidden rounded-full items-center justify-center bg-gray-200">
-                        {invite.address.charAt(0).toUpperCase()}
-                      </span>
-                      <div>
-                        <a
-                          href={`#/user/${invite.address}`}
-                          className="font-semibold hover:underline"
-                          title={invite.address}
-                        >
-                          {shortenAddress(invite.address)}
-                        </a>
-                        {/* <p className="text-sm text-gray-500">{member.username}</p> */}
+              {selectedOrganization.organization?.memberInvites
+                .filter((invite) => invite.status === 'INVITED')
+                .map((invite) => (
+                  <li className="p-4 border-b">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <span className="relative flex h-10 w-10 shrink-0 overflow-hidden rounded-full items-center justify-center bg-gray-200">
+                          {invite.address.charAt(0).toUpperCase()}
+                        </span>
+                        <div>
+                          <a
+                            href={`#/user/${invite.address}`}
+                            className="font-semibold hover:underline"
+                            title={invite.address}
+                          >
+                            {shortenAddress(invite.address)}
+                          </a>
+                          {/* <p className="text-sm text-gray-500">{member.username}</p> */}
+                        </div>
+                      </div>
+                      <div
+                        className="inline-flex capitalize items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 border-transparent bg-yellow-500/70 text-white hover:bg-yellow-400/80"
+                        data-v0-t="badge"
+                      >
+                        {invite.status.toLowerCase()}
                       </div>
                     </div>
-                    <div
-                      className="inline-flex capitalize items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 border-transparent bg-yellow-500/70 text-white hover:bg-yellow-400/80"
-                      data-v0-t="badge"
-                    >
-                      {invite.status.toLowerCase()}
-                    </div>
-                  </div>
-                </li>
-              ))}
+                  </li>
+                ))}
               {selectedOrganization.organization?.members.map((member) => (
                 <li className="p-4 border-b">
                   <div className="flex items-center justify-between">

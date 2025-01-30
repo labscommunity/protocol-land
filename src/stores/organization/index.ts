@@ -123,6 +123,19 @@ const createOrganizationSlice: StateCreator<
 
       return true
     },
+    isOrgMember: () => {
+      return !!get().organizationState.selectedOrganization.organization?.members.find(
+        (member) => member.address === get().authState.address
+      )
+    },
+    isOrgAdmin: () => {
+      return !!get().organizationState.selectedOrganization.organization?.members.find(
+        (member) => member.address === get().authState.address && member.role === 'admin'
+      )
+    },
+    isOrgOwner: () => {
+      return get().organizationState.selectedOrganization.organization?.owner === get().authState.address
+    },
     reset: () => {
       set((state) => {
         state.organizationState.selectedOrganization = initialOrganizationState.selectedOrganization

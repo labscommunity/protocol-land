@@ -26,8 +26,8 @@ export type OrganizationActions = {
   cancelInvite: (id: string, address: string) => Promise<boolean>
   fetchAndLoadOrganization: (id: string) => Promise<void>
   // fetchOrgRepos: () => Promise<void>
-  // isOrgMember: () => boolean
-  // isOrgAdmin: () => boolean
-  // isOrgOwner: () => boolean
+  isOrgMember: () => boolean
+  isOrgAdmin: () => boolean
+  isOrgOwner: () => boolean
   reset: () => void
 }

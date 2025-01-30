@@ -32,7 +32,7 @@ export default function Header({ organization }: { organization: Organization })
             {organization.description && <p className="text-[#71717a]">{organization.description}</p>}
           </div>
         </div>
-        <div className="h-full flex items-center">
+        <div className="h-full flex items-center gap-2">
           <Button variant="primary-solid" className="rounded-md h-10 text-sm" onClick={handleFollowButtonClick}>
             <span>Follow</span>
           </Button>
