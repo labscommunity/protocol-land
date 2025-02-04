@@ -146,14 +146,18 @@ export async function spawnBondingCurveProcess(token: RepoToken, bondingCurve: B
   const { success, message } = await pollForMessage(msgId, [{ name: 'Action', value: 'Tokenization-Success' }], {
     maxAttempts: 50
   })
-debugger
   if (!success) {
     throw new Error('Tokenization failed')
   }
 
-  const res = JSON.parse(message.Data || '{}')
+  const curveProcessId = message.tags.find((tag: any) => tag.name === 'CurveProcessId')?.value
+  const assetProcessId = message.tags.find((tag: any) => tag.name === 'AssetProcessId')?.value
 
-  return res as { curveProcessId: string; assetProcessId: string }
+  if (!curveProcessId || !assetProcessId) {
+    throw new Error('Tokenization failed')
+  }
+
+  return { curveProcessId, assetProcessId }
 }
 
 export async function loadTokenProcess(token: RepoToken, pid: string, lpAllocation: string) {

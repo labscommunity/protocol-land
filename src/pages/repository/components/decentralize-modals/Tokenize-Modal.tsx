@@ -125,7 +125,7 @@ export default function TokenizeModal({ setIsTradeModalOpen, onClose, isOpen }: 
       setTokenizeProgress(20)
       setTokenizeProgressText('Creating bonding curve...')
 
-      const bondingCurve = await spawnBondingCurveProcess(repo.token!, repo.bondingCurve!, address!)
+      const bondingCurve = await spawnBondingCurveProcess(repo.token!, repo.bondingCurve!)
       if (!bondingCurve) {
         setDecentralizeError('error-generic')
         setDecentralizeStatus('ERROR')

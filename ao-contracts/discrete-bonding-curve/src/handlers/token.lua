@@ -13,9 +13,11 @@ function mod.initToken()
     --- @type Denomination
     Denomination = Denomination or data.denomination
     --- @type Balances
-    Balances = Balances or { [ao.id] = utils.toBalanceValue(0) }
+    Balances = Balances or {
+        [data.bondingCurve] = utils.toBalanceValue(data.allocationForLP or '0')
+    }
     --- @type TotalSupply
-    TotalSupply = TotalSupply or utils.toBalanceValue(0)
+    TotalSupply = TotalSupply or utils.toBalanceValue(data.allocationForLP or '0')
     --- @type Name
     Name = Name or data.name
     --- @type Ticker

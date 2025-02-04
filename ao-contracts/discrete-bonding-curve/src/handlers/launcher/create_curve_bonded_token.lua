@@ -117,11 +117,12 @@ function mod.initializeBondedToken(msg)
     local tokenPayload = json.encode({
         name = data.repoToken.tokenName,
         creator = msg.From,
-        ticker = data.repoToken.ticker,
+        ticker = data.repoToken.tokenTicker,
         denomination = data.repoToken.denomination,
         maxSupply = data.maxSupply,
         bondingCurve = curveProcessId,
-        logo = data.repoToken.tokenImage
+        logo = data.repoToken.tokenImage,
+        allocationForLP = data.allocationForLP
     })
 
     local updatedAtomicAssetCode = [[
