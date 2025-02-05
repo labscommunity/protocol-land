@@ -1,4 +1,6 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
+
+import { useGlobalStore } from '@/stores/globalStore'
 
 import BondingCurve from './components/token/BondingCurve'
 import GenericToken from './components/token/GenericToken'
@@ -7,6 +9,22 @@ type TokenType = 'import' | 'bonding-curve'
 
 export default function Token() {
   const [tokenType, setTokenType] = useState<TokenType>('import')
+  const [selectedRepo, parentRepo] = useGlobalStore((state) => [
+    state.repoCoreState.selectedRepo,
+    state.repoCoreState.parentRepo
+  ])
+
+  useEffect(() => {
+    if (selectedRepo?.repo?.tokenType === 'BONDING_CURVE') {
+      setTokenType('bonding-curve')
+    }
+    if (selectedRepo?.repo?.tokenType === 'IMPORT') {
+      setTokenType('import')
+    }
+  }, [selectedRepo?.repo?.tokenType])
+
+  const isDecentralized = selectedRepo?.repo?.decentralized === true
+  const isParentDecentralized = parentRepo?.repo?.decentralized === true
 
   return (
     <div className="flex flex-col gap-4 pb-40">
@@ -16,6 +34,7 @@ export default function Token() {
       <div className="flex items-center gap-4">
         <div className="flex items-center">
           <input
+            disabled={isDecentralized || isParentDecentralized}
             checked={tokenType === 'import'}
             onChange={() => setTokenType('import')}
             type="radio"
@@ -30,6 +49,7 @@ export default function Token() {
         </div>
         <div className="flex items-center">
           <input
+            disabled={isDecentralized || isParentDecentralized}
             checked={tokenType === 'bonding-curve'}
             onChange={() => setTokenType('bonding-curve')}
             type="radio"

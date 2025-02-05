@@ -19,9 +19,9 @@ export async function fetchTokenDetails(pid: string) {
     tokenName: msg.Tags.find((tag: any) => tag.name === 'Name')?.value,
     tokenTicker: msg.Tags.find((tag: any) => tag.name === 'Ticker')?.value,
     tokenImage: msg.Tags.find((tag: any) => tag.name === 'Logo')?.value,
-    tokenDenomination: msg.Tags.find((tag: any) => tag.name === 'Denomination')?.value,
-    tokenMaxSupply: msg.Tags.find((tag: any) => tag.name === 'MaxSupply')?.value,
-    tokenTotalSupply: msg.Tags.find((tag: any) => tag.name === 'TotalSupply')?.value
+    denomination: msg.Tags.find((tag: any) => tag.name === 'Denomination')?.value,
+    maxSupply: msg.Tags.find((tag: any) => tag.name === 'MaxSupply')?.value,
+    totalSupply: msg.Tags.find((tag: any) => tag.name === 'TotalSupply')?.value
   }
 
   return tokenDetails
