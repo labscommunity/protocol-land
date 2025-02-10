@@ -64,7 +64,7 @@ const createOrganizationSlice: StateCreator<
         state.organizationState.selectedOrganization.organization = response
       })
 
-      const { error: reposError, response: reposResponse } = await withAsync(() => getOrganizationRepos(id))
+      const { error: reposError, response: reposResponse } = await withAsync(() => getOrganizationRepos(response.id))
       if (reposError || !reposResponse) {
         return
       }
