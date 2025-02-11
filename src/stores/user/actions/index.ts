@@ -129,7 +129,7 @@ export const fetchUserOrgs = async (address: string) => {
   )
 
   if (ownerOrgsResponse) {
-    orgs = [...orgs, ...(JSON.parse(ownerOrgsResponse?.Messages[0].Data)?.result as Organization[])]
+    orgs = [...orgs, ...((JSON.parse(ownerOrgsResponse?.Messages[0]?.Data || '{}')?.result as Organization[]) || [])]
   }
 
   return orgs
