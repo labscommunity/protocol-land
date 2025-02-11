@@ -45,13 +45,7 @@ export default function RepositoriesTab({ userRepos }: { userRepos: RepoWithPare
       />
       <div className="flex flex-col w-full gap-3 mt-6">
         {filteredRepos.map((repo) => (
-          <RepoItem
-            id={repo.id}
-            title={repo.name}
-            description={repo.description}
-            parentRepo={repo.parentRepo}
-            isPrivate={repo.private}
-          />
+          <RepoItem id={repo.id} title={repo.name} description={repo.description} isPrivate={repo.private} />
         ))}
         {filteredRepos.length === 0 &&
           (filteredRepos.length === userRepos.length ? (

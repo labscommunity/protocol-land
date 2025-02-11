@@ -5,7 +5,7 @@ import { Tag } from 'arweave/web/lib/transaction'
 import { getTags } from '@/helpers/getTags'
 import { waitFor } from '@/helpers/waitFor'
 import { getSigner } from '@/helpers/wallet/getSigner'
-import { createCurveBondedTokenLua } from '@/pages/repository/helpers/createTokenLua'
+import { createCurveBondedTokenLua, createImportedTokenLua } from '@/pages/repository/helpers/createTokenLua'
 import { preventScientificNotationFloat } from '@/pages/repository/helpers/customFormatNumbers'
 import { BondingCurve, RepoToken } from '@/types/repository'
 
@@ -137,6 +137,41 @@ export async function spawnBondingCurveProcess(token: RepoToken, bondingCurve: B
 
 export async function loadTokenProcess(token: RepoToken, pid: string, lpAllocation: string) {
   const contractSrc = createCurveBondedTokenLua(token, pid, lpAllocation)
+
+  const args = {
+    tags: getTags({
+      Action: 'Eval'
+    }),
+    data: contractSrc,
+    pid: token.processId!
+  }
+
+  const msgId = await sendMessage(args)
+  await pollForTxBeingAvailable({ txId: msgId })
+
+  const { Messages } = await dryrun({
+    process: token.processId!,
+    tags: getTags({
+      Action: 'Info'
+    })
+  })
+
+  if (!Messages[0]) {
+    throw new Error('Token Loading Failed')
+  }
+
+  const msg = Messages[0]
+  const ticker = msg.Tags.find((tag: any) => tag.name === 'Ticker')?.value
+
+  if (!ticker) {
+    throw new Error('Token Loading Failed')
+  }
+
+  return true
+}
+
+export async function loadImportedTokenProcess(token: RepoToken, balances: Record<string, string>) {
+  const contractSrc = createImportedTokenLua(token, balances)
 
   const args = {
     tags: getTags({

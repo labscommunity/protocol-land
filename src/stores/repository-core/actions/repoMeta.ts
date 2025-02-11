@@ -16,12 +16,14 @@ export const getRepositoryMetaFromContract = async (id: string): Promise<{ resul
   return { result: repo }
 }
 
-export const isRepositoryNameAvailable = async (name: string): Promise<boolean> => {
+export const isRepositoryNameAvailable = async (name: string, orgId?: string): Promise<boolean> => {
   const { Messages } = await dryrun({
     process: AOS_PROCESS_ID,
     tags: getTags({
       Action: 'Get-Repo-Availability',
-      Name: name
+      Name: name,
+      Creator: orgId ? 'ORGANIZATION' : 'USER',
+      OrgId: orgId || ''
     }),
     Owner: useGlobalStore.getState().authState.address as string
   })
@@ -126,6 +128,62 @@ export const handleSaveRepoToken = async (
   return { token: data.token, bondingCurve: data.bondingCurve }
 }
 
+export const handleSaveForkedImportTokenDetails = async (id: string, repoToken: RepoToken): Promise<RepoToken> => {
+  const msgId = await sendMessage({
+    tags: getTags({
+      Action: 'Save-Forked-Import-Token-Settings',
+      Id: id
+    }),
+    data: JSON.stringify(repoToken)
+  })
+
+  const { Messages } = await result({
+    message: msgId,
+    process: AOS_PROCESS_ID
+  })
+
+  if (!Messages[0]) {
+    throw new Error('Failed to save token settings')
+  }
+
+  const actionValue = Messages[0].Tags.find(
+    (tag: Tag) => tag.name === 'Action' && tag.value === 'Forked-Repo-Token-Updated'
+  )
+
+  if (!actionValue) {
+    throw new Error('Failed to save forked import token details')
+  }
+
+  return repoToken
+}
+
+export const handleSaveImportedTokenId = async (id: string, importedTokenId: string): Promise<boolean> => {
+  const msgId = await sendMessage({
+    tags: getTags({
+      Action: 'Save-Import-Token-Settings',
+      Id: id,
+      ['Imported-Token-Id']: importedTokenId
+    })
+  })
+
+  const { Messages } = await result({
+    message: msgId,
+    process: AOS_PROCESS_ID
+  })
+
+  if (!Messages[0]) {
+    throw new Error('Failed to save token settings')
+  }
+
+  const tag = Messages[0].Tags.find((tag: Tag) => tag.name === 'Action' && tag.value === 'Repo-Token-Updated')
+
+  if (!tag) {
+    throw new Error('Failed to save imported token id')
+  }
+
+  return true
+}
+
 export const handleSaveRepoBondingCurve = async (id: string, bondingCurve: BondingCurve, address: string) => {
   await sendMessage({
     tags: getTags({
@@ -213,4 +271,60 @@ export const fetchRepoHierarchy = async (id: string) => {
   })
 
   return JSON.parse(Messages[0].Data)
+}
+
+export const handleTransferOwnership = async (id: string, address: string) => {
+  const msgId = await sendMessage({
+    tags: getTags({
+      Action: 'Change-Repo-Owner',
+      Id: id,
+      'User-Address': address
+    }),
+    pid: AOS_PROCESS_ID
+  })
+
+  // await pollForTxBeingAvailable({ txId: msgId })
+
+  const { Messages } = await result({
+    message: msgId,
+    process: AOS_PROCESS_ID
+  })
+
+  if (!Messages[0]) {
+    throw new Error('Failed to transfer ownership')
+  }
+
+  const action = Messages[0].Tags.find((tag: Tag) => tag.name === 'Action' && tag.value === 'Repo-Owner-Changed')
+
+  if (!action) {
+    throw new Error('Failed to transfer ownership')
+  }
+}
+
+export const handleTransferOwnershipToOrganization = async (id: string, orgId: string) => {
+  const msgId = await sendMessage({
+    tags: getTags({
+      Action: 'Add-Repo-To-Organization',
+      'Repo-Id': id,
+      'Org-Id': orgId
+    }),
+    pid: AOS_PROCESS_ID
+  })
+
+  // await pollForTxBeingAvailable({ txId: msgId })
+
+  const { Messages } = await result({
+    message: msgId,
+    process: AOS_PROCESS_ID
+  })
+
+  if (!Messages[0]) {
+    throw new Error('Failed to transfer ownership')
+  }
+
+  const action = Messages[0].Tags.find((tag: Tag) => tag.name === 'Action' && tag.value === 'Organization-Repo-Added')
+
+  if (!action) {
+    throw new Error('Failed to transfer ownership')
+  }
 }

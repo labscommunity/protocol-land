@@ -1,6 +1,5 @@
 import React from 'react'
 import { AiFillCamera } from 'react-icons/ai'
-import { BsFillPersonFill } from 'react-icons/bs'
 
 export default function Avatar({
   url,
@@ -55,11 +54,11 @@ export default function Avatar({
   }
 
   return (
-    <div className="flex">
+    <div className="flex justify-center">
       {!url && (
-        <div className="w-full rounded-full bg-gray-400 h-[296px] flex items-center justify-center">
-          <BsFillPersonFill className="w-32 h-32 text-white" />
-        </div>
+        <span className="relative flex shrink-0 overflow-hidden rounded-full h-48 w-48 border-4 border-white shadow-lg">
+          <img className="aspect-square h-full w-full" alt="Profile picture" src="/placeholder.svg" />
+        </span>
       )}
       {url && <img src={`https://arweave.net/${url}`} className="rounded-full" alt="profile-pic" />}
     </div>

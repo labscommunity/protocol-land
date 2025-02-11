@@ -10,6 +10,8 @@ import { withAsync } from '@/helpers/withAsync'
 import { useGlobalStore } from '@/stores/globalStore'
 import { isRepositoryNameAvailable } from '@/stores/repository-core/actions'
 
+import TransferOwnershipModal from './TransferOwnershipModal'
+
 const titleSchema = yup
   .object({
     title: yup
@@ -29,6 +31,7 @@ const descriptionSchema = yup
   .required()
 
 export default function General() {
+  const [isOpen, setIsOpen] = useState(false)
   const [isSubmittingName, setIsSubmittingName] = useState(false)
   const [isSubmittingDescription, setIsSubmittingDescription] = useState(false)
   const [selectedRepo, updateDescription, updateName, isRepoOwner] = useGlobalStore((state) => [
@@ -86,6 +89,10 @@ export default function General() {
     } else {
       toast.error('The new name you have entered is the same as your current name.')
     }
+  }
+
+  async function handleTransferOwnershipButtonClick() {
+    setIsOpen(true)
   }
 
   const repoOwner = isRepoOwner()
@@ -159,6 +166,25 @@ export default function General() {
           )}
         </div>
       </div>
+      <div className="w-full border-b-[1px] border-gray-200 py-1">
+        <h1 className="text-2xl text-gray-900">Danger Zone</h1>
+      </div>
+      <div className="flex flex-col gap-4">
+        <div className="flex flex-col gap-4">
+          <div className="w-[50%] flex flex-col justify-center items-start gap-4">
+            {repoOwner && (
+              <Button
+                onClick={handleTransferOwnershipButtonClick}
+                variant="primary-solid"
+                className="h-10 bg-red-500 hover:bg-red-600 active:bg-red-700 outline-none"
+              >
+                Transfer Ownership
+              </Button>
+            )}
+          </div>
+        </div>
+      </div>
+      <TransferOwnershipModal setIsOpen={setIsOpen} isOpen={isOpen} />
     </div>
   )
 }

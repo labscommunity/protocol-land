@@ -1,4 +1,4 @@
-import { Dialog, Transition } from '@headlessui/react'
+import { Dialog, Tab, TabGroup, TabList, TabPanel, TabPanels, Transition } from '@headlessui/react'
 import { yupResolver } from '@hookform/resolvers/yup'
 import clsx from 'clsx'
 import React, { ChangeEvent, Fragment } from 'react'
@@ -23,6 +23,7 @@ import { isRepositoryNameAvailable } from '@/stores/repository-core/actions/repo
 type NewRepoModalProps = {
   setIsOpen: (val: boolean) => void
   isOpen: boolean
+  creator?: 'ORGANIZATION' | 'USER'
 }
 
 const schema = yup
@@ -38,17 +39,43 @@ const schema = yup
   })
   .required()
 
-export default function NewRepoModal({ setIsOpen, isOpen }: NewRepoModalProps) {
+const orgSchema = yup
+  .object({
+    name: yup
+      .string()
+      .matches(
+        /^[a-zA-Z0-9\s-]+$/,
+        'Organization name must be 1-39 characters long, consist of alphanumeric characters or single hyphens, and cannot start or end with a hyphen.'
+      )
+      .required('Title is required'),
+    description: yup.string()
+  })
+  .required()
+
+export default function NewRepoModal({ setIsOpen, isOpen, creator = 'USER' }: NewRepoModalProps) {
   const [isSubmitting, setIsSubmitting] = React.useState(false)
   const [visibility, setVisibility] = React.useState('public')
   const navigate = useNavigate()
-  const [authState] = useGlobalStore((state) => [state.authState])
+  const [authState, selectedOrg, isOrgNameAvailable, createOrganization] = useGlobalStore((state) => [
+    state.authState,
+    state.organizationState.selectedOrganization,
+    state.organizationActions.isOrganizationNameAvailable,
+    state.organizationActions.createOrganization
+  ])
   const {
     register,
     handleSubmit,
     formState: { errors }
   } = useForm({
     resolver: yupResolver(schema)
+  })
+
+  const {
+    register: registerOrg,
+    handleSubmit: handleSubmitOrg,
+    formState: { errors: orgErrors }
+  } = useForm({
+    resolver: yupResolver(orgSchema)
   })
 
   function closeModal() {
@@ -61,8 +88,9 @@ export default function NewRepoModal({ setIsOpen, isOpen }: NewRepoModalProps) {
     const id = uuidv4()
     const { title, description } = data
     const owner = authState.address || 'Protocol.Land user'
+    const orgId = selectedOrg?.organization?.id
 
-    const { response: isAvailable, error } = await withAsync(() => isRepositoryNameAvailable(title))
+    const { response: isAvailable, error } = await withAsync(() => isRepositoryNameAvailable(title, orgId || ''))
 
     if (!error && isAvailable === false) {
       toast.error(`The repository ${title} already exists.`)
@@ -85,21 +113,64 @@ export default function NewRepoModal({ setIsOpen, isOpen }: NewRepoModalProps) {
           file: repoBlob,
           owner: authState.address,
           visibility,
-          tokenProcessId
+          tokenProcessId,
+          creator,
+          orgId: orgId
         })
 
         if (result.txResponse) {
           trackGoogleAnalyticsEvent('Repository', 'Successfully created a repo', 'Create new repo', {
             repo_id: id,
-            repo_name: title
+            repo_name: title,
+            creator: creator,
+            org_id: orgId
           })
 
           navigate(`/repository/${id}`)
         }
       }
     } catch (error) {
+      setIsSubmitting(false)
+      toast.error('Failed to create repository')
       trackGoogleAnalyticsEvent('Repository', 'Failed to create a new repo', 'Create new repo')
     }
+  }
+
+  async function handleCreateOrgBtnClick(data: yup.InferType<typeof orgSchema>) {
+    setIsSubmitting(true)
+
+    const { name, description = '' } = data
+    const usernameOrg = name
+      .toLowerCase()
+      .replace(/\s+/g, '-')
+      .replace(/^-+|-+$/g, '')
+
+    const isAvailable = await isOrgNameAvailable(usernameOrg)
+
+    if (!isAvailable) {
+      toast.error(`The organization ${usernameOrg} already exists.`)
+      setIsSubmitting(false)
+      return
+    }
+
+    const uuid = uuidv4()
+
+    const organizationId = await createOrganization(uuid, name, usernameOrg, description)
+
+    if (!organizationId) {
+      setIsSubmitting(false)
+      trackGoogleAnalyticsEvent('Organization', 'Failed to create an organization', 'Create new organization')
+      toast.error('Failed to create organization')
+      return
+    }
+
+    trackGoogleAnalyticsEvent('Organization', 'Successfully created an organization', 'Create new organization', {
+      organization_id: organizationId,
+      organization_name: name
+    })
+
+    setIsSubmitting(false)
+    navigate(`/organization/${organizationId}`)
   }
 
   function handleRepositoryVisibilityChange(event: ChangeEvent<HTMLInputElement>) {
@@ -132,78 +203,259 @@ export default function NewRepoModal({ setIsOpen, isOpen }: NewRepoModalProps) {
               leaveFrom="opacity-100 scale-100"
               leaveTo="opacity-0 scale-95"
             >
-              <Dialog.Panel className="w-full max-w-[368px] transform rounded-2xl bg-white p-6 text-left align-middle shadow-xl transition-all">
-                <div className="w-full flex justify-between align-middle">
-                  <Dialog.Title as="h3" className="text-xl font-medium text-gray-900">
-                    Create a new Repository
-                  </Dialog.Title>
-                  <SVG onClick={closeModal} src={CloseCrossIcon} className="w-6 h-6 cursor-pointer" />
-                </div>
-                <div className="mt-6 flex flex-col gap-2.5">
-                  <div>
-                    <label htmlFor="title" className="block mb-1 text-sm font-medium text-gray-600">
-                      Title *
-                    </label>
-                    <input
-                      type="text"
-                      {...register('title')}
-                      className={clsx(
-                        'bg-white border-[1px] text-gray-900 text-base rounded-lg hover:shadow-[0px_2px_4px_0px_rgba(0,0,0,0.10)] focus:border-primary-500 focus:border-[1.5px] block w-full px-3 py-[10px] outline-none',
-                        errors.title ? 'border-red-500' : 'border-gray-300'
-                      )}
-                      placeholder="my-cool-repo"
-                    />
-                    {errors.title && <p className="text-red-500 text-sm italic mt-2">{errors.title?.message}</p>}
-                  </div>
-                  <div>
-                    <label htmlFor="description" className="block mb-1 text-sm font-medium text-gray-600">
-                      Description <span className="text-gray-400 text-xs">(optional)</span>
-                    </label>
-                    <input
-                      type="text"
-                      {...register('description')}
-                      className={clsx(
-                        'bg-white border-[1px] text-gray-900 text-base rounded-lg hover:shadow-[0px_2px_4px_0px_rgba(0,0,0,0.10)] focus:border-primary-500 focus:border-[1.5px] block w-full px-3 py-[10px] outline-none',
-                        errors.description ? 'border-red-500' : 'border-gray-300'
-                      )}
-                      placeholder="A really cool repo fully decentralized"
-                    />
-                    {errors.description && (
-                      <p className="text-red-500 text-sm italic mt-2">{errors.description?.message}</p>
-                    )}
-                  </div>
-                  <div className="flex flex-col">
-                    <h1 className="mb-1 text-sm font-medium text-gray-600">Repository visibility</h1>
-                    <div className="flex flex-row gap-2">
-                      <label htmlFor="radio-1" className="flex items-center">
-                        <input
-                          type="radio"
-                          name="radio-group"
-                          onChange={handleRepositoryVisibilityChange}
-                          value="public"
-                          defaultChecked
-                          className="mr-2 rounded-full h-4 w-4 checked:accent-primary-700 accent-primary-600 bg-white focus:ring-primary-600  outline-none"
-                        />
-                        Public
-                      </label>
-                    </div>
-                  </div>
-                  <div className="py-1">
-                    <CostEstimatesToolTip fileSizes={[2740]} />
-                  </div>
-                </div>
+              <Dialog.Panel className="w-full max-w-md transform rounded-lg bg-white p-6 text-left align-middle shadow-xl transition-all">
+                {/* <NewRepoModalTabs /> */}
 
-                <div className="mt-6">
-                  <Button
-                    isLoading={isSubmitting}
-                    disabled={Object.keys(errors).length > 0 || isSubmitting}
-                    className="w-full justify-center font-medium"
-                    onClick={handleSubmit(handleCreateBtnClick)}
-                    variant="primary-solid"
-                  >
-                    Create
-                  </Button>
-                </div>
+                {creator === 'USER' && (
+                  <TabGroup>
+                    <div className="flex justify-end items-center mb-4">
+                      <SVG onClick={closeModal} src={CloseCrossIcon} className="w-6 h-6 cursor-pointer" />
+                    </div>
+                    <TabList
+                      className={
+                        'h-10 items-center justify-center rounded-md bg-[hsl(240,4.8%,95.9%)] p-1 text-muted-foreground grid w-full grid-cols-2'
+                      }
+                    >
+                      <Tab
+                        className={
+                          'inline-flex items-center justify-center whitespace-nowrap rounded-sm px-3 py-1.5 text-sm font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-[selected]:bg-white data-[selected]:text-black data-[selected]:shadow-sm'
+                        }
+                      >
+                        Repository
+                      </Tab>
+                      <Tab
+                        className={
+                          'inline-flex items-center justify-center whitespace-nowrap rounded-sm px-3 py-1.5 text-sm font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-[selected]:bg-white data-[selected]:text-black text-gray-500 data-[selected]:shadow-sm'
+                        }
+                      >
+                        Organization
+                      </Tab>
+                    </TabList>
+                    <TabPanels className={'mt-4'}>
+                      <TabPanel>
+                        <div className="w-full flex justify-between align-middle">
+                          <Dialog.Title as="h3" className="text-lg font-medium text-gray-900">
+                            Create a new repository
+                          </Dialog.Title>
+                        </div>
+                        <div className="mt-4 flex flex-col gap-2.5">
+                          <div>
+                            <label htmlFor="title" className="block mb-1 text-sm font-medium text-gray-600">
+                              Title *
+                            </label>
+                            <input
+                              type="text"
+                              {...register('title')}
+                              className={clsx(
+                                'bg-white text-sm border-[1px] h-10 text-gray-900 rounded-md hover:shadow-[0px_2px_4px_0px_rgba(0,0,0,0.10)] focus:border-primary-500 focus:border-[1.5px] block w-full px-3 py-[10px] outline-none placeholder:text-sm',
+                                errors.title ? 'border-red-500' : 'border-gray-300'
+                              )}
+                              placeholder="my-cool-repo"
+                            />
+                            {errors.title && (
+                              <p className="text-red-500 text-sm italic mt-2">{errors.title?.message}</p>
+                            )}
+                          </div>
+                          <div>
+                            <label htmlFor="description" className="block mb-1 text-sm font-medium text-gray-600">
+                              Description <span className="text-gray-400 text-xs">(optional)</span>
+                            </label>
+                            <input
+                              type="text"
+                              {...register('description')}
+                              className={clsx(
+                                'bg-white text-sm border-[1px] text-gray-900 h-10 rounded-md hover:shadow-[0px_2px_4px_0px_rgba(0,0,0,0.10)] focus:border-primary-500 focus:border-[1.5px] block w-full px-3 py-[10px] outline-none placeholder:text-sm',
+                                errors.description ? 'border-red-500' : 'border-gray-300'
+                              )}
+                              placeholder="A really cool repo fully decentralized"
+                            />
+                            {errors.description && (
+                              <p className="text-red-500 text-sm italic mt-2">{errors.description?.message}</p>
+                            )}
+                          </div>
+                          <div className="flex flex-col">
+                            <h1 className="mb-1 text-sm font-medium text-gray-600">Repository visibility</h1>
+                            <div className="flex flex-row gap-2">
+                              <label htmlFor="radio-1" className="flex items-center text-sm font-medium">
+                                <input
+                                  type="radio"
+                                  name="radio-group"
+                                  onChange={handleRepositoryVisibilityChange}
+                                  value="public"
+                                  defaultChecked
+                                  className="mr-2 text-sm rounded-full h-4 w-4 checked:accent-primary-700 accent-primary-600 bg-white focus:ring-primary-600  outline-none"
+                                />
+                                Public
+                              </label>
+                            </div>
+                          </div>
+                          <div className="py-1">
+                            <CostEstimatesToolTip fileSizes={[2740]} />
+                          </div>
+                        </div>
+                        <div className="mt-6">
+                          <Button
+                            isLoading={isSubmitting}
+                            disabled={Object.keys(errors).length > 0 || isSubmitting}
+                            className="w-full justify-center font-medium h-10 !text-sm"
+                            onClick={handleSubmit(handleCreateBtnClick)}
+                            variant="primary-solid"
+                          >
+                            Create Repository
+                          </Button>
+                        </div>
+                      </TabPanel>
+                      <TabPanel>
+                        <div className="w-full flex justify-between align-middle">
+                          <Dialog.Title as="h3" className="text-lg font-medium text-gray-900">
+                            Create a new organization
+                          </Dialog.Title>
+                        </div>
+                        <div className="mt-4 flex flex-col gap-2.5">
+                          <div>
+                            <label htmlFor="title" className="block mb-1 text-sm font-medium text-gray-600">
+                              Name *
+                            </label>
+                            <input
+                              type="text"
+                              {...registerOrg('name')}
+                              className={clsx(
+                                'bg-white text-sm border-[1px] text-gray-900 rounded-md hover:shadow-[0px_2px_4px_0px_rgba(0,0,0,0.10)] focus:border-primary-500 focus:border-[1.5px] block w-full px-3 py-[10px] h-10 outline-none placeholder:text-sm',
+                                orgErrors.name ? 'border-red-500' : 'border-gray-300'
+                              )}
+                              placeholder="My Cool DAO"
+                            />
+                            {orgErrors.name && (
+                              <p className="text-red-500 text-sm italic mt-2">{orgErrors.name?.message}</p>
+                            )}
+                          </div>
+                          <div>
+                            <label htmlFor="description" className="block mb-1 text-sm font-medium text-gray-600">
+                              Description <span className="text-gray-400 text-xs">(optional)</span>
+                            </label>
+                            <input
+                              type="text"
+                              {...registerOrg('description')}
+                              className={clsx(
+                                'bg-white text-sm border-[1px] text-gray-900 rounded-md hover:shadow-[0px_2px_4px_0px_rgba(0,0,0,0.10)] focus:border-primary-500 focus:border-[1.5px] block w-full px-3 py-[10px] h-10 outline-none placeholder:text-sm',
+                                orgErrors.description ? 'border-red-500' : 'border-gray-300'
+                              )}
+                              placeholder="A really cool repo fully decentralized"
+                            />
+                            {orgErrors.description && (
+                              <p className="text-red-500 text-sm italic mt-2">{orgErrors.description?.message}</p>
+                            )}
+                          </div>
+                          <div className="flex flex-col">
+                            <h1 className="mb-1 text-sm font-medium text-gray-600">Organization visibility</h1>
+                            <div className="flex flex-row gap-2">
+                              <label htmlFor="radio-1" className="flex items-center text-sm font-medium">
+                                <input
+                                  type="radio"
+                                  name="radio-group"
+                                  onChange={handleRepositoryVisibilityChange}
+                                  value="public"
+                                  defaultChecked
+                                  className="mr-2 text-sm rounded-full h-4 w-4 checked:accent-primary-700 accent-primary-600 bg-white focus:ring-primary-600  outline-none"
+                                />
+                                Public
+                              </label>
+                            </div>
+                          </div>
+                          <div className="py-1">
+                            <CostEstimatesToolTip fileSizes={[2740]} />
+                          </div>
+                        </div>
+                        <div className="mt-6">
+                          <Button
+                            isLoading={isSubmitting}
+                            disabled={Object.keys(errors).length > 0 || isSubmitting}
+                            className="w-full justify-center font-medium h-10 !text-sm"
+                            onClick={handleSubmitOrg(handleCreateOrgBtnClick)}
+                            variant="primary-solid"
+                          >
+                            Create Organization
+                          </Button>
+                        </div>
+                      </TabPanel>
+                    </TabPanels>
+                  </TabGroup>
+                )}
+
+                {creator === 'ORGANIZATION' && (
+                  <>
+                    <div className="w-full flex justify-between align-middle">
+                      <Dialog.Title as="h3" className="text-lg font-medium text-gray-900">
+                        Create a new repository
+                      </Dialog.Title>
+                      <SVG onClick={closeModal} src={CloseCrossIcon} className="w-6 h-6 cursor-pointer" />
+                    </div>
+                    <div className="mt-4 flex flex-col gap-2.5">
+                      <div>
+                        <label htmlFor="title" className="block mb-1 text-sm font-medium text-gray-600">
+                          Title *
+                        </label>
+                        <input
+                          type="text"
+                          {...register('title')}
+                          className={clsx(
+                            'bg-white text-sm border-[1px] h-10 text-gray-900 rounded-md hover:shadow-[0px_2px_4px_0px_rgba(0,0,0,0.10)] focus:border-primary-500 focus:border-[1.5px] block w-full px-3 py-[10px] outline-none placeholder:text-sm',
+                            errors.title ? 'border-red-500' : 'border-gray-300'
+                          )}
+                          placeholder="my-cool-repo"
+                        />
+                        {errors.title && <p className="text-red-500 text-sm italic mt-2">{errors.title?.message}</p>}
+                      </div>
+                      <div>
+                        <label htmlFor="description" className="block mb-1 text-sm font-medium text-gray-600">
+                          Description <span className="text-gray-400 text-xs">(optional)</span>
+                        </label>
+                        <input
+                          type="text"
+                          {...register('description')}
+                          className={clsx(
+                            'bg-white text-sm border-[1px] text-gray-900 h-10 rounded-md hover:shadow-[0px_2px_4px_0px_rgba(0,0,0,0.10)] focus:border-primary-500 focus:border-[1.5px] block w-full px-3 py-[10px] outline-none placeholder:text-sm',
+                            errors.description ? 'border-red-500' : 'border-gray-300'
+                          )}
+                          placeholder="A really cool repo fully decentralized"
+                        />
+                        {errors.description && (
+                          <p className="text-red-500 text-sm italic mt-2">{errors.description?.message}</p>
+                        )}
+                      </div>
+                      <div className="flex flex-col">
+                        <h1 className="mb-1 text-sm font-medium text-gray-600">Repository visibility</h1>
+                        <div className="flex flex-row gap-2">
+                          <label htmlFor="radio-1" className="flex items-center text-sm font-medium">
+                            <input
+                              type="radio"
+                              name="radio-group"
+                              onChange={handleRepositoryVisibilityChange}
+                              value="public"
+                              defaultChecked
+                              className="mr-2 text-sm rounded-full h-4 w-4 checked:accent-primary-700 accent-primary-600 bg-white focus:ring-primary-600  outline-none"
+                            />
+                            Public
+                          </label>
+                        </div>
+                      </div>
+                      <div className="py-1">
+                        <CostEstimatesToolTip fileSizes={[2740]} />
+                      </div>
+                    </div>
+                    <div className="mt-6">
+                      <Button
+                        isLoading={isSubmitting}
+                        disabled={Object.keys(errors).length > 0 || isSubmitting}
+                        className="w-full justify-center font-medium h-10 !text-sm"
+                        onClick={handleSubmit(handleCreateBtnClick)}
+                        variant="primary-solid"
+                      >
+                        Create Repository
+                      </Button>
+                    </div>
+                  </>
+                )}
               </Dialog.Panel>
             </Transition.Child>
           </div>

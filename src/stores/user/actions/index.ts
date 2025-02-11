@@ -4,6 +4,7 @@ import { getTags } from '@/helpers/getTags'
 import { withAsync } from '@/helpers/withAsync'
 import { sendMessage } from '@/lib/contract'
 import { useGlobalStore } from '@/stores/globalStore'
+import { Organization } from '@/types/orgs'
 import { Repo, RepoWithParent } from '@/types/repository'
 import { User } from '@/types/user'
 
@@ -115,4 +116,21 @@ export const fetchUserRepos = async (address: string) => {
   }
 
   return repos
+}
+
+export const fetchUserOrgs = async (address: string) => {
+  let orgs: Organization[] = []
+  const { response: ownerOrgsResponse } = await withAsync(() =>
+    dryrun({
+      process: AOS_PROCESS_ID,
+      tags: getTags({ Action: 'Get-User-Organizations', 'User-Address': address as string }),
+      Owner: address
+    })
+  )
+
+  if (ownerOrgsResponse) {
+    orgs = [...orgs, ...((JSON.parse(ownerOrgsResponse?.Messages[0]?.Data || '{}')?.result as Organization[]) || [])]
+  }
+
+  return orgs
 }
