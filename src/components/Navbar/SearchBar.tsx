@@ -102,11 +102,11 @@ export default function SearchBar() {
       initial={{ width: '25%' }}
       animate={{ width: isFocused ? '65%' : '25%' }}
       transition={{ duration: 0.5 }}
-      className="relative rounded-[8px] ml-20 bg-white border-primary-300 hover:border-primary-600 focus-within:shadow-[0px_2px_4px_0px_rgba(0,0,0,0.10)] hover:shadow-[0px_2px_4px_0px_rgba(0,0,0,0.10)] hover:bg-primary-50 border-[1px]"
+      className="relative rounded-md ml-20 bg-white border-primary-300 hover:border-primary-600 focus-within:shadow-[0px_2px_4px_0px_rgba(0,0,0,0.10)] hover:shadow-[0px_2px_4px_0px_rgba(0,0,0,0.10)] hover:bg-primary-50 border-[1px]"
       onAnimationComplete={handleInputAnimationComplete}
     >
-      <div className="rounded flex items-center w-full p-2 shadow-sm">
-        <BiSearch className="w-6 h-6 text-primary-600 relative top-[1px]" />
+      <div className="rounded flex items-center w-full h-10 p-2 shadow-sm">
+        <BiSearch className="w-5 h-5 text-primary-600 relative top-[1px]" />
         {/* <RiGitRepositoryFill className={`w-5 h-5 ${searchValue.length > 0 ? 'text-gray-900' : 'text-gray-500'}`} /> */}
 
         <input
@@ -116,7 +116,7 @@ export default function SearchBar() {
           value={searchValue}
           onChange={handleInputChange}
           onFocus={() => setIsFocused(true)}
-          className="w-full pl-2 text-base outline-none focus:outline-none bg-transparent text-primary-900 placeholder:text-primary-600"
+          className="w-full pl-2 text-sm font-medium outline-none focus:outline-none bg-transparent text-primary-900 placeholder:text-primary-600"
         />
         {searchValue && (
           <RiCloseCircleLine onClick={handleSearchReset} className="w-5 h-5 text-primary-600 cursor-pointer" />

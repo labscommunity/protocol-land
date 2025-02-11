@@ -13,9 +13,11 @@ export type Repo = {
   description: string
   defaultBranch: string
   dataTxId: string
+  tokenType: RepoTokenType | null | undefined
   token: RepoToken | null | undefined
   bondingCurve: BondingCurve | null | undefined
   liquidityPoolId: string | null
+  organizationId: string | null
   uploadStrategy: 'DEFAULT' | 'ARSEEDING'
   owner: string
   pullRequests: PullRequest[]
@@ -37,12 +39,15 @@ export type Repo = {
   primary?: boolean
 }
 
+export type RepoTokenType = 'IMPORT' | 'BONDING_CURVE'
+
 export type RepoToken = {
   tokenName: string
   tokenTicker: string
   denomination: string
   totalSupply: string
   tokenImage: string
+  allocationForParentTokenHolders?: string
   processId?: string
   socialLink?: string
 }

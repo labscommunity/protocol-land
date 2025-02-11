@@ -1,14 +1,15 @@
 import { Button } from '@/components/common/buttons'
 import { imgUrlFormatter } from '@/helpers/imgUrlFormatter'
-import { RepoToken } from '@/types/repository'
+import { RepoToken, RepoTokenType } from '@/types/repository'
 
 type Props = {
   onClose: () => void
   token: RepoToken
   onAction: () => void
+  tokenType: RepoTokenType
 }
 
-export default function DecentralizeSuccess({ onClose, token, onAction }: Props) {
+export default function DecentralizeSuccess({ onClose, token, onAction, tokenType }: Props) {
   return (
     <>
       <div className="mt-6 flex flex-col gap-2.5">
@@ -26,9 +27,11 @@ export default function DecentralizeSuccess({ onClose, token, onAction }: Props)
       </div>
 
       <div className="mt-6 flex flex-col gap-2">
-        <Button className="w-full justify-center font-medium" onClick={onAction} variant="primary-solid">
-          Buy Now
-        </Button>
+        {tokenType === 'BONDING_CURVE' && (
+          <Button className="w-full justify-center font-medium" onClick={onAction} variant="primary-solid">
+            Buy Now
+          </Button>
+        )}
         <Button className="w-full justify-center font-medium" onClick={onClose} variant="primary-outline">
           Close
         </Button>

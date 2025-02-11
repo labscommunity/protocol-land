@@ -1,4 +1,5 @@
 import { Dialog, DialogPanel, DialogTitle, Transition, TransitionChild } from '@headlessui/react'
+import BigNumber from 'bignumber.js'
 import { Fragment, useEffect, useState } from 'react'
 import { toast } from 'react-hot-toast'
 import SVG from 'react-inlinesvg'
@@ -7,7 +8,17 @@ import { FadeLoader } from 'react-spinners'
 
 import CloseCrossIcon from '@/assets/icons/close-cross.svg'
 import { waitFor } from '@/helpers/waitFor'
-import { decentralizeRepo, loadTokenProcess, spawnBondingCurveProcess } from '@/lib/decentralize'
+import {
+  decentralizeRepo,
+  fetchTokenBalances,
+  loadImportedTokenProcess,
+  loadTokenProcess,
+  spawnBondingCurveProcess
+} from '@/lib/decentralize'
+import {
+  allocateTokensByRatioWithRemainder,
+  computeCirculatingSupply
+} from '@/lib/import-token/computeCapTablePercentages'
 import { useGlobalStore } from '@/stores/globalStore'
 import { handleSaveBondingCurveId } from '@/stores/repository-core/actions'
 import { BondingCurve, RepoToken } from '@/types/repository'
@@ -30,9 +41,10 @@ type DecentralizeStatus = 'IDLE' | 'PENDING' | 'SUCCESS' | 'ERROR'
 export default function TokenizeModal({ setIsTradeModalOpen, onClose, isOpen }: TokenizeModalProps) {
   const navigate = useNavigate()
   const [isLoading, setIsLoading] = useState(true)
-  const [address, repo, setRepoDecentralized] = useGlobalStore((state) => [
+  const [address, repo, parentRepo, setRepoDecentralized] = useGlobalStore((state) => [
     state.authState.address,
     state.repoCoreState.selectedRepo.repo,
+    state.repoCoreState.parentRepo.repo,
     state.repoCoreActions.setRepoDecentralized
   ])
 
@@ -44,7 +56,7 @@ export default function TokenizeModal({ setIsTradeModalOpen, onClose, isOpen }: 
 
   useEffect(() => {
     // pollLiquidityProvideMessages('QM8Tc-7yJBGyifsx-DbcDgA3_aGm-p_NOVSYfeGqLwg')
-    if (repo) {
+    if (repo && repo.tokenType === 'BONDING_CURVE') {
       const validToken = isTokenSettingsValid()
       const validBondingCurve = isBondingCurveSettingsValid()
 
@@ -54,10 +66,101 @@ export default function TokenizeModal({ setIsTradeModalOpen, onClose, isOpen }: 
 
       setIsLoading(false)
     }
+
+    if (repo && repo.tokenType === 'IMPORT' && repo.decentralized === false && repo.fork === false) {
+      handleImportTokenization()
+      setIsLoading(false)
+    }
+    if (repo && repo.tokenType === 'IMPORT' && repo.decentralized === false && repo.fork === true) {
+      const validToken = isTokenSettingsValid()
+      
+      if (!validToken) {
+        setDecentralizeError('error-no-token')
+        setIsLoading(false)
+        return
+      }
+      handleForkedImportTokenization()
+      setIsLoading(false)
+    }
   }, [repo])
 
   function closeModal() {
     onClose()
+  }
+
+  async function handleImportTokenization() {
+    if (!repo || repo.decentralized === true) return
+
+    try {
+      setDecentralizeStatus('PENDING')
+      setTokenizeProgress(30)
+      setTokenizeProgressText('Importing token...')
+      await decentralizeRepo(repo.id)
+      await waitFor(1000)
+      createConfetti()
+      setTimeout(() => {
+        setDecentralizeStatus('SUCCESS')
+        setRepoDecentralized()
+      }, 2000)
+      setTokenizeProgress(100)
+      setTokenizeProgressText('Tokenization complete!')
+    } catch (error) {
+      setDecentralizeStatus('ERROR')
+      setDecentralizeError('error-generic')
+    }
+  }
+
+  async function handleForkedImportTokenization() {
+    if (!repo || repo.decentralized === true || repo.fork === false || !parentRepo) return
+    if (!repo.token) return
+    const percentage = repo.token.allocationForParentTokenHolders
+
+    if (!percentage) return
+    try {
+      const maxSupplyScaled = BigNumber(repo.token.totalSupply)
+        .multipliedBy(10 ** +repo.token.denomination)
+        .toFixed()
+      const allocationAmountForParentTokenHolders = BigNumber(maxSupplyScaled)
+        .multipliedBy(percentage)
+        .dividedBy(100)
+        .toFixed()
+      const remainingAmount = BigNumber(maxSupplyScaled).minus(allocationAmountForParentTokenHolders).toFixed()
+
+      setDecentralizeStatus('PENDING')
+      setTokenizeProgress(15)
+
+      setTokenizeProgressText('Creating snapshot of parent token holders...')
+
+      const balances = await fetchTokenBalances(parentRepo.token!.processId!)
+      const { percentages } = computeCirculatingSupply(balances)
+
+      setTokenizeProgress(40)
+
+      setTokenizeProgressText('Creating project token...')
+
+      const allocatedTokens = allocateTokensByRatioWithRemainder(percentages, allocationAmountForParentTokenHolders)
+      allocatedTokens[address!] = remainingAmount
+
+      await loadImportedTokenProcess(repo.token!, allocatedTokens)
+      await waitFor(500)
+      setTokenizeProgress(80)
+      setTokenizeProgressText('Tokenizing repository...')
+      await decentralizeRepo(repo.id)
+      await waitFor(1000)
+      createConfetti()
+      setTimeout(() => {
+        setDecentralizeStatus('SUCCESS')
+        setRepoDecentralized()
+      }, 2000)
+      setTokenizeProgress(100)
+      setTokenizeProgressText('Tokenization complete!')
+    } catch (error) {
+      toast.error('Failed to tokenize repository.')
+      setDecentralizeStatus('ERROR')
+      setDecentralizeError('error-generic')
+    }
+
+    //tokenize
   }
 
   function isTokenSettingsValid() {
@@ -168,10 +271,19 @@ export default function TokenizeModal({ setIsTradeModalOpen, onClose, isOpen }: 
       closeModal()
     }
 
+    let retryFunction = handleRepoDecentralize
+
+    if (repo.tokenType === 'IMPORT' && repo.fork === true) {
+      retryFunction = handleForkedImportTokenization
+    }
+    if (repo.tokenType === 'IMPORT' && repo.fork === false) {
+      retryFunction = handleImportTokenization
+    }
+
     if (type === 'error-generic') {
       setDecentralizeStatus('IDLE')
       setDecentralizeError(null)
-      await handleRepoDecentralize()
+      await retryFunction()
     }
 
     if (type === 'error-no-bonding-curve' && repo.bondingCurve) {
@@ -271,6 +383,7 @@ export default function TokenizeModal({ setIsTradeModalOpen, onClose, isOpen }: 
 
                 {decentralizeStatus === 'SUCCESS' && (
                   <DecentralizeSuccess
+                    tokenType={repo.tokenType!}
                     onClose={closeModal}
                     onAction={() => {
                       setIsTradeModalOpen(true)

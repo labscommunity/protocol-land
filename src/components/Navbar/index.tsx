@@ -14,7 +14,7 @@ export default function Navbar() {
   }
 
   return (
-    <div className="flex justify-between py-4 px-6 border-b-[1px] border-gray-200">
+    <div className="flex justify-between py-4 px-6 border-b-[1px] border-gray-300">
       <div className="flex items-center gap-2">
         <SVG className='text-primary-600' src={LogoLight} width={21} height={32} />
         <h2 onClick={handleLogoClick} className="cursor-pointer text-primary-600 font-bold text-2xl leading-[32px]">
