@@ -16,7 +16,7 @@ import { imgUrlFormatter } from '@/helpers/imgUrlFormatter'
 import { resolveUsernameOrShorten } from '@/helpers/resolveUsername'
 // import { fetchTokenBalance } from '@/lib/decentralize'
 import { useGlobalStore } from '@/stores/globalStore'
-import { Repo } from '@/types/repository'
+import { Repo, RepoToken } from '@/types/repository'
 
 import useRepository from '../hooks/useRepository'
 import { useRepoHeaderStore } from '../store/repoHeader'
@@ -25,6 +25,7 @@ import TokenizeModal from './decentralize-modals/Tokenize-Modal'
 import TradeModal from './decentralize-modals/Trade-Modal'
 import ForkModal from './ForkModal'
 import RepoHeaderLoading from './RepoHeaderLoading'
+import { fetchTokenDetails } from './tabs/settings-tab/components/token/fetchTokenDetails'
 
 type Props = {
   repo: Repo | Record<PropertyKey, never>
@@ -34,6 +35,7 @@ type Props = {
 }
 
 export default function RepoHeader({ repo, isLoading, owner, parentRepo }: Props) {
+  const [importedTokenDetails, setImportedTokenDetails] = React.useState<RepoToken | null>(null)
   const [isDecentralizationModalOpen, setIsDecentralizationModalOpen] = React.useState(false)
   const [isDecentralized, setIsDecentralized] = React.useState(false)
   const [isForkModalOpen, setIsForkModalOpen] = React.useState(false)
@@ -52,6 +54,10 @@ export default function RepoHeader({ repo, isLoading, owner, parentRepo }: Props
         repo_name: repo.name,
         repo_id: repo.id
       })
+      if (repo.fork && repo.decentralized && repo.token) {
+        setImportedTokenDetails(repo.token!)
+      }
+      fetchImportTokenDetails()
     }
   }, [repo])
 
@@ -79,6 +85,21 @@ export default function RepoHeader({ repo, isLoading, owner, parentRepo }: Props
 
   function handleComingSoon() {
     toast.success('This feature is coming soon.')
+  }
+
+  async function fetchImportTokenDetails() {
+    if (
+      !repo ||
+      repo.tokenType !== 'IMPORT' ||
+      !repo.token ||
+      !repo.token.processId ||
+      repo.decentralized === false ||
+      repo.fork === true
+    )
+      return
+
+    const tokenDetails = await fetchTokenDetails(repo.token.processId)
+    setImportedTokenDetails(tokenDetails)
   }
 
   function handleCopyClone() {
@@ -147,7 +168,7 @@ export default function RepoHeader({ repo, isLoading, owner, parentRepo }: Props
       navigate(`/organization/${repo.owner}`)
     }
   }
-
+  console.log(importedTokenDetails)
   return (
     <div className="flex flex-col">
       <div className="flex justify-between">
@@ -177,7 +198,7 @@ export default function RepoHeader({ repo, isLoading, owner, parentRepo }: Props
                     Tokenized
                   </span>
                 )}
-                {isDecentralized && repo.token && repo.token.processId && (
+                {isDecentralized && repo.tokenType === 'BONDING_CURVE' && repo.token && repo.token.processId && (
                   <div className="flex items-center gap-2">
                     <div className="flex items-center">
                       <Button
@@ -205,6 +226,12 @@ export default function RepoHeader({ repo, isLoading, owner, parentRepo }: Props
                         className="w-5 h-5 cursor-pointer text-primary-600"
                       /> */}
                     </div>
+                  </div>
+                )}
+                {isDecentralized && repo.tokenType === 'IMPORT' && importedTokenDetails && (
+                  <div className="flex items-center border-[1px] border-primary-600 gap-1 font-regular bg-primary-600 text-white rounded-full h-full text-sm px-2">
+                    <img src={imgUrlFormatter(importedTokenDetails.tokenImage)} className="w-4 h-4" />
+                    {importedTokenDetails.tokenTicker}
                   </div>
                 )}
               </div>

@@ -35,6 +35,8 @@ import {
   handleCancelContributorInvite,
   handleRejectContributor,
   handleSaveBondingCurveId,
+  handleSaveForkedImportTokenDetails,
+  handleSaveImportedTokenId,
   handleSaveLiquidityPoolId,
   handleSaveRepoBondingCurve,
   handleSaveRepoToken,
@@ -159,6 +161,30 @@ const createRepoCoreSlice: StateCreator<CombinedSlices, [['zustand/immer', never
         toast.success('Token saved.')
       }
     },
+    saveImportedTokenId: async (importedTokenId) => {
+      const repo = get().repoCoreState.selectedRepo.repo
+      const userAddress = get().authState.address
+
+      if (!repo || !userAddress) {
+        toast.error('Not authorized to save imported token id.')
+        return
+      }
+
+      const { error, response } = await withAsync(() => handleSaveImportedTokenId(repo.id, importedTokenId))
+
+      if (error || !response) {
+        toast.error('Failed to save imported token id.')
+        return
+      }
+
+      if (response) {
+        set((state) => {
+          state.repoCoreState.selectedRepo.repo!.token!.processId = importedTokenId
+          state.repoCoreState.selectedRepo.repo!.tokenType = 'IMPORT'
+        })
+        toast.success('Imported token id saved.')
+      }
+    },
     saveRepoBondingCurveDetails: async (bondingCurve) => {
       const repo = get().repoCoreState.selectedRepo.repo
       const userAddress = get().authState.address
@@ -196,6 +222,30 @@ const createRepoCoreSlice: StateCreator<CombinedSlices, [['zustand/immer', never
       if (error) {
         toast.error('Failed to save bonding curve id.')
         return
+      }
+    },
+    saveForkedImportTokenDetails: async (token) => {
+      const repo = get().repoCoreState.selectedRepo.repo
+      const userAddress = get().authState.address
+
+      if (!repo || !userAddress) {
+        toast.error('Not authorized to save forked import token details.')
+        return
+      }
+
+      const { error, response } = await withAsync(() => handleSaveForkedImportTokenDetails(repo.id, token))
+
+      if (error || !response) {
+        toast.error('Failed to save forked import token details.')
+        return
+      }
+
+      if (response) {
+        const updatedRes = { ...response, processId: repo?.token?.processId }
+        set((state) => {
+          state.repoCoreState.selectedRepo.repo!.token = updatedRes
+        })
+        toast.success('Forked import token details saved.')
       }
     },
     saveLiquidityPoolId: async (liquidityPoolId) => {
@@ -930,7 +980,7 @@ const createRepoCoreSlice: StateCreator<CombinedSlices, [['zustand/immer', never
         } catch (err: any) {
           console.log(`Error: ${err}`)
         }
-
+        
         let parentRepoId = null
 
         if (fork) {

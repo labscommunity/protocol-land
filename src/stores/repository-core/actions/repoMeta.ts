@@ -128,6 +128,62 @@ export const handleSaveRepoToken = async (
   return { token: data.token, bondingCurve: data.bondingCurve }
 }
 
+export const handleSaveForkedImportTokenDetails = async (id: string, repoToken: RepoToken): Promise<RepoToken> => {
+  const msgId = await sendMessage({
+    tags: getTags({
+      Action: 'Save-Forked-Import-Token-Settings',
+      Id: id
+    }),
+    data: JSON.stringify(repoToken)
+  })
+
+  const { Messages } = await result({
+    message: msgId,
+    process: AOS_PROCESS_ID
+  })
+
+  if (!Messages[0]) {
+    throw new Error('Failed to save token settings')
+  }
+
+  const actionValue = Messages[0].Tags.find(
+    (tag: Tag) => tag.name === 'Action' && tag.value === 'Forked-Repo-Token-Updated'
+  )
+
+  if (!actionValue) {
+    throw new Error('Failed to save forked import token details')
+  }
+
+  return repoToken
+}
+
+export const handleSaveImportedTokenId = async (id: string, importedTokenId: string): Promise<boolean> => {
+  const msgId = await sendMessage({
+    tags: getTags({
+      Action: 'Save-Import-Token-Settings',
+      Id: id,
+      ['Imported-Token-Id']: importedTokenId
+    })
+  })
+
+  const { Messages } = await result({
+    message: msgId,
+    process: AOS_PROCESS_ID
+  })
+
+  if (!Messages[0]) {
+    throw new Error('Failed to save token settings')
+  }
+
+  const tag = Messages[0].Tags.find((tag: Tag) => tag.name === 'Action' && tag.value === 'Repo-Token-Updated')
+
+  if (!tag) {
+    throw new Error('Failed to save imported token id')
+  }
+
+  return true
+}
+
 export const handleSaveRepoBondingCurve = async (id: string, bondingCurve: BondingCurve, address: string) => {
   await sendMessage({
     tags: getTags({
