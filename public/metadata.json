@@ -102,11 +102,35 @@
       "status": "published",
       "href": "/blog/guide-to-tokenization-of-open-source-code-on-protocol-land",
       "file": "/blog/guide-to-tokenization-of-open-source-code-on-protocol-land.md",
-      "featured": true,
+      "featured": false,
       "category": "EDUCATION",
       "description": "Learn how to tokenize your open source code on Protocol.Land.",
       "coverImage": "/blog/images/guide-to-tokenization-of-open-source-code-on-protocol-land.jpg",
       "publishedAt": "2024-04-17"
+    },
+    {
+      "id": 10,
+      "title": "All Information on Protocol Pioneers",
+      "status": "published",
+      "href": "/blog/all-information-on-protocol-pioneers",
+      "file": "/blog/all-information-on-protocol-pioneers.md",
+      "featured": true,
+      "category": "ANNOUNCEMENT",
+      "description": "Whether you’re a developer or technology steward, we have challenges for you to complete and prizes for you to win. Click to learn more.",
+      "coverImage": "/blog/images/all-information-on-protocol-pioneers.png",
+      "publishedAt": "2025-03-07"
+    },
+    {
+      "id": 11,
+      "title": "4-Day AO Smart Contract Challenge",
+      "status": "published",
+      "href": "/blog/4-day-ao-smart-contract-challenge",
+      "file": "/blog/4-day-ao-smart-contract-challenge.md",
+      "featured": false,
+      "category": "ANNOUNCEMENT",
+      "description": "Immerse yourself in this four-day challenge that will guide you through building smart contracts on AO, using the Lua programming language.",
+      "coverImage": "/blog/images/4-day-ao-smart-contract-challenge.png",
+      "publishedAt": "2025-03-07"
     }
   ]
 }
