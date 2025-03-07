@@ -6,6 +6,7 @@ import Image from './Image'
 import Link from './Link'
 import List from './List'
 import Paragraph from './Paragraph'
+import { Table, TableBody, TableCell, TableHead, TableHeaderCell, TableRow } from './Table'
 
 export const config: Config = {
   nodes: {
@@ -43,6 +44,30 @@ export const config: Config = {
     },
     list: {
       render: 'List'
+    },
+    table: {
+      render: 'Table'
+    },
+    thead: {
+      render: 'TableHead'
+    },
+    tbody: {
+      render: 'TableBody'
+    },
+    tr: {
+      render: 'TableRow'
+    },
+    th: {
+      render: 'TableHeaderCell',
+      attributes: {
+        align: { type: String }
+      }
+    },
+    td: {
+      render: 'TableCell',
+      attributes: {
+        align: { type: String }
+      }
     }
   },
   tags: {
@@ -66,5 +91,11 @@ export const components = {
   Image,
   Link,
   Fence: CodeFence,
-  List
+  List,
+  Table,
+  TableHead,
+  TableBody,
+  TableRow,
+  TableHeaderCell,
+  TableCell
 }
