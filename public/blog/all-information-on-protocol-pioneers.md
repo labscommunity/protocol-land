@@ -77,8 +77,9 @@ Why can you win up to 320 $AO in Protocol Pioneers? We want to onboard developer
 2. Follow Protocol.Land on X
 3. Create a post about Protocol.Land, decentralized code repositories, or AO and Arweave and publish it on any social media channel
 4. Use the hashtag #protocolpioneer
-5. Join our Discord Server: https://discord.gg/FpgMC7fF
-6. Send us your post in <Social Task Submissions> to complete your entry!
+5. Join our [Discord Server](https://discord.gg/FpgMC7fF)
+6. Send us your post in &lt;Social Task Submissions&gt; to complete your entry!
+
 
 Only organic engagement will be eligible for rewards. See our evaluation table below 👇
 
@@ -103,7 +104,7 @@ The teams behind Protocol Land, Forward Research, and Community Labs want to edu
 
 **How many submissions can I enter?**
 
-You may enter in the 4-Day Smart Contract Challenge and Ecosystem Quest Challenge 1 ****time. You may enter in the Content Creation Challenge an unlimited amount of times.
+You may enter in the 4-Day Smart Contract Challenge and Ecosystem Quest Challenge 1 time. You may enter in the Content Creation Challenge an unlimited amount of times.
 
 **How are the challenges judged?**
 
