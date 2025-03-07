@@ -14,7 +14,7 @@ themeColor: 'rgba(0, 0, 0, .15)'
 publishedAt: '2025-03-07'
 ---
 
-This four-day challenge will guide you through building smart contracts on **AO**, using the Lua programming language. Each day introduces new concepts with progressive difficulty, culminating in a capstone mini-project on Day 4\. By the end, you will have built a functional token contract on AO. Each day is broken into missions (presented as `.lua` files with commented instructions). Some code sections are left blank or marked as TODO for you to fill in, so you can code along and practice. Good luck\!
+This four-day challenge will guide you through building smart contracts on **AO**, using the Lua programming language. Each day introduces new concepts with progressive difficulty, culminating in a capstone mini-project on Day 4\. By the end, you will have built a functional token contract on AO. Each day is broken into missions (presented as `.lua` files with commented instructions). Some code sections are left blank or marked as TODO for you to fill in, so you can code along and practice. That’s it! As long as you’re building on Protocol Land, you’re eligible to win $ in our challenge.Good luck\!
 
 **Day 1: Lua Basics**
 
