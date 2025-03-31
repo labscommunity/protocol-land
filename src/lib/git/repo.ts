@@ -62,7 +62,7 @@ export async function postNewRepo({
 
   await waitFor(500)
 
-  const dataTxResponse = await signAndSendTx(data, inputTags, userSigner, true)
+  const dataTxResponse = await signAndSendTx(data, inputTags, userSigner, false)
 
   if (!dataTxResponse) {
     throw new Error('Failed to post Git repository')
@@ -215,7 +215,7 @@ export async function postUpdatedRepo({ fs, dir, owner, id }: PostUpdatedRepoOpt
     { name: 'Type', value: 'repo-update' }
   ] as Tag[]
 
-  const dataTxResponse = await signAndSendTx(data, inputTags, userSigner, true)
+  const dataTxResponse = await signAndSendTx(data, inputTags, userSigner, false)
 
   if (!dataTxResponse) {
     throw new Error('Failed to post Git repository')

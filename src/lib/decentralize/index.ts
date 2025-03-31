@@ -13,7 +13,7 @@ import { sendMessage } from '../contract'
 import { generateSteps } from '../discrete-bonding-curve/curve'
 
 const arweave = new Arweave({
-  host: 'arweave-search.goldsky.com',
+  host: 'arweave.net',
   port: 443,
   protocol: 'https'
 })
