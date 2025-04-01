@@ -1,6 +1,6 @@
-import { dryrun, result } from '@permaweb/aoconnect'
 import { Tag } from 'arweave/web/lib/transaction'
 
+import { dryrun, result } from '@/helpers/aoconnect'
 import { AOS_PROCESS_ID } from '@/helpers/constants'
 import { getTags } from '@/helpers/getTags'
 import { getRepo, sendMessage } from '@/lib/contract'
