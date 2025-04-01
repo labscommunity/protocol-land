@@ -1,5 +1,4 @@
-import { dryrun } from '@permaweb/aoconnect'
-
+import { dryrun } from '@/helpers/aoconnect'
 import { getTags } from '@/helpers/getTags'
 import { CurveState } from '@/stores/repository-core/types'
 
