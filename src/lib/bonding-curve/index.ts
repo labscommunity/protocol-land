@@ -117,7 +117,7 @@ export async function getTokenSellPrice(amount: string, currentSupply: string, c
 
 export async function getTokenNextBuyPrice(currentSupply: string, curveState: CurveState) {
   if (!curveState || !curveState.steps) return '0'
-  let currentSupplyBn = BigNumber(currentSupply)
+  let currentSupplyBn = BigNumber(currentSupply).multipliedBy(BigNumber(10).pow(BigNumber(curveState.repoToken.denomination)))
   const maxSupplyBn = BigNumber(curveState.maxSupply)
 
   // Get curve steps from state
@@ -141,7 +141,7 @@ export async function getTokenNextBuyPrice(currentSupply: string, curveState: Cu
     }
   }
 
-  return nextPrice.toString()
+  return nextPrice.toFixed()
 }
 
 export async function getCurrentStep(currentSupply: string, steps: CurveStep[]) {
