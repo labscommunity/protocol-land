@@ -198,18 +198,21 @@ export default function RepoHeader({ repo, isLoading, owner, parentRepo }: Props
                     Tokenized
                   </span>
                 )}
-                {isDecentralized && repo.tokenType === 'BONDING_CURVE' && repo.token && repo.token.processId && (
-                  <div className="flex items-center gap-2">
-                    <div className="flex items-center">
-                      <Button
-                        className="!bg-[#26d9af] text-gray-200 !px-2 text-sm font-medium rounded-md h-full !py-[1px] justify-between gap-1"
-                        variant="solid"
-                        onClick={handleTradeClick}
-                      >
-                        <img src={imgUrlFormatter(repo.token.tokenImage)} className="w-4 h-4" />
-                        Buy
-                      </Button>
-                      {/* {tokenBalLoading && <BeatLoader size={8} color="#56ADD9" />}
+                {isDecentralized &&
+                  repo.token &&
+                  (repo.tokenType ? repo.tokenType === 'BONDING_CURVE' : true) &&
+                  repo.token.processId && (
+                    <div className="flex items-center gap-2">
+                      <div className="flex items-center">
+                        <Button
+                          className="!bg-[#26d9af] text-gray-200 !px-2 text-sm font-medium rounded-md h-full !py-[1px] justify-between gap-1"
+                          variant="solid"
+                          onClick={handleTradeClick}
+                        >
+                          <img src={imgUrlFormatter(repo.token.tokenImage)} className="w-4 h-4" />
+                          Buy
+                        </Button>
+                        {/* {tokenBalLoading && <BeatLoader size={8} color="#56ADD9" />}
                       {!tokenBalLoading && (
                         <span
                           onClick={handleTokenBalClick}
@@ -225,9 +228,9 @@ export default function RepoHeader({ repo, isLoading, owner, parentRepo }: Props
                         onClick={fetchAndSetTokenBal}
                         className="w-5 h-5 cursor-pointer text-primary-600"
                       /> */}
+                      </div>
                     </div>
-                  </div>
-                )}
+                  )}
                 {isDecentralized && repo.tokenType === 'IMPORT' && importedTokenDetails && (
                   <div className="flex items-center border-[1px] border-primary-600 gap-1 font-regular bg-primary-600 text-white rounded-full h-full text-sm px-2">
                     <img src={imgUrlFormatter(importedTokenDetails.tokenImage)} className="w-4 h-4" />
