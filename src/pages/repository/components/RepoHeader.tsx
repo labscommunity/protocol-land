@@ -198,7 +198,7 @@ export default function RepoHeader({ repo, isLoading, owner, parentRepo }: Props
                     Tokenized
                   </span>
                 )}
-                {isDecentralized && repo.tokenType === 'BONDING_CURVE' && repo.token && repo.token.processId && (
+                {isDecentralized && repo.token && repo.token.processId && repo.bondingCurve && (
                   <div className="flex items-center gap-2">
                     <div className="flex items-center">
                       <Button
