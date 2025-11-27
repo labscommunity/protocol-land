@@ -24,7 +24,7 @@ import {
 } from '../private-repos/crypto/encrypt'
 import { deriveAddress, strToJwkPubKey } from '../private-repos/utils'
 import { checkoutBranch, getCurrentBranch } from './branch'
-import { FSType } from './helpers/fsWithName'
+import { FSType, fsWithName } from './helpers/fsWithName'
 import { packGitRepo, unpackGitRepo } from './helpers/zipUtils'
 
 const arweave = new Arweave({
@@ -168,19 +168,100 @@ export async function updateGithubSync({ id, currentGithubSync, githubSync }: an
 export async function createNewFork(data: ForkRepositoryOptions) {
   const uuid = uuidv4()
 
-  await sendMessage({
-    tags: getTags({
-      Action: 'Fork-Repo',
-      Id: uuid,
-      Name: data.name,
-      Description: data.description,
-      'Data-TxId': data.dataTxId,
-      Parent: data.parent,
-      'Token-Process-Id': data.tokenProcessId
-    })
-  })
+  const parentDir = data.dir
+  const forkDir = `/${uuid}`
+  const parentFS = data.fs
+  const forkFS = fsWithName(uuid)
+  await forkFS.promises.mkdir(forkDir)
 
-  return uuid
+  try {
+    //clone the parent repo contents
+    await cloneToNewRepo({ sourceFS: parentFS, targetFS: forkFS, sorucePath: parentDir, targetPath: forkDir })
+    await waitFor(500)
+
+    // Create new blob for the forked repo
+    const repoBlob = await packGitRepo({ fs: forkFS, dir: forkDir })
+
+    if (!repoBlob) {
+      throw new Error('Failed to create repository blob')
+    }
+
+    const userSigner = await getSigner()
+
+    const fileData = (await toArrayBuffer(repoBlob)) as ArrayBuffer
+
+    const inputTags = [
+      { name: 'App-Name', value: 'Protocol.Land' },
+      { name: 'Content-Type', value: repoBlob.type },
+      { name: 'Creator', value: data.creator },
+      { name: 'Title', value: data.name },
+      { name: 'Description', value: data.description },
+      { name: 'Repo-Id', value: uuid },
+      { name: 'Parent-Repo-Id', value: data.parent },
+      { name: 'Type', value: 'repo-fork' },
+      { name: 'Visibility', value: 'public' },
+      { name: 'Scope', value: data.creator }
+    ] as Tag[]
+
+    await waitFor(500)
+
+    const dataTxResponse = await signAndSendTx(fileData, inputTags, userSigner, false)
+
+    if (!dataTxResponse) {
+      throw new Error('Failed to post Git repository')
+    }
+
+    await sendMessage({
+      tags: getTags({
+        Action: 'Fork-Repo',
+        Id: uuid,
+        Name: data.name,
+        Description: data.description,
+        'Data-TxId': dataTxResponse,
+        Parent: data.parent,
+        'Token-Process-Id': data.tokenProcessId
+      })
+    })
+
+    return uuid
+  } catch (error) {
+    console.error('Failed to create fork:', error)
+    throw error
+  }
+}
+
+export async function cloneToNewRepo({
+  sourceFS,
+  targetFS,
+  sorucePath,
+  targetPath
+}: {
+  sourceFS: FSType
+  targetFS: FSType
+  sorucePath: string
+  targetPath: string
+}) {
+  const dirItems = await sourceFS.promises.readdir(sorucePath)
+
+  dirItems.forEach(async (item) => {
+    const fullPathSource = sorucePath + '/' + item
+    const fullPathTarget = targetPath + '/' + item
+    const stats = await sourceFS.promises.stat(fullPathSource)
+
+    if (stats.isDirectory()) {
+      try {
+        await targetFS.promises.mkdir(fullPathTarget)
+      } catch (error) {
+        console.error('Failed to create directory:', error)
+      }
+
+      await cloneToNewRepo({ sourceFS, targetFS, sorucePath: fullPathSource, targetPath: fullPathTarget })
+    } else {
+      const fileContent = await sourceFS.promises.readFile(fullPathSource)
+
+      await targetFS.promises.writeFile(fullPathTarget, fileContent)
+    }
+  })
 }
 
 export async function postUpdatedRepo({ fs, dir, owner, id }: PostUpdatedRepoOptions) {

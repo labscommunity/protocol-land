@@ -1,5 +1,4 @@
-import { dryrun } from '@permaweb/aoconnect'
-
+import { dryrun } from '@/helpers/aoconnect'
 import { getTags } from '@/helpers/getTags'
 import { isArweaveAddress } from '@/helpers/isInvalidInput'
 import { CreateLiquidityPoolProps } from '@/pages/repository/components/decentralize-modals/config'
@@ -38,14 +37,14 @@ export async function checkLiquidityPoolReserves(poolId: string) {
     process: poolId
   }
 
-  let attempts = 0;
+  let attempts = 0
   while (attempts < 10) {
     const { Messages } = await dryrun(args)
 
     if (!Messages[0]) {
-      attempts++;
-      await new Promise(resolve => setTimeout(resolve, 1000)); // Wait for 1 second before retrying
-      continue;
+      attempts++
+      await new Promise((resolve) => setTimeout(resolve, 1000)) // Wait for 1 second before retrying
+      continue
     }
 
     let data: Record<string, string> = {}
@@ -58,14 +57,14 @@ export async function checkLiquidityPoolReserves(poolId: string) {
     }, {})
 
     if (Object.keys(data).length >= 2) {
-      return data;
+      return data
     }
 
-    attempts++;
-    await new Promise(resolve => setTimeout(resolve, 1000)); // Wait for 1 second before retrying
+    attempts++
+    await new Promise((resolve) => setTimeout(resolve, 1000)) // Wait for 1 second before retrying
   }
 
-  return null; // Return null if we couldn't get at least two entries after 10 attempts
+  return null // Return null if we couldn't get at least two entries after 10 attempts
 }
 
 export async function depositToLiquidityPool(poolId: string, token: RepoLiquidityPoolToken, amount: string) {

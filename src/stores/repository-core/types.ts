@@ -1,6 +1,7 @@
 import { Edge, Node } from '@xyflow/react'
 
 import { CurveStep } from '@/lib/discrete-bonding-curve/curve'
+import { FSType } from '@/lib/git/helpers/fsWithName'
 import { UserCommit, UserContributionData, UserPROrIssue } from '@/lib/user'
 import { CommitResult } from '@/types/commit'
 import { Organization } from '@/types/orgs'
@@ -128,8 +129,10 @@ export type ForkRepositoryOptions = {
   name: string
   description: string
   parent: string
-  dataTxId: string
+  fs: FSType
+  dir: string
   tokenProcessId: string
+  creator: string
 }
 
 export type SaveRepoTokenDetailsOptions = RepoToken & BondingCurve
