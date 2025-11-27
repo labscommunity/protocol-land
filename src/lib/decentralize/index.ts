@@ -1,7 +1,7 @@
-import { createDataItemSigner, dryrun, spawn } from '@permaweb/aoconnect'
 import Arweave from 'arweave'
 import { Tag } from 'arweave/web/lib/transaction'
 
+import { createDataItemSigner, dryrun, spawn } from '@/helpers/aoconnect'
 import { getTags } from '@/helpers/getTags'
 import { waitFor } from '@/helpers/waitFor'
 import { getSigner } from '@/helpers/wallet/getSigner'
@@ -13,7 +13,7 @@ import { sendMessage } from '../contract'
 import { generateSteps } from '../discrete-bonding-curve/curve'
 
 const arweave = new Arweave({
-  host: 'arweave.net',
+  host: 'arweave-search.goldsky.com',
   port: 443,
   protocol: 'https'
 })
@@ -57,8 +57,6 @@ export async function spawnTokenProcess(tokenName: string, processType?: string)
     data: '1984',
     signer: createDataItemSigner(signer)
   })
-
-  await pollForTxBeingAvailable({ txId: pid })
 
   return pid
 }

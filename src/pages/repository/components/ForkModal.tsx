@@ -13,8 +13,10 @@ import { Button } from '@/components/common/buttons'
 import { withAsync } from '@/helpers/withAsync'
 import { spawnTokenProcess } from '@/lib/decentralize'
 import { createNewFork } from '@/lib/git'
+import { fsWithName } from '@/lib/git/helpers/fsWithName'
 import { useGlobalStore } from '@/stores/globalStore'
 import { getRepositoryMetaFromContract, isRepositoryNameAvailable } from '@/stores/repository-core/actions/repoMeta'
+import { ForkRepositoryOptions } from '@/stores/repository-core/types'
 import { Repo } from '@/types/repository'
 
 type NewRepoModalProps = {
@@ -66,31 +68,32 @@ export default function ForkModal({ setIsOpen, isOpen, repo }: NewRepoModalProps
   async function handleCreateFork(data: yup.InferType<typeof schema>) {
     setIsSubmitting(true)
 
-    const tokenProcessId = await spawnTokenProcess(data.title)
-
-    const payload = {
-      name: data.title,
-      description: data.description ?? '',
-      parent: repo.id,
-      dataTxId: repo.dataTxId,
-      tokenProcessId
-    }
-
-
     const alreadyForked = await isRepositoryAlreadyForked(repo.id)
 
     if (alreadyForked) {
       toast.error("You've already forked this repository.")
       setIsOpen(false)
     } else {
-      const { response: isAvailable, error: checkError } = await withAsync(() =>
-        isRepositoryNameAvailable(payload.name)
-      )
+      const { response: isAvailable, error: checkError } = await withAsync(() => isRepositoryNameAvailable(data.title))
 
       if (!checkError && isAvailable === false) {
-        toast.error(`The repository ${payload.name} already exists.`)
+        toast.error(`The repository ${data.title} already exists.`)
         setIsSubmitting(false)
         return
+      }
+
+      const tokenProcessId = await spawnTokenProcess(data.title)
+      const fs = fsWithName(repo.id)
+      const dir = `/${repo.id}`
+
+      const payload: ForkRepositoryOptions = {
+        name: data.title,
+        description: data.description ?? '',
+        parent: repo.id,
+        tokenProcessId,
+        fs,
+        dir,
+        creator: connectedAddress!
       }
 
       const { response, error } = await withAsync(() => createNewFork(payload))
